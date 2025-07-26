@@ -1,0 +1,57 @@
+{{define "alert-color-with-icon"}}
+<div class="alert alert-{{.Type}} border-0 bg-grd-{{.Type}} alert-dismissible fade show">
+  <div class="d-flex align-items-center">
+    <div class="font-35 text-white"><span class="material-icons-outlined fs-2">{{.Icon}}</span>
+    </div>
+    <div class="ms-3">
+      <h6 class="mb-0 text-white">{{.Title}}</h6>
+      <div class="text-white">{{.Content}}</div>
+    </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{end}}
+
+{{define "alert-color"}}
+<div class="alert alert-{{.Type}} border-0 bg-{{.Type}} alert-dismissible fade show">
+  <div class="text-{{if or (eq .Type "warning") (eq .Type "info")}}dark{{else}}white{{end}}">{{.Content}}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{end}}
+
+{{define "alert-border-with-icon"}}
+<div class="alert alert-border-{{.Type}} alert-dismissible fade show">
+  <div class="d-flex align-items-center">
+    <div class="font-35 text-{{.Type}}"><span class="material-icons-outlined fs-2">{{.Icon}}</span>
+    </div>
+    <div class="ms-3">
+      <h6 class="mb-0 text-{{.Type}}">{{.Title}}</h6>
+      <div class="">{{.Content}}</div>
+    </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{end}}
+
+{{define "alert-border"}}
+<div class="alert alert-border-{{.Type}} alert-dismissible fade show">
+  <div class="">{{.Content}}</div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{{end}}
+
+{{define "alert-with-icon"}}
+<div class="alert border-0 bg-grd-{{.Type}} alert-dismissible fade show">
+  <div class="d-flex align-items-center">
+    <div class="font-35 text-white"><span class="material-icons-outlined fs-2">{{.Icon}}</span>
+    </div>
+    <div class="ms-3">
+      <h6 class="mb-0 text-white">{{.Title}}</h6>
+      <div class="text-white">{{.Message}}</div>
+    </div>
+  </div>
+  {{if .Dismissible}}
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  {{end}}
+</div>
+{{end}} 

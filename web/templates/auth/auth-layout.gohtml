@@ -1,0 +1,84 @@
+{{define "auth/auth-layout"}}
+{{template "layout/base" .}}
+{{end}}
+
+{{define "content"}}
+<!--authentication-->
+<div class="mx-3 mx-lg-0">
+  <div class="card my-5 col-xl-9 col-xxl-8 mx-auto rounded-4 overflow-hidden p-4">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6 d-flex">
+        <div class="card-body">
+          <img src="/static/assets/images/logo1.png" class="mb-4" width="145" alt="">
+          <h4 class="fw-bold">{{.PageHeading}}</h4>
+          {{if .PageSubHeading}}<p class="mb-0">{{.PageSubHeading}}</p>{{end}}
+          
+          {{if .Success}}
+            {{template "alert-with-icon" dict "Type" "success" "Title" "Başarılı" "Message" .Success "Icon" "check_circle" "Dismissible" true}}
+          {{end}}
+          
+          {{if .Error}}
+            {{template "alert-with-icon" dict "Type" "danger" "Title" "Hata" "Message" .Error "Icon" "error" "Dismissible" true}}
+          {{end}}
+          
+          {{if .Info}}
+            {{template "alert-with-icon" dict "Type" "info" "Title" "Bilgi" "Message" .Info "Icon" "info" "Dismissible" true}}
+          {{end}}
+          
+          {{if .Warning}}
+            {{template "alert-with-icon" dict "Type" "warning" "Title" "Uyarı" "Message" .Warning "Icon" "warning" "Dismissible" true}}
+          {{end}}
+          
+          {{block "auth_content" .}}{{end}}
+        </div>
+      </div>
+      <div class="col-lg-6 d-lg-flex d-none">
+        <div class="p-3 rounded-4 w-100 d-flex align-items-center justify-content-center {{.SidebarClass}}">
+          <img src="{{.SidebarImage}}" class="img-fluid" alt="{{.PageHeading}}">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!--authentication-->
+{{end}}
+
+{{define "page_js"}}
+<script>
+  $(document).ready(function () {
+    // Password toggle
+    $("[id^='show_hide_password'] a").on('click', function (event) {
+      event.preventDefault();
+      const passwordField = $(this).closest('.input-group').find('input');
+      const icon = $(this).find('i');
+      
+      if (passwordField.attr("type") == "text") {
+        passwordField.attr('type', 'password');
+        icon.addClass("bi-eye-slash-fill");
+        icon.removeClass("bi-eye-fill");
+      } else if (passwordField.attr("type") == "password") {
+        passwordField.attr('type', 'text');
+        icon.removeClass("bi-eye-slash-fill");
+        icon.addClass("bi-eye-fill");
+      }
+    });
+    
+    // Form validation
+    if ($.fn.validate) {
+      $("form[data-validate='true']").each(function() {
+        const form = $(this);
+        const rulesAttr = form.attr('data-rules');
+        
+        if (rulesAttr) {
+          try {
+            const rules = JSON.parse(rulesAttr);
+            form.validate(rules);
+          } catch (e) {
+            console.error("Error parsing validation rules:", e);
+          }
+        }
+      });
+    }
+  });
+</script>
+{{end}} 

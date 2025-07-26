@@ -1,0 +1,99 @@
+{{define "dropdown"}}
+<div class="dropdown {{if .class}}{{.class}}{{end}}">
+  <button class="btn {{if .buttonClass}}{{.buttonClass}}{{else}}btn-primary{{end}} dropdown-toggle" 
+          type="button" 
+          id="{{if .id}}{{.id}}{{else}}dropdown-{{rand}}{{end}}" 
+          data-bs-toggle="dropdown" 
+          aria-expanded="false">
+    {{if .icon}}<i class="{{.icon}} {{if .text}}me-2{{end}}"></i>{{end}}
+    {{.text}}
+  </button>
+  <ul class="dropdown-menu {{if .menuClass}}{{.menuClass}}{{end}}" 
+      aria-labelledby="{{if .id}}{{.id}}{{else}}dropdown-{{rand}}{{end}}">
+    {{range .items}}
+      {{if eq .type "divider"}}
+        <li><hr class="dropdown-divider"></li>
+      {{else if eq .type "header"}}
+        <li><h6 class="dropdown-header">{{.text}}</h6></li>
+      {{else}}
+        <li>
+          <a class="dropdown-item {{if .class}}{{.class}}{{end}}" 
+             href="{{if .url}}{{.url}}{{else}}javascript:;{{end}}"
+             {{if .onclick}}onclick="{{.onclick}}"{{end}}
+             {{if .target}}target="{{.target}}"{{end}}>
+            {{if .icon}}<i class="{{.icon}} {{if .text}}me-2{{end}}"></i>{{end}}
+            {{.text}}
+          </a>
+        </li>
+      {{end}}
+    {{end}}
+  </ul>
+</div>
+{{end}}
+
+{{define "dropdown-notification"}}
+<div class="dropdown position-relative">
+  <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" 
+     href="javascript:;" 
+     role="button" 
+     data-bs-toggle="dropdown" 
+     aria-expanded="false">
+    <i class="material-icons-outlined">notifications</i>
+    {{if .count}}<span class="badge-notify">{{.count}}</span>{{end}}
+  </a>
+  <div class="dropdown-menu dropdown-notify dropdown-menu-end shadow">
+    <div class="px-3 py-1 d-flex align-items-center justify-content-between border-bottom">
+      <h5 class="notiy-title mb-0">{{.title}}</h5>
+      {{if .options}}
+      <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle dropdown-toggle-nocaret option" 
+                type="button" 
+                data-bs-toggle="dropdown" 
+                aria-expanded="false">
+          <span class="material-icons-outlined">more_vert</span>
+        </button>
+        <div class="dropdown-menu dropdown-option dropdown-menu-end shadow">
+          {{range .options}}
+          <div>
+            <a class="dropdown-item d-flex align-items-center gap-2 py-2" href="{{if .url}}{{.url}}{{else}}javascript:;{{end}}">
+              <i class="material-icons-outlined fs-6">{{.icon}}</i>{{.text}}
+            </a>
+          </div>
+          {{end}}
+          {{if .divider}}
+          <div><hr class="dropdown-divider"></div>
+          {{end}}
+        </div>
+      </div>
+      {{end}}
+    </div>
+    <div class="notify-list">
+      {{range .items}}
+      <div>
+        <a class="dropdown-item border-bottom py-2" href="{{if .url}}{{.url}}{{else}}javascript:;{{end}}">
+          <div class="d-flex align-items-center gap-3">
+            {{if .imageURL}}
+            <div class="">
+              <img src="{{.imageURL}}" class="rounded-circle" width="45" height="45" alt="">
+            </div>
+            {{else if .initialsBg}}
+            <div class="user-wrapper bg-{{.initialsBg}} text-{{.initialsBg}} bg-opacity-10">
+              <span>{{.initials}}</span>
+            </div>
+            {{end}}
+            <div class="">
+              <h5 class="notify-title">{{.title}}</h5>
+              <p class="mb-0 notify-desc">{{.description}}</p>
+              <p class="mb-0 notify-time">{{.time}}</p>
+            </div>
+            <div class="notify-close position-absolute end-0 me-3">
+              <i class="material-icons-outlined fs-6">close</i>
+            </div>
+          </div>
+        </a>
+      </div>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}} 

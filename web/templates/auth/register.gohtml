@@ -1,0 +1,122 @@
+{{define "auth/register"}}
+{{template "auth/auth-layout" .}}
+{{end}}
+
+{{define "auth_content"}}
+<div class="alert alert-border-info alert-dismissible fade show">
+  <div class="d-flex align-items-center">
+    <div class="font-35 text-info"><span class="material-icons-outlined fs-2">info</span>
+    </div>
+    <div class="ms-3">
+      <div class="">Kayıt olurken kullandığınız mail adresinize giriş bilgileriniz gönderilecektir.</div>
+    </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<div class="form-body mt-4">
+  <form class="row g-3" method="POST" action="/register" data-validate="true" id="registerForm" data-rules='{{.ValidationRules}}'>
+    <div class="col-12">
+      <label for="inputName" class="form-label">Ad Soyad</label>
+      <input type="text" class="form-control" id="inputName" name="name" placeholder="Ahmet Yılmaz" required minlength="5" 
+             data-error-required="Ad Soyad alanı zorunludur" 
+             data-error-minlength="Ad Soyad en az 5 karakter olmalıdır"
+             data-success-message="Ad Soyad geçerli!">
+      <div class="invalid-feedback">Ad Soyad en az 5 karakter olmalıdır</div>
+      <div class="valid-feedback">Ad Soyad geçerli!</div>
+    </div>
+    <div class="col-12">
+      <label for="inputEmailAddress" class="form-label">E-posta Adresi</label>
+      <input type="email" class="form-control" id="inputEmailAddress" name="email" placeholder="ornek@mail.com" required
+             data-validate="email"
+             data-error-required="E-posta alanı zorunludur"
+             data-error-email="Geçerli bir e-posta adresi giriniz"
+             data-success-message="E-posta adresi geçerli!">
+      <div class="invalid-feedback">Geçerli bir e-posta adresi giriniz</div>
+      <div class="valid-feedback">E-posta adresi geçerli!</div>
+    </div>
+    <div class="col-12">
+      <label for="inputPhone" class="form-label">Telefon Numarası</label>
+      <input type="text" inputmode="numeric" class="form-control" id="inputPhone" name="phone" placeholder="0551 016 2050" required 
+             pattern="0[0-9 ]{10,14}"
+             data-validate="phone"
+             data-error-required="Telefon numarası alanı zorunludur"
+             data-error-pattern="Telefon numarası 0 ile başlamalıdır"
+             data-success-message="Telefon numarası geçerli!">
+      <div class="invalid-feedback">Telefon numarası 0 ile başlamalıdır</div>
+      <div class="valid-feedback">Telefon numarası geçerli!</div>
+    </div>
+    
+    <div class="col-12 mt-3">
+      <div class="form-group" id="captchaSection" style="display: none;">
+        <label for="captchaAnswer" class="form-label d-flex align-items-center">
+          <span class="material-icons-outlined text-info me-1" style="font-size: 16px">security</span>
+          <span>Güvenlik Kodu</span>
+        </label>
+        <div class="input-group">
+          <span id="captchaChallenge" class="input-group-text bg-light fw-bold" style="min-width: 80px; font-size: 14px"></span>
+          <input type="text" class="form-control" id="captchaAnswer" name="captcha" placeholder="Sonuç" required
+                 data-error-required="Sonuç girişi zorunludur"
+                 data-error-captcha="Hatalı sonuç"
+                 data-success-message="Doğrulama başarılı">
+          <button type="button" id="refreshCaptcha" class="btn btn-outline-secondary">
+            <span class="material-icons-outlined" style="font-size: 16px">refresh</span>
+          </button>
+          <input type="hidden" id="captchaExpected" name="captchaExpected">
+        </div>
+        <div class="invalid-feedback">Doğru kodu giriniz</div>
+        <div class="valid-feedback">Doğrulama başarılı</div>
+        <div class="form-text mt-1 small text-white fw-bold">Yukarıdaki matematik işleminin sonucunu giriniz</div>
+      </div>
+    </div>
+    
+    <div class="col-12">
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="termsCheckbox" name="terms" required>
+        <label class="form-check-label fw-semibold" for="termsCheckbox">
+          <span class="text-white">Kullanım Koşullarını ve <a href="/privacy-policy" class="text-white text-decoration-underline fw-bold" target="_blank">Gizlilik Politikasını</a> okudum ve kabul ediyorum</span>
+        </label>
+        <div class="invalid-feedback">Devam etmek için kullanım koşullarını kabul etmelisiniz</div>
+      </div>
+    </div>
+    <div class="col-12 mt-4">
+      <div class="d-grid">
+        <button type="submit" class="btn btn-grd-info btn-lg shadow-sm" id="submitButton">
+          <i class="bi bi-person-plus me-2"></i>Kayıt Ol
+        </button>
+      </div>
+    </div>
+    <div class="col-12">
+      <div class="text-start">
+        <p class="mb-0">Zaten bir hesabınız var mı? <a href="/login">Giriş yapın</a></p>
+      </div>
+    </div>
+  </form>
+</div>
+{{end}}
+
+{{define "page_css"}}
+<!-- Sayfa özel CSS -->
+{{end}}
+
+{{define "page_js"}}
+<!-- Sayfa özel JS -->
+<script src="/static/js/auth/core.js"></script>
+<script src="/static/js/validation/form-validator.js" type="text/javascript"></script>
+
+<!-- Custom scripts for register page -->
+<script>
+  $(document).ready(function() {
+    // Telefon numarası formatlama - Sadece başa 0 ekle
+    $('#inputPhone').on('input', function() {
+      // Mevcut değeri al
+      let value = $(this).val();
+      
+      // Eğer ilk karakter 0 değilse ve alan boş değilse, 0 ekle
+      if (value.length > 0 && value.charAt(0) !== '0') {
+        $(this).val('0' + value);
+      }
+    });
+  });
+</script>
+{{end}} 

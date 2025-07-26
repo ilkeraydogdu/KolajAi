@@ -1,0 +1,304 @@
+{{define "layout/dashboard"}}
+<!doctype html>
+<html lang="tr" class="semi-dark">
+
+<head>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="/static/assets/images/favicon-32x32.png" type="image/png" />
+  <!-- Bootstrap CSS -->
+  <link href="/static/assets/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="/static/assets/css/bootstrap-extended.css" rel="stylesheet" />
+  <link href="/static/assets/css/pace.min.css" rel="stylesheet" />
+  <link href="/static/assets/css/extra-icons.css" rel="stylesheet">
+  <!--Theme Styles-->
+  <link href="/static/sass/main.css" rel="stylesheet" />
+  <link href="/static/sass/responsive.css" rel="stylesheet" />
+  <link href="/static/sass/semi-dark.css" rel="stylesheet" />
+  <!-- Notification CSS -->
+  <link href="/static/assets/plugins/notifications/css/lobibox.min.css" rel="stylesheet">
+
+  <title>{{.Title}}</title>
+</head>
+
+<body>
+  <!--start wrapper-->
+  <div class="wrapper">
+    <!--start top header-->
+    <header class="top-header">
+      <nav class="navbar navbar-expand gap-3 align-items-center">
+        <div class="mobile-toggle-icon fs-3">
+          <i class="material-icons-outlined">menu</i>
+        </div>
+        <form class="searchbar">
+          <div class="position-absolute top-50 translate-middle-y search-icon ms-3">
+            <i class="material-icons-outlined">search</i>
+          </div>
+          <input class="form-control" type="text" placeholder="Ara...">
+          <div class="position-absolute top-50 translate-middle-y search-close-icon">
+            <i class="material-icons-outlined">close</i>
+          </div>
+        </form>
+        <div class="top-navbar-right ms-auto">
+          <ul class="navbar-nav align-items-center">
+            <li class="nav-item search-toggle-icon">
+              <a class="nav-link" href="#">
+                <div class="">
+                  <i class="material-icons-outlined">search</i>
+                </div>
+              </a>
+            </li>
+            <li class="nav-item dropdown dropdown-large">
+              <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" href="#" data-bs-toggle="dropdown">
+                <div class="projects">
+                  <i class="material-icons-outlined">notifications</i>
+                  <span class="count-indicator">0</span>
+                </div>
+              </a>
+              <div class="dropdown-menu dropdown-menu-end">
+                <div class="row row-cols-3 gx-2">
+                  <div class="col">
+                    <a href="javascript:;">
+                      <div class="apps p-2 radius-10 text-center">
+                        <div class="apps-icon-box mb-1 text-white bg-primary bg-gradient">
+                          <i class="material-icons-outlined">notifications_active</i>
+                        </div>
+                        <p class="mb-0 apps-name">Bildirimler</p>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="col">
+                    <a href="javascript:;">
+                      <div class="apps p-2 radius-10 text-center">
+                        <div class="apps-icon-box mb-1 text-white bg-danger bg-gradient">
+                          <i class="material-icons-outlined">settings</i>
+                        </div>
+                        <p class="mb-0 apps-name">Ayarlar</p>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="col">
+                    <a href="javascript:;">
+                      <div class="apps p-2 radius-10 text-center">
+                        <div class="apps-icon-box mb-1 text-white bg-success bg-gradient">
+                          <i class="material-icons-outlined">help_outline</i>
+                        </div>
+                        <p class="mb-0 apps-name">Yardım</p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </li>
+            <li class="nav-item dropdown dropdown-large">
+              <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" href="#" data-bs-toggle="dropdown">
+                <div class="user-setting d-flex align-items-center gap-1">
+                  <img src="/static/assets/images/avatars/01.png" class="user-img" alt="">
+                  <div class="user-name d-none d-sm-block">{{.UserName}}</div>
+                </div>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                  <a class="dropdown-item" href="#">
+                    <div class="d-flex align-items-center">
+                      <img src="/static/assets/images/avatars/01.png" alt="" class="rounded-circle" width="60" height="60">
+                      <div class="ms-3">
+                        <h6 class="mb-0 dropdown-user-name">{{.UserName}}</h6>
+                        <small class="mb-0 dropdown-user-designation text-secondary">{{.UserEmail}}</small>
+                      </div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/profile">
+                    <div class="d-flex align-items-center">
+                      <div class=""><i class="material-icons-outlined">person_outline</i></div>
+                      <div class="ms-3"><span>Profilim</span></div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/settings">
+                    <div class="d-flex align-items-center">
+                      <div class=""><i class="material-icons-outlined">settings</i></div>
+                      <div class="ms-3"><span>Ayarlar</span></div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/dashboard">
+                    <div class="d-flex align-items-center">
+                      <div class=""><i class="material-icons-outlined">dashboard</i></div>
+                      <div class="ms-3"><span>Dashboard</span></div>
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <hr class="dropdown-divider">
+                </li>
+                <li>
+                  <a class="dropdown-item" href="/logout">
+                    <div class="d-flex align-items-center">
+                      <div class=""><i class="material-icons-outlined">logout</i></div>
+                      <div class="ms-3"><span>Çıkış Yap</span></div>
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+    <!--end top header-->
+
+    <!--start sidebar -->
+    <aside class="sidebar-wrapper" data-simplebar="true">
+      <div class="sidebar-header">
+        <div>
+          <img src="/static/assets/images/logo-icon.png" class="logo-icon" alt="logo icon">
+        </div>
+        <div>
+          <h4 class="logo-text">KolajAI</h4>
+        </div>
+        <div class="toggle-icon ms-auto"><i class="material-icons-outlined">close</i>
+        </div>
+      </div>
+      <!--navigation-->
+      <ul class="metismenu" id="menu">
+        <li>
+          <a href="/dashboard">
+            <div class="parent-icon"><i class="material-icons-outlined">home</i>
+            </div>
+            <div class="menu-title">Dashboard</div>
+          </a>
+        </li>
+        <li>
+          <a href="javascript:;" class="has-arrow">
+            <div class="parent-icon"><i class="material-icons-outlined">account_circle</i>
+            </div>
+            <div class="menu-title">Hesabım</div>
+          </a>
+          <ul>
+            <li> <a href="/profile"><i class="material-icons-outlined">arrow_right</i>Profilim</a>
+            </li>
+            <li> <a href="/settings"><i class="material-icons-outlined">arrow_right</i>Ayarlar</a>
+            </li>
+          </ul>
+        </li>
+        <li>
+          <a href="/logout">
+            <div class="parent-icon"><i class="material-icons-outlined">logout</i>
+            </div>
+            <div class="menu-title">Çıkış Yap</div>
+          </a>
+        </li>
+      </ul>
+      <!--end navigation-->
+    </aside>
+    <!--end sidebar -->
+
+    <!--start content-->
+    <main class="page-content">
+      {{template "content" .}}
+    </main>
+    <!--end page main-->
+
+    <!--start overlay-->
+    <div class="overlay nav-toggle-icon"></div>
+    <!--end overlay-->
+
+    <!--Start Back To Top Button-->
+    <a href="javaScript:;" class="back-to-top"><i class='material-icons-outlined'>arrow_upward</i></a>
+    <!--End Back To Top Button-->
+
+    <!--start switcher-->
+    <div class="switcher-body">
+      <button class="btn btn-primary btn-switcher shadow-sm" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasScrolling" aria-controls="offcanvasScrolling"><i class="material-icons-outlined">settings</i></button>
+      <div class="offcanvas offcanvas-end shadow border-start-0 p-2" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling">
+        <div class="offcanvas-header border-bottom">
+          <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Tema Ayarları</h5>
+          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+          <h6 class="mb-0">Tema Varyasyonu</h6>
+          <hr>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="LightTheme" value="option1">
+            <label class="form-check-label" for="LightTheme">Açık</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="DarkTheme" value="option2">
+            <label class="form-check-label" for="DarkTheme">Koyu</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="SemiDarkTheme" value="option3" checked>
+            <label class="form-check-label" for="SemiDarkTheme">Yarı Koyu</label>
+          </div>
+          <hr />
+          <h6 class="mb-0">Kenar Çubuğu Varyasyonu</h6>
+          <hr>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="LightSidebar" value="option1">
+            <label class="form-check-label" for="LightSidebar">Açık</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="DarkSidebar" value="option2" checked>
+            <label class="form-check-label" for="DarkSidebar">Koyu</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="radio" name="inlineRadioOptions" id="ColorSidebar" value="option3">
+            <label class="form-check-label" for="ColorSidebar">Renkli</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--end switcher-->
+
+  </div>
+  <!--end wrapper-->
+
+  <!-- Bootstrap bundle JS -->
+  <script src="/static/assets/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery -->
+  <script src="/static/assets/js/jquery.min.js"></script>
+  <!-- Notification JS -->
+  <script src="/static/assets/plugins/notifications/js/lobibox.min.js"></script>
+  <script src="/static/assets/plugins/notifications/js/notifications.min.js"></script>
+  <!-- Chart JS -->
+  <script src="/static/assets/plugins/chartjs/js/chart.js"></script>
+  <script src="/static/assets/plugins/chartjs/js/chartjs-custom.js"></script>
+  <!-- ApexChart JS -->
+  <script src="/static/assets/plugins/apexchart/apexcharts.min.js"></script>
+  <script src="/static/assets/plugins/apexchart/apex-custom-chart.js"></script>
+  <!-- Notifications JS -->
+  <script src="/static/js/notifications.js"></script>
+
+  <!-- Main JS -->
+  <script src="/static/assets/js/main.js"></script>
+  
+  <!-- Initialize KolajAI global object -->
+  <script>
+    window.KolajAI = {
+      notifications: {
+        success: "{{.Success}}",
+        error: "{{.Error}}"
+      },
+      user: {
+        id: {{.UserID}},
+        name: "{{.UserName}}",
+        email: "{{.UserEmail}}"
+      }
+    };
+  </script>
+  
+  <!-- Page specific JS -->
+  {{block "page_js" .}}{{end}}
+</body>
+
+</html>
+{{end}} 

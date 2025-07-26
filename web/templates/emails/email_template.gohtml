@@ -1,0 +1,108 @@
+{{define "email_template"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{.AlertTitle}}</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f8f9fa;
+      color: #5b6166;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 480px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(13,110,253,0.07);
+      padding: 32px 24px 24px 24px;
+      border: 1px solid #e2e8f0;
+    }
+    .logo {
+      display: block;
+      margin: 0 auto 16px auto;
+      width: 120px;
+      height: auto;
+    }
+    h1 {
+      color: #0d6efd;
+      font-size: 2rem;
+      margin-bottom: 8px;
+      font-weight: 700;
+      text-align: center;
+    }
+    h4 {
+      color: #4f46e5;
+      margin-top: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .alert {
+      background: #f0f7ff;
+      border-left: 4px solid #4f46e5;
+      padding: 18px 20px;
+      margin: 24px 0 18px 0;
+      border-radius: 8px;
+    }
+    .info-box {
+      background: #f8fafc;
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin: 18px 0;
+      border: 1px solid #e2e8f0;
+      font-size: 15px;
+    }
+    .btn-primary {
+      display: inline-block;
+      background: linear-gradient(310deg,#7928ca,#ff0080);
+      color: #fff !important;
+      text-decoration: none;
+      padding: 12px 32px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 1rem;
+      margin: 18px 0 0 0;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(310deg,#ff0080,#7928ca);
+    }
+    .footer {
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+      margin-top: 32px;
+    }
+    @media (max-width: 600px) {
+      .container { padding: 16px 4px; }
+      h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="https://pofudukdijital.com/wp-content/uploads/2023/11/logo1.svg" alt="Pofuduk DİJİTAL" class="logo">
+    <h1>Hoş Geldiniz, {{.Name}}!</h1>
+    <div class="alert">
+      <h4>{{.AlertTitle}}</h4>
+      <p>{{.AlertContent}}</p>
+    </div>
+    <div class="info-box">
+      <p><strong>E-posta:</strong> {{.Email}}</p>
+      {{if .Password}}<p><strong>Geçici Şifre:</strong> {{.Password}}</p>{{end}}
+    </div>
+    {{if .AdditionalInfo}}
+    <p style="color: #64748b; font-size: 15px; margin-top: 18px;">{{.AdditionalInfo}}</p>
+    {{end}}
+    <div class="footer">
+      © {{.Year}} Pofuduk DİJİTAL<br>
+      Herhangi bir sorunuz varsa, <a href="mailto:info@pofudukdijital.com" style="color: #0d6efd; text-decoration: none;">info@pofudukdijital.com</a> adresine e-posta gönderebilirsiniz.
+    </div>
+  </div>
+</body>
+</html>
+{{end}} 

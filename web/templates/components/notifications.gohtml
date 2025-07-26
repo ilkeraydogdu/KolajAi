@@ -1,0 +1,206 @@
+{{define "notification-card"}}
+<div class="card p-2 rounded-4 cursor-pointer text-center" onclick="{{.Function}}()">
+   <div class="card-body bg-grd-{{.Type}} rounded-4">
+    <div class="d-flex flex-column gap-2">
+      <a href="javascript:;" class="mb-3 text-white rounded-circle d-flex align-items-center justify-content-center">
+        <i class="material-icons-outlined fs-2">{{.Icon}}</i>
+      </a>
+      <h6 class="mb-0">{{.Title}}</h6>
+    </div>
+   </div>
+  </div>
+{{end}}
+
+{{define "notification-dropdown-item"}}
+<div>
+  <a class="dropdown-item border-bottom py-2" href="javascript:;">
+    <div class="d-flex align-items-center gap-3">
+      {{if .ImageURL}}
+      <div class="">
+        <img src="{{.ImageURL}}" class="rounded-circle" width="45" height="45" alt="">
+      </div>
+      {{else if .InitialsBg}}
+      <div class="user-wrapper bg-{{.InitialsBg}} text-{{.InitialsBg}} bg-opacity-10">
+        <span>{{.Initials}}</span>
+      </div>
+      {{end}}
+      <div class="">
+        <h5 class="notify-title">{{.Title}}</h5>
+        <p class="mb-0 notify-desc">{{.Description}}</p>
+        <p class="mb-0 notify-time">{{.Time}}</p>
+      </div>
+      <div class="notify-close position-absolute end-0 me-3">
+        <i class="material-icons-outlined fs-6">close</i>
+      </div>
+    </div>
+  </a>
+</div>
+{{end}}
+
+{{define "notification-dropdown"}}
+<div class="dropdown-menu dropdown-notify dropdown-menu-end shadow">
+  <div class="px-3 py-1 d-flex align-items-center justify-content-between border-bottom">
+    <h5 class="notiy-title mb-0">{{.Title}}</h5>
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle dropdown-toggle-nocaret option" type="button"
+        data-bs-toggle="dropdown" aria-expanded="false">
+        <span class="material-icons-outlined">
+          more_vert
+        </span>
+      </button>
+      <div class="dropdown-menu dropdown-option dropdown-menu-end shadow">
+        {{range .Options}}
+        <div><a class="dropdown-item d-flex align-items-center gap-2 py-2" href="javascript:;"><i
+              class="material-icons-outlined fs-6">{{.Icon}}</i>{{.Text}}</a></div>
+        {{end}}
+        {{if .Divider}}
+        <div>
+          <hr class="dropdown-divider">
+        </div>
+        {{end}}
+      </div>
+    </div>
+  </div>
+  <div class="notify-list">
+    {{range .Items}}
+    {{template "notification-dropdown-item" .}}
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{define "notification-js"}}
+<script>
+  // Bildirim işlevleri
+  function showNotification(type, title, message, options = {}) {
+    // Tür kontrolü
+    if (!['info', 'success', 'warning', 'error', 'default'].includes(type)) {
+      type = 'info';
+    }
+    
+    // Varsayılan ayarlar
+    const defaultSettings = {
+      position: 'top right',
+      showClass: 'fadeInRight',
+      hideClass: 'fadeOutRight',
+      icon: getNotificationIcon(type),
+      rounded: true,
+      delayIndicator: true,
+      sound: false,
+      delay: 5000
+    };
+    
+    // Kullanıcı ayarlarını varsayılan ayarlarla birleştir
+    const settings = {...defaultSettings, ...options};
+    
+    // Bildirim türüne göre Lobibox fonksiyonunu çağır
+    Lobibox.notify(type, {
+      title: title,
+      msg: message,
+      ...settings
+    });
+    
+    // Konsola bildirim bilgilerini yazdır (debug için)
+    console.debug(`Notification shown: ${type} - ${title}`);
+  }
+  
+  // Bildirim ikonunu belirle
+  function getNotificationIcon(type) {
+    switch (type) {
+      case 'info':
+        return 'bi bi-info-circle';
+      case 'success':
+        return 'bi bi-check-circle';
+      case 'warning':
+        return 'bi bi-exclamation-triangle';
+      case 'error':
+        return 'bi bi-x-circle';
+      default:
+        return 'bi bi-bell';
+    }
+  }
+  
+  // URL parametrelerini kontrol et - sayfa yüklendiğinde bildirimleri göstermek için
+  document.addEventListener('DOMContentLoaded', function() {
+    // URL'den mesaj parametrelerini al
+    const urlParams = new URLSearchParams(window.location.search);
+    const messageType = urlParams.get('messageType');
+    const messageTitle = urlParams.get('messageTitle');
+    const messageText = urlParams.get('messageText');
+    
+    // Mesaj parametreleri varsa bildirimi göster
+    if (messageType && messageText) {
+      showNotification(
+        messageType,
+        messageTitle || getDefaultTitle(messageType),
+        messageText
+      );
+      
+      // Bildirim gösterildikten sonra URL'i temizle (tarayıcı geçmişini etkilemeden)
+      const url = new URL(window.location.href);
+      url.searchParams.delete('messageType');
+      url.searchParams.delete('messageTitle');
+      url.searchParams.delete('messageText');
+      window.history.replaceState({}, document.title, url.toString());
+    }
+    
+    // Success ve Error mesajları varsa onları da göster
+    if (window.KolajAI && window.KolajAI.notifications) {
+      const { success, error, info, warning } = window.KolajAI.notifications;
+      
+      if (success) {
+        showNotification('success', 'Başarılı', success);
+      }
+      
+      if (error) {
+        showNotification('error', 'Hata', error);
+      }
+      
+      if (info) {
+        showNotification('info', 'Bilgi', info);
+      }
+      
+      if (warning) {
+        showNotification('warning', 'Uyarı', warning);
+      }
+    }
+  });
+  
+  // Varsayılan başlıklar
+  function getDefaultTitle(type) {
+    switch (type) {
+      case 'info':
+        return 'Bilgi';
+      case 'success':
+        return 'Başarılı';
+      case 'warning':
+        return 'Uyarı';
+      case 'error':
+        return 'Hata';
+      default:
+        return 'Bildirim';
+    }
+  }
+  
+  // Global KolajAI nesnesi oluştur veya mevcut olanı kullan
+  window.KolajAI = window.KolajAI || {};
+  
+  // Bildirim sistemi API'sini tanımla
+  window.KolajAI.notify = {
+    show: showNotification,
+    success: (message, title = 'Başarılı', options = {}) => showNotification('success', title, message, options),
+    error: (message, title = 'Hata', options = {}) => showNotification('error', title, message, options),
+    info: (message, title = 'Bilgi', options = {}) => showNotification('info', title, message, options),
+    warning: (message, title = 'Uyarı', options = {}) => showNotification('warning', title, message, options)
+  };
+  
+  // Yönlendirme fonksiyonu - bildirimleri URL parametresi ile başka sayfaya yönlendirirken kullanılır
+  window.KolajAI.redirectWithNotification = function(url, type, title, message) {
+    const redirectUrl = new URL(url, window.location.origin);
+    redirectUrl.searchParams.set('messageType', type);
+    if (title) redirectUrl.searchParams.set('messageTitle', title);
+    redirectUrl.searchParams.set('messageText', message);
+    window.location.href = redirectUrl.toString();
+  };
+</script>
+{{end}} 

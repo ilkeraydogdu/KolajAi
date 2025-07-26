@@ -1,0 +1,22 @@
+{{define "email_content"}}
+<h1>Hoş Geldiniz, {{.Name}}!</h1>
+<p>Pofuduk DİJİTAL ailesine katıldığınız için teşekkür ederiz. Hesabınız başarıyla oluşturuldu.</p>
+
+<div style="background-color: #f0f7ff; border-left: 4px solid #4f46e5; padding: 20px; margin: 25px 0; border-radius: 8px;">
+  <h4 style="margin-top: 0; color: #4f46e5; font-size: 20px; font-weight: 600;">{{.AlertTitle}}</h4>
+  <p>{{.AlertContent}}</p>
+</div>
+
+<div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #e2e8f0;">
+  <p><strong>E-posta:</strong> {{.Email}}</p>
+  <p><strong>Geçici Şifre:</strong> {{.Password}}</p>
+</div>
+
+<p style="color: #64748b; font-size: 15px;">Güvenliğiniz için lütfen en kısa sürede şifrenizi değiştiriniz. Şifrenizi değiştirmek için <a href="{{.ButtonLink}}" style="color: #4f46e5; text-decoration: none; font-weight: 500;">buraya tıklayabilirsiniz</a>.</p>
+
+{{if .AdditionalInfo}}
+<p style="color: #64748b; font-size: 15px;">{{.AdditionalInfo}}</p>
+{{end}}
+
+<p style="color: #64748b; font-size: 15px;">Herhangi bir sorunuz varsa, lütfen <a href="mailto:destek@pofuduk.com" style="color: #4f46e5; text-decoration: none; font-weight: 500;">destek@pofuduk.com</a> adresine e-posta gönderin.</p>
+{{end}}
