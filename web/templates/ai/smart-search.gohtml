@@ -1,0 +1,572 @@
+{{define "ai/smart-search"}}
+{{template "layout/header" .}}
+
+<div class="smart-search-page">
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">
+                    <i class="fas fa-search mr-3"></i>
+                    Akıllı Arama
+                </h1>
+                <p class="text-xl mb-8">AI destekli gelişmiş ürün arama ve keşif</p>
+                
+                <!-- Advanced Search Form -->
+                <div class="max-w-4xl mx-auto">
+                    <form id="smartSearchForm" class="bg-white bg-opacity-10 backdrop-blur rounded-lg p-6">
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-1">
+                                <input 
+                                    type="text" 
+                                    id="searchInput" 
+                                    name="q" 
+                                    value="{{.SearchQuery}}"
+                                    placeholder="Aradığınızı yazın... (örn: 'kırmızı spor ayakkabı', 'bluetooth kulaklık')"
+                                    class="w-full px-4 py-3 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
+                                />
+                            </div>
+                            <button 
+                                type="submit" 
+                                class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition flex items-center"
+                            >
+                                <i class="fas fa-brain mr-2"></i>
+                                Akıllı Ara
+                            </button>
+                        </div>
+                        
+                        <!-- Advanced Filters -->
+                        <div class="mt-4 flex flex-wrap gap-4 justify-center">
+                            <label class="flex items-center text-white">
+                                <input type="checkbox" id="includeOutOfStock" class="mr-2">
+                                Stokta olmayanları dahil et
+                            </label>
+                            <label class="flex items-center text-white">
+                                <input type="checkbox" id="exactMatch" class="mr-2">
+                                Tam eşleşme
+                            </label>
+                            <label class="flex items-center text-white">
+                                <input type="checkbox" id="similarProducts" class="mr-2" checked>
+                                Benzer ürünleri göster
+                            </label>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="container mx-auto px-4 py-8">
+        {{if .SearchResult}}
+        <!-- Search Info -->
+        <div class="mb-6">
+            <div class="flex flex-wrap items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+                <div class="flex items-center space-x-4">
+                    <span class="text-gray-700">
+                        <strong>{{.SearchResult.TotalCount}}</strong> sonuç bulundu
+                    </span>
+                    <span class="text-gray-500 text-sm">
+                        <i class="fas fa-clock mr-1"></i>
+                        {{.SearchResult.ProcessedTime}} sürede işlendi
+                    </span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-gray-700 font-medium">Sıralama:</label>
+                    <select id="sortResults" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="relevance">Uygunluk</option>
+                        <option value="price-low">Fiyat (Düşük-Yüksek)</option>
+                        <option value="price-high">Fiyat (Yüksek-Düşük)</option>
+                        <option value="rating">Değerlendirme</option>
+                        <option value="newest">En Yeni</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Suggestions -->
+        {{if .SearchResult.Suggestions}}
+        <div class="mb-6">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 class="font-semibold text-blue-800 mb-2">
+                    <i class="fas fa-lightbulb mr-2"></i>
+                    Önerilen Aramalar
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    {{range .SearchResult.Suggestions}}
+                    <button 
+                        onclick="searchSuggestion('{{.}}')" 
+                        class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm hover:bg-blue-200 transition"
+                    >
+                        {{.}}
+                    </button>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        {{end}}
+
+        <!-- Results Grid -->
+        <div id="searchResults" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {{range .SearchResult.Products}}
+            <div class="search-result-card bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div class="relative">
+                    <a href="/product/{{.ID}}">
+                        {{if .Images}}
+                        <img src="{{index .Images 0}}" alt="{{.Name}}" class="w-full h-48 object-cover">
+                        {{else}}
+                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-3xl"></i>
+                        </div>
+                        {{end}}
+                    </a>
+                    
+                    <!-- Relevance Score -->
+                    <div class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        <i class="fas fa-target mr-1"></i>
+                        Uygun
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="absolute top-2 left-2 flex flex-col space-y-1">
+                        <button class="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-100 transition" onclick="addToWishlist({{.ID}})">
+                            <i class="far fa-heart text-gray-600"></i>
+                        </button>
+                        <button class="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-100 transition" onclick="quickView({{.ID}})">
+                            <i class="fas fa-eye text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <a href="/product/{{.ID}}">
+                        <h3 class="font-semibold text-lg mb-2 line-clamp-2 hover:text-blue-600 transition">{{.Name}}</h3>
+                    </a>
+                    
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">{{.Category}}</span>
+                        <span class="text-gray-600 text-sm">{{.Brand}}</span>
+                    </div>
+                    
+                    <!-- Rating -->
+                    <div class="flex items-center mb-2">
+                        <div class="flex text-yellow-500 mr-2">
+                            {{range $i := seq 5}}
+                                {{if lt $i $.Rating}}
+                                    <i class="fas fa-star text-xs"></i>
+                                {{else}}
+                                    <i class="far fa-star text-xs"></i>
+                                {{end}}
+                            {{end}}
+                        </div>
+                        <span class="text-gray-500 text-sm">({{.ViewCount}} görüntülenme)</span>
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-2xl font-bold text-blue-600">₺{{printf "%.2f" .Price}}</span>
+                        {{if .StockQuantity}}
+                        <span class="text-green-600 text-sm">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Stokta
+                        </span>
+                        {{else}}
+                        <span class="text-red-600 text-sm">
+                            <i class="fas fa-times-circle mr-1"></i>
+                            Tükendi
+                        </span>
+                        {{end}}
+                    </div>
+                    
+                    <!-- Match Highlights -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-2 mb-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-search text-blue-600 mr-2 mt-1 text-sm"></i>
+                            <span class="text-blue-800 text-sm">Arama kriterlerinizle eşleşiyor</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-2">
+                        {{if .StockQuantity}}
+                        <button onclick="addToCart({{.ID}})" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition text-sm font-medium">
+                            <i class="fas fa-shopping-cart mr-1"></i>
+                            Sepete Ekle
+                        </button>
+                        {{else}}
+                        <button class="flex-1 bg-gray-400 text-white py-2 px-4 rounded-lg cursor-not-allowed text-sm font-medium" disabled>
+                            <i class="fas fa-ban mr-1"></i>
+                            Stokta Yok
+                        </button>
+                        {{end}}
+                        <button onclick="compareProduct({{.ID}})" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                            <i class="fas fa-balance-scale text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+
+        <!-- Load More Results -->
+        {{if gt .SearchResult.TotalCount (len .SearchResult.Products)}}
+        <div class="text-center mt-8">
+            <button id="loadMoreResults" onclick="loadMoreResults()" class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition font-medium">
+                <i class="fas fa-plus mr-2"></i>
+                Daha Fazla Sonuç Yükle
+            </button>
+        </div>
+        {{end}}
+
+        {{else if .SearchQuery}}
+        <!-- No Results -->
+        <div class="text-center py-16">
+            <div class="w-24 h-24 mx-auto mb-6 bg-gray-200 rounded-full flex items-center justify-center">
+                <i class="fas fa-search text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-4">Sonuç Bulunamadı</h3>
+            <p class="text-gray-600 mb-6">"{{.SearchQuery}}" için hiçbir ürün bulunamadı.</p>
+            <div class="max-w-md mx-auto">
+                <h4 class="font-semibold mb-3">Öneriler:</h4>
+                <ul class="text-left text-gray-600 space-y-1">
+                    <li>• Yazım hatalarını kontrol edin</li>
+                    <li>• Daha genel terimler kullanın</li>
+                    <li>• Farklı anahtar kelimeler deneyin</li>
+                    <li>• Kategori veya marka adı ekleyin</li>
+                </ul>
+            </div>
+        </div>
+
+        {{else}}
+        <!-- Search Guide -->
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Akıllı Arama Nasıl Çalışır?</h2>
+                <p class="text-gray-600 text-lg">AI destekli arama sistemi, aradığınızı daha iyi anlamanıza yardımcı olur</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-brain text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Anlam Analizi</h3>
+                    <p class="text-gray-600">Arama teriminizin anlamını analiz ederek en uygun ürünleri bulur</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-filter text-green-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Akıllı Filtreleme</h3>
+                    <p class="text-gray-600">Otomatik olarak en alakalı sonuçları öne çıkarır</p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-lightbulb text-purple-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Öneri Sistemi</h3>
+                    <p class="text-gray-600">Arama geçmişinize göre kişiselleştirilmiş öneriler sunar</p>
+                </div>
+            </div>
+
+            <!-- Example Searches -->
+            <div class="bg-gray-50 rounded-lg p-6">
+                <h3 class="text-xl font-semibold mb-4">Örnek Aramalar</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-medium mb-2">Genel Aramalar:</h4>
+                        <div class="space-y-1">
+                            <button onclick="searchExample('laptop')" class="block text-blue-600 hover:text-blue-800 text-sm">• "laptop"</button>
+                            <button onclick="searchExample('spor ayakkabı')" class="block text-blue-600 hover:text-blue-800 text-sm">• "spor ayakkabı"</button>
+                            <button onclick="searchExample('bluetooth kulaklık')" class="block text-blue-600 hover:text-blue-800 text-sm">• "bluetooth kulaklık"</button>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-medium mb-2">Detaylı Aramalar:</h4>
+                        <div class="space-y-1">
+                            <button onclick="searchExample('kırmızı nike ayakkabı')" class="block text-blue-600 hover:text-blue-800 text-sm">• "kırmızı nike ayakkabı"</button>
+                            <button onclick="searchExample('gaming laptop 16gb ram')" class="block text-blue-600 hover:text-blue-800 text-sm">• "gaming laptop 16gb ram"</button>
+                            <button onclick="searchExample('kablosuz mouse 2.4ghz')" class="block text-blue-600 hover:text-blue-800 text-sm">• "kablosuz mouse 2.4ghz"</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<script>
+let currentQuery = '{{.SearchQuery}}';
+let loadedCount = {{if .SearchResult}}{{len .SearchResult.Products}}{{else}}0{{end}};
+
+// Form submission
+document.getElementById('smartSearchForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    performSearch();
+});
+
+// Perform search
+async function performSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    const includeOutOfStock = document.getElementById('includeOutOfStock').checked;
+    const exactMatch = document.getElementById('exactMatch').checked;
+    const similarProducts = document.getElementById('similarProducts').checked;
+    
+    if (!query) {
+        alert('Lütfen arama terimi girin.');
+        return;
+    }
+    
+    // Build search URL
+    const params = new URLSearchParams({
+        q: query,
+        include_out_of_stock: includeOutOfStock,
+        exact_match: exactMatch,
+        similar_products: similarProducts
+    });
+    
+    window.location.href = `/ai/smart-search?${params.toString()}`;
+}
+
+// Search with suggestion
+function searchSuggestion(suggestion) {
+    document.getElementById('searchInput').value = suggestion;
+    performSearch();
+}
+
+// Search with example
+function searchExample(example) {
+    document.getElementById('searchInput').value = example;
+    performSearch();
+}
+
+// Sort results
+document.getElementById('sortResults')?.addEventListener('change', function() {
+    sortSearchResults(this.value);
+});
+
+function sortSearchResults(sortBy) {
+    const resultsContainer = document.getElementById('searchResults');
+    const cards = Array.from(resultsContainer.children);
+    
+    cards.sort((a, b) => {
+        const aData = extractCardData(a);
+        const bData = extractCardData(b);
+        
+        switch (sortBy) {
+            case 'price-low':
+                return aData.price - bData.price;
+            case 'price-high':
+                return bData.price - aData.price;
+            case 'rating':
+                return bData.rating - aData.rating;
+            case 'newest':
+                return bData.date - aData.date;
+            case 'relevance':
+            default:
+                return 0; // Keep original order for relevance
+        }
+    });
+    
+    // Clear and re-append sorted cards
+    resultsContainer.innerHTML = '';
+    cards.forEach(card => resultsContainer.appendChild(card));
+}
+
+function extractCardData(card) {
+    const priceText = card.querySelector('.text-2xl')?.textContent || '₺0';
+    const price = parseFloat(priceText.replace('₺', '').replace(',', '.'));
+    
+    const ratingStars = card.querySelectorAll('.fas.fa-star').length;
+    
+    return {
+        price: price || 0,
+        rating: ratingStars || 0,
+        date: Date.now() // Placeholder for actual date
+    };
+}
+
+// Load more results
+async function loadMoreResults() {
+    const btn = document.getElementById('loadMoreResults');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Yükleniyor...';
+    btn.disabled = true;
+    
+    try {
+        const params = new URLSearchParams({
+            q: currentQuery,
+            limit: 12,
+            offset: loadedCount
+        });
+        
+        const response = await fetch(`/api/ai/smart-search?${params.toString()}`);
+        const data = await response.json();
+        
+        if (data.success && data.result.products.length > 0) {
+            // Add new results to the grid
+            // This would need proper HTML generation
+            loadedCount += data.result.products.length;
+            
+            if (data.result.products.length < 12) {
+                btn.style.display = 'none'; // Hide if no more results
+            }
+        } else {
+            btn.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading more results:', error);
+        alert('Daha fazla sonuç yüklenemedi.');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Add to cart functionality
+async function addToCart(productId) {
+    try {
+        const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantity: 1
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Ürün sepete eklendi!', 'success');
+        } else {
+            showNotification('Ürün sepete eklenemedi.', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showNotification('Bir hata oluştu.', 'error');
+    }
+}
+
+// Add to wishlist functionality
+async function addToWishlist(productId) {
+    try {
+        const response = await fetch('/api/wishlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Ürün istek listesine eklendi!', 'success');
+            // Update heart icon
+            event.target.className = 'fas fa-heart text-red-600';
+        } else {
+            showNotification('Ürün istek listesine eklenemedi.', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding to wishlist:', error);
+        showNotification('Bir hata oluştu.', 'error');
+    }
+}
+
+// Quick view functionality
+async function quickView(productId) {
+    try {
+        const response = await fetch(`/api/product/${productId}/quick-view`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show quick view modal (would need modal implementation)
+            console.log('Quick view data:', data);
+        } else {
+            showNotification('Ürün önizlemesi yüklenemedi.', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading quick view:', error);
+        showNotification('Bir hata oluştu.', 'error');
+    }
+}
+
+// Compare product functionality
+function compareProduct(productId) {
+    showNotification('Ürün karşılaştırma listesine eklendi!', 'success');
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${
+        type === 'success' ? 'bg-green-600' : 
+        type === 'error' ? 'bg-red-600' : 
+        'bg-blue-600'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${
+                type === 'success' ? 'fa-check-circle' :
+                type === 'error' ? 'fa-times-circle' :
+                'fa-info-circle'
+            } mr-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Helper function for templates
+function seq(n) {
+    return Array.from({length: n}, (_, i) => i);
+}
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.search-result-card {
+    transition: transform 0.2s ease;
+}
+
+.search-result-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Search input focus effect */
+#searchInput:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Loading animation */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spin {
+    animation: spin 1s linear infinite;
+}
+</style>
+
+{{template "layout/footer" .}}
+{{end}}

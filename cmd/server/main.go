@@ -60,6 +60,7 @@ func main() {
 	productService := services.NewProductService(repo)
 	orderService := services.NewOrderService(repo)
 	auctionService := services.NewAuctionService(repo)
+	aiService := services.NewAIService(repo, productService, orderService)
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
@@ -91,6 +92,13 @@ func main() {
 		},
 		"formatDate": func(t time.Time) string {
 			return t.Format("02.01.2006 15:04")
+		},
+		"seq": func(n int) []int {
+			result := make([]int, n)
+			for i := 0; i < n; i++ {
+				result[i] = i
+			}
+			return result
 		},
 		"mul": func(a, b interface{}) float64 {
 			var numA, numB float64
@@ -168,6 +176,9 @@ func main() {
 	
 	// Admin handler'ı oluştur
 	adminHandler := handlers.NewAdminHandler(h, productService, vendorService, orderService, auctionService)
+	
+	// AI handler'ı oluştur
+	aiHandler := handlers.NewAIHandler(h, aiService)
 
 	// Router oluştur ve handler'ları ekle
 	router := http.NewServeMux()
@@ -224,6 +235,18 @@ func main() {
 	// API rotaları
 	router.HandleFunc("/api/search", ecommerceHandler.APISearchProducts)
 	router.HandleFunc("/api/cart/update", ecommerceHandler.APIUpdateCart)
+	
+	// AI rotaları
+	router.HandleFunc("/ai/dashboard", aiHandler.GetAIDashboard)
+	router.HandleFunc("/ai/recommendations", aiHandler.GetRecommendationsPage)
+	router.HandleFunc("/ai/smart-search", aiHandler.GetSmartSearchPage)
+	router.HandleFunc("/ai/price-optimization", aiHandler.GetPriceOptimizationPage)
+	
+	// AI API rotaları
+	router.HandleFunc("/api/ai/recommendations", aiHandler.GetRecommendations)
+	router.HandleFunc("/api/ai/price-optimize/", aiHandler.OptimizePrice)
+	router.HandleFunc("/api/ai/predict-category", aiHandler.PredictCategory)
+	router.HandleFunc("/api/ai/smart-search", aiHandler.SmartSearch)
 	
 	// Admin rotaları
 	router.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
