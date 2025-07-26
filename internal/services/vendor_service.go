@@ -115,7 +115,7 @@ func (s *VendorService) GetPendingVendors() ([]models.Vendor, error) {
 // GetVendorStats returns vendor statistics
 func (s *VendorService) GetVendorStats(vendorID int) (map[string]interface{}, error) {
 	stats := make(map[string]interface{})
-	
+
 	// Get total products
 	productCount, err := s.repo.Count("products", map[string]interface{}{"vendor_id": vendorID})
 	if err == nil {
@@ -156,7 +156,7 @@ func (s *VendorService) AddVendorSale(vendorID int, amount float64) error {
 
 	vendor.TotalSales += amount
 	vendor.UpdatedAt = time.Now()
-	
+
 	return s.UpdateVendor(vendorID, vendor)
 }
 

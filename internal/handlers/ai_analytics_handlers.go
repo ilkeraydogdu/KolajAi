@@ -158,7 +158,7 @@ func (h *AIAnalyticsHandler) GetAnalyticsDashboard(w http.ResponseWriter, r *htt
 	}
 
 	// Prepare template data
-	data := h.PrepareTemplateData(r)
+	data := h.GetTemplateData()
 	data["PageTitle"] = "AI Analytics Dashboard"
 	data["PageDescription"] = "Gelişmiş AI analitikleri ve pazar içgörüleri"
 
@@ -199,7 +199,7 @@ func (h *AIAnalyticsHandler) GetMarketTrendsPage(w http.ResponseWriter, r *http.
 	}
 
 	// Prepare template data
-	data := h.PrepareTemplateData(r)
+	data := h.GetTemplateData()
 	data["PageTitle"] = "Pazar Trend Analizi"
 	data["PageDescription"] = "AI destekli pazar trend analizi ve tahminleri"
 
@@ -224,7 +224,7 @@ func (h *AIAnalyticsHandler) GetProductInsightsPage(w http.ResponseWriter, r *ht
 	}
 
 	// Prepare template data
-	data := h.PrepareTemplateData(r)
+	data := h.GetTemplateData()
 	data["PageTitle"] = "Ürün İçgörüleri"
 	data["PageDescription"] = "AI destekli ürün performans analizi ve öneriler"
 
@@ -249,7 +249,7 @@ func (h *AIAnalyticsHandler) GetCustomerSegmentsPage(w http.ResponseWriter, r *h
 	}
 
 	// Prepare template data
-	data := h.PrepareTemplateData(r)
+	data := h.GetTemplateData()
 	data["PageTitle"] = "Müşteri Segmentasyonu"
 	data["PageDescription"] = "AI destekli müşteri davranış analizi ve segmentasyon"
 
@@ -274,7 +274,7 @@ func (h *AIAnalyticsHandler) GetPricingStrategyPage(w http.ResponseWriter, r *ht
 	}
 
 	// Prepare template data
-	data := h.PrepareTemplateData(r)
+	data := h.GetTemplateData()
 	data["PageTitle"] = "Fiyatlandırma Stratejisi"
 	data["PageDescription"] = "AI destekli fiyat optimizasyonu ve strateji önerileri"
 

@@ -106,7 +106,7 @@ func (m *MigrationService) RunMigrations() error {
 	for _, migration := range migrations {
 		if !applied[migration.version] {
 			fmt.Printf("Running migration: %s\n", migration.version)
-			
+
 			// Execute migration
 			_, err := m.db.Exec(migration.sql)
 			if err != nil {

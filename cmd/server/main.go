@@ -8,12 +8,12 @@ import (
 	"os"
 	"time"
 
+	_ "github.com/mattn/go-sqlite3"
 	"kolajAi/internal/database"
 	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
 	"kolajAi/internal/repository"
 	"kolajAi/internal/services"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -65,7 +65,7 @@ func main() {
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
-	
+
 	// Template fonksiyonlarını tanımla
 	funcMap := template.FuncMap{
 		"dict": func(values ...interface{}) (map[string]interface{}, error) {
@@ -150,7 +150,7 @@ func main() {
 			return numA + numB
 		},
 	}
-	
+
 	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("web/templates/**/*.gohtml")
 	if err != nil {
 		MainLogger.Fatalf("Şablonlar yüklenemedi: %v", err)
@@ -174,13 +174,13 @@ func main() {
 
 	// E-ticaret handler'ı oluştur
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
-	
+
 	// Admin handler'ı oluştur
 	adminHandler := handlers.NewAdminHandler(h, productService, vendorService, orderService, auctionService)
-	
+
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
-	
+
 	// AI Analytics handler'ı oluştur
 	aiAnalyticsHandler := handlers.NewAIAnalyticsHandler(h, aiAnalyticsService)
 
@@ -227,37 +227,37 @@ func main() {
 	router.HandleFunc("/product/", ecommerceHandler.ProductDetail)
 	router.HandleFunc("/cart", ecommerceHandler.Cart)
 	router.HandleFunc("/add-to-cart", ecommerceHandler.AddToCart)
-	
+
 	// Açık artırma rotaları
 	router.HandleFunc("/auctions", ecommerceHandler.Auctions)
 	router.HandleFunc("/auction/", ecommerceHandler.AuctionDetail)
 	router.HandleFunc("/place-bid", ecommerceHandler.PlaceBid)
-	
+
 	// Satıcı rotaları
 	router.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
-	
+
 	// API rotaları
 	router.HandleFunc("/api/search", ecommerceHandler.APISearchProducts)
 	router.HandleFunc("/api/cart/update", ecommerceHandler.APIUpdateCart)
-	
+
 	// AI rotaları
 	router.HandleFunc("/ai/dashboard", aiHandler.GetAIDashboard)
 	router.HandleFunc("/ai/recommendations", aiHandler.GetRecommendationsPage)
 	router.HandleFunc("/ai/smart-search", aiHandler.GetSmartSearchPage)
 	router.HandleFunc("/ai/price-optimization", aiHandler.GetPriceOptimizationPage)
-	
+
 	// AI API rotaları
 	router.HandleFunc("/api/ai/recommendations", aiHandler.GetRecommendations)
 	router.HandleFunc("/api/ai/price-optimize/", aiHandler.OptimizePrice)
 	router.HandleFunc("/api/ai/predict-category", aiHandler.PredictCategory)
 	router.HandleFunc("/api/ai/smart-search", aiHandler.SmartSearch)
-	
+
 	// AI Analytics API rotaları
 	router.HandleFunc("/api/ai/market-trends", aiAnalyticsHandler.GetMarketTrends)
 	router.HandleFunc("/api/ai/product-insights/", aiAnalyticsHandler.GetProductInsights)
 	router.HandleFunc("/api/ai/customer-segments", aiAnalyticsHandler.GetCustomerSegments)
 	router.HandleFunc("/api/ai/pricing-strategy/", aiAnalyticsHandler.GetPricingStrategy)
-	
+
 	// AI Analytics sayfa rotaları
 	router.HandleFunc("/ai/analytics", aiAnalyticsHandler.GetAnalyticsDashboard)
 	router.HandleFunc("/ai/analytics/dashboard", aiAnalyticsHandler.GetAnalyticsDashboard)
@@ -265,7 +265,7 @@ func main() {
 	router.HandleFunc("/ai/analytics/product-insights", aiAnalyticsHandler.GetProductInsightsPage)
 	router.HandleFunc("/ai/analytics/customer-segments", aiAnalyticsHandler.GetCustomerSegmentsPage)
 	router.HandleFunc("/ai/analytics/pricing-strategy", aiAnalyticsHandler.GetPricingStrategyPage)
-	
+
 	// Admin rotaları
 	router.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/admin/" || r.URL.Path == "/admin" {
