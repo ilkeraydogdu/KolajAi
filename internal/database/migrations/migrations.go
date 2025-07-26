@@ -72,3 +72,56 @@ func (m *MigrationService) CreateMigration(name string) (string, error) {
 	// For this example, we'll just return the filenames
 	return fmt.Sprintf("Created migration files: %s and %s", upFileName, downFileName), nil
 }
+
+// RunMigrations runs all pending migrations
+func (m *MigrationService) RunMigrations() error {
+	// Ensure migration table exists
+	if err := m.EnsureMigrationTable(); err != nil {
+		return err
+	}
+
+	// Get applied migrations
+	applied, err := m.GetAppliedMigrations()
+	if err != nil {
+		return err
+	}
+
+	// Define all migrations in order
+	migrations := []struct {
+		version string
+		sql     string
+	}{
+		{"001_create_users_table", CreateUsersTable},
+		{"002_create_sessions_table", CreateSessionsTable},
+		{"003_create_email_log_table", CreateEmailLogTable},
+		{"004_create_user_profiles_table", CreateUserProfilesTable},
+		{"005_create_vendors_table", CreateVendorsTable},
+		{"006_create_products_table", CreateProductsTable},
+		{"007_create_orders_table", CreateOrdersTable},
+		{"008_create_auctions_table", CreateAuctionsTable},
+		{"009_create_wholesale_table", CreateWholesaleTable},
+	}
+
+	// Run pending migrations
+	for _, migration := range migrations {
+		if !applied[migration.version] {
+			fmt.Printf("Running migration: %s\n", migration.version)
+			
+			// Execute migration
+			_, err := m.db.Exec(migration.sql)
+			if err != nil {
+				return fmt.Errorf("error running migration %s: %w", migration.version, err)
+			}
+
+			// Record migration as applied
+			_, err = m.db.Exec("INSERT INTO schema_migrations (version) VALUES (?)", migration.version)
+			if err != nil {
+				return fmt.Errorf("error recording migration %s: %w", migration.version, err)
+			}
+
+			fmt.Printf("Migration %s completed successfully\n", migration.version)
+		}
+	}
+
+	return nil
+}
