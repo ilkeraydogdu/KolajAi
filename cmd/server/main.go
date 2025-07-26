@@ -61,6 +61,7 @@ func main() {
 	orderService := services.NewOrderService(repo)
 	auctionService := services.NewAuctionService(repo)
 	aiService := services.NewAIService(repo, productService, orderService)
+	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
@@ -179,6 +180,9 @@ func main() {
 	
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
+	
+	// AI Analytics handler'ı oluştur
+	aiAnalyticsHandler := handlers.NewAIAnalyticsHandler(h, aiAnalyticsService)
 
 	// Router oluştur ve handler'ları ekle
 	router := http.NewServeMux()
@@ -247,6 +251,20 @@ func main() {
 	router.HandleFunc("/api/ai/price-optimize/", aiHandler.OptimizePrice)
 	router.HandleFunc("/api/ai/predict-category", aiHandler.PredictCategory)
 	router.HandleFunc("/api/ai/smart-search", aiHandler.SmartSearch)
+	
+	// AI Analytics API rotaları
+	router.HandleFunc("/api/ai/market-trends", aiAnalyticsHandler.GetMarketTrends)
+	router.HandleFunc("/api/ai/product-insights/", aiAnalyticsHandler.GetProductInsights)
+	router.HandleFunc("/api/ai/customer-segments", aiAnalyticsHandler.GetCustomerSegments)
+	router.HandleFunc("/api/ai/pricing-strategy/", aiAnalyticsHandler.GetPricingStrategy)
+	
+	// AI Analytics sayfa rotaları
+	router.HandleFunc("/ai/analytics", aiAnalyticsHandler.GetAnalyticsDashboard)
+	router.HandleFunc("/ai/analytics/dashboard", aiAnalyticsHandler.GetAnalyticsDashboard)
+	router.HandleFunc("/ai/analytics/market-trends", aiAnalyticsHandler.GetMarketTrendsPage)
+	router.HandleFunc("/ai/analytics/product-insights", aiAnalyticsHandler.GetProductInsightsPage)
+	router.HandleFunc("/ai/analytics/customer-segments", aiAnalyticsHandler.GetCustomerSegmentsPage)
+	router.HandleFunc("/ai/analytics/pricing-strategy", aiAnalyticsHandler.GetPricingStrategyPage)
 	
 	// Admin rotaları
 	router.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
