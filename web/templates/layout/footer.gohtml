@@ -1,0 +1,123 @@
+{{define "layout/footer"}}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Company Info -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">{{.AppName}}</h3>
+                    <p class="text-gray-400 mb-4">
+                        Türkiye'nin en büyük çoklu satıcı, açık artırma ve toptan satış platformu.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-facebook text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-instagram text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition">
+                            <i class="fab fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Hızlı Linkler</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/products" class="text-gray-400 hover:text-white transition">Ürünler</a></li>
+                        <li><a href="/auctions" class="text-gray-400 hover:text-white transition">Açık Artırmalar</a></li>
+                        <li><a href="/wholesale" class="text-gray-400 hover:text-white transition">Toptan Satış</a></li>
+                        <li><a href="/become-vendor" class="text-gray-400 hover:text-white transition">Satıcı Ol</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Müşteri Hizmetleri</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/help" class="text-gray-400 hover:text-white transition">Yardım Merkezi</a></li>
+                        <li><a href="/contact" class="text-gray-400 hover:text-white transition">İletişim</a></li>
+                        <li><a href="/returns" class="text-gray-400 hover:text-white transition">İade & Değişim</a></li>
+                        <li><a href="/shipping" class="text-gray-400 hover:text-white transition">Kargo Bilgileri</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Legal -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Yasal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/privacy" class="text-gray-400 hover:text-white transition">Gizlilik Politikası</a></li>
+                        <li><a href="/terms" class="text-gray-400 hover:text-white transition">Kullanım Şartları</a></li>
+                        <li><a href="/cookies" class="text-gray-400 hover:text-white transition">Çerez Politikası</a></li>
+                        <li><a href="/gdpr" class="text-gray-400 hover:text-white transition">KVKK</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 text-sm">
+                        © {{.Year}} {{.AppName}}. Tüm hakları saklıdır.
+                    </p>
+                    <div class="flex items-center space-x-4 mt-4 md:mt-0">
+                        <img src="/static/images/payment/visa.png" alt="Visa" class="h-8 opacity-70">
+                        <img src="/static/images/payment/mastercard.png" alt="Mastercard" class="h-8 opacity-70">
+                        <img src="/static/images/payment/amex.png" alt="American Express" class="h-8 opacity-70">
+                        <img src="/static/images/payment/paypal.png" alt="PayPal" class="h-8 opacity-70">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Scripts -->
+    <script src="/static/js/main.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashMessages = document.querySelectorAll('[role="alert"]');
+            flashMessages.forEach(function(message) {
+                message.style.transition = 'opacity 0.5s ease-out';
+                message.style.opacity = '0';
+                setTimeout(function() {
+                    message.remove();
+                }, 500);
+            });
+        }, 5000);
+        
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+        
+        // Search functionality
+        function initSearch() {
+            const searchInput = document.querySelector('input[name="search"]');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.form.submit();
+                    }
+                });
+            }
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initSearch();
+        });
+    </script>
+</body>
+</html>
+{{end}}

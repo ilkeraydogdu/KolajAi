@@ -275,3 +275,27 @@ func (h *Handler) RedirectWithFlash(w http.ResponseWriter, r *http.Request, url,
 
 	http.Redirect(w, r, url, http.StatusSeeOther)
 }
+
+// GetTemplateData returns base template data
+func (h *Handler) GetTemplateData() map[string]interface{} {
+	data := make(map[string]interface{})
+	
+	// Copy template context
+	for k, v := range h.TemplateContext {
+		data[k] = v
+	}
+	
+	return data
+}
+
+// HandleError handles errors and renders error page
+func (h *Handler) HandleError(w http.ResponseWriter, r *http.Request, err error, message string) {
+	Logger.Printf("Error: %v", err)
+	
+	data := h.GetTemplateData()
+	data["Error"] = message
+	data["ErrorDetails"] = err.Error()
+	
+	w.WriteHeader(http.StatusInternalServerError)
+	h.RenderTemplate(w, r, "error", data)
+}

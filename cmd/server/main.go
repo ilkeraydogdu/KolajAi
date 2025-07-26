@@ -8,7 +8,11 @@ import (
 	"os"
 	"time"
 
+	"kolajAi/internal/database"
+	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
+	"kolajAi/internal/services"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
@@ -28,6 +32,33 @@ func init() {
 
 func main() {
 	MainLogger.Println("KolajAI uygulaması başlatılıyor...")
+
+	// Veritabanı bağlantısı (SQLite)
+	MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
+	db, err := database.NewSQLiteConnection("kolajAi.db")
+	if err != nil {
+		MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
+	}
+	defer db.Close()
+
+	// Migration'ları çalıştır
+	MainLogger.Println("Veritabanı migration'ları çalıştırılıyor...")
+	migrationService := migrations.NewMigrationService(db, "kolajAi")
+	if err := migrationService.RunMigrations(); err != nil {
+		MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
+	}
+	MainLogger.Println("Migration'lar başarıyla tamamlandı!")
+
+	// Repository oluştur
+	mysqlRepo := database.NewMySQLRepository(db)
+	repo := database.NewRepositoryWrapper(mysqlRepo)
+
+	// Servisleri oluştur
+	MainLogger.Println("Servisler oluşturuluyor...")
+	vendorService := services.NewVendorService(repo)
+	productService := services.NewProductService(repo)
+	orderService := services.NewOrderService(repo)
+	auctionService := services.NewAuctionService(repo)
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
@@ -54,6 +85,12 @@ func main() {
 		"safeHTML": func(s string) template.HTML {
 			return template.HTML(s)
 		},
+		"formatPrice": func(price float64) string {
+			return fmt.Sprintf("%.2f TL", price)
+		},
+		"formatDate": func(t time.Time) string {
+			return t.Format("02.01.2006 15:04")
+		},
 	}
 	
 	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("web/templates/**/*.gohtml")
@@ -72,10 +109,13 @@ func main() {
 		Templates:      tmpl,
 		SessionManager: sessionManager,
 		TemplateContext: map[string]interface{}{
-			"AppName": "KolajAI",
+			"AppName": "KolajAI Marketplace",
 			"Year":    time.Now().Year(),
 		},
 	}
+
+	// E-ticaret handler'ı oluştur
+	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
 
 	// Router oluştur ve handler'ları ekle
 	router := http.NewServeMux()
@@ -83,13 +123,13 @@ func main() {
 	// Statik dosyalar
 	router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
-	// Ana sayfa
+	// Ana sayfa - Marketplace
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			http.NotFound(w, r)
 			return
 		}
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		ecommerceHandler.Marketplace(w, r)
 	})
 
 	// Auth işlemleri
@@ -114,6 +154,24 @@ func main() {
 		}
 		h.Logout(w, r)
 	})
+
+	// E-ticaret rotaları
+	router.HandleFunc("/products", ecommerceHandler.Products)
+	router.HandleFunc("/product/", ecommerceHandler.ProductDetail)
+	router.HandleFunc("/cart", ecommerceHandler.Cart)
+	router.HandleFunc("/add-to-cart", ecommerceHandler.AddToCart)
+	
+	// Açık artırma rotaları
+	router.HandleFunc("/auctions", ecommerceHandler.Auctions)
+	router.HandleFunc("/auction/", ecommerceHandler.AuctionDetail)
+	router.HandleFunc("/place-bid", ecommerceHandler.PlaceBid)
+	
+	// Satıcı rotaları
+	router.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
+	
+	// API rotaları
+	router.HandleFunc("/api/search", ecommerceHandler.APISearchProducts)
+	router.HandleFunc("/api/cart/update", ecommerceHandler.APIUpdateCart)
 
 	// Favicon
 	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
