@@ -406,3 +406,9 @@ func (s *AuctionService) ProcessExpiredAuctions() error {
 
 	return nil
 }
+
+// GetActiveAuctionCount returns the number of active auctions
+func (s *AuctionService) GetActiveAuctionCount() (int64, error) {
+	conditions := map[string]interface{}{"status": "active"}
+	return s.repo.Count("auctions", conditions)
+}

@@ -318,3 +318,31 @@ func min(a, b int) int {
 	}
 	return b
 }
+
+// GetProductCount returns the total number of products
+func (s *ProductService) GetProductCount() (int64, error) {
+	conditions := map[string]interface{}{}
+	return s.repo.Count("products", conditions)
+}
+
+// GetAllProducts returns all products with pagination
+func (s *ProductService) GetAllProducts(limit, offset int) ([]models.Product, error) {
+	var products []models.Product
+	conditions := map[string]interface{}{}
+	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all products: %w", err)
+	}
+	return products, nil
+}
+
+// GetRecentProducts returns recently added products
+func (s *ProductService) GetRecentProducts(limit int) ([]models.Product, error) {
+	var products []models.Product
+	conditions := map[string]interface{}{}
+	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, 0)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get recent products: %w", err)
+	}
+	return products, nil
+}

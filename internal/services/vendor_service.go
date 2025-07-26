@@ -90,18 +90,24 @@ func (s *VendorService) SuspendVendor(id int) error {
 	return s.UpdateVendor(id, vendor)
 }
 
-// GetAllVendors retrieves all vendors with pagination
-func (s *VendorService) GetAllVendors(limit, offset int, status string) ([]models.Vendor, error) {
+// GetAllVendors retrieves all vendors with pagination (overloaded for admin)
+func (s *VendorService) GetAllVendors(limit, offset int) ([]models.Vendor, error) {
 	var vendors []models.Vendor
-	conditions := make(map[string]interface{})
-	
-	if status != "" {
-		conditions["status"] = status
-	}
-
+	conditions := map[string]interface{}{}
 	err := s.repo.FindAll("vendors", &vendors, conditions, "created_at DESC", limit, offset)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get vendors: %w", err)
+		return nil, fmt.Errorf("failed to get all vendors: %w", err)
+	}
+	return vendors, nil
+}
+
+// GetPendingVendors returns vendors waiting for approval
+func (s *VendorService) GetPendingVendors() ([]models.Vendor, error) {
+	var vendors []models.Vendor
+	conditions := map[string]interface{}{"status": "pending"}
+	err := s.repo.FindAll("vendors", &vendors, conditions, "created_at ASC", 10, 0)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get pending vendors: %w", err)
 	}
 	return vendors, nil
 }
@@ -152,4 +158,10 @@ func (s *VendorService) AddVendorSale(vendorID int, amount float64) error {
 	vendor.UpdatedAt = time.Now()
 	
 	return s.UpdateVendor(vendorID, vendor)
+}
+
+// GetVendorCount returns the total number of vendors
+func (s *VendorService) GetVendorCount() (int64, error) {
+	conditions := map[string]interface{}{}
+	return s.repo.Count("vendors", conditions)
 }

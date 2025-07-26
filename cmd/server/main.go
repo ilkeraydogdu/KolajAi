@@ -11,6 +11,7 @@ import (
 	"kolajAi/internal/database"
 	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
+	"kolajAi/internal/repository"
 	"kolajAi/internal/services"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -51,7 +52,7 @@ func main() {
 
 	// Repository oluştur
 	mysqlRepo := database.NewMySQLRepository(db)
-	repo := database.NewRepositoryWrapper(mysqlRepo)
+	repo := repository.NewBaseRepository(mysqlRepo)
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
@@ -91,6 +92,54 @@ func main() {
 		"formatDate": func(t time.Time) string {
 			return t.Format("02.01.2006 15:04")
 		},
+		"mul": func(a, b interface{}) float64 {
+			var numA, numB float64
+			switch v := a.(type) {
+			case int:
+				numA = float64(v)
+			case float64:
+				numA = v
+			case float32:
+				numA = float64(v)
+			default:
+				return 0
+			}
+			switch v := b.(type) {
+			case int:
+				numB = float64(v)
+			case float64:
+				numB = v
+			case float32:
+				numB = float64(v)
+			default:
+				return 0
+			}
+			return numA * numB
+		},
+		"add": func(a, b interface{}) float64 {
+			var numA, numB float64
+			switch v := a.(type) {
+			case int:
+				numA = float64(v)
+			case float64:
+				numA = v
+			case float32:
+				numA = float64(v)
+			default:
+				return 0
+			}
+			switch v := b.(type) {
+			case int:
+				numB = float64(v)
+			case float64:
+				numB = v
+			case float32:
+				numB = float64(v)
+			default:
+				return 0
+			}
+			return numA + numB
+		},
 	}
 	
 	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("web/templates/**/*.gohtml")
@@ -116,6 +165,9 @@ func main() {
 
 	// E-ticaret handler'ı oluştur
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
+	
+	// Admin handler'ı oluştur
+	adminHandler := handlers.NewAdminHandler(h, productService, vendorService, orderService, auctionService)
 
 	// Router oluştur ve handler'ları ekle
 	router := http.NewServeMux()
@@ -172,6 +224,21 @@ func main() {
 	// API rotaları
 	router.HandleFunc("/api/search", ecommerceHandler.APISearchProducts)
 	router.HandleFunc("/api/cart/update", ecommerceHandler.APIUpdateCart)
+	
+	// Admin rotaları
+	router.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/admin/" || r.URL.Path == "/admin" {
+			adminHandler.AdminDashboard(w, r)
+			return
+		}
+		http.NotFound(w, r)
+	})
+	router.HandleFunc("/admin/dashboard", adminHandler.AdminDashboard)
+	router.HandleFunc("/admin/products", adminHandler.AdminProducts)
+	router.HandleFunc("/admin/products/edit/", adminHandler.AdminProductEdit)
+	router.HandleFunc("/admin/vendors", adminHandler.AdminVendors)
+	router.HandleFunc("/admin/vendors/approve", adminHandler.AdminVendorApprove)
+	router.HandleFunc("/admin/settings", adminHandler.AdminSettings)
 
 	// Favicon
 	router.HandleFunc("/favicon.ico", func(w http.ResponseWriter, r *http.Request) {
