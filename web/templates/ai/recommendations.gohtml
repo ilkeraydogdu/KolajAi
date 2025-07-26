@@ -1,0 +1,476 @@
+{{define "ai/recommendations"}}
+{{template "layout/header" .}}
+
+<div class="recommendations-page">
+    <!-- Header Section -->
+    <div class="bg-gradient-to-r from-purple-600 to-blue-600 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">
+                    <i class="fas fa-magic mr-3"></i>
+                    Kişisel Öneriler
+                </h1>
+                <p class="text-xl mb-6">Size özel AI destekli ürün önerileri</p>
+                <div class="flex justify-center items-center space-x-4">
+                    <span class="bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                        <i class="fas fa-brain mr-2"></i>
+                        {{.RecommendationCount}} öneri bulundu
+                    </span>
+                    <button onclick="refreshRecommendations()" class="bg-white text-purple-600 px-4 py-2 rounded-lg hover:bg-gray-100 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        Yenile
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-wrap items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <label class="font-medium text-gray-700">Sıralama:</label>
+                    <select id="sortSelect" class="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="relevance">Uygunluk</option>
+                        <option value="price-low">Fiyat (Düşük-Yüksek)</option>
+                        <option value="price-high">Fiyat (Yüksek-Düşük)</option>
+                        <option value="rating">Değerlendirme</option>
+                        <option value="popularity">Popülerlik</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <label class="font-medium text-gray-700">Görünüm:</label>
+                    <div class="flex border rounded-lg">
+                        <button id="gridView" class="px-3 py-2 bg-purple-600 text-white rounded-l-lg">
+                            <i class="fas fa-th-large"></i>
+                        </button>
+                        <button id="listView" class="px-3 py-2 border-l hover:bg-gray-100 rounded-r-lg">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations Grid -->
+    <div class="container mx-auto px-4 py-8">
+        {{if .Recommendations}}
+        <div id="recommendationsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {{range .Recommendations}}
+            <div class="recommendation-card bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden" data-score="{{.Score}}" data-price="{{.Product.Price}}" data-rating="{{.Product.Rating}}" data-popularity="{{.Product.ViewCount}}">
+                <div class="relative">
+                    <a href="/product/{{.Product.ID}}">
+                        {{if .Product.Images}}
+                        <img src="{{index .Product.Images 0}}" alt="{{.Product.Name}}" class="w-full h-48 object-cover">
+                        {{else}}
+                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-image text-gray-400 text-3xl"></i>
+                        </div>
+                        {{end}}
+                    </a>
+                    
+                    <!-- AI Score Badge -->
+                    <div class="absolute top-2 right-2 bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                        <i class="fas fa-brain mr-1"></i>
+                        {{printf "%.0f%%" (mul .Score 100)}}
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="absolute top-2 left-2 flex flex-col space-y-1">
+                        <button class="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-100 transition" onclick="addToWishlist({{.Product.ID}})">
+                            <i class="far fa-heart text-gray-600"></i>
+                        </button>
+                        <button class="w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center hover:bg-gray-100 transition" onclick="quickView({{.Product.ID}})">
+                            <i class="fas fa-eye text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <a href="/product/{{.Product.ID}}">
+                        <h3 class="font-semibold text-lg mb-2 line-clamp-2 hover:text-purple-600 transition">{{.Product.Name}}</h3>
+                    </a>
+                    
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-gray-600 text-sm">{{.Product.Category}}</span>
+                        <span class="text-gray-600 text-sm">{{.Product.Brand}}</span>
+                    </div>
+                    
+                    <!-- Rating -->
+                    <div class="flex items-center mb-2">
+                        <div class="flex text-yellow-500 mr-2">
+                            {{range $i := seq 5}}
+                                {{if lt $i $.Product.Rating}}
+                                    <i class="fas fa-star text-xs"></i>
+                                {{else}}
+                                    <i class="far fa-star text-xs"></i>
+                                {{end}}
+                            {{end}}
+                        </div>
+                        <span class="text-gray-500 text-sm">({{.Product.ViewCount}} görüntülenme)</span>
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="text-2xl font-bold text-purple-600">₺{{printf "%.2f" .Product.Price}}</span>
+                        {{if .Product.StockQuantity}}
+                        <span class="text-green-600 text-sm">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Stokta
+                        </span>
+                        {{else}}
+                        <span class="text-red-600 text-sm">
+                            <i class="fas fa-times-circle mr-1"></i>
+                            Tükendi
+                        </span>
+                        {{end}}
+                    </div>
+                    
+                    <!-- AI Reason -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-2 mb-3">
+                        <div class="flex items-start">
+                            <i class="fas fa-lightbulb text-purple-600 mr-2 mt-1 text-sm"></i>
+                            <span class="text-purple-800 text-sm">{{.Reason}}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="flex space-x-2">
+                        {{if .Product.StockQuantity}}
+                        <button onclick="addToCart({{.Product.ID}})" class="flex-1 bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition text-sm font-medium">
+                            <i class="fas fa-shopping-cart mr-1"></i>
+                            Sepete Ekle
+                        </button>
+                        {{else}}
+                        <button class="flex-1 bg-gray-400 text-white py-2 px-4 rounded-lg cursor-not-allowed text-sm font-medium" disabled>
+                            <i class="fas fa-ban mr-1"></i>
+                            Stokta Yok
+                        </button>
+                        {{end}}
+                        <button onclick="compareProduct({{.Product.ID}})" class="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                            <i class="fas fa-balance-scale text-gray-600"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </div>
+        
+        <!-- Load More Button -->
+        <div class="text-center mt-8">
+            <button id="loadMoreBtn" onclick="loadMoreRecommendations()" class="bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition font-medium">
+                <i class="fas fa-plus mr-2"></i>
+                Daha Fazla Yükle
+            </button>
+        </div>
+        
+        {{else}}
+        <!-- No Recommendations -->
+        <div class="text-center py-16">
+            <div class="w-24 h-24 mx-auto mb-6 bg-gray-200 rounded-full flex items-center justify-center">
+                <i class="fas fa-magic text-gray-400 text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-semibold text-gray-700 mb-4">Henüz Öneri Yok</h3>
+            <p class="text-gray-600 mb-6">Size özel öneriler oluşturmak için biraz alışveriş yapın.</p>
+            <a href="/marketplace" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition font-medium">
+                <i class="fas fa-store mr-2"></i>
+                Alışverişe Başla
+            </a>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- Quick View Modal -->
+<div id="quickViewModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ürün Önizleme</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="quickViewContent">
+                <!-- Quick view content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentSort = 'relevance';
+let currentView = 'grid';
+let loadedCount = {{.RecommendationCount}};
+
+// View toggle functionality
+document.getElementById('gridView').addEventListener('click', function() {
+    setView('grid');
+});
+
+document.getElementById('listView').addEventListener('click', function() {
+    setView('list');
+});
+
+function setView(view) {
+    currentView = view;
+    const grid = document.getElementById('recommendationsGrid');
+    const gridBtn = document.getElementById('gridView');
+    const listBtn = document.getElementById('listView');
+    
+    if (view === 'grid') {
+        grid.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+        gridBtn.className = 'px-3 py-2 bg-purple-600 text-white rounded-l-lg';
+        listBtn.className = 'px-3 py-2 border-l hover:bg-gray-100 rounded-r-lg';
+    } else {
+        grid.className = 'space-y-4';
+        gridBtn.className = 'px-3 py-2 border-r hover:bg-gray-100 rounded-l-lg';
+        listBtn.className = 'px-3 py-2 bg-purple-600 text-white rounded-r-lg';
+        
+        // Update card styles for list view
+        document.querySelectorAll('.recommendation-card').forEach(card => {
+            card.className = 'recommendation-card bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden flex';
+        });
+    }
+}
+
+// Sort functionality
+document.getElementById('sortSelect').addEventListener('change', function() {
+    currentSort = this.value;
+    sortRecommendations();
+});
+
+function sortRecommendations() {
+    const grid = document.getElementById('recommendationsGrid');
+    const cards = Array.from(grid.children);
+    
+    cards.sort((a, b) => {
+        switch (currentSort) {
+            case 'price-low':
+                return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
+            case 'price-high':
+                return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
+            case 'rating':
+                return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+            case 'popularity':
+                return parseInt(b.dataset.popularity) - parseInt(a.dataset.popularity);
+            case 'relevance':
+            default:
+                return parseFloat(b.dataset.score) - parseFloat(a.dataset.score);
+        }
+    });
+    
+    // Clear and re-append sorted cards
+    grid.innerHTML = '';
+    cards.forEach(card => grid.appendChild(card));
+}
+
+// Refresh recommendations
+async function refreshRecommendations() {
+    try {
+        const response = await fetch('/api/ai/recommendations?limit=24');
+        const data = await response.json();
+        
+        if (data.success) {
+            location.reload(); // Simple refresh for now
+        } else {
+            alert('Öneriler yenilenemedi. Lütfen tekrar deneyin.');
+        }
+    } catch (error) {
+        console.error('Error refreshing recommendations:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    }
+}
+
+// Load more recommendations
+async function loadMoreRecommendations() {
+    const btn = document.getElementById('loadMoreBtn');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Yükleniyor...';
+    btn.disabled = true;
+    
+    try {
+        const response = await fetch(`/api/ai/recommendations?limit=12&offset=${loadedCount}`);
+        const data = await response.json();
+        
+        if (data.success && data.recommendations.length > 0) {
+            // Add new recommendations to the grid
+            // This would need to be implemented with proper HTML generation
+            loadedCount += data.recommendations.length;
+            
+            if (data.recommendations.length < 12) {
+                btn.style.display = 'none'; // Hide if no more recommendations
+            }
+        } else {
+            btn.style.display = 'none';
+        }
+    } catch (error) {
+        console.error('Error loading more recommendations:', error);
+        alert('Daha fazla öneri yüklenemedi.');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// Add to cart functionality
+async function addToCart(productId) {
+    try {
+        const response = await fetch('/api/cart/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId,
+                quantity: 1
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success notification
+            showNotification('Ürün sepete eklendi!', 'success');
+        } else {
+            showNotification('Ürün sepete eklenemedi.', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showNotification('Bir hata oluştu.', 'error');
+    }
+}
+
+// Add to wishlist functionality
+async function addToWishlist(productId) {
+    try {
+        const response = await fetch('/api/wishlist/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                product_id: productId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Ürün istek listesine eklendi!', 'success');
+            // Update heart icon
+            event.target.className = 'fas fa-heart text-red-600';
+        } else {
+            showNotification('Ürün istek listesine eklenemedi.', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding to wishlist:', error);
+        showNotification('Bir hata oluştu.', 'error');
+    }
+}
+
+// Quick view functionality
+async function quickView(productId) {
+    try {
+        const response = await fetch(`/api/product/${productId}/quick-view`);
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById('quickViewContent').innerHTML = data.html;
+            $('#quickViewModal').modal('show');
+        } else {
+            showNotification('Ürün önizlemesi yüklenemedi.', 'error');
+        }
+    } catch (error) {
+        console.error('Error loading quick view:', error);
+        showNotification('Bir hata oluştu.', 'error');
+    }
+}
+
+// Compare product functionality
+function compareProduct(productId) {
+    // Add to comparison list (this would need to be implemented)
+    showNotification('Ürün karşılaştırma listesine eklendi!', 'success');
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white ${
+        type === 'success' ? 'bg-green-600' : 
+        type === 'error' ? 'bg-red-600' : 
+        'bg-blue-600'
+    }`;
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${
+                type === 'success' ? 'fa-check-circle' :
+                type === 'error' ? 'fa-times-circle' :
+                'fa-info-circle'
+            } mr-2"></i>
+            ${message}
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Helper function for templates
+function seq(n) {
+    return Array.from({length: n}, (_, i) => i);
+}
+</script>
+
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.recommendation-card {
+    transition: transform 0.2s ease;
+}
+
+.recommendation-card:hover {
+    transform: translateY(-2px);
+}
+
+.modal {
+    display: none;
+}
+
+.modal.fade.show {
+    display: block;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a1a1a1;
+}
+</style>
+
+{{template "layout/footer" .}}
+{{end}}
