@@ -3,12 +3,14 @@ package validation
 import (
 	"encoding/json"
 	"fmt"
+	"regexp"
 )
 
 // FormValidator is a specialized validator for web forms
 type FormValidator struct {
 	validator *DefaultValidator
 	schemas   map[string]FormSchema
+	patterns  map[string]*regexp.Regexp // Cache compiled regex patterns
 }
 
 // NewFormValidator creates a new form validator
@@ -16,6 +18,7 @@ func NewFormValidator() *FormValidator {
 	return &FormValidator{
 		validator: New(),
 		schemas:   RegisterSchemas(),
+		patterns:  make(map[string]*regexp.Regexp),
 	}
 }
 
@@ -52,7 +55,12 @@ func (v *FormValidator) ValidateForm(formName string, data map[string]string) (b
 			} else if fieldRules.Pattern == `^0[0-9]{3} [0-9]{3} [0-9]{4}$` {
 				fieldValidations = append(fieldValidations, "phone")
 			} else {
-				// TODO: Add custom pattern validation
+				// Custom pattern validation
+				if err := v.validateCustomPattern(fieldName, data[fieldName], fieldRules.Pattern); err != nil {
+					return false, map[string][]string{
+						fieldName: {err.Error()},
+					}
+				}
 			}
 		}
 
@@ -60,6 +68,30 @@ func (v *FormValidator) ValidateForm(formName string, data map[string]string) (b
 	}
 
 	return v.validator.ValidateMap(data, rules)
+}
+
+// validateCustomPattern validates a field against a custom regex pattern
+func (v *FormValidator) validateCustomPattern(fieldName, value, pattern string) error {
+	if value == "" {
+		return nil // Empty values are handled by required validation
+	}
+
+	// Check if pattern is already compiled and cached
+	regex, exists := v.patterns[pattern]
+	if !exists {
+		var err error
+		regex, err = regexp.Compile(pattern)
+		if err != nil {
+			return fmt.Errorf("geçersiz regex pattern: %v", err)
+		}
+		v.patterns[pattern] = regex
+	}
+
+	if !regex.MatchString(value) {
+		return fmt.Errorf("alan geçerli formatta değil")
+	}
+
+	return nil
 }
 
 // GetSchemaJSON returns the JSON representation of a form schema
@@ -102,4 +134,28 @@ func (v *FormValidator) GetSchemaJSON(formName string) (string, error) {
 // RegisterSchema adds a new form schema
 func (v *FormValidator) RegisterSchema(name string, schema FormSchema) {
 	v.schemas[name] = schema
+}
+
+// AddCustomPattern adds a custom regex pattern for validation
+func (v *FormValidator) AddCustomPattern(name, pattern string) error {
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("geçersiz regex pattern '%s': %v", pattern, err)
+	}
+	v.patterns[name] = regex
+	return nil
+}
+
+// ValidateWithCustomPattern validates a value against a named custom pattern
+func (v *FormValidator) ValidateWithCustomPattern(value, patternName string) error {
+	regex, exists := v.patterns[patternName]
+	if !exists {
+		return fmt.Errorf("pattern '%s' bulunamadı", patternName)
+	}
+
+	if !regex.MatchString(value) {
+		return fmt.Errorf("değer '%s' pattern'ine uymuyor", patternName)
+	}
+
+	return nil
 }
