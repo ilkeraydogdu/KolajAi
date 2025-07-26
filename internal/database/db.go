@@ -209,7 +209,36 @@ func (r *MySQLRepository) FindByID(table string, id interface{}, result interfac
 	defer stmt.Close()
 
 	row := stmt.QueryRow(args...)
-	return row.Scan(result)
+	return r.scanRowToStruct(row, result)
+}
+
+// scanRowToStruct scans a single row into a struct using reflection
+func (r *MySQLRepository) scanRowToStruct(row *sql.Row, dest interface{}) error {
+	// Get reflection values
+	structValue := reflect.ValueOf(dest)
+	if structValue.Kind() != reflect.Ptr {
+		return fmt.Errorf("dest must be a pointer to struct")
+	}
+	
+	structValue = structValue.Elem()
+	if structValue.Kind() != reflect.Struct {
+		return fmt.Errorf("dest must be a pointer to struct")
+	}
+
+	// Create scan destinations based on struct fields
+	scanDests := make([]interface{}, structValue.NumField())
+	
+	for i := 0; i < structValue.NumField(); i++ {
+		field := structValue.Field(i)
+		if field.CanSet() {
+			scanDests[i] = field.Addr().Interface()
+		} else {
+			var dummy interface{}
+			scanDests[i] = &dummy
+		}
+	}
+
+	return row.Scan(scanDests...)
 }
 
 // FindAll finds all records with pagination
@@ -219,7 +248,26 @@ func (r *MySQLRepository) FindAll(table string, orderBy string, limit, offset in
 	}
 
 	qb := NewQueryBuilder(table)
-	query, args := qb.OrderBy(orderBy, Descending).Limit(limit).Offset(offset).Build()
+	
+	// Parse orderBy string (e.g., "created_at DESC" -> field: "created_at", direction: DESC)
+	field := "id"
+	direction := Descending
+	
+	if orderBy != "" {
+		parts := strings.Fields(orderBy)
+		if len(parts) >= 1 {
+			field = parts[0]
+		}
+		if len(parts) >= 2 {
+			if strings.ToUpper(parts[1]) == "ASC" {
+				direction = Ascending
+			} else {
+				direction = Descending
+			}
+		}
+	}
+	
+	query, args := qb.OrderBy(field, direction).Limit(limit).Offset(offset).Build()
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error preparing statement: %v", err)
@@ -232,7 +280,79 @@ func (r *MySQLRepository) FindAll(table string, orderBy string, limit, offset in
 	}
 	defer rows.Close()
 
-	return rows.Scan(dest)
+	// Use reflection to populate the slice
+	return r.scanRowsToSlice(rows, dest)
+}
+
+// scanRowsToSlice scans multiple rows into a slice using reflection
+func (r *MySQLRepository) scanRowsToSlice(rows *sql.Rows, dest interface{}) error {
+	// Get reflection values
+	sliceValue := reflect.ValueOf(dest)
+	if sliceValue.Kind() != reflect.Ptr {
+		return fmt.Errorf("dest must be a pointer to slice")
+	}
+	
+	sliceValue = sliceValue.Elem()
+	if sliceValue.Kind() != reflect.Slice {
+		return fmt.Errorf("dest must be a pointer to slice")
+	}
+
+	// Get element type
+	elemType := sliceValue.Type().Elem()
+	
+	// Get column names
+	columns, err := rows.Columns()
+	if err != nil {
+		return fmt.Errorf("error getting columns: %v", err)
+	}
+
+	// Scan rows
+	for rows.Next() {
+		// Create new element
+		elemPtr := reflect.New(elemType)
+		elem := elemPtr.Elem()
+
+		// Create scan destinations
+		scanDests := make([]interface{}, len(columns))
+		for i, col := range columns {
+			// Find field by db tag or name
+			field := r.findFieldByColumn(elem, col)
+			if field.IsValid() && field.CanSet() {
+				scanDests[i] = field.Addr().Interface()
+			} else {
+				// Use a dummy variable for unknown columns
+				var dummy interface{}
+				scanDests[i] = &dummy
+			}
+		}
+
+		// Scan the row
+		if err := rows.Scan(scanDests...); err != nil {
+			return fmt.Errorf("error scanning row: %v", err)
+		}
+
+		// Append to slice
+		sliceValue.Set(reflect.Append(sliceValue, elem))
+	}
+
+	return rows.Err()
+}
+
+// findFieldByColumn finds a struct field by column name using db tag
+func (r *MySQLRepository) findFieldByColumn(elem reflect.Value, columnName string) reflect.Value {
+	elemType := elem.Type()
+	
+	for i := 0; i < elem.NumField(); i++ {
+		field := elemType.Field(i)
+		dbTag := field.Tag.Get("db")
+		
+		// Check db tag first, then field name
+		if dbTag == columnName || (dbTag == "" && strings.ToLower(field.Name) == strings.ToLower(columnName)) {
+			return elem.Field(i)
+		}
+	}
+	
+	return reflect.Value{}
 }
 
 // FindOne finds a single record
