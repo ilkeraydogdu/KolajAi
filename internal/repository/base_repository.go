@@ -132,3 +132,34 @@ func getFieldsAndValues(data interface{}) ([]string, []interface{}) {
 
 	return fields, values
 }
+
+// CreateStruct creates a record from a struct
+func (r *BaseRepository) CreateStruct(table string, data interface{}) (int64, error) {
+	fields, values := getFieldsAndValues(data)
+	return r.db.Create(table, fields, values)
+}
+
+// SetConnectionPool sets database connection pool parameters
+func (r *BaseRepository) SetConnectionPool(maxOpen, maxIdle int, maxLifetime time.Duration) {
+	r.db.SetConnectionPool(maxOpen, maxIdle, maxLifetime)
+}
+
+// SoftDelete performs a soft delete by setting a deleted_at timestamp
+func (r *BaseRepository) SoftDelete(table string, id interface{}) error {
+	return r.db.SoftDelete(table, id)
+}
+
+// BulkCreate creates multiple records at once
+func (r *BaseRepository) BulkCreate(table string, data []interface{}) ([]int64, error) {
+	return r.db.BulkCreate(table, data)
+}
+
+// BulkUpdate updates multiple records at once
+func (r *BaseRepository) BulkUpdate(table string, ids []interface{}, data interface{}) error {
+	return r.db.BulkUpdate(table, ids, data)
+}
+
+// BulkDelete deletes multiple records at once
+func (r *BaseRepository) BulkDelete(table string, ids []interface{}) error {
+	return r.db.BulkDelete(table, ids)
+}

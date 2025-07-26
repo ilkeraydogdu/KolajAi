@@ -79,23 +79,31 @@ func NewAuditRepository(repo Repository, auditLogger *AuditLogger, queryLogger *
 }
 
 // Create creates a record with audit logging
-func (r *AuditRepository) Create(table string, data interface{}) (int64, error) {
+func (r *AuditRepository) Create(table string, fields []string, values []interface{}) (int64, error) {
 	start := time.Now()
-	id, err := r.repo.Create(table, data)
+	id, err := r.repo.Create(table, fields, values)
 	duration := time.Since(start)
 
-	r.queryLogger.LogQuery("CREATE", []interface{}{table, data}, duration)
+	r.queryLogger.LogQuery("CREATE", []interface{}{table, fields, values}, duration)
 
 	if err != nil {
-		r.queryLogger.LogError(err, "CREATE", []interface{}{table, data})
+		r.queryLogger.LogError(err, "CREATE", []interface{}{table, fields, values})
 		return 0, err
 	}
 
+	// Create a map from fields and values for audit logging
+	newValues := make(map[string]interface{})
+	for i, field := range fields {
+		if i < len(values) {
+			newValues[field] = values[i]
+		}
+	}
+	
 	auditLog := &AuditLog{
 		TableName: table,
 		RecordID:  id,
 		Action:    "CREATE",
-		NewValues: data.(map[string]interface{}),
+		NewValues: newValues,
 		Timestamp: time.Now(),
 	}
 
