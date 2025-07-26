@@ -3,11 +3,11 @@ package migrations
 // CreateSessionsTable migration
 var CreateSessionsTable = `
 CREATE TABLE IF NOT EXISTS sessions (
-	id VARCHAR(100) PRIMARY KEY,
-	user_id INT NOT NULL,
+	id TEXT PRIMARY KEY,
+	user_id INTEGER NOT NULL,
 	data TEXT,
-	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	expires_at TIMESTAMP,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	expires_at DATETIME,
 	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+);
 `

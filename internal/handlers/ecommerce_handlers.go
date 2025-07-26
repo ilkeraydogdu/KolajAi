@@ -1,0 +1,510 @@
+package handlers
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+
+	"kolajAi/internal/models"
+	"kolajAi/internal/services"
+)
+
+// EcommerceHandler handles e-commerce related requests
+type EcommerceHandler struct {
+	*Handler
+	vendorService  *services.VendorService
+	productService *services.ProductService
+	orderService   *services.OrderService
+	auctionService *services.AuctionService
+}
+
+// NewEcommerceHandler creates a new e-commerce handler
+func NewEcommerceHandler(h *Handler, vendorService *services.VendorService, productService *services.ProductService, orderService *services.OrderService, auctionService *services.AuctionService) *EcommerceHandler {
+	return &EcommerceHandler{
+		Handler:        h,
+		vendorService:  vendorService,
+		productService: productService,
+		orderService:   orderService,
+		auctionService: auctionService,
+	}
+}
+
+// Marketplace - Ana sayfa
+func (h *EcommerceHandler) Marketplace(w http.ResponseWriter, r *http.Request) {
+	data := h.GetTemplateData()
+	
+	// Öne çıkan ürünler
+	featuredProducts, err := h.productService.GetFeaturedProducts(12, 0)
+	if err == nil {
+		data["FeaturedProducts"] = featuredProducts
+	}
+
+	// Kategoriler
+	categories, err := h.productService.GetAllCategories()
+	if err == nil {
+		data["Categories"] = categories
+	}
+
+	// Aktif açık artırmalar
+	activeAuctions, err := h.auctionService.GetActiveAuctions(6, 0)
+	if err == nil {
+		data["ActiveAuctions"] = activeAuctions
+	}
+
+	h.RenderTemplate(w, r, "marketplace/index", data)
+}
+
+// Products - Ürün listesi
+func (h *EcommerceHandler) Products(w http.ResponseWriter, r *http.Request) {
+	data := h.GetTemplateData()
+	
+	// Query parametreleri
+	categoryID := r.URL.Query().Get("category")
+	search := r.URL.Query().Get("search")
+	page := h.getPageFromQuery(r)
+	limit := 20
+	offset := (page - 1) * limit
+
+	var products []models.Product
+	var err error
+
+	if search != "" {
+		products, err = h.productService.SearchProducts(search, limit, offset)
+		data["SearchTerm"] = search
+	} else if categoryID != "" {
+		catID, _ := strconv.Atoi(categoryID)
+		products, err = h.productService.GetProductsByCategory(catID, limit, offset)
+		
+		// Kategori bilgisi
+		if catID > 0 {
+			category, catErr := h.productService.GetCategoryByID(catID)
+			if catErr == nil {
+				data["Category"] = category
+			}
+		}
+	} else {
+		// Tüm aktif ürünler (bu fonksiyon ProductService'e eklenmeli)
+		products, err = h.productService.GetFeaturedProducts(limit, offset)
+	}
+
+	if err != nil {
+		h.HandleError(w, r, err, "Ürünler yüklenirken hata oluştu")
+		return
+	}
+
+	// Kategoriler
+	categories, err := h.productService.GetAllCategories()
+	if err == nil {
+		data["Categories"] = categories
+	}
+
+	data["Products"] = products
+	data["CurrentPage"] = page
+	h.RenderTemplate(w, r, "marketplace/products", data)
+}
+
+// ProductDetail - Ürün detayı
+func (h *EcommerceHandler) ProductDetail(w http.ResponseWriter, r *http.Request) {
+	productIDStr := strings.TrimPrefix(r.URL.Path, "/product/")
+	productID, err := strconv.Atoi(productIDStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	data := h.GetTemplateData()
+
+	// Ürün bilgisi
+	product, err := h.productService.GetProductByID(productID)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Görüntülenme sayısını artır
+	go h.productService.IncrementProductViews(productID)
+
+	// Ürün resimleri
+	images, err := h.productService.GetProductImages(productID)
+	if err == nil {
+		data["ProductImages"] = images
+	}
+
+	// Ürün yorumları
+	reviews, err := h.productService.GetProductReviews(productID, 10, 0)
+	if err == nil {
+		data["ProductReviews"] = reviews
+	}
+
+	// Satıcı bilgisi
+	vendor, err := h.vendorService.GetVendorByID(product.VendorID)
+	if err == nil {
+		data["Vendor"] = vendor
+	}
+
+	// Benzer ürünler
+	similarProducts, err := h.productService.GetProductsByCategory(product.CategoryID, 4, 0)
+	if err == nil {
+		data["SimilarProducts"] = similarProducts
+	}
+
+	data["Product"] = product
+	h.RenderTemplate(w, r, "marketplace/product-detail", data)
+}
+
+// AddToCart - Sepete ekleme
+func (h *EcommerceHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Form verilerini al
+	productID, _ := strconv.Atoi(r.FormValue("product_id"))
+	quantity, _ := strconv.Atoi(r.FormValue("quantity"))
+	if quantity <= 0 {
+		quantity = 1
+	}
+
+	// Ürün bilgisini al
+	product, err := h.productService.GetProductByID(productID)
+	if err != nil {
+		h.SetFlashError("Ürün bulunamadı")
+		http.Redirect(w, r, "/products", http.StatusSeeOther)
+		return
+	}
+
+	// Stok kontrolü
+	if product.Stock < quantity {
+		h.SetFlashError("Yeterli stok bulunmamaktadır")
+		http.Redirect(w, r, fmt.Sprintf("/product/%d", productID), http.StatusSeeOther)
+		return
+	}
+
+	// Sepeti al veya oluştur
+	var cart *models.Cart
+	userID := h.GetUserID(r)
+	
+	if userID > 0 {
+		cart, err = h.orderService.GetCartByUser(userID)
+		if err != nil {
+			// Yeni sepet oluştur
+			cart = &models.Cart{UserID: userID}
+			err = h.orderService.CreateCart(cart)
+			if err != nil {
+				h.HandleError(w, r, err, "Sepet oluşturulamadı")
+				return
+			}
+		}
+	} else {
+		// Session tabanlı sepet
+		sessionID := h.GetSessionID(r)
+		cart, err = h.orderService.GetCartBySession(sessionID)
+		if err != nil {
+			cart = &models.Cart{SessionID: sessionID}
+			err = h.orderService.CreateCart(cart)
+			if err != nil {
+				h.HandleError(w, r, err, "Sepet oluşturulamadı")
+				return
+			}
+		}
+	}
+
+	// Sepete ürün ekle
+	cartItem := &models.CartItem{
+		CartID:    cart.ID,
+		ProductID: productID,
+		Quantity:  quantity,
+		Price:     product.Price,
+	}
+
+	err = h.orderService.AddCartItem(cartItem)
+	if err != nil {
+		h.HandleError(w, r, err, "Ürün sepete eklenemedi")
+		return
+	}
+
+	h.SetFlashSuccess("Ürün sepete eklendi")
+	http.Redirect(w, r, "/cart", http.StatusSeeOther)
+}
+
+// Cart - Sepet görüntüleme
+func (h *EcommerceHandler) Cart(w http.ResponseWriter, r *http.Request) {
+	data := h.GetTemplateData()
+
+	// Sepeti al
+	var cart *models.Cart
+	var err error
+	userID := h.GetUserID(r)
+	
+	if userID > 0 {
+		cart, err = h.orderService.GetCartByUser(userID)
+	} else {
+		sessionID := h.GetSessionID(r)
+		cart, err = h.orderService.GetCartBySession(sessionID)
+	}
+
+	if err != nil {
+		data["CartItems"] = []models.CartItem{}
+		data["CartTotal"] = 0.0
+	} else {
+		// Sepet öğelerini al
+		cartItems, err := h.orderService.GetCartItems(cart.ID)
+		if err == nil {
+			data["CartItems"] = cartItems
+			
+			// Toplam hesapla
+			var total float64
+			for _, item := range cartItems {
+				total += item.Price * float64(item.Quantity)
+			}
+			data["CartTotal"] = total
+		}
+	}
+
+	h.RenderTemplate(w, r, "marketplace/cart", data)
+}
+
+// Auctions - Açık artırmalar
+func (h *EcommerceHandler) Auctions(w http.ResponseWriter, r *http.Request) {
+	data := h.GetTemplateData()
+	
+	page := h.getPageFromQuery(r)
+	limit := 20
+	offset := (page - 1) * limit
+
+	// Aktif açık artırmalar
+	auctions, err := h.auctionService.GetActiveAuctions(limit, offset)
+	if err != nil {
+		h.HandleError(w, r, err, "Açık artırmalar yüklenirken hata oluştu")
+		return
+	}
+
+	// Yakında bitecek açık artırmalar
+	endingAuctions, err := h.auctionService.GetEndingAuctions(24, 6, 0)
+	if err == nil {
+		data["EndingAuctions"] = endingAuctions
+	}
+
+	data["Auctions"] = auctions
+	data["CurrentPage"] = page
+	h.RenderTemplate(w, r, "marketplace/auctions", data)
+}
+
+// AuctionDetail - Açık artırma detayı
+func (h *EcommerceHandler) AuctionDetail(w http.ResponseWriter, r *http.Request) {
+	auctionIDStr := strings.TrimPrefix(r.URL.Path, "/auction/")
+	auctionID, err := strconv.Atoi(auctionIDStr)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	data := h.GetTemplateData()
+
+	// Açık artırma bilgisi
+	auction, err := h.auctionService.GetAuctionByID(auctionID)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	// Görüntülenme sayısını artır
+	go h.auctionService.IncrementAuctionViews(auctionID)
+
+	// Teklifler
+	bids, err := h.auctionService.GetAuctionBids(auctionID, 10, 0)
+	if err == nil {
+		data["AuctionBids"] = bids
+	}
+
+	// Açık artırma resimleri
+	images, err := h.auctionService.GetAuctionImages(auctionID)
+	if err == nil {
+		data["AuctionImages"] = images
+	}
+
+	// Satıcı bilgisi
+	vendor, err := h.vendorService.GetVendorByID(auction.VendorID)
+	if err == nil {
+		data["Vendor"] = vendor
+	}
+
+	// Kullanıcının bu açık artırmayı takip edip etmediğini kontrol et
+	userID := h.GetUserID(r)
+	if userID > 0 {
+		isWatching, err := h.auctionService.IsUserWatching(auctionID, userID)
+		if err == nil {
+			data["IsWatching"] = isWatching
+		}
+	}
+
+	data["Auction"] = auction
+	h.RenderTemplate(w, r, "marketplace/auction-detail", data)
+}
+
+// PlaceBid - Teklif verme
+func (h *EcommerceHandler) PlaceBid(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	if !h.IsAuthenticated(r) {
+		h.SetFlashError("Teklif vermek için giriş yapmalısınız")
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	auctionID, _ := strconv.Atoi(r.FormValue("auction_id"))
+	amount, _ := strconv.ParseFloat(r.FormValue("amount"), 64)
+	userID := h.GetUserID(r)
+
+	bid := &models.AuctionBid{
+		AuctionID: auctionID,
+		UserID:    userID,
+		Amount:    amount,
+		IPAddress: r.RemoteAddr,
+	}
+
+	err := h.auctionService.PlaceBid(bid)
+	if err != nil {
+		h.SetFlashError(err.Error())
+	} else {
+		h.SetFlashSuccess("Teklifiniz başarıyla verildi")
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/auction/%d", auctionID), http.StatusSeeOther)
+}
+
+// Vendor Dashboard
+func (h *EcommerceHandler) VendorDashboard(w http.ResponseWriter, r *http.Request) {
+	if !h.IsAuthenticated(r) {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
+
+	data := h.GetTemplateData()
+	userID := h.GetUserID(r)
+
+	// Satıcı bilgisini al
+	vendor, err := h.vendorService.GetVendorByUserID(userID)
+	if err != nil {
+		// Satıcı değilse, satıcı olmak için yönlendir
+		h.SetFlashError("Satıcı paneline erişmek için önce satıcı başvurusu yapmalısınız")
+		http.Redirect(w, r, "/become-vendor", http.StatusSeeOther)
+		return
+	}
+
+	// Satıcı istatistikleri
+	stats, err := h.vendorService.GetVendorStats(vendor.ID)
+	if err == nil {
+		data["VendorStats"] = stats
+	}
+
+	// Son ürünler
+	products, err := h.productService.GetProductsByVendor(vendor.ID, 5, 0)
+	if err == nil {
+		data["RecentProducts"] = products
+	}
+
+	// Son siparişler
+	orders, err := h.orderService.GetVendorOrders(vendor.ID, 5, 0)
+	if err == nil {
+		data["RecentOrders"] = orders
+	}
+
+	data["Vendor"] = vendor
+	h.RenderTemplate(w, r, "vendor/dashboard", data)
+}
+
+// Helper methods
+
+func (h *EcommerceHandler) getPageFromQuery(r *http.Request) int {
+	pageStr := r.URL.Query().Get("page")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+	return page
+}
+
+func (h *EcommerceHandler) SetFlashSuccess(message string) {
+	// Flash message implementation - bu gerçek implementasyonda session'a eklenir
+	// Şimdilik boş bırakıyoruz
+}
+
+func (h *EcommerceHandler) SetFlashError(message string) {
+	// Flash message implementation - bu gerçek implementasyonda session'a eklenir
+	// Şimdilik boş bırakıyoruz
+}
+
+func (h *EcommerceHandler) GetUserID(r *http.Request) int {
+	// Get user ID from session - gerçek implementasyonda session'dan alınır
+	return 1 // Test için sabit değer
+}
+
+func (h *EcommerceHandler) GetSessionID(r *http.Request) string {
+	// Get session ID - gerçek implementasyonda session'dan alınır
+	return "test-session-id" // Test için sabit değer
+}
+
+// API Endpoints
+
+// API - Ürün arama
+func (h *EcommerceHandler) APISearchProducts(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		http.Error(w, "Query parameter 'q' is required", http.StatusBadRequest)
+		return
+	}
+
+	products, err := h.productService.SearchProducts(query, 10, 0)
+	if err != nil {
+		http.Error(w, "Search failed", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(products)
+}
+
+// API - Sepet güncelleme
+func (h *EcommerceHandler) APIUpdateCart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var req struct {
+		ItemID   int `json:"item_id"`
+		Quantity int `json:"quantity"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid JSON", http.StatusBadRequest)
+		return
+	}
+
+	if req.Quantity <= 0 {
+		// Öğeyi sil
+		err := h.orderService.RemoveCartItem(req.ItemID)
+		if err != nil {
+			http.Error(w, "Failed to remove item", http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// Miktarı güncelle
+		cartItem := &models.CartItem{Quantity: req.Quantity}
+		err := h.orderService.UpdateCartItem(req.ItemID, cartItem)
+		if err != nil {
+			http.Error(w, "Failed to update item", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success"})
+}

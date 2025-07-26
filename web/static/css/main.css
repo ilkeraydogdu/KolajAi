@@ -1,0 +1,263 @@
+/* Main CSS for KolajAI Marketplace */
+
+/* Custom utilities */
+.container {
+    max-width: 1200px;
+}
+
+/* Product card animations */
+.product-card {
+    transition: all 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Button styles */
+.btn-primary {
+    @apply bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition duration-200;
+}
+
+.btn-secondary {
+    @apply bg-gray-200 text-gray-800 px-6 py-2 rounded-lg font-semibold hover:bg-gray-300 transition duration-200;
+}
+
+.btn-danger {
+    @apply bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700 transition duration-200;
+}
+
+/* Form styles */
+.form-input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+/* Card styles */
+.card {
+    @apply bg-white rounded-lg shadow-md overflow-hidden;
+}
+
+.card-header {
+    @apply px-6 py-4 border-b border-gray-200;
+}
+
+.card-body {
+    @apply px-6 py-4;
+}
+
+.card-footer {
+    @apply px-6 py-4 border-t border-gray-200 bg-gray-50;
+}
+
+/* Badge styles */
+.badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-success {
+    @apply bg-green-100 text-green-800;
+}
+
+.badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+}
+
+.badge-danger {
+    @apply bg-red-100 text-red-800;
+}
+
+.badge-info {
+    @apply bg-blue-100 text-blue-800;
+}
+
+/* Price display */
+.price {
+    @apply text-2xl font-bold text-blue-600;
+}
+
+.price-old {
+    @apply text-lg text-gray-500 line-through;
+}
+
+/* Rating stars */
+.stars {
+    @apply flex items-center;
+}
+
+.star {
+    @apply text-yellow-400;
+}
+
+.star-empty {
+    @apply text-gray-300;
+}
+
+/* Auction countdown */
+.countdown {
+    @apply bg-red-100 text-red-800 px-3 py-1 rounded-lg font-mono text-sm;
+}
+
+/* Loading spinner */
+.spinner {
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+}
+
+/* Image placeholder */
+.image-placeholder {
+    @apply bg-gray-200 flex items-center justify-center text-gray-400;
+}
+
+/* Responsive grid */
+.grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6;
+}
+
+/* Mobile menu */
+.mobile-menu {
+    @apply md:hidden;
+}
+
+/* Dropdown animations */
+.dropdown-enter {
+    @apply opacity-0 scale-95;
+}
+
+.dropdown-enter-active {
+    @apply opacity-100 scale-100 transition duration-200 ease-out;
+}
+
+.dropdown-exit {
+    @apply opacity-100 scale-100;
+}
+
+.dropdown-exit-active {
+    @apply opacity-0 scale-95 transition duration-150 ease-in;
+}
+
+/* Cart styles */
+.cart-item {
+    @apply flex items-center space-x-4 p-4 border-b border-gray-200;
+}
+
+.cart-quantity {
+    @apply w-16 px-2 py-1 border border-gray-300 rounded text-center;
+}
+
+/* Search styles */
+.search-results {
+    @apply absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-b-lg shadow-lg z-50;
+}
+
+.search-result-item {
+    @apply px-4 py-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0;
+}
+
+/* Vendor styles */
+.vendor-badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800;
+}
+
+/* Pagination */
+.pagination {
+    @apply flex items-center justify-center space-x-2 mt-8;
+}
+
+.pagination-item {
+    @apply px-3 py-2 border border-gray-300 rounded hover:bg-gray-100 transition;
+}
+
+.pagination-item.active {
+    @apply bg-blue-600 text-white border-blue-600;
+}
+
+/* Filters */
+.filter-section {
+    @apply mb-6 p-4 bg-white rounded-lg shadow;
+}
+
+.filter-title {
+    @apply font-semibold text-gray-800 mb-3;
+}
+
+.filter-option {
+    @apply flex items-center space-x-2 mb-2;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+    @apply flex items-center space-x-2 text-sm text-gray-600 mb-4;
+}
+
+.breadcrumb-item {
+    @apply hover:text-blue-600;
+}
+
+.breadcrumb-separator {
+    @apply text-gray-400;
+}
+
+/* Alerts */
+.alert {
+    @apply px-4 py-3 rounded-lg mb-4;
+}
+
+.alert-success {
+    @apply bg-green-100 border border-green-400 text-green-700;
+}
+
+.alert-error {
+    @apply bg-red-100 border border-red-400 text-red-700;
+}
+
+.alert-warning {
+    @apply bg-yellow-100 border border-yellow-400 text-yellow-700;
+}
+
+.alert-info {
+    @apply bg-blue-100 border border-blue-400 text-blue-700;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .dark-mode {
+        @apply bg-gray-900 text-white;
+    }
+    
+    .dark-mode .card {
+        @apply bg-gray-800 border-gray-700;
+    }
+    
+    .dark-mode .form-input {
+        @apply bg-gray-800 border-gray-600 text-white;
+    }
+}

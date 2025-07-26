@@ -8,6 +8,7 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
@@ -76,6 +77,47 @@ func (c *Config) BuildConnectionString() string {
 func (c *Config) BuildRootConnectionString() string {
 	return fmt.Sprintf("%s:%s@tcp(%s:%d)/?parseTime=true&loc=Local",
 		c.User, c.Password, c.Host, c.Port)
+}
+
+// NewConnection creates a new database connection using connection string
+func NewConnection(connectionString string) (*sql.DB, error) {
+	db, err := sql.Open("mysql", connectionString)
+	if err != nil {
+		return nil, fmt.Errorf("error opening database: %w", err)
+	}
+
+	// Set connection pool settings
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(10)
+	db.SetConnMaxLifetime(time.Minute * 5)
+
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("error connecting to the database: %w", err)
+	}
+
+	log.Println("Successfully connected to database")
+	return db, nil
+}
+
+// NewSQLiteConnection creates a new SQLite database connection
+func NewSQLiteConnection(dbPath string) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		return nil, fmt.Errorf("error opening SQLite database: %w", err)
+	}
+
+	// Enable foreign keys for SQLite
+	_, err = db.Exec("PRAGMA foreign_keys = ON")
+	if err != nil {
+		return nil, fmt.Errorf("error enabling foreign keys: %w", err)
+	}
+
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("error connecting to the SQLite database: %w", err)
+	}
+
+	log.Println("Successfully connected to SQLite database")
+	return db, nil
 }
 
 // InitDB initializes the database connection

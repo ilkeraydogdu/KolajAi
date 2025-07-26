@@ -21,7 +21,7 @@ func (e *DatabaseError) Error() string {
 
 // Repository interface for database operations
 type Repository interface {
-	Create(table string, data interface{}) (int64, error)
+	Create(table string, fields []string, values []interface{}) (int64, error)
 	Update(table string, id interface{}, data interface{}) error
 	Delete(table string, id interface{}) error
 	FindByID(table string, id interface{}, result interface{}) error
