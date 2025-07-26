@@ -65,7 +65,7 @@ func (s *ProductService) DeleteProduct(id int) error {
 func (s *ProductService) GetProductsByVendor(vendorID int, limit, offset int) ([]models.Product, error) {
 	var products []models.Product
 	conditions := map[string]interface{}{"vendor_id": vendorID}
-	
+
 	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products by vendor: %w", err)
@@ -80,7 +80,7 @@ func (s *ProductService) GetProductsByCategory(categoryID int, limit, offset int
 		"category_id": categoryID,
 		"status":      "active",
 	}
-	
+
 	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products by category: %w", err)
@@ -92,7 +92,7 @@ func (s *ProductService) GetProductsByCategory(categoryID int, limit, offset int
 func (s *ProductService) SearchProducts(term string, limit, offset int) ([]models.Product, error) {
 	var products []models.Product
 	fields := []string{"name", "description", "tags"}
-	
+
 	err := s.repo.Search("products", fields, term, limit, offset, &products)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search products: %w", err)
@@ -107,7 +107,7 @@ func (s *ProductService) GetFeaturedProducts(limit, offset int) ([]models.Produc
 		"is_featured": true,
 		"status":      "active",
 	}
-	
+
 	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get featured products: %w", err)
@@ -124,7 +124,7 @@ func (s *ProductService) UpdateProductStock(productID int, quantity int) error {
 
 	product.Stock = quantity
 	product.UpdatedAt = time.Now()
-	
+
 	// Update status based on stock
 	if quantity <= 0 {
 		product.Status = "out_of_stock"
@@ -144,7 +144,7 @@ func (s *ProductService) IncrementProductViews(productID int) error {
 
 	product.ViewCount++
 	product.UpdatedAt = time.Now()
-	
+
 	return s.UpdateProduct(productID, product)
 }
 
@@ -158,7 +158,7 @@ func (s *ProductService) IncrementProductSales(productID int, quantity int) erro
 	product.SalesCount += quantity
 	product.Stock -= quantity
 	product.UpdatedAt = time.Now()
-	
+
 	// Update status if out of stock
 	if product.Stock <= 0 {
 		product.Status = "out_of_stock"
@@ -184,7 +184,7 @@ func (s *ProductService) CreateCategory(category *models.Category) error {
 func (s *ProductService) GetAllCategories() ([]models.Category, error) {
 	var categories []models.Category
 	conditions := map[string]interface{}{"is_active": true}
-	
+
 	err := s.repo.FindAll("categories", &categories, conditions, "sort_order ASC", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get categories: %w", err)
@@ -205,7 +205,7 @@ func (s *ProductService) GetCategoryByID(id int) (*models.Category, error) {
 // AddProductImage adds an image to a product
 func (s *ProductService) AddProductImage(image *models.ProductImage) error {
 	image.CreatedAt = time.Now()
-	
+
 	id, err := s.repo.CreateStruct("product_images", image)
 	if err != nil {
 		return fmt.Errorf("failed to add product image: %w", err)
@@ -218,7 +218,7 @@ func (s *ProductService) AddProductImage(image *models.ProductImage) error {
 func (s *ProductService) GetProductImages(productID int) ([]models.ProductImage, error) {
 	var images []models.ProductImage
 	conditions := map[string]interface{}{"product_id": productID}
-	
+
 	err := s.repo.FindAll("product_images", &images, conditions, "sort_order ASC", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get product images: %w", err)
@@ -239,10 +239,10 @@ func (s *ProductService) AddProductReview(review *models.ProductReview) error {
 		return fmt.Errorf("failed to add product review: %w", err)
 	}
 	review.ID = int(id)
-	
+
 	// Update product rating
 	go s.updateProductRating(review.ProductID)
-	
+
 	return nil
 }
 
@@ -253,7 +253,7 @@ func (s *ProductService) GetProductReviews(productID int, limit, offset int) ([]
 		"product_id": productID,
 		"status":     "approved",
 	}
-	
+
 	err := s.repo.FindAll("product_reviews", &reviews, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get product reviews: %w", err)

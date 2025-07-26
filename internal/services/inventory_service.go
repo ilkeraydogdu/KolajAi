@@ -27,17 +27,17 @@ func NewInventoryService(repo database.SimpleRepository, productService *Product
 
 // StockPrediction represents AI-powered stock level predictions
 type StockPrediction struct {
-	ProductID           int     `json:"product_id"`
-	ProductName         string  `json:"product_name"`
-	CurrentStock        int     `json:"current_stock"`
+	ProductID          int     `json:"product_id"`
+	ProductName        string  `json:"product_name"`
+	CurrentStock       int     `json:"current_stock"`
 	MinStock           int     `json:"min_stock"`
-	PredictedDemand    float64 `json:"predicted_demand"`    // Units per day
+	PredictedDemand    float64 `json:"predicted_demand"` // Units per day
 	DaysUntilStockout  int     `json:"days_until_stockout"`
 	RecommendedReorder int     `json:"recommended_reorder"`
-	ReorderUrgency     string  `json:"reorder_urgency"`     // "critical", "high", "medium", "low"
-	ConfidenceLevel    float64 `json:"confidence_level"`    // 0 to 1
-	SeasonalFactor     float64 `json:"seasonal_factor"`     // Seasonal adjustment
-	TrendFactor        float64 `json:"trend_factor"`        // Growth trend factor
+	ReorderUrgency     string  `json:"reorder_urgency"`  // "critical", "high", "medium", "low"
+	ConfidenceLevel    float64 `json:"confidence_level"` // 0 to 1
+	SeasonalFactor     float64 `json:"seasonal_factor"`  // Seasonal adjustment
+	TrendFactor        float64 `json:"trend_factor"`     // Growth trend factor
 }
 
 // InventoryAlert represents inventory alerts and notifications
@@ -45,8 +45,8 @@ type InventoryAlert struct {
 	ID          string    `json:"id"`
 	ProductID   int       `json:"product_id"`
 	ProductName string    `json:"product_name"`
-	AlertType   string    `json:"alert_type"`   // "low_stock", "out_of_stock", "overstock", "reorder"
-	Severity    string    `json:"severity"`     // "critical", "high", "medium", "low"
+	AlertType   string    `json:"alert_type"` // "low_stock", "out_of_stock", "overstock", "reorder"
+	Severity    string    `json:"severity"`   // "critical", "high", "medium", "low"
 	Message     string    `json:"message"`
 	CreatedAt   time.Time `json:"created_at"`
 	IsRead      bool      `json:"is_read"`
@@ -54,29 +54,29 @@ type InventoryAlert struct {
 
 // InventoryOptimization represents inventory optimization recommendations
 type InventoryOptimization struct {
-	ProductID              int     `json:"product_id"`
-	ProductName            string  `json:"product_name"`
-	CurrentStock           int     `json:"current_stock"`
-	OptimalStock           int     `json:"optimal_stock"`
-	OptimalMinStock        int     `json:"optimal_min_stock"`
-	OptimalMaxStock        int     `json:"optimal_max_stock"`
-	CarryingCost           float64 `json:"carrying_cost"`      // Cost of holding inventory
-	StockoutCost           float64 `json:"stockout_cost"`      // Cost of being out of stock
-	OptimizationPotential  float64 `json:"optimization_potential"` // Potential cost savings
-	Recommendations        []string `json:"recommendations"`
+	ProductID             int      `json:"product_id"`
+	ProductName           string   `json:"product_name"`
+	CurrentStock          int      `json:"current_stock"`
+	OptimalStock          int      `json:"optimal_stock"`
+	OptimalMinStock       int      `json:"optimal_min_stock"`
+	OptimalMaxStock       int      `json:"optimal_max_stock"`
+	CarryingCost          float64  `json:"carrying_cost"`          // Cost of holding inventory
+	StockoutCost          float64  `json:"stockout_cost"`          // Cost of being out of stock
+	OptimizationPotential float64  `json:"optimization_potential"` // Potential cost savings
+	Recommendations       []string `json:"recommendations"`
 }
 
 // SupplierPerformance represents supplier performance metrics
 type SupplierPerformance struct {
-	SupplierID      int     `json:"supplier_id"`
-	SupplierName    string  `json:"supplier_name"`
-	DeliveryScore   float64 `json:"delivery_score"`   // 0 to 1
-	QualityScore    float64 `json:"quality_score"`    // 0 to 1
-	PriceScore      float64 `json:"price_score"`      // 0 to 1
-	OverallScore    float64 `json:"overall_score"`    // 0 to 1
-	OrderCount      int     `json:"order_count"`
-	OnTimeDelivery  float64 `json:"on_time_delivery"` // Percentage
-	AverageLeadTime int     `json:"average_lead_time"` // Days
+	SupplierID      int      `json:"supplier_id"`
+	SupplierName    string   `json:"supplier_name"`
+	DeliveryScore   float64  `json:"delivery_score"` // 0 to 1
+	QualityScore    float64  `json:"quality_score"`  // 0 to 1
+	PriceScore      float64  `json:"price_score"`    // 0 to 1
+	OverallScore    float64  `json:"overall_score"`  // 0 to 1
+	OrderCount      int      `json:"order_count"`
+	OnTimeDelivery  float64  `json:"on_time_delivery"`  // Percentage
+	AverageLeadTime int      `json:"average_lead_time"` // Days
 	Recommendations []string `json:"recommendations"`
 }
 
@@ -120,14 +120,14 @@ func (s *InventoryService) PredictStockLevels() ([]*StockPrediction, error) {
 func (s *InventoryService) predictProductStock(product *models.Product) (*StockPrediction, error) {
 	// Calculate historical demand
 	dailyDemand := s.calculateDailyDemand(product)
-	
+
 	// Apply seasonal and trend factors
 	seasonalFactor := s.calculateSeasonalFactor(product)
 	trendFactor := s.calculateTrendFactor(product)
-	
+
 	// Adjust demand prediction
 	predictedDemand := dailyDemand * seasonalFactor * trendFactor
-	
+
 	// Calculate days until stockout
 	daysUntilStockout := 0
 	if predictedDemand > 0 {
@@ -135,20 +135,20 @@ func (s *InventoryService) predictProductStock(product *models.Product) (*StockP
 	} else {
 		daysUntilStockout = 999 // Very high number if no demand
 	}
-	
+
 	// Calculate recommended reorder quantity
 	recommendedReorder := s.calculateReorderQuantity(product, predictedDemand)
-	
+
 	// Determine urgency
 	urgency := s.determineReorderUrgency(daysUntilStockout, product.Stock, product.MinStock)
-	
+
 	// Calculate confidence level
 	confidence := s.calculatePredictionConfidence(product)
 
 	return &StockPrediction{
-		ProductID:           product.ID,
-		ProductName:         product.Name,
-		CurrentStock:        product.Stock,
+		ProductID:          product.ID,
+		ProductName:        product.Name,
+		CurrentStock:       product.Stock,
 		MinStock:           product.MinStock,
 		PredictedDemand:    predictedDemand,
 		DaysUntilStockout:  daysUntilStockout,
@@ -164,22 +164,22 @@ func (s *InventoryService) predictProductStock(product *models.Product) (*StockP
 func (s *InventoryService) calculateDailyDemand(product *models.Product) float64 {
 	// This is a simplified calculation
 	// In a real implementation, you'd analyze historical sales data
-	
+
 	if product.SalesCount == 0 {
 		return 0.1 // Very low demand for products with no sales
 	}
-	
+
 	// Assume the product has been available for 30 days (simplified)
 	// In reality, you'd calculate from the actual creation date
 	daysSinceCreation := 30.0
-	
+
 	// Calculate daily demand based on total sales
 	dailyDemand := float64(product.SalesCount) / daysSinceCreation
-	
+
 	// Add some randomness based on view count (interest level)
 	interestFactor := math.Min(float64(product.ViewCount)/1000.0, 2.0) + 0.5
 	dailyDemand *= interestFactor
-	
+
 	return math.Max(dailyDemand, 0.1) // Minimum demand
 }
 
@@ -187,26 +187,26 @@ func (s *InventoryService) calculateDailyDemand(product *models.Product) float64
 func (s *InventoryService) calculateSeasonalFactor(product *models.Product) float64 {
 	// This is a simplified seasonal calculation
 	// In reality, you'd analyze historical seasonal patterns
-	
+
 	now := time.Now()
 	month := now.Month()
-	
+
 	// Simple seasonal factors by month
 	seasonalFactors := map[time.Month]float64{
-		time.January:   0.8,  // Post-holiday slowdown
-		time.February:  0.9,  // Winter
-		time.March:     1.0,  // Spring starts
-		time.April:     1.1,  // Spring
-		time.May:       1.2,  // Spring peak
-		time.June:      1.1,  // Early summer
-		time.July:      1.0,  // Summer
-		time.August:    0.9,  // Late summer
-		time.September: 1.1,  // Back to school
-		time.October:   1.2,  // Fall shopping
-		time.November:  1.4,  // Pre-holiday
-		time.December:  1.5,  // Holiday peak
+		time.January:   0.8, // Post-holiday slowdown
+		time.February:  0.9, // Winter
+		time.March:     1.0, // Spring starts
+		time.April:     1.1, // Spring
+		time.May:       1.2, // Spring peak
+		time.June:      1.1, // Early summer
+		time.July:      1.0, // Summer
+		time.August:    0.9, // Late summer
+		time.September: 1.1, // Back to school
+		time.October:   1.2, // Fall shopping
+		time.November:  1.4, // Pre-holiday
+		time.December:  1.5, // Holiday peak
 	}
-	
+
 	return seasonalFactors[month]
 }
 
@@ -214,7 +214,7 @@ func (s *InventoryService) calculateSeasonalFactor(product *models.Product) floa
 func (s *InventoryService) calculateTrendFactor(product *models.Product) float64 {
 	// This is a simplified trend calculation
 	// In reality, you'd analyze time series data
-	
+
 	// Use view count as a proxy for trend
 	if product.ViewCount > 500 {
 		return 1.3 // Growing trend
@@ -232,23 +232,23 @@ func (s *InventoryService) calculateReorderQuantity(product *models.Product, dai
 	// Economic Order Quantity (EOQ) simplified calculation
 	// EOQ = sqrt(2 * D * S / H)
 	// D = annual demand, S = ordering cost, H = holding cost
-	
+
 	annualDemand := dailyDemand * 365
-	orderingCost := 50.0  // Simplified ordering cost
+	orderingCost := 50.0               // Simplified ordering cost
 	holdingCost := product.Price * 0.2 // 20% of product price per year
-	
+
 	if holdingCost <= 0 {
 		holdingCost = 1.0 // Minimum holding cost
 	}
-	
+
 	eoq := math.Sqrt(2 * annualDemand * orderingCost / holdingCost)
-	
+
 	// Ensure minimum order quantity
 	minOrder := int(dailyDemand * 30) // 30 days worth
 	if int(eoq) < minOrder {
 		return minOrder
 	}
-	
+
 	return int(eoq)
 }
 
@@ -270,7 +270,7 @@ func (s *InventoryService) determineReorderUrgency(daysUntilStockout, currentSto
 // calculatePredictionConfidence calculates confidence level for predictions
 func (s *InventoryService) calculatePredictionConfidence(product *models.Product) float64 {
 	confidence := 0.5 // Base confidence
-	
+
 	// More sales history = higher confidence
 	if product.SalesCount > 50 {
 		confidence += 0.3
@@ -279,14 +279,14 @@ func (s *InventoryService) calculatePredictionConfidence(product *models.Product
 	} else if product.SalesCount > 0 {
 		confidence += 0.1
 	}
-	
+
 	// More views = higher confidence in demand pattern
 	if product.ViewCount > 1000 {
 		confidence += 0.2
 	} else if product.ViewCount > 100 {
 		confidence += 0.1
 	}
-	
+
 	return math.Min(confidence, 1.0)
 }
 
@@ -406,34 +406,34 @@ func (s *InventoryService) OptimizeInventory() ([]*InventoryOptimization, error)
 func (s *InventoryService) optimizeProductInventory(product *models.Product) *InventoryOptimization {
 	// Calculate daily demand
 	dailyDemand := s.calculateDailyDemand(product)
-	
+
 	// Calculate optimal stock levels
-	optimalStock := int(dailyDemand * 30) // 30 days worth
-	optimalMinStock := int(dailyDemand * 7) // 7 days worth
+	optimalStock := int(dailyDemand * 30)    // 30 days worth
+	optimalMinStock := int(dailyDemand * 7)  // 7 days worth
 	optimalMaxStock := int(dailyDemand * 60) // 60 days worth
-	
+
 	// Calculate costs
 	carryingCost := s.calculateCarryingCost(product, optimalStock)
 	stockoutCost := s.calculateStockoutCost(product, dailyDemand)
-	
+
 	// Calculate optimization potential
 	currentCost := s.calculateCarryingCost(product, product.Stock)
 	optimizationPotential := math.Abs(currentCost - carryingCost)
-	
+
 	// Generate recommendations
 	recommendations := s.generateInventoryRecommendations(product, optimalStock, optimalMinStock, optimalMaxStock)
 
 	return &InventoryOptimization{
-		ProductID:              product.ID,
-		ProductName:            product.Name,
-		CurrentStock:           product.Stock,
-		OptimalStock:           optimalStock,
-		OptimalMinStock:        optimalMinStock,
-		OptimalMaxStock:        optimalMaxStock,
-		CarryingCost:           carryingCost,
-		StockoutCost:           stockoutCost,
-		OptimizationPotential:  optimizationPotential,
-		Recommendations:        recommendations,
+		ProductID:             product.ID,
+		ProductName:           product.Name,
+		CurrentStock:          product.Stock,
+		OptimalStock:          optimalStock,
+		OptimalMinStock:       optimalMinStock,
+		OptimalMaxStock:       optimalMaxStock,
+		CarryingCost:          carryingCost,
+		StockoutCost:          stockoutCost,
+		OptimizationPotential: optimizationPotential,
+		Recommendations:       recommendations,
 	}
 }
 
@@ -442,7 +442,7 @@ func (s *InventoryService) calculateCarryingCost(product *models.Product, stockL
 	// Carrying cost = (Average inventory value) * (Carrying rate)
 	averageInventoryValue := float64(stockLevel) * product.Price / 2
 	carryingRate := 0.25 // 25% annual carrying cost
-	
+
 	return averageInventoryValue * carryingRate / 365 // Daily carrying cost
 }
 
@@ -451,7 +451,7 @@ func (s *InventoryService) calculateStockoutCost(product *models.Product, dailyD
 	// Stockout cost = Lost sales + Customer dissatisfaction
 	// Simplified: Assume we lose the profit margin on lost sales
 	profitMargin := product.Price * 0.3 // Assume 30% profit margin
-	
+
 	return dailyDemand * profitMargin
 }
 
@@ -481,7 +481,7 @@ func (s *InventoryService) generateInventoryRecommendations(product *models.Prod
 func (s *InventoryService) AnalyzeSupplierPerformance() ([]*SupplierPerformance, error) {
 	// This is a simplified implementation
 	// In a real system, you'd analyze actual supplier data
-	
+
 	suppliers := []*SupplierPerformance{
 		{
 			SupplierID:      1,

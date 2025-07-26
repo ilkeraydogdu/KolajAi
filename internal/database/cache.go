@@ -200,16 +200,6 @@ func (r *CacheRepository) Set(table string, id interface{}, value interface{}) (
 	// This method needs to be refactored to use proper fields and values
 	// For now, we'll return an error to indicate it needs implementation
 	return 0, fmt.Errorf("Set method needs to be properly implemented with field/value mapping")
-
-	data, err := json.Marshal(value)
-	if err != nil {
-		return 0, err
-	}
-
-	cacheKey := fmt.Sprintf("%s:%v", table, id)
-	r.cache.Set(cacheKey, data, cache.DefaultExpiration)
-	r.stats.items++
-	return id.(int64), nil
 }
 
 // Flush clears the cache

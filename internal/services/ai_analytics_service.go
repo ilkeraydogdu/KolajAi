@@ -7,7 +7,6 @@ import (
 	"math"
 	"sort"
 	"strings"
-	"time"
 )
 
 // AIAnalyticsService provides advanced AI analytics and insights
@@ -30,8 +29,8 @@ func NewAIAnalyticsService(repo database.SimpleRepository, productService *Produ
 type MarketTrend struct {
 	CategoryID     int     `json:"category_id"`
 	CategoryName   string  `json:"category_name"`
-	TrendScore     float64 `json:"trend_score"`     // -1 to 1 (declining to growing)
-	GrowthRate     float64 `json:"growth_rate"`     // Percentage growth
+	TrendScore     float64 `json:"trend_score"` // -1 to 1 (declining to growing)
+	GrowthRate     float64 `json:"growth_rate"` // Percentage growth
 	PopularityRank int     `json:"popularity_rank"`
 	AveragePrice   float64 `json:"average_price"`
 	TotalProducts  int     `json:"total_products"`
@@ -41,11 +40,11 @@ type MarketTrend struct {
 
 // ProductInsight represents AI-powered product insights
 type ProductInsight struct {
-	ProductID        int     `json:"product_id"`
-	ProductName      string  `json:"product_name"`
-	PerformanceScore float64 `json:"performance_score"` // 0 to 1
-	SentimentScore   float64 `json:"sentiment_score"`   // -1 to 1
-	MarketPosition   string  `json:"market_position"`   // "leader", "challenger", "follower", "niche"
+	ProductID        int      `json:"product_id"`
+	ProductName      string   `json:"product_name"`
+	PerformanceScore float64  `json:"performance_score"` // 0 to 1
+	SentimentScore   float64  `json:"sentiment_score"`   // -1 to 1
+	MarketPosition   string   `json:"market_position"`   // "leader", "challenger", "follower", "niche"
 	Recommendations  []string `json:"recommendations"`
 	RiskFactors      []string `json:"risk_factors"`
 	Opportunities    []string `json:"opportunities"`
@@ -53,32 +52,32 @@ type ProductInsight struct {
 
 // CustomerSegment represents customer behavior analysis
 type CustomerSegment struct {
-	SegmentID       string  `json:"segment_id"`
-	SegmentName     string  `json:"segment_name"`
-	CustomerCount   int     `json:"customer_count"`
-	AverageSpend    float64 `json:"average_spend"`
+	SegmentID           string   `json:"segment_id"`
+	SegmentName         string   `json:"segment_name"`
+	CustomerCount       int      `json:"customer_count"`
+	AverageSpend        float64  `json:"average_spend"`
 	PreferredCategories []string `json:"preferred_categories"`
-	BehaviorProfile string  `json:"behavior_profile"`
-	GrowthPotential float64 `json:"growth_potential"` // 0 to 1
-	Characteristics []string `json:"characteristics"`
+	BehaviorProfile     string   `json:"behavior_profile"`
+	GrowthPotential     float64  `json:"growth_potential"` // 0 to 1
+	Characteristics     []string `json:"characteristics"`
 }
 
 // PricingStrategy represents AI-powered pricing recommendations
 type PricingStrategy struct {
-	ProductID           int     `json:"product_id"`
-	CurrentPrice        float64 `json:"current_price"`
-	OptimalPriceRange   struct {
+	ProductID         int     `json:"product_id"`
+	CurrentPrice      float64 `json:"current_price"`
+	OptimalPriceRange struct {
 		Min float64 `json:"min"`
 		Max float64 `json:"max"`
 	} `json:"optimal_price_range"`
-	RecommendedPrice    float64 `json:"recommended_price"`
-	ExpectedImpact      struct {
+	RecommendedPrice float64 `json:"recommended_price"`
+	ExpectedImpact   struct {
 		SalesChange   float64 `json:"sales_change"`   // Percentage
 		RevenueChange float64 `json:"revenue_change"` // Percentage
 		MarketShare   float64 `json:"market_share"`   // Percentage
 	} `json:"expected_impact"`
-	Strategy            string   `json:"strategy"` // "penetration", "skimming", "competitive", "value"
-	Justification       []string `json:"justification"`
+	Strategy      string   `json:"strategy"` // "penetration", "skimming", "competitive", "value"
+	Justification []string `json:"justification"`
 }
 
 // AnalyzeMarketTrends analyzes market trends across categories
@@ -89,7 +88,7 @@ func (s *AIAnalyticsService) AnalyzeMarketTrends() ([]*MarketTrend, error) {
 	}
 
 	trends := make([]*MarketTrend, 0)
-	
+
 	for _, category := range categories {
 		trend, err := s.analyzeCategoryTrend(category)
 		if err != nil {
@@ -149,7 +148,7 @@ func (s *AIAnalyticsService) analyzeCategoryTrend(category models.Category) (*Ma
 	}
 
 	averagePrice := totalPrice / float64(totalProducts)
-	
+
 	// Calculate trend score (-1 to 1)
 	// This is a simplified calculation - in reality you'd use time series analysis
 	trendScore := 0.0
@@ -170,14 +169,14 @@ func (s *AIAnalyticsService) analyzeCategoryTrend(category models.Category) (*Ma
 	prediction := s.generateTrendPrediction(trendScore, totalSales, totalViews)
 
 	return &MarketTrend{
-		CategoryID:     category.ID,
-		CategoryName:   category.Name,
-		TrendScore:     trendScore,
-		GrowthRate:     growthRate,
-		AveragePrice:   averagePrice,
-		TotalProducts:  totalProducts,
-		TotalSales:     totalSales,
-		Prediction:     prediction,
+		CategoryID:    category.ID,
+		CategoryName:  category.Name,
+		TrendScore:    trendScore,
+		GrowthRate:    growthRate,
+		AveragePrice:  averagePrice,
+		TotalProducts: totalProducts,
+		TotalSales:    totalSales,
+		Prediction:    prediction,
 	}, nil
 }
 
@@ -205,19 +204,19 @@ func (s *AIAnalyticsService) AnalyzeProductInsights(productID int) (*ProductInsi
 
 	// Calculate performance score
 	performanceScore := s.calculateProductPerformance(product)
-	
+
 	// Analyze sentiment (simplified - in reality you'd analyze reviews/comments)
 	sentimentScore := s.analyzeSentiment(product)
-	
+
 	// Determine market position
 	marketPosition := s.determineMarketPosition(product, performanceScore)
-	
+
 	// Generate recommendations
 	recommendations := s.generateProductRecommendations(product, performanceScore, sentimentScore)
-	
+
 	// Identify risk factors
 	riskFactors := s.identifyRiskFactors(product, performanceScore, sentimentScore)
-	
+
 	// Find opportunities
 	opportunities := s.findOpportunities(product, performanceScore, sentimentScore)
 
@@ -271,14 +270,14 @@ func (s *AIAnalyticsService) calculateProductPerformance(product *models.Product
 func (s *AIAnalyticsService) analyzeSentiment(product *models.Product) float64 {
 	// This is a simplified sentiment analysis
 	// In a real implementation, you'd analyze actual reviews and comments
-	
+
 	sentiment := 0.0
-	
+
 	// Base sentiment from rating
 	if product.Rating > 0 {
 		sentiment = (product.Rating - 3.0) / 2.0 // Convert 1-5 rating to -1 to 1 scale
 	}
-	
+
 	// Adjust based on sales vs views ratio
 	if product.ViewCount > 0 {
 		conversionRate := float64(product.SalesCount) / float64(product.ViewCount)
@@ -288,19 +287,19 @@ func (s *AIAnalyticsService) analyzeSentiment(product *models.Product) float64 {
 			sentiment -= 0.2
 		}
 	}
-	
+
 	// Adjust based on stock levels
 	if product.Stock == 0 {
 		sentiment -= 0.1 // Out of stock is negative
 	}
-	
+
 	// Clamp to -1 to 1 range
 	if sentiment > 1 {
 		sentiment = 1
 	} else if sentiment < -1 {
 		sentiment = -1
 	}
-	
+
 	return sentiment
 }
 
@@ -394,37 +393,37 @@ func (s *AIAnalyticsService) findOpportunities(product *models.Product, performa
 func (s *AIAnalyticsService) AnalyzeCustomerSegments() ([]*CustomerSegment, error) {
 	// This is a simplified implementation
 	// In a real system, you'd analyze actual customer data
-	
+
 	segments := []*CustomerSegment{
 		{
-			SegmentID:   "high_value",
-			SegmentName: "Yüksek Değerli Müşteriler",
-			CustomerCount: 150,
-			AverageSpend: 500.0,
+			SegmentID:           "high_value",
+			SegmentName:         "Yüksek Değerli Müşteriler",
+			CustomerCount:       150,
+			AverageSpend:        500.0,
 			PreferredCategories: []string{"Elektronik", "Moda", "Ev & Yaşam"},
-			BehaviorProfile: "Sık alışveriş yapan, kaliteye önem veren müşteriler",
-			GrowthPotential: 0.8,
-			Characteristics: []string{"Yüksek gelir", "Marka sadakati", "Kalite odaklı"},
+			BehaviorProfile:     "Sık alışveriş yapan, kaliteye önem veren müşteriler",
+			GrowthPotential:     0.8,
+			Characteristics:     []string{"Yüksek gelir", "Marka sadakati", "Kalite odaklı"},
 		},
 		{
-			SegmentID:   "price_sensitive",
-			SegmentName: "Fiyat Hassas Müşteriler",
-			CustomerCount: 300,
-			AverageSpend: 150.0,
+			SegmentID:           "price_sensitive",
+			SegmentName:         "Fiyat Hassas Müşteriler",
+			CustomerCount:       300,
+			AverageSpend:        150.0,
 			PreferredCategories: []string{"Gıda", "Temizlik", "Temel İhtiyaçlar"},
-			BehaviorProfile: "İndirim ve kampanyaları takip eden, fiyat karşılaştırması yapan müşteriler",
-			GrowthPotential: 0.6,
-			Characteristics: []string{"Fiyat odaklı", "Kampanya takipçisi", "Pratik çözüm arayan"},
+			BehaviorProfile:     "İndirim ve kampanyaları takip eden, fiyat karşılaştırması yapan müşteriler",
+			GrowthPotential:     0.6,
+			Characteristics:     []string{"Fiyat odaklı", "Kampanya takipçisi", "Pratik çözüm arayan"},
 		},
 		{
-			SegmentID:   "tech_enthusiasts",
-			SegmentName: "Teknoloji Meraklıları",
-			CustomerCount: 200,
-			AverageSpend: 350.0,
+			SegmentID:           "tech_enthusiasts",
+			SegmentName:         "Teknoloji Meraklıları",
+			CustomerCount:       200,
+			AverageSpend:        350.0,
 			PreferredCategories: []string{"Elektronik", "Bilgisayar", "Akıllı Cihazlar"},
-			BehaviorProfile: "Yeni teknolojileri erken benimseyen, araştırma yapan müşteriler",
-			GrowthPotential: 0.9,
-			Characteristics: []string{"İnovasyon odaklı", "Araştırmacı", "Sosyal medya aktif"},
+			BehaviorProfile:     "Yeni teknolojileri erken benimseyen, araştırma yapan müşteriler",
+			GrowthPotential:     0.9,
+			Characteristics:     []string{"İnovasyon odaklı", "Araştırmacı", "Sosyal medya aktif"},
 		},
 	}
 
@@ -446,16 +445,16 @@ func (s *AIAnalyticsService) GeneratePricingStrategy(productID int) (*PricingStr
 
 	// Calculate optimal price range
 	minPrice, maxPrice := s.calculateOptimalPriceRange(product, similarProducts)
-	
+
 	// Determine recommended price
 	recommendedPrice := s.calculateRecommendedPrice(product, similarProducts, minPrice, maxPrice)
-	
+
 	// Calculate expected impact
 	salesChange, revenueChange, marketShare := s.calculatePriceImpact(product, recommendedPrice)
-	
+
 	// Determine strategy
 	strategy := s.determinePricingStrategy(product, recommendedPrice, similarProducts)
-	
+
 	// Generate justification
 	justification := s.generatePricingJustification(product, recommendedPrice, strategy)
 
@@ -548,7 +547,7 @@ func (s *AIAnalyticsService) calculateOptimalPriceRange(product *models.Product,
 	}
 
 	sort.Float64s(prices)
-	
+
 	minPrice := prices[0] * 0.9
 	maxPrice := prices[len(prices)-1] * 1.1
 
@@ -564,15 +563,15 @@ func (s *AIAnalyticsService) calculateRecommendedPrice(product *models.Product, 
 	for _, p := range similarProducts {
 		totalPrice += p.Price
 	}
-	
+
 	marketAverage := totalPrice / float64(len(similarProducts))
-	
+
 	// Adjust based on product performance
 	performanceScore := s.calculateProductPerformance(product)
 	adjustment := (performanceScore - 0.5) * 0.2 // ±20% adjustment
-	
+
 	recommendedPrice := marketAverage * (1 + adjustment)
-	
+
 	// Ensure it's within the optimal range
 	if recommendedPrice < minPrice {
 		recommendedPrice = minPrice
@@ -585,15 +584,15 @@ func (s *AIAnalyticsService) calculateRecommendedPrice(product *models.Product, 
 
 func (s *AIAnalyticsService) calculatePriceImpact(product *models.Product, newPrice float64) (float64, float64, float64) {
 	priceChange := (newPrice - product.Price) / product.Price
-	
+
 	// Simplified elasticity calculation
 	// In reality, you'd use historical data and more sophisticated models
 	elasticity := -1.5 // Assume price elasticity of demand
-	
+
 	salesChange := elasticity * priceChange * 100
-	revenueChange := (1 + priceChange) * (1 + salesChange/100) - 1
+	revenueChange := (1+priceChange)*(1+salesChange/100) - 1
 	revenueChange *= 100
-	
+
 	// Market share impact (simplified)
 	marketShare := 5.0 + (priceChange * -10) // Lower price = higher market share
 	if marketShare < 0 {

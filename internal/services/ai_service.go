@@ -35,13 +35,13 @@ type ProductRecommendation struct {
 
 // PriceOptimization represents price optimization suggestions
 type PriceOptimization struct {
-	ProductID         int     `json:"product_id"`
-	CurrentPrice      float64 `json:"current_price"`
-	SuggestedPrice    float64 `json:"suggested_price"`
-	PriceChange       float64 `json:"price_change"`
+	ProductID          int     `json:"product_id"`
+	CurrentPrice       float64 `json:"current_price"`
+	SuggestedPrice     float64 `json:"suggested_price"`
+	PriceChange        float64 `json:"price_change"`
 	PriceChangePercent float64 `json:"price_change_percent"`
-	Confidence        float64 `json:"confidence"`
-	Reasoning         string  `json:"reasoning"`
+	Confidence         float64 `json:"confidence"`
+	Reasoning          string  `json:"reasoning"`
 }
 
 // CategoryPrediction represents AI-powered category prediction
@@ -63,7 +63,7 @@ type SearchResult struct {
 // GetPersonalizedRecommendations returns personalized product recommendations for a user
 func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*ProductRecommendation, error) {
 	startTime := time.Now()
-	
+
 	// Get user's order history
 	userOrders, err := s.orderService.GetOrdersByUser(userID, 50, 0)
 	if err != nil {
@@ -80,7 +80,7 @@ func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*Pr
 	for _, order := range userOrders {
 		orderCount++
 		totalSpent += order.TotalAmount
-		
+
 		// Analyze order items (this would need to be implemented in order service)
 		// For now, we'll use a simplified approach
 		if order.TotalAmount < priceRange.min {
@@ -153,10 +153,10 @@ func (s *AIService) calculateRecommendationScore(product *models.Product, catego
 
 	// Category preference score (we'll need to get category name by ID)
 	// For now, skip this feature until we implement category lookup
-	
+
 	// Brand preference score (not available in current model)
 	// For now, skip this feature
-	
+
 	// Stock availability boost
 	if product.Stock > 0 {
 		score += 0.1
@@ -223,35 +223,35 @@ func (s *AIService) OptimizeProductPricing(productID int) (*PriceOptimization, e
 
 	if validProducts == 0 {
 		return &PriceOptimization{
-			ProductID:         productID,
-			CurrentPrice:      product.Price,
-			SuggestedPrice:    product.Price,
-			PriceChange:       0,
+			ProductID:          productID,
+			CurrentPrice:       product.Price,
+			SuggestedPrice:     product.Price,
+			PriceChange:        0,
 			PriceChangePercent: 0,
-			Confidence:        0.1,
-			Reasoning:         "Yeterli karşılaştırma verisi bulunamadı",
+			Confidence:         0.1,
+			Reasoning:          "Yeterli karşılaştırma verisi bulunamadı",
 		}, nil
 	}
 
 	marketAverage := totalPrice / float64(validProducts)
-	
+
 	// Calculate suggested price based on various factors
 	suggestedPrice := s.calculateOptimalPrice(product, marketAverage, similarProducts)
-	
+
 	priceChange := suggestedPrice - product.Price
 	priceChangePercent := (priceChange / product.Price) * 100
-	
+
 	confidence := s.calculatePriceConfidence(validProducts, product.ViewCount)
 	reasoning := s.generatePriceReasoning(product.Price, suggestedPrice, marketAverage)
 
 	return &PriceOptimization{
-		ProductID:         productID,
-		CurrentPrice:      product.Price,
-		SuggestedPrice:    suggestedPrice,
-		PriceChange:       priceChange,
+		ProductID:          productID,
+		CurrentPrice:       product.Price,
+		SuggestedPrice:     suggestedPrice,
+		PriceChange:        priceChange,
 		PriceChangePercent: priceChangePercent,
-		Confidence:        confidence,
-		Reasoning:         reasoning,
+		Confidence:         confidence,
+		Reasoning:          reasoning,
 	}, nil
 }
 
@@ -259,7 +259,7 @@ func (s *AIService) OptimizeProductPricing(productID int) (*PriceOptimization, e
 func (s *AIService) getSimilarProducts(product *models.Product, limit int) ([]*models.Product, error) {
 	// This is a simplified similarity calculation
 	// In a real implementation, you might use more sophisticated ML algorithms
-	
+
 	allProducts, err := s.productService.GetAllProducts(500, 0)
 	if err != nil {
 		return nil, err
@@ -334,8 +334,8 @@ func (s *AIService) calculateOptimalPrice(product *models.Product, marketAverage
 	}
 
 	// Don't suggest extreme price changes
-	maxIncrease := product.Price * 1.2  // Max 20% increase
-	maxDecrease := product.Price * 0.8  // Max 20% decrease
+	maxIncrease := product.Price * 1.2 // Max 20% increase
+	maxDecrease := product.Price * 0.8 // Max 20% decrease
 
 	if suggestedPrice > maxIncrease {
 		suggestedPrice = maxIncrease
@@ -395,7 +395,7 @@ func (s *AIService) PredictProductCategory(productName, description string) ([]*
 
 	for _, category := range categories {
 		confidence := s.calculateCategoryConfidence(text, strings.ToLower(category.Name))
-		
+
 		if confidence > 0.1 { // Minimum confidence threshold
 			predictions = append(predictions, &CategoryPrediction{
 				CategoryID:   category.ID,
@@ -422,27 +422,27 @@ func (s *AIService) PredictProductCategory(productName, description string) ([]*
 func (s *AIService) calculateCategoryConfidence(text, categoryName string) float64 {
 	// Simple keyword matching approach
 	// In a real implementation, you'd use more sophisticated NLP/ML
-	
+
 	keywords := strings.Fields(categoryName)
 	matches := 0
-	
+
 	for _, keyword := range keywords {
 		if strings.Contains(text, keyword) {
 			matches++
 		}
 	}
-	
+
 	if len(keywords) == 0 {
 		return 0.0
 	}
-	
+
 	return float64(matches) / float64(len(keywords))
 }
 
 // SmartSearch performs AI-enhanced product search
 func (s *AIService) SmartSearch(query string, limit, offset int) (*SearchResult, error) {
 	startTime := time.Now()
-	
+
 	// Get all products for searching
 	allProducts, err := s.productService.GetAllProducts(2000, 0)
 	if err != nil {
@@ -463,7 +463,7 @@ func (s *AIService) SmartSearch(query string, limit, offset int) (*SearchResult,
 		}
 
 		score := s.calculateSearchScore(&product, queryLower, queryWords)
-		
+
 		if score > 0 {
 			scored = append(scored, struct {
 				product *models.Product
@@ -481,7 +481,7 @@ func (s *AIService) SmartSearch(query string, limit, offset int) (*SearchResult,
 	totalCount := len(scored)
 	start := offset
 	end := offset + limit
-	
+
 	if start > totalCount {
 		start = totalCount
 	}
@@ -509,14 +509,14 @@ func (s *AIService) SmartSearch(query string, limit, offset int) (*SearchResult,
 // calculateSearchScore calculates relevance score for search results
 func (s *AIService) calculateSearchScore(product *models.Product, query string, queryWords []string) float64 {
 	score := 0.0
-	
+
 	productText := strings.ToLower(product.Name + " " + product.Description + " " + product.Tags)
-	
+
 	// Exact phrase match gets highest score
 	if strings.Contains(productText, query) {
 		score += 1.0
 	}
-	
+
 	// Individual word matches
 	wordMatches := 0
 	for _, word := range queryWords {
@@ -524,33 +524,33 @@ func (s *AIService) calculateSearchScore(product *models.Product, query string, 
 			wordMatches++
 		}
 	}
-	
+
 	if len(queryWords) > 0 {
 		wordScore := float64(wordMatches) / float64(len(queryWords))
 		score += wordScore * 0.8
 	}
-	
+
 	// Title match bonus
 	if strings.Contains(strings.ToLower(product.Name), query) {
 		score += 0.5
 	}
-	
+
 	// Tags match bonus
 	if strings.Contains(strings.ToLower(product.Tags), query) {
 		score += 0.3
 	}
-	
+
 	// Popularity boost
 	if product.ViewCount > 0 {
 		popularityBoost := math.Log10(float64(product.ViewCount)) * 0.1
 		score += math.Min(popularityBoost, 0.2)
 	}
-	
+
 	// Stock availability
 	if product.Stock > 0 {
 		score += 0.1
 	}
-	
+
 	return score
 }
 
@@ -560,18 +560,18 @@ func (s *AIService) generateSearchSuggestions(query string, results []struct {
 	score   float64
 }) []string {
 	suggestions := make([]string, 0)
-	
+
 	// Extract common tags from top results
 	tagCount := make(map[string]int)
-	
+
 	maxResults := 20
 	if len(results) < maxResults {
 		maxResults = len(results)
 	}
-	
+
 	for i := 0; i < maxResults; i++ {
 		product := results[i].product
-		
+
 		// Extract individual tags
 		if product.Tags != "" {
 			tags := strings.Split(product.Tags, ",")
@@ -583,18 +583,18 @@ func (s *AIService) generateSearchSuggestions(query string, results []struct {
 			}
 		}
 	}
-	
+
 	// Add tag suggestions
 	for tag, count := range tagCount {
 		if count >= 2 && !strings.Contains(strings.ToLower(query), strings.ToLower(tag)) {
 			suggestions = append(suggestions, query+" "+tag)
 		}
 	}
-	
+
 	// Limit suggestions
 	if len(suggestions) > 5 {
 		suggestions = suggestions[:5]
 	}
-	
+
 	return suggestions
 }

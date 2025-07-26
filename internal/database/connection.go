@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"kolajAi/internal/config"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -203,4 +204,10 @@ func SetupDatabase(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+// DatabaseExists checks if a database file exists
+func DatabaseExists(dbPath string) bool {
+	_, err := os.Stat(dbPath)
+	return err == nil
 }

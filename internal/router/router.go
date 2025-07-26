@@ -38,7 +38,7 @@ func NewRouter(h *handlers.Handler, static interface{}) http.Handler {
 	// Statik dosyalar için handler
 	staticDir := "./web/static"
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
-	
+
 	// Giriş sayfası
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		RouterLogger.Printf("Login route: %s %s", r.Method, r.URL.Path)

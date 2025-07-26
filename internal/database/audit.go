@@ -98,7 +98,7 @@ func (r *AuditRepository) Create(table string, fields []string, values []interfa
 			newValues[field] = values[i]
 		}
 	}
-	
+
 	auditLog := &AuditLog{
 		TableName: table,
 		RecordID:  id,

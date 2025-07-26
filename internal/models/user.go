@@ -1,6 +1,11 @@
 package models
 
-import "time"
+import (
+	"errors"
+	"regexp"
+	"strings"
+	"time"
+)
 
 // User represents a user in the system
 type User struct {
@@ -13,4 +18,27 @@ type User struct {
 	IsAdmin   bool      `json:"is_admin" db:"is_admin"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
+// Validate checks if the user data is valid
+func (u *User) Validate() error {
+	if strings.TrimSpace(u.Name) == "" {
+		return errors.New("name cannot be empty")
+	}
+
+	if strings.TrimSpace(u.Email) == "" {
+		return errors.New("email cannot be empty")
+	}
+
+	// Basic email validation
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	if !emailRegex.MatchString(u.Email) {
+		return errors.New("invalid email format")
+	}
+
+	if strings.TrimSpace(u.Password) == "" {
+		return errors.New("password cannot be empty")
+	}
+
+	return nil
 }

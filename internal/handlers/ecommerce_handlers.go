@@ -34,7 +34,7 @@ func NewEcommerceHandler(h *Handler, vendorService *services.VendorService, prod
 // Marketplace - Ana sayfa
 func (h *EcommerceHandler) Marketplace(w http.ResponseWriter, r *http.Request) {
 	data := h.GetTemplateData()
-	
+
 	// Öne çıkan ürünler
 	featuredProducts, err := h.productService.GetFeaturedProducts(12, 0)
 	if err == nil {
@@ -59,7 +59,7 @@ func (h *EcommerceHandler) Marketplace(w http.ResponseWriter, r *http.Request) {
 // Products - Ürün listesi
 func (h *EcommerceHandler) Products(w http.ResponseWriter, r *http.Request) {
 	data := h.GetTemplateData()
-	
+
 	// Query parametreleri
 	categoryID := r.URL.Query().Get("category")
 	search := r.URL.Query().Get("search")
@@ -76,7 +76,7 @@ func (h *EcommerceHandler) Products(w http.ResponseWriter, r *http.Request) {
 	} else if categoryID != "" {
 		catID, _ := strconv.Atoi(categoryID)
 		products, err = h.productService.GetProductsByCategory(catID, limit, offset)
-		
+
 		// Kategori bilgisi
 		if catID > 0 {
 			category, catErr := h.productService.GetCategoryByID(catID)
@@ -186,7 +186,7 @@ func (h *EcommerceHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 	// Sepeti al veya oluştur
 	var cart *models.Cart
 	userID := h.GetUserID(r)
-	
+
 	if userID > 0 {
 		cart, err = h.orderService.GetCartByUser(userID)
 		if err != nil {
@@ -238,7 +238,7 @@ func (h *EcommerceHandler) Cart(w http.ResponseWriter, r *http.Request) {
 	var cart *models.Cart
 	var err error
 	userID := h.GetUserID(r)
-	
+
 	if userID > 0 {
 		cart, err = h.orderService.GetCartByUser(userID)
 	} else {
@@ -254,7 +254,7 @@ func (h *EcommerceHandler) Cart(w http.ResponseWriter, r *http.Request) {
 		cartItems, err := h.orderService.GetCartItems(cart.ID)
 		if err == nil {
 			data["CartItems"] = cartItems
-			
+
 			// Toplam hesapla
 			var total float64
 			for _, item := range cartItems {
@@ -270,7 +270,7 @@ func (h *EcommerceHandler) Cart(w http.ResponseWriter, r *http.Request) {
 // Auctions - Açık artırmalar
 func (h *EcommerceHandler) Auctions(w http.ResponseWriter, r *http.Request) {
 	data := h.GetTemplateData()
-	
+
 	page := h.getPageFromQuery(r)
 	limit := 20
 	offset := (page - 1) * limit

@@ -77,7 +77,7 @@ func (s *OrderService) UpdateOrder(id int, order *models.Order) error {
 func (s *OrderService) GetOrdersByUser(userID int, limit, offset int) ([]models.Order, error) {
 	var orders []models.Order
 	conditions := map[string]interface{}{"user_id": userID}
-	
+
 	err := s.repo.FindAll("orders", &orders, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get orders by user: %w", err)
@@ -89,7 +89,7 @@ func (s *OrderService) GetOrdersByUser(userID int, limit, offset int) ([]models.
 func (s *OrderService) GetOrdersByStatus(status string, limit, offset int) ([]models.Order, error) {
 	var orders []models.Order
 	conditions := map[string]interface{}{"status": status}
-	
+
 	err := s.repo.FindAll("orders", &orders, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get orders by status: %w", err)
@@ -111,7 +111,7 @@ func (s *OrderService) AddOrderItem(item *models.OrderItem) error {
 func (s *OrderService) GetOrderItems(orderID int) ([]models.OrderItem, error) {
 	var items []models.OrderItem
 	conditions := map[string]interface{}{"order_id": orderID}
-	
+
 	err := s.repo.FindAll("order_items", &items, conditions, "id ASC", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get order items: %w", err)
@@ -133,7 +133,7 @@ func (s *OrderService) AddOrderAddress(address *models.OrderAddress) error {
 func (s *OrderService) GetOrderAddresses(orderID int) ([]models.OrderAddress, error) {
 	var addresses []models.OrderAddress
 	conditions := map[string]interface{}{"order_id": orderID}
-	
+
 	err := s.repo.FindAll("order_addresses", &addresses, conditions, "type ASC", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get order addresses: %w", err)
@@ -194,7 +194,7 @@ func (s *OrderService) UpdatePaymentStatus(orderID int, paymentStatus string) er
 // GetOrderStats returns order statistics
 func (s *OrderService) GetOrderStats() (map[string]interface{}, error) {
 	stats := make(map[string]interface{})
-	
+
 	// Total orders
 	totalOrders, err := s.repo.Count("orders", nil)
 	if err == nil {
@@ -232,7 +232,7 @@ func (s *OrderService) GetOrderStats() (map[string]interface{}, error) {
 func (s *OrderService) GetVendorOrders(vendorID int, limit, offset int) ([]models.OrderItem, error) {
 	var items []models.OrderItem
 	conditions := map[string]interface{}{"vendor_id": vendorID}
-	
+
 	err := s.repo.FindAll("order_items", &items, conditions, "id DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get vendor orders: %w", err)
@@ -315,7 +315,7 @@ func (s *OrderService) GetCartItem(cartID, productID int, variantID *int) (*mode
 	if variantID != nil {
 		conditions["variant_id"] = *variantID
 	}
-	
+
 	err := s.repo.FindOne("cart_items", &item, conditions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cart item: %w", err)
@@ -327,7 +327,7 @@ func (s *OrderService) GetCartItem(cartID, productID int, variantID *int) (*mode
 func (s *OrderService) GetCartItems(cartID int) ([]models.CartItem, error) {
 	var items []models.CartItem
 	conditions := map[string]interface{}{"cart_id": cartID}
-	
+
 	err := s.repo.FindAll("cart_items", &items, conditions, "created_at ASC", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get cart items: %w", err)

@@ -59,7 +59,7 @@ func (s *AuctionService) UpdateAuction(id int, auction *models.Auction) error {
 func (s *AuctionService) GetActiveAuctions(limit, offset int) ([]models.Auction, error) {
 	var auctions []models.Auction
 	conditions := map[string]interface{}{"status": "active"}
-	
+
 	err := s.repo.FindAll("auctions", &auctions, conditions, "end_time ASC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get active auctions: %w", err)
@@ -71,7 +71,7 @@ func (s *AuctionService) GetActiveAuctions(limit, offset int) ([]models.Auction,
 func (s *AuctionService) GetAuctionsByVendor(vendorID int, limit, offset int) ([]models.Auction, error) {
 	var auctions []models.Auction
 	conditions := map[string]interface{}{"vendor_id": vendorID}
-	
+
 	err := s.repo.FindAll("auctions", &auctions, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auctions by vendor: %w", err)
@@ -83,15 +83,15 @@ func (s *AuctionService) GetAuctionsByVendor(vendorID int, limit, offset int) ([
 func (s *AuctionService) GetEndingAuctions(hours int, limit, offset int) ([]models.Auction, error) {
 	var auctions []models.Auction
 	endTime := time.Now().Add(time.Duration(hours) * time.Hour)
-	
+
 	// This would need a custom query in a real implementation
 	conditions := map[string]interface{}{"status": "active"}
-	
+
 	err := s.repo.FindAll("auctions", &auctions, conditions, "end_time ASC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get ending auctions: %w", err)
 	}
-	
+
 	// Filter by end time (in a real implementation, this would be done in SQL)
 	var filtered []models.Auction
 	for _, auction := range auctions {
@@ -99,7 +99,7 @@ func (s *AuctionService) GetEndingAuctions(hours int, limit, offset int) ([]mode
 			filtered = append(filtered, auction)
 		}
 	}
-	
+
 	return filtered, nil
 }
 
@@ -227,7 +227,7 @@ func (s *AuctionService) markPreviousBidsAsLosing(auctionID int) error {
 func (s *AuctionService) GetAuctionBids(auctionID int, limit, offset int) ([]models.AuctionBid, error) {
 	var bids []models.AuctionBid
 	conditions := map[string]interface{}{"auction_id": auctionID}
-	
+
 	err := s.repo.FindAll("auction_bids", &bids, conditions, "amount DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auction bids: %w", err)
@@ -253,7 +253,7 @@ func (s *AuctionService) GetWinningBid(auctionID int) (*models.AuctionBid, error
 func (s *AuctionService) GetUserBids(userID int, limit, offset int) ([]models.AuctionBid, error) {
 	var bids []models.AuctionBid
 	conditions := map[string]interface{}{"user_id": userID}
-	
+
 	err := s.repo.FindAll("auction_bids", &bids, conditions, "created_at DESC", limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user bids: %w", err)
@@ -279,7 +279,7 @@ func (s *AuctionService) RemoveWatcher(auctionID, userID int) error {
 		"auction_id": auctionID,
 		"user_id":    userID,
 	}
-	
+
 	var watcher models.AuctionWatcher
 	err := s.repo.FindOne("auction_watchers", &watcher, conditions)
 	if err != nil {
@@ -293,7 +293,7 @@ func (s *AuctionService) RemoveWatcher(auctionID, userID int) error {
 func (s *AuctionService) GetAuctionWatchers(auctionID int) ([]models.AuctionWatcher, error) {
 	var watchers []models.AuctionWatcher
 	conditions := map[string]interface{}{"auction_id": auctionID}
-	
+
 	err := s.repo.FindAll("auction_watchers", &watchers, conditions, "created_at DESC", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auction watchers: %w", err)
@@ -307,7 +307,7 @@ func (s *AuctionService) IsUserWatching(auctionID, userID int) (bool, error) {
 		"auction_id": auctionID,
 		"user_id":    userID,
 	}
-	
+
 	exists, err := s.repo.Exists("auction_watchers", conditions)
 	if err != nil {
 		return false, fmt.Errorf("failed to check if user is watching: %w", err)
@@ -318,7 +318,7 @@ func (s *AuctionService) IsUserWatching(auctionID, userID int) (bool, error) {
 // AddAuctionImage adds an image to an auction
 func (s *AuctionService) AddAuctionImage(image *models.AuctionImage) error {
 	image.CreatedAt = time.Now()
-	
+
 	id, err := s.repo.CreateStruct("auction_images", image)
 	if err != nil {
 		return fmt.Errorf("failed to add auction image: %w", err)
@@ -331,7 +331,7 @@ func (s *AuctionService) AddAuctionImage(image *models.AuctionImage) error {
 func (s *AuctionService) GetAuctionImages(auctionID int) ([]models.AuctionImage, error) {
 	var images []models.AuctionImage
 	conditions := map[string]interface{}{"auction_id": auctionID}
-	
+
 	err := s.repo.FindAll("auction_images", &images, conditions, "sort_order ASC", 0, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auction images: %w", err)
@@ -348,14 +348,14 @@ func (s *AuctionService) IncrementAuctionViews(auctionID int) error {
 
 	auction.ViewCount++
 	auction.UpdatedAt = time.Now()
-	
+
 	return s.UpdateAuction(auctionID, auction)
 }
 
 // GetAuctionStats returns auction statistics
 func (s *AuctionService) GetAuctionStats() (map[string]interface{}, error) {
 	stats := make(map[string]interface{})
-	
+
 	// Total auctions
 	totalAuctions, err := s.repo.Count("auctions", nil)
 	if err == nil {
@@ -388,7 +388,7 @@ func (s *AuctionService) ProcessExpiredAuctions() error {
 	// Get active auctions that have ended
 	var auctions []models.Auction
 	conditions := map[string]interface{}{"status": "active"}
-	
+
 	err := s.repo.FindAll("auctions", &auctions, conditions, "end_time ASC", 0, 0)
 	if err != nil {
 		return fmt.Errorf("failed to get active auctions: %w", err)

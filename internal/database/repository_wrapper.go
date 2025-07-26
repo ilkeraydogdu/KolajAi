@@ -27,30 +27,30 @@ func (r *RepositoryWrapper) structToFieldsAndValues(data interface{}) ([]string,
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
-	
+
 	t := v.Type()
 	var fields []string
 	var values []interface{}
-	
+
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
 		value := v.Field(i)
-		
+
 		// Skip ID field for creation
 		if field.Name == "ID" {
 			continue
 		}
-		
+
 		// Get db tag or use field name
 		dbTag := field.Tag.Get("db")
 		if dbTag == "" {
 			dbTag = field.Name
 		}
-		
+
 		fields = append(fields, dbTag)
 		values = append(values, value.Interface())
 	}
-	
+
 	return fields, values
 }
 
