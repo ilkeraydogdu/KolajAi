@@ -90,7 +90,8 @@ func (h *EcommerceHandler) Products(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		h.HandleError(w, r, err, "Ürünler yüklenirken hata oluştu")
+		// Temporary: show actual error instead of template error
+		http.Error(w, fmt.Sprintf("Products error: %v", err), http.StatusInternalServerError)
 		return
 	}
 

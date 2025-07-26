@@ -11,7 +11,6 @@ import (
 	"kolajAi/internal/database"
 	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
-	"kolajAi/internal/repository"
 	"kolajAi/internal/services"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -32,6 +31,13 @@ func init() {
 }
 
 func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			MainLogger.Printf("Application panicked: %v", r)
+			fmt.Printf("PANIC: %v\n", r)
+		}
+	}()
+
 	MainLogger.Println("KolajAI uygulaması başlatılıyor...")
 
 	// Veritabanı bağlantısı (SQLite)
@@ -49,17 +55,57 @@ func main() {
 		MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
 	}
 	MainLogger.Println("Migration'lar başarıyla tamamlandı!")
+	fmt.Println("DEBUG: Migrations completed successfully")
+
+	MainLogger.Println("DEBUG: Migration'lar tamamlandı, repository oluşturmaya başlıyoruz...")
+	fmt.Println("DEBUG: About to create repository")
 
 	// Repository oluştur
+	MainLogger.Println("Repository oluşturuluyor...")
+	fmt.Println("DEBUG: Creating repository")
+	
+	fmt.Println("DEBUG: About to call NewMySQLRepository")
 	mysqlRepo := database.NewMySQLRepository(db)
-	repo := repository.NewBaseRepository(mysqlRepo)
+	fmt.Println("DEBUG: NewMySQLRepository completed")
+	
+	fmt.Println("DEBUG: About to log MySQLRepository created")
+	MainLogger.Println("MySQLRepository oluşturuldu")
+	fmt.Println("DEBUG: MySQLRepository log completed")
+	
+	fmt.Println("DEBUG: About to create RepositoryWrapper")
+	repo := database.NewRepositoryWrapper(mysqlRepo)
+	fmt.Println("DEBUG: RepositoryWrapper created")
+	fmt.Println("DEBUG: About to log RepositoryWrapper created")
+	MainLogger.Println("RepositoryWrapper oluşturuldu")
+	fmt.Println("DEBUG: RepositoryWrapper log completed")
 
 	// Servisleri oluştur
+	fmt.Println("DEBUG: About to create services")
 	MainLogger.Println("Servisler oluşturuluyor...")
+	fmt.Println("DEBUG: Services creation log completed")
+	
+	fmt.Println("DEBUG: About to create VendorService")
+	MainLogger.Println("VendorService oluşturuluyor...")
+	fmt.Println("DEBUG: VendorService log completed")
+	
+	fmt.Println("DEBUG: About to call NewVendorService")
 	vendorService := services.NewVendorService(repo)
+	fmt.Println("DEBUG: VendorService created successfully")
+	MainLogger.Println("VendorService oluşturuldu")
+	
+	MainLogger.Println("ProductService oluşturuluyor...")
 	productService := services.NewProductService(repo)
+	MainLogger.Println("ProductService oluşturuldu")
+	
+	MainLogger.Println("OrderService oluşturuluyor...")
 	orderService := services.NewOrderService(repo)
+	MainLogger.Println("OrderService oluşturuldu")
+	
+	MainLogger.Println("AuctionService oluşturuluyor...")
 	auctionService := services.NewAuctionService(repo)
+	MainLogger.Println("AuctionService oluşturuldu")
+	
+	MainLogger.Println("Servisler başarıyla oluşturuldu!")
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
@@ -142,10 +188,22 @@ func main() {
 		},
 	}
 	
-	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("web/templates/**/*.gohtml")
+	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("web/templates/*.gohtml")
 	if err != nil {
 		MainLogger.Fatalf("Şablonlar yüklenemedi: %v", err)
 	}
+	
+	// Also parse subdirectory templates
+	tmpl, err = tmpl.ParseGlob("web/templates/*/*.gohtml")
+	if err != nil {
+		MainLogger.Printf("Alt dizin şablonları yüklenirken hata (devam ediliyor): %v", err)
+	}
+	
+	// Debug: list loaded templates
+	for _, t := range tmpl.Templates() {
+		MainLogger.Printf("Loaded template: %s", t.Name())
+	}
+	
 	MainLogger.Printf("Şablonlar başarıyla yüklendi!")
 
 	// Handler'ları oluştur

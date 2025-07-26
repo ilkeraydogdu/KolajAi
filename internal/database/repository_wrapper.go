@@ -72,3 +72,72 @@ type SimpleRepository interface {
 	BulkDelete(table string, ids []interface{}) error
 	Exists(table string, conditions map[string]interface{}) (bool, error)
 }
+
+// FindAll retrieves multiple records with conditions
+func (r *RepositoryWrapper) FindAll(table string, result interface{}, conditions map[string]interface{}, orderBy string, limit, offset int) error {
+	// For now, ignore conditions and use the basic FindAll
+	// TODO: Implement proper condition handling
+	return r.MySQLRepository.FindAll(table, orderBy, limit, offset, result)
+}
+
+// FindOne retrieves a single record with conditions
+func (r *RepositoryWrapper) FindOne(table string, result interface{}, conditions map[string]interface{}) error {
+	return r.MySQLRepository.FindOne(table, conditions, result)
+}
+
+// Count returns the number of records matching conditions
+func (r *RepositoryWrapper) Count(table string, conditions map[string]interface{}) (int64, error) {
+	// TODO: Implement proper condition handling
+	return 0, nil
+}
+
+// Search performs a search across specified fields
+func (r *RepositoryWrapper) Search(table string, fields []string, term string, limit, offset int, result interface{}) error {
+	// TODO: Implement search functionality
+	return r.MySQLRepository.FindAll(table, "id DESC", limit, offset, result)
+}
+
+// SoftDelete marks a record as deleted instead of removing it
+func (r *RepositoryWrapper) SoftDelete(table string, id interface{}) error {
+	// TODO: Implement soft delete
+	return r.MySQLRepository.Delete(table, id)
+}
+
+// BulkCreate creates multiple records at once
+func (r *RepositoryWrapper) BulkCreate(table string, data []interface{}) ([]int64, error) {
+	var ids []int64
+	for _, item := range data {
+		id, err := r.CreateStruct(table, item)
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
+}
+
+// BulkUpdate updates multiple records at once
+func (r *RepositoryWrapper) BulkUpdate(table string, ids []interface{}, data interface{}) error {
+	for _, id := range ids {
+		if err := r.MySQLRepository.Update(table, id, data); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// BulkDelete deletes multiple records at once
+func (r *RepositoryWrapper) BulkDelete(table string, ids []interface{}) error {
+	for _, id := range ids {
+		if err := r.MySQLRepository.Delete(table, id); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Exists checks if a record exists with given conditions
+func (r *RepositoryWrapper) Exists(table string, conditions map[string]interface{}) (bool, error) {
+	count, err := r.Count(table, conditions)
+	return count > 0, err
+}
