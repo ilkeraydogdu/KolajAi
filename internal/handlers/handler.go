@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"html/template"
+	"kolajAi/internal/models"
 	"log"
 	"net/http"
 	"os"
@@ -298,4 +300,66 @@ func (h *Handler) HandleError(w http.ResponseWriter, r *http.Request, err error,
 
 	w.WriteHeader(http.StatusInternalServerError)
 	h.RenderTemplate(w, r, "error", data)
+}
+
+// ErrorResponse sends an error response
+func (h *Handler) ErrorResponse(w http.ResponseWriter, message string, statusCode int) {
+	Logger.Printf("Error Response: %s (Status: %d)", message, statusCode)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	
+	response := map[string]interface{}{
+		"success": false,
+		"error":   message,
+		"status":  statusCode,
+	}
+	
+	json.NewEncoder(w).Encode(response)
+}
+
+// JSONResponse sends a JSON response
+func (h *Handler) JSONResponse(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		Logger.Printf("JSON encoding error: %v", err)
+		h.ErrorResponse(w, "Internal server error", http.StatusInternalServerError)
+	}
+}
+
+// GetUserFromSession gets user from session
+func (h *Handler) GetUserFromSession(r *http.Request) *models.User {
+	session, err := h.SessionManager.GetSession(r)
+	if err != nil {
+		Logger.Printf("Session error: %v", err)
+		return nil
+	}
+
+	userID, ok := session.Values[UserKey]
+	if !ok {
+		return nil
+	}
+
+	// This is a simplified version - in real implementation, 
+	// you would fetch the user from database using the userID
+	user := &models.User{
+		ID:               int64(userID.(int)),
+		IsAdmin:          false,
+		Role:             models.RoleUser,
+		AIAccess:         false,
+		AIEditAccess:     false,
+		AITemplateAccess: false,
+	}
+
+	// If it's admin, give all permissions
+	if userID.(int) == 1 {
+		user.IsAdmin = true
+		user.Role = models.RoleAdmin
+		user.AIAccess = true
+		user.AIEditAccess = true
+		user.AITemplateAccess = true
+	}
+
+	return user
 }

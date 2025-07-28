@@ -346,3 +346,23 @@ func (s *ProductService) GetRecentProducts(limit int) ([]models.Product, error) 
 	}
 	return products, nil
 }
+
+// GetProductsByUser returns products for a specific user
+func (s *ProductService) GetProductsByUser(userID int64, limit, offset int) ([]*models.Product, error) {
+	var products []models.Product
+	conditions := map[string]interface{}{
+		"vendor_id": userID,
+	}
+	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user products: %w", err)
+	}
+
+	// Convert to pointer slice
+	var result []*models.Product
+	for i := range products {
+		result = append(result, &products[i])
+	}
+	
+	return result, nil
+}
