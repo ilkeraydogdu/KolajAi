@@ -1,0 +1,624 @@
+{{define "title"}}AI Ürün Editörü{{end}}
+
+{{define "content"}}
+<div class="container-fluid">
+    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3">AI Editör</div>
+        <div class="ps-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 p-0">
+                    <li class="breadcrumb-item"><a href="/"><i class="bx bx-home-alt"></i></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">AI Ürün Editörü</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="ms-auto">
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" id="aiCreditsBtn">
+                    <i class="bx bx-coin"></i> AI Kredileri: <span id="aiCredits">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Sol Panel - Ürün Seçimi ve Bilgileri -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Ürün Seçimi</h5>
+                    <div class="mb-3">
+                        <label for="productSelect" class="form-label">Ürün Seçin</label>
+                        <select class="form-select" id="productSelect">
+                            <option value="">Ürün seçin...</option>
+                        </select>
+                    </div>
+                    <div id="productInfo" style="display: none;">
+                        <div class="product-preview">
+                            <img id="productImage" src="" class="img-fluid rounded mb-3" alt="">
+                            <h6 id="productName"></h6>
+                            <p id="productDescription" class="text-muted"></p>
+                            <p class="mb-0">Fiyat: <strong id="productPrice"></strong></p>
+                            <p class="mb-0">Stok: <strong id="productStock"></strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Asistan -->
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">AI Asistan</h5>
+                    <div class="chat-box" id="aiChatBox" style="height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+                        <div class="chat-message ai">
+                            <strong>AI Asistan:</strong> Merhaba! Size ürün düzenleme konusunda nasıl yardımcı olabilirim?
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="chatInput" placeholder="Sorunuzu yazın...">
+                        <button class="btn btn-primary" id="sendChatBtn">
+                            <i class="bx bx-send"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orta Panel - AI Editör Araçları -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body">
+                    <ul class="nav nav-tabs nav-primary" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#imageGen" role="tab">
+                                <div class="d-flex align-items-center">
+                                    <div class="tab-icon"><i class='bx bx-image font-18 me-1'></i></div>
+                                    <div class="tab-title">Görsel Oluştur</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" data-bs-toggle="tab" href="#contentGen" role="tab">
+                                <div class="d-flex align-items-center">
+                                    <div class="tab-icon"><i class='bx bx-text font-18 me-1'></i></div>
+                                    <div class="tab-title">İçerik Oluştur</div>
+                                </div>
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" data-bs-toggle="tab" href="#templateGen" role="tab">
+                                <div class="d-flex align-items-center">
+                                    <div class="tab-icon"><i class='bx bx-layout font-18 me-1'></i></div>
+                                    <div class="tab-title">Şablon Tasarla</div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <div class="tab-content py-3">
+                        <!-- Görsel Oluşturma -->
+                        <div class="tab-pane fade show active" id="imageGen" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h5>AI ile Ürün Görseli Oluştur</h5>
+                                    <div class="mb-3">
+                                        <label class="form-label">Görsel Açıklaması</label>
+                                        <textarea class="form-control" id="imagePrompt" rows="3" placeholder="Örn: Modern, minimalist bir kahve fincanı, beyaz arka plan, profesyonel ürün fotoğrafı"></textarea>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-md-4">
+                                            <label class="form-label">Model</label>
+                                            <select class="form-select" id="imageModel">
+                                                <option value="dall-e-3">DALL-E 3</option>
+                                                <option value="stable-diffusion-xl">Stable Diffusion XL</option>
+                                                <option value="midjourney-v6">Midjourney v6</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Boyut</label>
+                                            <select class="form-select" id="imageSize">
+                                                <option value="1024x1024">1024x1024 (Kare)</option>
+                                                <option value="1792x1024">1792x1024 (Yatay)</option>
+                                                <option value="1024x1792">1024x1792 (Dikey)</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Kalite</label>
+                                            <select class="form-select" id="imageQuality">
+                                                <option value="standard">Standart</option>
+                                                <option value="hd">HD</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="generateImageBtn">
+                                        <i class="bx bx-magic-wand"></i> Görsel Oluştur (40 Kredi)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mt-4" id="generatedImages" style="display: none;">
+                                <h6>Oluşturulan Görseller</h6>
+                                <div class="generated-images-grid"></div>
+                            </div>
+                        </div>
+
+                        <!-- İçerik Oluşturma -->
+                        <div class="tab-pane fade" id="contentGen" role="tabpanel">
+                            <h5>AI ile İçerik Oluştur</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">İçerik Türü</label>
+                                        <select class="form-select" id="contentType">
+                                            <option value="product_description">Ürün Açıklaması</option>
+                                            <option value="social_media_post">Sosyal Medya Paylaşımı</option>
+                                            <option value="email_template">E-posta Şablonu</option>
+                                            <option value="telegram_ad">Telegram İlanı</option>
+                                            <option value="instagram_caption">Instagram Yazısı</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Dil</label>
+                                        <select class="form-select" id="contentLanguage">
+                                            <option value="tr">Türkçe</option>
+                                            <option value="en">İngilizce</option>
+                                            <option value="ar">Arapça</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Ton</label>
+                                        <select class="form-select" id="contentTone">
+                                            <option value="professional">Profesyonel</option>
+                                            <option value="friendly">Samimi</option>
+                                            <option value="persuasive">İkna Edici</option>
+                                            <option value="informative">Bilgilendirici</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Uzunluk</label>
+                                        <select class="form-select" id="contentLength">
+                                            <option value="short">Kısa</option>
+                                            <option value="medium">Orta</option>
+                                            <option value="long">Uzun</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Anahtar Kelimeler</label>
+                                <input type="text" class="form-control" id="contentKeywords" placeholder="Virgülle ayırarak girin">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Ek Bilgiler</label>
+                                <textarea class="form-control" id="contentContext" rows="2" placeholder="Ürün hakkında ek bilgiler..."></textarea>
+                            </div>
+                            <button class="btn btn-primary" id="generateContentBtn">
+                                <i class="bx bx-edit"></i> İçerik Oluştur (10 Kredi)
+                            </button>
+                            <div class="mt-4" id="generatedContent" style="display: none;">
+                                <h6>Oluşturulan İçerik</h6>
+                                <div class="generated-content-box p-3 border rounded"></div>
+                                <button class="btn btn-success mt-2" id="useContentBtn">
+                                    <i class="bx bx-check"></i> Bu İçeriği Kullan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Şablon Tasarlama -->
+                        <div class="tab-pane fade" id="templateGen" role="tabpanel">
+                            <h5>AI ile Şablon Tasarla</h5>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">Şablon Türü</label>
+                                        <select class="form-select" id="templateType">
+                                            <option value="instagram_post">Instagram Gönderi</option>
+                                            <option value="instagram_story">Instagram Story</option>
+                                            <option value="telegram_ad">Telegram İlan</option>
+                                            <option value="facebook_banner">Facebook Banner</option>
+                                            <option value="whatsapp_status">WhatsApp Durum</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Şablon Adı</label>
+                                        <input type="text" class="form-control" id="templateName" placeholder="Şablona bir isim verin">
+                                    </div>
+                                    <button class="btn btn-primary" id="createTemplateBtn">
+                                        <i class="bx bx-palette"></i> Şablon Oluştur (50 Kredi)
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mt-4" id="templatePreview" style="display: none;">
+                                <h6>Şablon Önizleme</h6>
+                                <div class="template-preview-box"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sonuçlar -->
+            <div class="card" id="resultsCard" style="display: none;">
+                <div class="card-body">
+                    <h5 class="card-title">Sonuçlar</h5>
+                    <div id="resultsContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// AI Editor JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    let currentProduct = null;
+    let chatSessionId = null;
+    let aiCredits = 0;
+
+    // Load AI credits
+    loadAICredits();
+
+    // Initialize chat session
+    initializeChatSession();
+
+    // Load products
+    loadProducts();
+
+    // Event listeners
+    document.getElementById('productSelect').addEventListener('change', selectProduct);
+    document.getElementById('sendChatBtn').addEventListener('click', sendChatMessage);
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendChatMessage();
+    });
+    document.getElementById('generateImageBtn').addEventListener('click', generateImage);
+    document.getElementById('generateContentBtn').addEventListener('click', generateContent);
+    document.getElementById('createTemplateBtn').addEventListener('click', createTemplate);
+
+    function loadAICredits() {
+        fetch('/api/ai/credits')
+            .then(response => response.json())
+            .then(data => {
+                aiCredits = data.credits;
+                document.getElementById('aiCredits').textContent = aiCredits;
+            })
+            .catch(error => console.error('Error loading AI credits:', error));
+    }
+
+    function initializeChatSession() {
+        fetch('/api/ai/chat/start', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                context: 'product_assistant'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            chatSessionId = data.id;
+        })
+        .catch(error => console.error('Error initializing chat:', error));
+    }
+
+    function loadProducts() {
+        fetch('/api/products')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('productSelect');
+                data.products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product.id;
+                    option.textContent = product.name;
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error loading products:', error));
+    }
+
+    function selectProduct() {
+        const productId = this.value;
+        if (!productId) {
+            document.getElementById('productInfo').style.display = 'none';
+            return;
+        }
+
+        fetch(`/api/products/${productId}`)
+            .then(response => response.json())
+            .then(data => {
+                currentProduct = data;
+                document.getElementById('productImage').src = data.images[0] || '/static/img/placeholder.jpg';
+                document.getElementById('productName').textContent = data.name;
+                document.getElementById('productDescription').textContent = data.description;
+                document.getElementById('productPrice').textContent = `₺${data.price}`;
+                document.getElementById('productStock').textContent = data.stock;
+                document.getElementById('productInfo').style.display = 'block';
+            })
+            .catch(error => console.error('Error loading product:', error));
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message || !chatSessionId) return;
+
+        // Add user message to chat
+        addChatMessage('user', message);
+        input.value = '';
+
+        // Send to AI
+        fetch('/api/ai/chat/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: chatSessionId,
+                message: message
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            addChatMessage('ai', data.content);
+            loadAICredits(); // Update credits
+        })
+        .catch(error => {
+            console.error('Error sending chat message:', error);
+            addChatMessage('ai', 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.');
+        });
+    }
+
+    function addChatMessage(type, message) {
+        const chatBox = document.getElementById('aiChatBox');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${type} mb-2`;
+        messageDiv.innerHTML = `<strong>${type === 'user' ? 'Siz' : 'AI Asistan'}:</strong> ${message}`;
+        chatBox.appendChild(messageDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function generateImage() {
+        const prompt = document.getElementById('imagePrompt').value.trim();
+        if (!prompt) {
+            alert('Lütfen görsel açıklaması girin');
+            return;
+        }
+
+        if (aiCredits < 40) {
+            alert('Yetersiz AI kredisi. Görsel oluşturmak için en az 40 kredi gereklidir.');
+            return;
+        }
+
+        const btn = document.getElementById('generateImageBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Oluşturuluyor...';
+
+        fetch('/api/ai/generate-image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                prompt: prompt,
+                model: document.getElementById('imageModel').value,
+                size: document.getElementById('imageSize').value,
+                quality: document.getElementById('imageQuality').value,
+                count: 1,
+                product_id: currentProduct ? currentProduct.id : null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayGeneratedImages(data.images);
+            loadAICredits(); // Update credits
+        })
+        .catch(error => {
+            console.error('Error generating image:', error);
+            alert('Görsel oluşturulurken bir hata oluştu');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-magic-wand"></i> Görsel Oluştur (40 Kredi)';
+        });
+    }
+
+    function displayGeneratedImages(images) {
+        const container = document.getElementById('generatedImages');
+        const grid = container.querySelector('.generated-images-grid');
+        grid.innerHTML = '';
+
+        images.forEach(imageUrl => {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 mb-3';
+            col.innerHTML = `
+                <div class="generated-image-item">
+                    <img src="${imageUrl}" class="img-fluid rounded" alt="Generated Image">
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-success" onclick="useGeneratedImage('${imageUrl}')">
+                            <i class="bx bx-check"></i> Kullan
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="downloadImage('${imageUrl}')">
+                            <i class="bx bx-download"></i> İndir
+                        </button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(col);
+        });
+
+        container.style.display = 'block';
+    }
+
+    function generateContent() {
+        const context = document.getElementById('contentContext').value;
+        const keywords = document.getElementById('contentKeywords').value;
+
+        if (!currentProduct && !context) {
+            alert('Lütfen bir ürün seçin veya ek bilgiler girin');
+            return;
+        }
+
+        if (aiCredits < 10) {
+            alert('Yetersiz AI kredisi. İçerik oluşturmak için en az 10 kredi gereklidir.');
+            return;
+        }
+
+        const btn = document.getElementById('generateContentBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Oluşturuluyor...';
+
+        fetch('/api/ai/generate-content', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                type: document.getElementById('contentType').value,
+                context: context || (currentProduct ? `Product: ${currentProduct.name}, ${currentProduct.description}` : ''),
+                language: document.getElementById('contentLanguage').value,
+                tone: document.getElementById('contentTone').value,
+                length: document.getElementById('contentLength').value,
+                keywords: keywords.split(',').map(k => k.trim()).filter(k => k),
+                product_id: currentProduct ? currentProduct.id : null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayGeneratedContent(data.content);
+            loadAICredits(); // Update credits
+        })
+        .catch(error => {
+            console.error('Error generating content:', error);
+            alert('İçerik oluşturulurken bir hata oluştu');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-edit"></i> İçerik Oluştur (10 Kredi)';
+        });
+    }
+
+    function displayGeneratedContent(content) {
+        const container = document.getElementById('generatedContent');
+        const contentBox = container.querySelector('.generated-content-box');
+        contentBox.innerHTML = content.replace(/\n/g, '<br>');
+        container.style.display = 'block';
+    }
+
+    function createTemplate() {
+        const templateName = document.getElementById('templateName').value.trim();
+        if (!templateName) {
+            alert('Lütfen şablon adı girin');
+            return;
+        }
+
+        if (aiCredits < 50) {
+            alert('Yetersiz AI kredisi. Şablon oluşturmak için en az 50 kredi gereklidir.');
+            return;
+        }
+
+        const btn = document.getElementById('createTemplateBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Oluşturuluyor...';
+
+        fetch('/api/ai/create-template', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: templateName,
+                type: document.getElementById('templateType').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            displayTemplatePreview(data);
+            loadAICredits(); // Update credits
+        })
+        .catch(error => {
+            console.error('Error creating template:', error);
+            alert('Şablon oluşturulurken bir hata oluştu');
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bx bx-palette"></i> Şablon Oluştur (50 Kredi)';
+        });
+    }
+
+    function displayTemplatePreview(template) {
+        const container = document.getElementById('templatePreview');
+        const previewBox = container.querySelector('.template-preview-box');
+        previewBox.innerHTML = `
+            <div class="template-item">
+                <img src="${template.thumbnail}" class="img-fluid rounded mb-3" alt="Template Preview">
+                <h6>${template.name}</h6>
+                <p>Tür: ${template.type}</p>
+                <button class="btn btn-success" onclick="useTemplate(${template.id})">
+                    <i class="bx bx-check"></i> Şablonu Kullan
+                </button>
+            </div>
+        `;
+        container.style.display = 'block';
+    }
+});
+
+// Helper functions
+function useGeneratedImage(imageUrl) {
+    // Implement logic to use the generated image
+    console.log('Using image:', imageUrl);
+}
+
+function downloadImage(imageUrl) {
+    // Implement image download
+    const a = document.createElement('a');
+    a.href = imageUrl;
+    a.download = 'generated-image.png';
+    a.click();
+}
+
+function useTemplate(templateId) {
+    // Implement logic to use the template
+    console.log('Using template:', templateId);
+}
+</script>
+
+<style>
+.chat-message {
+    padding: 8px;
+    margin-bottom: 5px;
+    border-radius: 5px;
+}
+
+.chat-message.user {
+    background-color: #e3f2fd;
+    text-align: right;
+}
+
+.chat-message.ai {
+    background-color: #f5f5f5;
+}
+
+.generated-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.generated-content-box {
+    background-color: #f8f9fa;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.template-preview-box {
+    text-align: center;
+}
+</style>
+{{end}}
