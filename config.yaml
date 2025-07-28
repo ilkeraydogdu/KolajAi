@@ -1,0 +1,77 @@
+environment: development
+
+server:
+  port: 8081
+  host: "0.0.0.0"
+  domain: "localhost"
+  read_timeout: 10
+  write_timeout: 10
+  idle_timeout: 120
+  max_header_bytes: 1048576
+
+database:
+  driver: "sqlite3"
+  host: "localhost"
+  port: 3306
+  name: "kolajAi.db"
+  user: ""
+  password: ""
+  max_open_conns: 25
+  max_idle_conns: 25
+  conn_max_lifetime: 5
+
+security:
+  encryption_key: "supersecretkey32byteslongforencryption"
+  jwt_secret: "jwtsecretkey"
+  csrf_secret: "csrfsecretkey"
+  session_secret: "sessionsecretkey"
+  two_factor_enabled: false
+  rate_limit_enabled: true
+  cors_enabled: true
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8081"
+
+cache:
+  driver: "memory"
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  default_ttl: "30m"
+  max_memory_usage: 1073741824
+
+email:
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 587
+  smtp_user: ""
+  smtp_password: ""
+  from_email: "noreply@kolajAi.com"
+  from_name: "KolajAI"
+  use_ssl: false
+  use_tls: true
+
+seo:
+  site_name: "KolajAI Enterprise Marketplace"
+  site_description: "Advanced AI-powered e-commerce platform"
+  site_keywords:
+    - "e-commerce"
+    - "AI"
+    - "marketplace"
+    - "online shopping"
+  default_language: "tr"
+  languages:
+    - "tr"
+    - "en"
+    - "ar"
+  google_analytics: ""
+  google_tag_manager: ""
+
+logging:
+  level: "info"
+  format: "json"
+  output: "stdout"
+  max_size: 100
+  max_backups: 3
+  max_age: 28
+  compress: true

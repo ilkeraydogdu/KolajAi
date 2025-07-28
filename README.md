@@ -1,37 +1,90 @@
-# KolajAI Marketplace
+# KolajAI Enterprise Marketplace
 
-KolajAI is a modern, AI-powered e-commerce marketplace built with Go, featuring advanced analytics, intelligent recommendations, and comprehensive vendor management.
+## Overview
 
-## 🚀 Features
+KolajAI Enterprise Marketplace is an advanced, AI-powered e-commerce platform built with Go. This enterprise-level application includes comprehensive features for modern e-commerce operations with advanced security, performance optimization, and management capabilities.
 
-### Core Marketplace Features
-- **Product Management**: Full CRUD operations for products with categories, variants, and images
-- **Vendor System**: Multi-vendor marketplace with approval workflows
-- **Order Management**: Complete order lifecycle with status tracking
-- **Auction System**: Real-time bidding functionality
-- **User Authentication**: Secure session-based authentication with role management
+## Enterprise Features
 
-### AI-Powered Features
-- **Smart Recommendations**: AI-driven product recommendations based on user behavior
-- **Price Optimization**: Intelligent pricing suggestions for vendors
-- **Market Analytics**: Advanced market trend analysis and insights
-- **Customer Segmentation**: AI-powered customer behavior analysis
-- **Smart Search**: Enhanced search with AI-powered relevance
+### 🔐 Advanced Security System
+- **Multi-layer Security**: IP whitelisting/blacklisting, rate limiting, input validation
+- **Vulnerability Scanning**: Real-time threat detection for SQL injection, XSS, CSRF
+- **Security Headers**: Comprehensive HTTP security headers
+- **Two-Factor Authentication**: Optional 2FA support
+- **Audit Logging**: Complete security event logging and monitoring
 
-### Technical Features
-- **SQLite Database**: Lightweight, embedded database with migration system
-- **Template Engine**: Server-side rendering with Go templates
-- **RESTful API**: Clean API design for frontend integration
-- **Comprehensive Testing**: Unit, integration, and end-to-end tests
-- **Development Tools**: Database seeding, migration tools, and debugging utilities
+### 🚀 Performance Optimization
+- **Advanced Caching**: Multi-store cache system (Memory, Redis, Database)
+- **Compression**: Automatic gzip compression for responses
+- **Cache Invalidation**: Tag-based and TTL-based cache management
+- **Load Balancing Ready**: Designed for horizontal scaling
 
-## 📋 Prerequisites
+### 📊 Dynamic Reporting System
+- **Configurable Reports**: Custom report generation with filters and grouping
+- **User Behavior Analysis**: Detailed user activity and purchasing pattern analysis
+- **Real-time Analytics**: Live dashboard with performance metrics
+- **Export Capabilities**: Multiple format support (JSON, CSV, PDF)
 
-- Go 1.23.0 or higher
-- SQLite3
-- Make (for using the Makefile)
+### 🔧 Session & Cookie Management
+- **Database-backed Sessions**: Persistent session storage
+- **Session Analytics**: User activity tracking and device information
+- **Secure Cookies**: HttpOnly, Secure, SameSite configuration
+- **Session Cleanup**: Automatic cleanup of expired sessions
 
-## 🛠️ Installation
+### 🌐 SEO & Multi-language Support
+- **Dynamic Sitemap**: Auto-generated XML sitemaps
+- **Multi-language Content**: Full internationalization support
+- **Meta Tag Management**: Dynamic meta tags and structured data
+- **Search Engine Optimization**: Built-in SEO tools and analytics
+
+### 📢 Notification System
+- **Multi-channel Notifications**: Email, SMS, push notifications
+- **Template System**: Customizable notification templates
+- **Scheduling**: Delayed and recurring notifications
+- **User Preferences**: Opt-out and quiet hours management
+
+### 🧪 Advanced Testing Framework
+- **Multiple Test Types**: Unit, integration, API, UI, performance, security tests
+- **Code Coverage**: Detailed coverage reporting
+- **Parallel Execution**: Concurrent test running
+- **Test Reporting**: Comprehensive test result analysis
+
+### ❌ Error Management
+- **Centralized Error Handling**: Structured error logging and management
+- **Error Grouping**: Similar error aggregation
+- **Notification Rules**: Configurable error alerting
+- **Stack Trace Analysis**: Detailed error context and debugging information
+
+### 🎛️ Advanced Admin Panel
+- **Real-time Dashboard**: Live statistics and metrics
+- **User Management**: Detailed user profiles and behavior analysis
+- **Content Management**: Product, vendor, and order management
+- **System Health**: Server monitoring and performance tracking
+- **Configuration Management**: Dynamic system settings
+
+## Technical Architecture
+
+### Core Technologies
+- **Backend**: Go 1.23+
+- **Database**: SQLite (with MySQL support)
+- **Caching**: In-memory with Redis support
+- **Templates**: Go HTML templates
+- **Security**: Custom security middleware stack
+
+### Advanced Systems
+- **Middleware Stack**: Layered security, caching, and logging
+- **Router System**: Advanced routing with group support
+- **Configuration Management**: YAML-based configuration
+- **Dependency Injection**: Service-oriented architecture
+
+## Installation & Setup
+
+### Prerequisites
+- Go 1.23 or higher
+- SQLite3 (or MySQL for production)
+- Optional: Redis for advanced caching
+
+### Quick Start
 
 1. **Clone the repository**
    ```bash
@@ -41,247 +94,237 @@ KolajAI is a modern, AI-powered e-commerce marketplace built with Go, featuring 
 
 2. **Install dependencies**
    ```bash
-   make deps
+   go mod download
    ```
 
-3. **Build the application**
+3. **Configure the application**
    ```bash
-   make build
+   cp config.yaml.example config.yaml
+   # Edit config.yaml with your settings
    ```
 
-4. **Set up the database**
+4. **Run database migrations**
    ```bash
-   make seed
+   go run cmd/server/main.go
    ```
 
-5. **Run the application**
+5. **Start the server**
    ```bash
-   make run
+   go run cmd/server/main.go
    ```
 
 The application will be available at `http://localhost:8081`
 
-## 🧪 Testing
+## Configuration
 
-### Run All Tests
-```bash
-make all-tests
-```
+The application uses a YAML configuration file (`config.yaml`) with the following sections:
 
-### Run Specific Test Suites
-```bash
-# Unit tests only
-make unit-test
+- **Server**: Port, host, timeouts
+- **Database**: Connection settings
+- **Security**: Encryption keys, authentication settings
+- **Cache**: Cache configuration and limits
+- **Email**: SMTP settings for notifications
+- **SEO**: Site metadata and search engine settings
+- **Logging**: Log levels and output configuration
 
-# Integration tests only
-make integration-test
+## API Endpoints
 
-# Generate coverage report
-make test-coverage
-```
+### Public Endpoints
+- `GET /` - Homepage/Marketplace
+- `GET /products` - Product listings
+- `GET /product/{id}` - Product details
+- `POST /login` - User authentication
+- `POST /register` - User registration
 
-### Run Comprehensive Test Suite
-```bash
-./test_runner.sh
-```
+### Protected Endpoints
+- `GET /dashboard` - User dashboard
+- `GET /cart` - Shopping cart
+- `POST /add-to-cart` - Add items to cart
+- `GET /vendor/dashboard` - Vendor management
 
-## 📁 Project Structure
+### Admin Endpoints
+- `GET /admin/dashboard` - Admin dashboard
+- `GET /admin/users` - User management
+- `GET /admin/products` - Product management
+- `GET /admin/reports` - Reporting system
+- `GET /admin/seo` - SEO management
+- `GET /admin/system` - System health
 
+### API Endpoints
+- `GET /api/search` - Product search
+- `POST /api/cart/update` - Cart updates
+- `GET /api/ai/recommendations` - AI recommendations
+- `GET /health` - Health check
+- `GET /metrics` - Application metrics
+
+## Security Features
+
+### Authentication & Authorization
+- Session-based authentication
+- Role-based access control (Admin, Vendor, User)
+- CSRF protection
+- XSS prevention
+
+### Data Protection
+- Input validation and sanitization
+- SQL injection prevention
+- Secure password hashing
+- Data encryption at rest
+
+### Network Security
+- Rate limiting
+- IP-based access control
+- HTTPS enforcement
+- Security headers
+
+## Performance Features
+
+### Caching Strategy
+- Page-level caching for static content
+- Database query result caching
+- Session data caching
+- Asset caching with versioning
+
+### Optimization
+- Gzip compression
+- Minified assets
+- Database connection pooling
+- Efficient query optimization
+
+## Monitoring & Analytics
+
+### System Monitoring
+- Real-time performance metrics
+- Error tracking and alerting
+- Resource usage monitoring
+- Health check endpoints
+
+### Business Analytics
+- User behavior tracking
+- Sales analytics
+- Product performance metrics
+- Custom report generation
+
+## Development
+
+### Project Structure
 ```
 kolajAi/
 ├── cmd/                    # Application entry points
-│   ├── server/            # Main web server
-│   ├── seed/              # Database seeding tool
-│   └── db-tools/          # Database management tools
+│   ├── server/            # Main server application
+│   ├── seed/              # Database seeding tools
+│   └── db-tools/          # Database utilities
 ├── internal/              # Private application code
-│   ├── database/          # Database layer
-│   ├── handlers/          # HTTP handlers
-│   ├── models/            # Data models
-│   ├── services/          # Business logic
-│   ├── middleware/        # HTTP middleware
+│   ├── cache/             # Caching system
 │   ├── config/            # Configuration management
-│   └── validation/        # Input validation
-├── web/                   # Frontend assets
-│   ├── static/            # Static files (CSS, JS, images)
+│   ├── database/          # Database layer
+│   ├── errors/            # Error management
+│   ├── handlers/          # HTTP handlers
+│   ├── middleware/        # HTTP middleware
+│   ├── models/            # Data models
+│   ├── notifications/     # Notification system
+│   ├── reporting/         # Reporting system
+│   ├── router/            # Routing system
+│   ├── security/          # Security management
+│   ├── seo/               # SEO management
+│   ├── services/          # Business logic
+│   ├── session/           # Session management
+│   └── testing/           # Testing framework
+├── web/                   # Web assets
+│   ├── static/            # Static files
 │   └── templates/         # HTML templates
-├── Makefile              # Build automation
-├── test_runner.sh        # Comprehensive test script
-└── integration_test.go   # Integration tests
+├── config.yaml            # Configuration file
+└── go.mod                 # Go modules
 ```
 
-## 🔧 Development
+### Testing
 
-### Available Make Commands
+Run the comprehensive test suite:
 
 ```bash
-make help                 # Show all available commands
-make build               # Build the main server
-make build-tools         # Build command-line tools
-make run                 # Build and run the server
-make test                # Run all tests
-make test-coverage       # Generate test coverage report
-make clean               # Clean build artifacts
-make fmt                 # Format code
-make vet                 # Run go vet
-make dev-setup           # Setup development environment
-make ci                  # Run full CI pipeline
+# Run all tests
+go test ./...
+
+# Run tests with coverage
+go test -cover ./...
+
+# Run specific test types
+go test -tags=integration ./...
+go test -tags=security ./...
 ```
 
-### Database Tools
+### Building for Production
 
 ```bash
-# Get database information
-make db-info
+# Build the application
+go build -o kolajAi cmd/server/main.go
 
-# Run custom queries (example)
-./db-tools query "SELECT COUNT(*) FROM users"
+# Build with optimizations
+go build -ldflags="-s -w" -o kolajAi cmd/server/main.go
 ```
 
-### Development Workflow
+## Deployment
 
-1. **Setup development environment**
-   ```bash
-   make dev-setup
-   ```
+### Docker Deployment
+```dockerfile
+FROM golang:1.23-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o kolajAi cmd/server/main.go
 
-2. **Make changes and test**
-   ```bash
-   make fmt vet all-tests
-   ```
-
-3. **Build and run**
-   ```bash
-   make run
-   ```
-
-## 🏗️ Architecture
-
-### Database Layer
-- **Connection Management**: Pooled connections with configurable limits
-- **Migration System**: Version-controlled database schema changes
-- **Repository Pattern**: Clean separation between data access and business logic
-- **Caching Layer**: Optional caching for improved performance
-
-### Service Layer
-- **Product Service**: Product management and catalog operations
-- **Order Service**: Order processing and fulfillment
-- **Vendor Service**: Vendor onboarding and management
-- **AI Service**: Machine learning and analytics features
-- **Auction Service**: Real-time bidding functionality
-
-### Handler Layer
-- **Authentication**: Session-based user authentication
-- **Authorization**: Role-based access control
-- **Template Rendering**: Server-side HTML generation
-- **API Endpoints**: RESTful API for frontend integration
-
-## 🧪 Testing Strategy
-
-### Unit Tests
-- **Models**: Data validation and business rules
-- **Services**: Business logic and edge cases
-- **Database**: Connection and query functionality
-
-### Integration Tests
-- **Component Integration**: Service interactions
-- **Database Integration**: End-to-end data flow
-- **API Integration**: HTTP endpoint functionality
-
-### Test Coverage
-Current test coverage: **90.9%** for models, with comprehensive coverage across core components.
-
-## 📊 Monitoring and Logging
-
-### Logging
-- **Structured Logging**: Detailed logging with context
-- **Debug Logs**: Separate debug log files for troubleshooting
-- **Error Tracking**: Comprehensive error logging and handling
-
-### Performance
-- **Database Optimization**: Indexed queries and connection pooling
-- **Template Caching**: Compiled template caching
-- **Static Asset Serving**: Efficient static file serving
-
-## 🚀 Deployment
-
-### Production Build
-```bash
-make ci                   # Run full CI pipeline
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/kolajAi .
+COPY --from=builder /app/web ./web
+COPY --from=builder /app/config.yaml .
+CMD ["./kolajAi"]
 ```
 
-### Environment Configuration
-The application supports environment-based configuration for:
-- Database connections
-- Session secrets
-- Logging levels
-- Performance tuning
+### Environment Variables
+Key environment variables for production:
+- `APP_ENV=production`
+- `DB_DRIVER=mysql`
+- `DB_HOST=your-db-host`
+- `ENCRYPTION_KEY=your-32-byte-key`
+- `JWT_SECRET=your-jwt-secret`
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make your changes
-4. Run the test suite: `make all-tests`
-5. Submit a pull request
+3. Implement your changes with tests
+4. Submit a pull request
 
-### Code Standards
-- Follow Go conventions and best practices
-- Maintain test coverage above 80%
-- Use meaningful commit messages
-- Document public APIs
+## License
 
-## 📝 API Documentation
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### Authentication Endpoints
-- `POST /login` - User authentication
-- `POST /register` - User registration
-- `POST /logout` - User logout
+## Support
 
-### Product Endpoints
-- `GET /products` - List products
-- `GET /product/{id}` - Get product details
-- `POST /products` - Create product (vendor only)
+For support and questions:
+- Create an issue on GitHub
+- Check the documentation
+- Review the configuration examples
 
-### AI Endpoints
-- `GET /api/ai/recommendations` - Get AI recommendations
-- `POST /api/ai/price-optimize/{id}` - Get price optimization
-- `GET /api/ai/market-trends` - Get market analytics
+## Changelog
 
-## 🐛 Troubleshooting
+### Version 2.0.0 (Enterprise)
+- ✅ Advanced security system with threat detection
+- ✅ Performance optimization with multi-layer caching
+- ✅ Dynamic reporting and analytics system
+- ✅ Advanced session and cookie management
+- ✅ SEO and multi-language support
+- ✅ Centralized notification system
+- ✅ Comprehensive testing framework
+- ✅ Advanced error management
+- ✅ Enterprise-grade admin panel
+- ✅ Configuration management system
+- ✅ Middleware and routing system
 
-### Common Issues
-
-1. **Database Connection Errors**
-   ```bash
-   # Check database file permissions
-   ls -la *.db
-   
-   # Recreate database
-   make clean && make seed
-   ```
-
-2. **Template Errors**
-   ```bash
-   # Check template syntax
-   go run cmd/server/main.go --check-templates
-   ```
-
-3. **Build Issues**
-   ```bash
-   # Clean and rebuild
-   make clean && make build
-   ```
-
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- Built with Go and the Go standard library
-- Uses SQLite for embedded database functionality
-- Inspired by modern e-commerce platforms and AI-driven analytics
-
----
-
-For more information, please refer to the documentation in the `/docs` directory or contact the development team.
+### Version 1.0.0 (Basic)
+- Basic e-commerce functionality
+- User authentication
+- Product management
+- Order processing
+- AI features
