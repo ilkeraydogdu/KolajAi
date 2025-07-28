@@ -26,22 +26,17 @@ type AuthService struct {
 func NewAuthService(userRepo *repository.UserRepository, emailSvc *email.Service) *AuthService {
 	// Yapılandırmadan baseURL'i al, yoksa varsayılan değeri kullan
 	baseURL := "http://localhost:8080" // Varsayılan değer
-	appConfig, err := config.GetConfig()
+	appConfig, err := config.LoadConfig("config.yaml")
 	if err == nil && appConfig != nil {
-		// Server baseURL bilgisini kullan
-		if appConfig.Server.BaseURL != "" {
-			baseURL = appConfig.Server.BaseURL
-		} else {
-			// Server host ve port bilgisini kullan
-			if appConfig.Server.Host != "" {
-				scheme := "http"
-				if appConfig.Server.Port == 443 {
-					scheme = "https"
-				}
-				baseURL = fmt.Sprintf("%s://%s", scheme, appConfig.Server.Host)
-				if appConfig.Server.Port != 80 && appConfig.Server.Port != 443 {
-					baseURL = fmt.Sprintf("%s:%d", baseURL, appConfig.Server.Port)
-				}
+		// Server host ve port bilgisini kullan
+		if appConfig.Server.Host != "" {
+			scheme := "http"
+			if appConfig.Server.Port == 443 {
+				scheme = "https"
+			}
+			baseURL = fmt.Sprintf("%s://%s", scheme, appConfig.Server.Host)
+			if appConfig.Server.Port != 80 && appConfig.Server.Port != 443 {
+				baseURL = fmt.Sprintf("%s:%d", baseURL, appConfig.Server.Port)
 			}
 		}
 	}

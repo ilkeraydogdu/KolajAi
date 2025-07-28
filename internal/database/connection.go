@@ -46,17 +46,17 @@ func DefaultConfig() *Config {
 	}
 
 	// Yapılandırma dosyasından ayarları al
-	appConfig, err := config.GetConfig()
+	appConfig, err := config.LoadConfig("config.yaml")
 	if err == nil && appConfig != nil {
 		// Yapılandırma dosyasından veritabanı ayarlarını al
 		dbConfig.Host = appConfig.Database.Host
 		dbConfig.Port = appConfig.Database.Port
-		dbConfig.User = appConfig.Database.Username
+		dbConfig.User = appConfig.Database.User
 		dbConfig.Password = appConfig.Database.Password
-		dbConfig.DatabaseName = appConfig.Database.Database
+		dbConfig.DatabaseName = appConfig.Database.Name
 		dbConfig.MaxOpenConns = appConfig.Database.MaxOpenConns
 		dbConfig.MaxIdleConns = appConfig.Database.MaxIdleConns
-		dbConfig.MaxLifetime = appConfig.Database.ConnMaxLifetime
+		dbConfig.MaxLifetime = time.Duration(appConfig.Database.ConnMaxLifetime) * time.Minute
 
 		log.Printf("Loaded database configuration from config file: %s:%d/%s",
 			dbConfig.Host, dbConfig.Port, dbConfig.DatabaseName)
