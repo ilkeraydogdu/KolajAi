@@ -185,6 +185,8 @@ func main() {
 	aiService := services.NewAIService(repo, productService, orderService)
 	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
 	aiVisionService := services.NewAIVisionService(repo, productService)
+	aiTemplateService := services.NewAITemplateService(repo, productService, aiService)
+	marketplaceIntegrationService := services.NewMarketplaceIntegrationService(repo, productService, orderService)
 	_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService) // Enterprise AI service - use when needed
 
 	// Şablonları yükle
@@ -333,6 +335,12 @@ func main() {
 	// AI Vision handler'ı oluştur
 	aiVisionHandler := handlers.NewAIVisionHandler(h, aiVisionService)
 
+	// AI Template handler'ı oluştur
+	aiTemplateHandler := handlers.NewAITemplateHandler(h, aiTemplateService)
+
+	// Marketplace Integration handler'ı oluştur
+	marketplaceIntegrationHandler := handlers.NewMarketplaceIntegrationHandler(h, marketplaceIntegrationService)
+
 	// Middleware stack oluştur
 	middlewareStack := middleware.NewMiddlewareStack(
 		securityManager,
@@ -452,6 +460,30 @@ func main() {
 	appRouter.HandleFunc("/api/ai/vision/stats", aiVisionHandler.GetUserStats)
 	appRouter.HandleFunc("/api/ai/vision/library", aiVisionHandler.GetImageLibrary)
 	appRouter.HandleFunc("/api/ai/pricing-strategy/", aiAnalyticsHandler.GetPricingStrategy)
+
+	// AI Template API rotaları
+	appRouter.HandleFunc("/api/ai/template/generate", aiTemplateHandler.GenerateTemplate)
+	appRouter.HandleFunc("/api/ai/template/list", aiTemplateHandler.GetTemplates)
+	appRouter.HandleFunc("/api/ai/template/get", aiTemplateHandler.GetTemplate)
+	appRouter.HandleFunc("/api/ai/template/update", aiTemplateHandler.UpdateTemplate)
+	appRouter.HandleFunc("/api/ai/template/delete", aiTemplateHandler.DeleteTemplate)
+	appRouter.HandleFunc("/api/ai/template/types", aiTemplateHandler.GetTemplateTypes)
+	appRouter.HandleFunc("/api/ai/template/platform-specs", aiTemplateHandler.GetPlatformSpecs)
+	appRouter.HandleFunc("/api/ai/template/rate", aiTemplateHandler.RateTemplate)
+	appRouter.HandleFunc("/api/ai/template/usage", aiTemplateHandler.TemplateUsage)
+
+	// Marketplace Integration API rotaları
+	appRouter.HandleFunc("/api/integration/available", marketplaceIntegrationHandler.GetAvailableIntegrations)
+	appRouter.HandleFunc("/api/integration/create", marketplaceIntegrationHandler.CreateIntegration)
+	appRouter.HandleFunc("/api/integration/list", marketplaceIntegrationHandler.GetUserIntegrations)
+	appRouter.HandleFunc("/api/integration/get", marketplaceIntegrationHandler.GetIntegration)
+	appRouter.HandleFunc("/api/integration/update", marketplaceIntegrationHandler.UpdateIntegration)
+	appRouter.HandleFunc("/api/integration/delete", marketplaceIntegrationHandler.DeleteIntegration)
+	appRouter.HandleFunc("/api/integration/sync", marketplaceIntegrationHandler.SyncIntegration)
+	appRouter.HandleFunc("/api/integration/sync-logs", marketplaceIntegrationHandler.GetSyncLogs)
+	appRouter.HandleFunc("/api/integration/test", marketplaceIntegrationHandler.TestIntegration)
+	appRouter.HandleFunc("/api/integration/stats", marketplaceIntegrationHandler.GetIntegrationStats)
+	appRouter.HandleFunc("/api/integration/bulk-sync", marketplaceIntegrationHandler.BulkSync)
 
 	// AI Analytics sayfa rotaları
 	appRouter.HandleFunc("/ai/analytics", aiAnalyticsHandler.GetAnalyticsDashboard)
