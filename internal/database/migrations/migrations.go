@@ -100,6 +100,8 @@ func (m *MigrationService) RunMigrations() error {
 		{"007_create_orders_table", CreateOrdersTable},
 		{"008_create_auctions_table", CreateAuctionsTable},
 		{"009_create_wholesale_table", CreateWholesaleTable},
+		{"015_create_ai_vision_tables", CreateAIVisionTables},
+		{"016_create_enterprise_ai_tables", CreateEnterpriseAITables},
 	}
 
 	// Run pending migrations

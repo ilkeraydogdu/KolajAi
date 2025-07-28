@@ -74,7 +74,7 @@ func ProcessFormMiddleware(validator *validation.FormValidator) func(next http.H
 			}
 
 			// Validate form
-			isValid, validationErrors := validator.ValidateForm(schema, formData)
+			isValid, validationErrors := validator.ValidateForm(formData, schema)
 
 			// Create form data structure
 			data := &FormData{

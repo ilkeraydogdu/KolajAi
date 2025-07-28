@@ -203,7 +203,7 @@ func (h *EcommerceHandler) AddToCart(w http.ResponseWriter, r *http.Request) {
 		sessionID := h.GetSessionID(r)
 		cart, err = h.orderService.GetCartBySession(sessionID)
 		if err != nil {
-			cart = &models.Cart{SessionID: sessionID}
+			cart = &models.Cart{UserID: 0} // Session-based cart without SessionID field
 			err = h.orderService.CreateCart(cart)
 			if err != nil {
 				h.HandleError(w, r, err, "Sepet oluşturulamadı")

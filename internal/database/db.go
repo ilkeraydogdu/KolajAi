@@ -614,3 +614,93 @@ func getFieldsAndValues(data interface{}) ([]string, []interface{}) {
 
 	return fields, values
 }
+
+// Begin starts a database transaction
+func (r *MySQLRepository) Begin() (Transaction, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return nil, err
+	}
+	return &transactionWrapper{tx}, nil
+}
+
+// Exec executes a query without returning any rows
+func (r *MySQLRepository) Exec(query string, args ...interface{}) (Result, error) {
+	result, err := r.db.Exec(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return &resultWrapper{result}, nil
+}
+
+// Query executes a query that returns rows
+func (r *MySQLRepository) Query(query string, args ...interface{}) (Rows, error) {
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return &rowsWrapper{rows}, nil
+}
+
+// QueryRow executes a query that is expected to return at most one row
+func (r *MySQLRepository) QueryRow(query string, args ...interface{}) Row {
+	row := r.db.QueryRow(query, args...)
+	return &rowWrapper{row}
+}
+
+// Wrapper structs to implement interfaces
+type resultWrapper struct {
+	result sql.Result
+}
+
+func (r *resultWrapper) LastInsertId() (int64, error) {
+	return r.result.LastInsertId()
+}
+
+func (r *resultWrapper) RowsAffected() (int64, error) {
+	return r.result.RowsAffected()
+}
+
+type rowsWrapper struct {
+	rows *sql.Rows
+}
+
+func (r *rowsWrapper) Next() bool {
+	return r.rows.Next()
+}
+
+func (r *rowsWrapper) Scan(dest ...interface{}) error {
+	return r.rows.Scan(dest...)
+}
+
+func (r *rowsWrapper) Close() error {
+	return r.rows.Close()
+}
+
+type rowWrapper struct {
+	row *sql.Row
+}
+
+func (r *rowWrapper) Scan(dest ...interface{}) error {
+	return r.row.Scan(dest...)
+}
+
+type transactionWrapper struct {
+	tx *sql.Tx
+}
+
+func (t *transactionWrapper) Exec(query string, args ...interface{}) (Result, error) {
+	result, err := t.tx.Exec(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return &resultWrapper{result}, nil
+}
+
+func (t *transactionWrapper) Commit() error {
+	return t.tx.Commit()
+}
+
+func (t *transactionWrapper) Rollback() error {
+	return t.tx.Rollback()
+}

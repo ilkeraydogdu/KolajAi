@@ -12,7 +12,7 @@ import (
 	"kolajAi/internal/database"
 	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
-	"kolajAi/internal/repository"
+
 	"kolajAi/internal/services"
 	"kolajAi/internal/session"
 	"kolajAi/internal/reporting"
@@ -25,6 +25,7 @@ import (
 	"kolajAi/internal/middleware"
 	"kolajAi/internal/router"
 	"kolajAi/internal/config"
+
 )
 
 var (
@@ -36,11 +37,13 @@ func init() {
 	logFile, err := os.OpenFile("main_app_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
 		log.Println("Ana uygulama log dosyası oluşturulamadı:", err)
-		MainLogger = log.New(os.Stdout, "[MAIN-APP-DEBUG] ", log.LstdFlags)
+		MainLogger = log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
 	} else {
 		MainLogger = log.New(logFile, "[MAIN-APP-DEBUG] ", log.LstdFlags|log.Lshortfile)
 	}
 }
+
+
 
 func main() {
 	MainLogger.Println("KolajAI Enterprise uygulaması başlatılıyor...")
@@ -170,16 +173,19 @@ func main() {
 
 	// Repository oluştur
 	mysqlRepo := database.NewMySQLRepository(db)
-	repo := repository.NewBaseRepository(mysqlRepo)
+	repo := database.NewRepositoryWrapper(mysqlRepo)
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
+	authService := services.NewAuthService(nil, nil) // Placeholder - implement properly
 	vendorService := services.NewVendorService(repo)
 	productService := services.NewProductService(repo)
 	orderService := services.NewOrderService(repo)
 	auctionService := services.NewAuctionService(repo)
 	aiService := services.NewAIService(repo, productService, orderService)
 	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
+	aiVisionService := services.NewAIVisionService(repo, productService)
+	_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService) // Enterprise AI service - use when needed
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
@@ -324,6 +330,9 @@ func main() {
 	// AI Analytics handler'ı oluştur
 	aiAnalyticsHandler := handlers.NewAIAnalyticsHandler(h, aiAnalyticsService)
 
+	// AI Vision handler'ı oluştur
+	aiVisionHandler := handlers.NewAIVisionHandler(h, aiVisionService)
+
 	// Middleware stack oluştur
 	middlewareStack := middleware.NewMiddlewareStack(
 		securityManager,
@@ -422,6 +431,26 @@ func main() {
 	appRouter.HandleFunc("/api/ai/market-trends", aiAnalyticsHandler.GetMarketTrends)
 	appRouter.HandleFunc("/api/ai/product-insights/", aiAnalyticsHandler.GetProductInsights)
 	appRouter.HandleFunc("/api/ai/customer-segments", aiAnalyticsHandler.GetCustomerSegments)
+
+	// AI Vision rotaları
+	appRouter.HandleFunc("/ai/vision/dashboard", aiVisionHandler.GetVisionDashboard)
+	appRouter.HandleFunc("/ai/vision/upload", aiVisionHandler.RenderVisionUploadPage)
+	appRouter.HandleFunc("/ai/vision/search", aiVisionHandler.RenderVisionSearchPage)
+	appRouter.HandleFunc("/ai/vision/gallery", aiVisionHandler.RenderVisionGalleryPage)
+
+	// AI Vision API rotaları
+	appRouter.HandleFunc("/api/ai/vision/upload", aiVisionHandler.UploadImage)
+	appRouter.HandleFunc("/api/ai/vision/search", aiVisionHandler.SearchImages)
+	appRouter.HandleFunc("/api/ai/vision/analysis", aiVisionHandler.GetImageAnalysis)
+	appRouter.HandleFunc("/api/ai/vision/delete", aiVisionHandler.DeleteImage)
+	appRouter.HandleFunc("/api/ai/vision/category", aiVisionHandler.GetImagesByCategory)
+	appRouter.HandleFunc("/api/ai/vision/tag", aiVisionHandler.GetImagesByTag)
+	appRouter.HandleFunc("/api/ai/vision/collection/create", aiVisionHandler.CreateCollection)
+	appRouter.HandleFunc("/api/ai/vision/collection/update", aiVisionHandler.UpdateCollection)
+	appRouter.HandleFunc("/api/ai/vision/collection/delete", aiVisionHandler.DeleteCollection)
+	appRouter.HandleFunc("/api/ai/vision/suggest-categories", aiVisionHandler.SuggestCategories)
+	appRouter.HandleFunc("/api/ai/vision/stats", aiVisionHandler.GetUserStats)
+	appRouter.HandleFunc("/api/ai/vision/library", aiVisionHandler.GetImageLibrary)
 	appRouter.HandleFunc("/api/ai/pricing-strategy/", aiAnalyticsHandler.GetPricingStrategy)
 
 	// AI Analytics sayfa rotaları
