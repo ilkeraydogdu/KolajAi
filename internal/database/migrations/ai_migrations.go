@@ -1,5 +1,12 @@
 package migrations
 
+// Migration represents a database migration
+type Migration struct {
+	Name string
+	Up   string
+	Down string
+}
+
 // AITablesMigration creates AI-related tables
 var AITablesMigration = Migration{
 	Name: "create_ai_tables",

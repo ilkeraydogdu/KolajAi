@@ -9,6 +9,9 @@ import (
 	"io/ioutil"
 )
 
+// Global config instance
+var cfg *Config
+
 // Config holds the application configuration
 type Config struct {
 	Environment string        `yaml:"environment"`
@@ -102,6 +105,27 @@ type LoggingConfig struct {
 	Compress   bool   `yaml:"compress"`
 }
 
+// NotificationConfig represents notification configuration
+type NotificationConfig struct {
+	EnableEmail bool                        `yaml:"enable_email"`
+	EnableSMS   bool                        `yaml:"enable_sms"`
+	EnablePush  bool                        `yaml:"enable_push"`
+	DefaultTTL  int                         `yaml:"default_ttl"`
+	Templates   map[string]string           `yaml:"templates"`
+	Types       map[string]NotificationType `yaml:"types"`
+}
+
+// NotificationType represents a notification type configuration
+type NotificationType struct {
+	Name        string `yaml:"name"`
+	Template    string `yaml:"template"`
+	Subject     string `yaml:"subject"`
+	Enabled     bool   `yaml:"enabled"`
+	Priority    int    `yaml:"priority"`
+	Icon        string `yaml:"icon"`
+	Color       string `yaml:"color"`
+}
+
 // LoadConfig loads configuration from file
 func LoadConfig(configPath string) (*Config, error) {
 	config := &Config{}
@@ -125,6 +149,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	
 	// Override with environment variables
 	overrideWithEnv(config)
+	
+	// Set global config
+	cfg = config
 	
 	return config, nil
 }
@@ -202,6 +229,9 @@ func GetDefaultConfig() *Config {
 		},
 	}
 	
+	// Set global config
+	cfg = config
+	
 	return config
 }
 
@@ -263,4 +293,45 @@ func (c *Config) Validate() error {
 	}
 	
 	return nil
+}
+
+// GetNotificationConfig returns the notification configuration
+func GetNotificationConfig() (NotificationConfig, bool) {
+	if cfg == nil {
+		return NotificationConfig{}, false
+	}
+	
+	// Return default notification config
+	return NotificationConfig{
+		EnableEmail: true,
+		EnableSMS:   false,
+		EnablePush:  true,
+		DefaultTTL:  3600,
+		Templates: map[string]string{
+			"welcome":     "welcome.html",
+			"order":       "order.html",
+			"payment":     "payment.html",
+			"shipping":    "shipping.html",
+		},
+		Types: map[string]NotificationType{
+			"welcome": {
+				Name:     "Welcome",
+				Template: "welcome",
+				Subject:  "Welcome to KolajAI",
+				Enabled:  true,
+				Priority: 1,
+				Icon:     "welcome",
+				Color:    "blue",
+			},
+			"order": {
+				Name:     "Order",
+				Template: "order",
+				Subject:  "Order Confirmation",
+				Enabled:  true,
+				Priority: 2,
+				Icon:     "shopping-cart",
+				Color:    "green",
+			},
+		},
+	}, true
 }

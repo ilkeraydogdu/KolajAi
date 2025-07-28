@@ -1,6 +1,7 @@
 package services
 
 import (
+	"kolajAi/internal/database"
 	"kolajAi/internal/models"
 	"testing"
 	"time"
@@ -68,6 +69,22 @@ func (m *MockRepository) BulkDelete(table string, ids []interface{}) error {
 
 func (m *MockRepository) Exists(table string, conditions map[string]interface{}) (bool, error) {
 	return false, nil
+}
+
+func (m *MockRepository) Exec(query string, args ...interface{}) (database.Result, error) {
+	return nil, nil
+}
+
+func (m *MockRepository) Query(query string, args ...interface{}) (database.Rows, error) {
+	return nil, nil
+}
+
+func (m *MockRepository) QueryRow(query string, args ...interface{}) database.Row {
+	return nil
+}
+
+func (m *MockRepository) Begin() (database.Transaction, error) {
+	return nil, nil
 }
 
 func TestNewProductService(t *testing.T) {

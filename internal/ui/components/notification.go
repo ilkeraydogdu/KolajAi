@@ -62,7 +62,7 @@ func (m *NotificationManager) NewNotification(notificationType, title, message s
 		Message:     message,
 		Dismissible: true,
 		AutoDismiss: true,
-		DismissTime: m.config.DefaultTTL,
+		DismissTime: time.Duration(m.config.DefaultTTL) * time.Second,
 		CreatedAt:   now,
 		Data:        make(map[string]interface{}),
 	}
