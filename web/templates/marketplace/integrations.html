@@ -1,0 +1,418 @@
+{{define "title"}}Marketplace Entegrasyonları{{end}}
+
+{{define "content"}}
+<div class="container-fluid">
+    <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+        <div class="breadcrumb-title pe-3">Entegrasyonlar</div>
+        <div class="ps-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0 p-0">
+                    <li class="breadcrumb-item"><a href="/"><i class="bx bx-home-alt"></i></a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Marketplace Entegrasyonları</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Entegrasyon Kategorileri -->
+    <div class="row">
+        <div class="col-12">
+            <ul class="nav nav-tabs nav-primary" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#turkish" role="tab">
+                        <div class="d-flex align-items-center">
+                            <div class="tab-icon"><i class='bx bx-store font-18 me-1'></i></div>
+                            <div class="tab-title">Türkiye Pazaryerleri</div>
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" data-bs-toggle="tab" href="#international" role="tab">
+                        <div class="d-flex align-items-center">
+                            <div class="tab-icon"><i class='bx bx-globe font-18 me-1'></i></div>
+                            <div class="tab-title">Yurtdışı Pazaryerleri</div>
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" data-bs-toggle="tab" href="#ecommerce" role="tab">
+                        <div class="d-flex align-items-center">
+                            <div class="tab-icon"><i class='bx bx-cart font-18 me-1'></i></div>
+                            <div class="tab-title">E-Ticaret Platformları</div>
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" data-bs-toggle="tab" href="#social" role="tab">
+                        <div class="d-flex align-items-center">
+                            <div class="tab-icon"><i class='bx bxl-facebook-circle font-18 me-1'></i></div>
+                            <div class="tab-title">Sosyal Medya</div>
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" data-bs-toggle="tab" href="#accounting" role="tab">
+                        <div class="d-flex align-items-center">
+                            <div class="tab-icon"><i class='bx bx-calculator font-18 me-1'></i></div>
+                            <div class="tab-title">Muhasebe & ERP</div>
+                        </div>
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link" data-bs-toggle="tab" href="#cargo" role="tab">
+                        <div class="d-flex align-items-center">
+                            <div class="tab-icon"><i class='bx bx-package font-18 me-1'></i></div>
+                            <div class="tab-title">Kargo & Lojistik</div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="tab-content py-3">
+        <!-- Türkiye Pazaryerleri -->
+        <div class="tab-pane fade show active" id="turkish" role="tabpanel">
+            <div class="row" id="turkishMarketplaces">
+                <!-- Dinamik olarak yüklenecek -->
+            </div>
+        </div>
+
+        <!-- Yurtdışı Pazaryerleri -->
+        <div class="tab-pane fade" id="international" role="tabpanel">
+            <div class="row" id="internationalMarketplaces">
+                <!-- Dinamik olarak yüklenecek -->
+            </div>
+        </div>
+
+        <!-- E-Ticaret Platformları -->
+        <div class="tab-pane fade" id="ecommerce" role="tabpanel">
+            <div class="row" id="ecommercePlatforms">
+                <!-- Dinamik olarak yüklenecek -->
+            </div>
+        </div>
+
+        <!-- Sosyal Medya -->
+        <div class="tab-pane fade" id="social" role="tabpanel">
+            <div class="row" id="socialMedia">
+                <!-- Dinamik olarak yüklenecek -->
+            </div>
+        </div>
+
+        <!-- Muhasebe & ERP -->
+        <div class="tab-pane fade" id="accounting" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <h5>E-Fatura Entegrasyonları</h5>
+                </div>
+                <div id="efaturaIntegrations" class="row">
+                    <!-- Dinamik olarak yüklenecek -->
+                </div>
+                <div class="col-12 mt-4">
+                    <h5>Muhasebe & ERP Sistemleri</h5>
+                </div>
+                <div id="accountingIntegrations" class="row">
+                    <!-- Dinamik olarak yüklenecek -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Kargo & Lojistik -->
+        <div class="tab-pane fade" id="cargo" role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <h5>Kargo Firmaları</h5>
+                </div>
+                <div id="cargoIntegrations" class="row">
+                    <!-- Dinamik olarak yüklenecek -->
+                </div>
+                <div class="col-12 mt-4">
+                    <h5>Fulfillment Hizmetleri</h5>
+                </div>
+                <div id="fulfillmentIntegrations" class="row">
+                    <!-- Dinamik olarak yüklenecek -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Entegrasyon Yapılandırma Modal -->
+<div class="modal fade" id="configureModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="configureModalTitle">Entegrasyon Yapılandır</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="configureForm">
+                    <input type="hidden" id="integrationId">
+                    <div id="credentialsFields">
+                        <!-- Dinamik olarak yüklenecek -->
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="saveConfiguration()">
+                    <i class="bx bx-save"></i> Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadIntegrations();
+});
+
+function loadIntegrations() {
+    fetch('/api/marketplace/integrations')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayIntegrations(data.integrations);
+            }
+        })
+        .catch(error => console.error('Error loading integrations:', error));
+}
+
+function displayIntegrations(integrations) {
+    const categories = {
+        turkish: [],
+        international: [],
+        ecommerce_platform: [],
+        social_media: [],
+        efatura: [],
+        accounting: [],
+        pre_accounting: [],
+        cargo: [],
+        fulfillment: []
+    };
+
+    // Kategorilere göre ayır
+    Object.values(integrations).forEach(integration => {
+        if (categories[integration.type]) {
+            categories[integration.type].push(integration);
+        }
+    });
+
+    // Her kategoriyi görüntüle
+    displayIntegrationCards('turkishMarketplaces', categories.turkish);
+    displayIntegrationCards('internationalMarketplaces', categories.international);
+    displayIntegrationCards('ecommercePlatforms', categories.ecommerce_platform);
+    displayIntegrationCards('socialMedia', categories.social_media);
+    displayIntegrationCards('efaturaIntegrations', categories.efatura);
+    displayIntegrationCards('accountingIntegrations', [...categories.accounting, ...categories.pre_accounting]);
+    displayIntegrationCards('cargoIntegrations', categories.cargo);
+    displayIntegrationCards('fulfillmentIntegrations', categories.fulfillment);
+}
+
+function displayIntegrationCards(containerId, integrations) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    integrations.forEach(integration => {
+        const card = createIntegrationCard(integration);
+        container.appendChild(card);
+    });
+}
+
+function createIntegrationCard(integration) {
+    const col = document.createElement('div');
+    col.className = 'col-md-4 col-lg-3 mb-3';
+    
+    const isConfigured = integration.credentials && Object.values(integration.credentials).some(v => v);
+    const statusClass = isConfigured ? 'success' : 'secondary';
+    const statusText = isConfigured ? 'Yapılandırıldı' : 'Yapılandırılmadı';
+    const statusIcon = isConfigured ? 'bx-check-circle' : 'bx-x-circle';
+
+    col.innerHTML = `
+        <div class="card integration-card">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class='bx bx-store-alt font-35'></i>
+                </div>
+                <h6 class="card-title">${integration.name}</h6>
+                <p class="mb-2">
+                    <span class="badge bg-${statusClass}">
+                        <i class='bx ${statusIcon}'></i> ${statusText}
+                    </span>
+                </p>
+                <div class="d-grid">
+                    <button class="btn btn-primary btn-sm" onclick="configureIntegration('${integration.id}')">
+                        <i class='bx bx-cog'></i> Yapılandır
+                    </button>
+                </div>
+                ${isConfigured ? `
+                <div class="mt-2">
+                    <button class="btn btn-success btn-sm" onclick="syncProducts('${integration.id}')">
+                        <i class='bx bx-sync'></i> Ürün Senkronize
+                    </button>
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+
+    return col;
+}
+
+function configureIntegration(integrationId) {
+    fetch(`/api/marketplace/integration?id=${integrationId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showConfigureModal(data.integration);
+            }
+        })
+        .catch(error => console.error('Error loading integration:', error));
+}
+
+function showConfigureModal(integration) {
+    document.getElementById('configureModalTitle').textContent = `${integration.name} Yapılandır`;
+    document.getElementById('integrationId').value = integration.id;
+    
+    const fieldsContainer = document.getElementById('credentialsFields');
+    fieldsContainer.innerHTML = '';
+
+    // Kimlik bilgileri alanlarını oluştur
+    Object.entries(integration.credentials).forEach(([key, value]) => {
+        const fieldName = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const isPassword = key.includes('password') || key.includes('secret');
+        
+        const fieldDiv = document.createElement('div');
+        fieldDiv.className = 'mb-3';
+        fieldDiv.innerHTML = `
+            <label for="${key}" class="form-label">${fieldName}</label>
+            <input type="${isPassword ? 'password' : 'text'}" 
+                   class="form-control" 
+                   id="${key}" 
+                   name="${key}" 
+                   value="${value || ''}"
+                   placeholder="${fieldName} girin">
+        `;
+        fieldsContainer.appendChild(fieldDiv);
+    });
+
+    // Özellikler listesi
+    if (integration.features && integration.features.length > 0) {
+        const featuresDiv = document.createElement('div');
+        featuresDiv.className = 'mt-4';
+        featuresDiv.innerHTML = `
+            <h6>Desteklenen Özellikler:</h6>
+            <ul class="list-unstyled">
+                ${integration.features.map(feature => `
+                    <li><i class='bx bx-check text-success'></i> ${feature.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</li>
+                `).join('')}
+            </ul>
+        `;
+        fieldsContainer.appendChild(featuresDiv);
+    }
+
+    const modal = new bootstrap.Modal(document.getElementById('configureModal'));
+    modal.show();
+}
+
+function saveConfiguration() {
+    const integrationId = document.getElementById('integrationId').value;
+    const form = document.getElementById('configureForm');
+    const formData = new FormData(form);
+    
+    const credentials = {};
+    for (let [key, value] of formData.entries()) {
+        if (key !== 'integrationId') {
+            credentials[key] = value;
+        }
+    }
+
+    fetch('/api/marketplace/configure', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            integration_id: integrationId,
+            credentials: credentials
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Entegrasyon başarıyla yapılandırıldı!');
+            bootstrap.Modal.getInstance(document.getElementById('configureModal')).hide();
+            loadIntegrations(); // Listeyi yenile
+        } else {
+            alert('Yapılandırma sırasında bir hata oluştu.');
+        }
+    })
+    .catch(error => {
+        console.error('Error saving configuration:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+}
+
+function syncProducts(integrationId) {
+    if (!confirm('Ürünleri bu marketplace ile senkronize etmek istediğinizden emin misiniz?')) {
+        return;
+    }
+
+    const btn = event.target;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Senkronize ediliyor...';
+
+    fetch('/api/marketplace/sync-products', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            integration_id: integrationId,
+            product_ids: [] // Tüm ürünleri senkronize et
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Ürünler başarıyla senkronize edildi!');
+        } else {
+            alert('Senkronizasyon sırasında bir hata oluştu.');
+        }
+    })
+    .catch(error => {
+        console.error('Error syncing products:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bx bx-sync"></i> Ürün Senkronize';
+    });
+}
+</script>
+
+<style>
+.integration-card {
+    transition: transform 0.2s;
+    height: 100%;
+}
+
+.integration-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.integration-card .card-body {
+    padding: 1.5rem;
+}
+
+.nav-tabs .nav-link {
+    color: #6c757d;
+}
+
+.nav-tabs .nav-link.active {
+    font-weight: 600;
+}
+</style>
+{{end}}

@@ -185,7 +185,11 @@ func main() {
 	aiService := services.NewAIService(repo, productService, orderService)
 	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
 	aiVisionService := services.NewAIVisionService(repo, productService)
-	_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService) // Enterprise AI service - use when needed
+	aiEnterpriseService := services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
+	
+	// Yeni gelişmiş AI ve marketplace servisleri
+	aiAdvancedService := services.NewAIAdvancedService(repo, productService, orderService)
+	marketplaceService := services.NewMarketplaceIntegrationsService()
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
@@ -332,6 +336,10 @@ func main() {
 
 	// AI Vision handler'ı oluştur
 	aiVisionHandler := handlers.NewAIVisionHandler(h, aiVisionService)
+	
+	// Yeni gelişmiş handler'lar
+	aiAdvancedHandler := handlers.NewAIAdvancedHandler(h, aiAdvancedService)
+	marketplaceHandler := handlers.NewMarketplaceHandler(h, marketplaceService)
 
 	// Middleware stack oluştur
 	middlewareStack := middleware.NewMiddlewareStack(
@@ -440,6 +448,33 @@ func main() {
 
 	// AI Vision API rotaları
 	appRouter.HandleFunc("/api/ai/vision/upload", aiVisionHandler.UploadImage)
+	
+	// Gelişmiş AI rotaları
+	appRouter.HandleFunc("/api/ai/generate-image", aiAdvancedHandler.GenerateProductImage)
+	appRouter.HandleFunc("/api/ai/generate-content", aiAdvancedHandler.GenerateContent)
+	appRouter.HandleFunc("/api/ai/create-template", aiAdvancedHandler.CreateAITemplate)
+	appRouter.HandleFunc("/api/ai/chat/start", aiAdvancedHandler.StartAIChat)
+	appRouter.HandleFunc("/api/ai/chat/message", aiAdvancedHandler.SendAIChatMessage)
+	appRouter.HandleFunc("/api/ai/analyze-image", aiAdvancedHandler.AnalyzeProductImage)
+	appRouter.HandleFunc("/api/ai/credits", aiAdvancedHandler.GetAICredits)
+	
+	// Marketplace entegrasyon rotaları
+	appRouter.HandleFunc("/api/marketplace/integrations", marketplaceHandler.GetAllIntegrations)
+	appRouter.HandleFunc("/api/marketplace/integration", marketplaceHandler.GetIntegration)
+	appRouter.HandleFunc("/api/marketplace/configure", marketplaceHandler.ConfigureIntegration)
+	appRouter.HandleFunc("/api/marketplace/sync-products", marketplaceHandler.SyncProducts)
+	appRouter.HandleFunc("/api/marketplace/orders", marketplaceHandler.GetMarketplaceOrders)
+	appRouter.HandleFunc("/api/marketplace/create-shipment", marketplaceHandler.CreateShipment)
+	appRouter.HandleFunc("/api/marketplace/generate-invoice", marketplaceHandler.GenerateInvoice)
+	appRouter.HandleFunc("/api/marketplace/update-inventory", marketplaceHandler.UpdateInventory)
+	
+	// AI Editor ve Marketplace sayfaları
+	appRouter.HandleFunc("/ai/editor", func(w http.ResponseWriter, r *http.Request) {
+		h.RenderTemplate(w, r, "ai/ai_editor.html", nil)
+	})
+	appRouter.HandleFunc("/marketplace/integrations", func(w http.ResponseWriter, r *http.Request) {
+		h.RenderTemplate(w, r, "marketplace/integrations.html", nil)
+	})
 	appRouter.HandleFunc("/api/ai/vision/search", aiVisionHandler.SearchImages)
 	appRouter.HandleFunc("/api/ai/vision/analysis", aiVisionHandler.GetImageAnalysis)
 	appRouter.HandleFunc("/api/ai/vision/delete", aiVisionHandler.DeleteImage)

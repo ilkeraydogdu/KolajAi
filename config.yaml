@@ -75,3 +75,17 @@ logging:
   max_backups: 3
   max_age: 28
   compress: true
+
+ai:
+  openai_key: ""
+  anthropic_key: ""
+  stability_ai_key: ""
+  replicate_key: ""
+  huggingface_key: ""
+  default_credits: 100
+  credit_costs:
+    image_generation: 40
+    content_generation: 10
+    template_creation: 50
+    chat_message: 5
+    image_analysis: 15
