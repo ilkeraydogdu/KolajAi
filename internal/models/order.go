@@ -62,6 +62,39 @@ type Order struct {
 	StatusHistory   []OrderStatusHistory `json:"status_history,omitempty"`
 }
 
+// OrderAddress represents delivery address for an order
+type OrderAddress struct {
+	ID         int64  `json:"id" db:"id"`
+	Street     string `json:"street" db:"street"`
+	City       string `json:"city" db:"city"`
+	State      string `json:"state" db:"state"`
+	PostalCode string `json:"postal_code" db:"postal_code"`
+	Country    string `json:"country" db:"country"`
+}
+
+// Cart represents a shopping cart
+type Cart struct {
+	ID        int        `json:"id" db:"id"`
+	UserID    int        `json:"user_id" db:"user_id"`
+	Items     []CartItem `json:"items"`
+	Total     float64    `json:"total"`
+	CreatedAt time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at" db:"updated_at"`
+}
+
+// CartItem represents an item in a shopping cart
+type CartItem struct {
+	ID        int       `json:"id" db:"id"`
+	CartID    int       `json:"cart_id" db:"cart_id"`
+	ProductID int       `json:"product_id" db:"product_id"`
+	VariantID *int      `json:"variant_id" db:"variant_id"`
+	Quantity  int       `json:"quantity" db:"quantity"`
+	Price     float64   `json:"price" db:"price"`
+	Total     float64   `json:"total" db:"total"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
+}
+
 // OrderItem represents an item in an order
 type OrderItem struct {
 	ID              int64   `json:"id" db:"id"`

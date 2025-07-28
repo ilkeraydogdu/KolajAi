@@ -38,7 +38,7 @@ func (s *OrderService) CreateOrder(order *models.Order) error {
 	if err != nil {
 		return fmt.Errorf("failed to create order: %w", err)
 	}
-	order.ID = int(id)
+	order.ID = id
 	return nil
 }
 
@@ -103,7 +103,7 @@ func (s *OrderService) AddOrderItem(item *models.OrderItem) error {
 	if err != nil {
 		return fmt.Errorf("failed to add order item: %w", err)
 	}
-	item.ID = int(id)
+	item.ID = id
 	return nil
 }
 
@@ -125,7 +125,7 @@ func (s *OrderService) AddOrderAddress(address *models.OrderAddress) error {
 	if err != nil {
 		return fmt.Errorf("failed to add order address: %w", err)
 	}
-	address.ID = int(id)
+	address.ID = id
 	return nil
 }
 
@@ -368,4 +368,21 @@ func (s *OrderService) ClearCart(cartID int) error {
 	}
 
 	return nil
+}
+
+// GetAllOrders returns all orders with pagination
+func (s *OrderService) GetAllOrders(limit, offset int) ([]models.Order, error) {
+	var orders []models.Order
+	conditions := map[string]interface{}{}
+	err := s.repo.FindAll("orders", &orders, conditions, "created_at DESC", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get all orders: %w", err)
+	}
+	return orders, nil
+}
+
+// GetOrderCount returns the total number of orders
+func (s *OrderService) GetOrderCount() (int64, error) {
+	conditions := map[string]interface{}{}
+	return s.repo.Count("orders", conditions)
 }

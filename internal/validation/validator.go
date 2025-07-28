@@ -17,6 +17,11 @@ type Validator struct {
 	rules map[string][]ValidationRule
 }
 
+// FormValidator provides form validation functionality
+type FormValidator struct {
+	*Validator
+}
+
 // ValidationRule represents a validation rule
 type ValidationRule struct {
 	Field     string
@@ -52,6 +57,27 @@ func NewValidator() *Validator {
 	return &Validator{
 		rules: make(map[string][]ValidationRule),
 	}
+}
+
+// NewFormValidator creates a new form validator instance
+func NewFormValidator() *FormValidator {
+	return &FormValidator{
+		Validator: NewValidator(),
+	}
+}
+
+// ValidateForm validates form data
+func (fv *FormValidator) ValidateForm(data map[string]string, schema string) (bool, map[string][]string) {
+	errors := make(map[string][]string)
+	
+	// Simple validation - can be extended
+	for field, value := range data {
+		if strings.TrimSpace(value) == "" {
+			errors[field] = append(errors[field], field+" is required")
+		}
+	}
+	
+	return len(errors) == 0, errors
 }
 
 // ValidateStruct validates a struct using reflection and validation tags
