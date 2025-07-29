@@ -164,3 +164,66 @@ func TestDatabaseConnectionIntegration(t *testing.T) {
 		t.Errorf("Expected 1 row, got %d", count)
 	}
 }
+
+func TestEnterpriseIntegrationServices(t *testing.T) {
+	// Setup test database
+	testDB := "test_enterprise_integration.db"
+	defer os.Remove(testDB)
+
+	db, err := database.NewSQLiteConnection(testDB)
+	if err != nil {
+		t.Fatalf("Failed to create test database: %v", err)
+	}
+	defer db.Close()
+
+	// Run migrations
+	migrationService := migrations.NewMigrationService(db, "kolajAi")
+	if err := migrationService.RunMigrations(); err != nil {
+		t.Fatalf("Failed to run migrations: %v", err)
+	}
+
+	mysqlRepo := database.NewMySQLRepository(db)
+	repo := repository.NewBaseRepository(mysqlRepo)
+
+	// Test marketplace integrations service
+	marketplaceService := services.NewMarketplaceIntegrationsService()
+	if marketplaceService == nil {
+		t.Error("MarketplaceIntegrationsService should not be nil")
+	}
+
+	// Test getting all integrations
+	integrations := marketplaceService.GetAllIntegrations()
+	if len(integrations) == 0 {
+		t.Error("Should have some integrations configured")
+	}
+
+	// Test AI integration manager
+	productService := services.NewProductService(repo)
+	orderService := services.NewOrderService(repo)
+	aiService := services.NewAIService(repo, productService, orderService)
+	
+	aiIntegrationManager := services.NewAIIntegrationManager(marketplaceService, aiService)
+	if aiIntegrationManager == nil {
+		t.Error("AIIntegrationManager should not be nil")
+	}
+
+	// Test webhook service
+	webhookService := services.NewIntegrationWebhookService(marketplaceService, aiIntegrationManager)
+	if webhookService == nil {
+		t.Error("IntegrationWebhookService should not be nil")
+	}
+
+	// Test analytics service
+	analyticsService := services.NewIntegrationAnalyticsService(db, marketplaceService, aiIntegrationManager)
+	if analyticsService == nil {
+		t.Error("IntegrationAnalyticsService should not be nil")
+	}
+
+	// Test getting metrics
+	metrics := analyticsService.GetMetrics()
+	if metrics == nil {
+		t.Error("Metrics should not be nil")
+	}
+
+	t.Log("Enterprise integration services test completed successfully")
+}

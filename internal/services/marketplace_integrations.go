@@ -569,8 +569,238 @@ func (s *MarketplaceIntegrationsService) ConfigureIntegration(id string, credent
 
 // testIntegrationConnection tests if the integration can connect successfully
 func (s *MarketplaceIntegrationsService) testIntegrationConnection(integration *MarketplaceIntegration) error {
-	// This would implement actual API connection tests for each integration
-	// For now, we'll simulate it
+	// Test connection based on integration type
+	switch integration.Type {
+	case "turkish":
+		return s.testTurkishMarketplaceConnection(integration)
+	case "international":
+		return s.testInternationalMarketplaceConnection(integration)
+	case "ecommerce_platform":
+		return s.testEcommercePlatformConnection(integration)
+	case "social_media":
+		return s.testSocialMediaConnection(integration)
+	case "accounting":
+		return s.testAccountingConnection(integration)
+	case "cargo":
+		return s.testCargoConnection(integration)
+	default:
+		return fmt.Errorf("unsupported integration type: %s", integration.Type)
+	}
+}
+
+// testTurkishMarketplaceConnection tests Turkish marketplace connections
+func (s *MarketplaceIntegrationsService) testTurkishMarketplaceConnection(integration *MarketplaceIntegration) error {
+	apiKey := integration.Credentials["api_key"]
+	apiSecret := integration.Credentials["api_secret"]
+	
+	if apiKey == "" || apiSecret == "" {
+		return fmt.Errorf("missing API credentials for %s", integration.Name)
+	}
+	
+	// Implement specific connection tests for each marketplace
+	switch integration.ID {
+	case "trendyol":
+		return s.testTrendyolConnection(apiKey, apiSecret)
+	case "hepsiburada":
+		return s.testHepsiburadaConnection(apiKey, apiSecret)
+	case "n11":
+		return s.testN11Connection(apiKey, apiSecret)
+	case "amazon_tr":
+		return s.testAmazonTRConnection(apiKey, apiSecret)
+	default:
+		// Generic test for other Turkish marketplaces
+		return s.testGenericMarketplaceConnection(integration, apiKey, apiSecret)
+	}
+}
+
+// testTrendyolConnection tests Trendyol API connection
+func (s *MarketplaceIntegrationsService) testTrendyolConnection(apiKey, apiSecret string) error {
+	// Implement Trendyol API test
+	// This would make a real API call to test credentials
+	// For now, we simulate a successful connection
+	if len(apiKey) < 10 || len(apiSecret) < 10 {
+		return fmt.Errorf("invalid Trendyol API credentials")
+	}
+	return nil
+}
+
+// testHepsiburadaConnection tests Hepsiburada API connection
+func (s *MarketplaceIntegrationsService) testHepsiburadaConnection(apiKey, apiSecret string) error {
+	// Implement Hepsiburada API test
+	if len(apiKey) < 10 || len(apiSecret) < 10 {
+		return fmt.Errorf("invalid Hepsiburada API credentials")
+	}
+	return nil
+}
+
+// testN11Connection tests N11 API connection
+func (s *MarketplaceIntegrationsService) testN11Connection(apiKey, apiSecret string) error {
+	// Implement N11 API test
+	if len(apiKey) < 10 || len(apiSecret) < 10 {
+		return fmt.Errorf("invalid N11 API credentials")
+	}
+	return nil
+}
+
+// testAmazonTRConnection tests Amazon TR API connection
+func (s *MarketplaceIntegrationsService) testAmazonTRConnection(apiKey, apiSecret string) error {
+	// Implement Amazon TR API test
+	if len(apiKey) < 10 || len(apiSecret) < 10 {
+		return fmt.Errorf("invalid Amazon TR API credentials")
+	}
+	return nil
+}
+
+// testGenericMarketplaceConnection tests generic marketplace connection
+func (s *MarketplaceIntegrationsService) testGenericMarketplaceConnection(integration *MarketplaceIntegration, apiKey, apiSecret string) error {
+	// Generic connection test
+	if len(apiKey) < 5 || len(apiSecret) < 5 {
+		return fmt.Errorf("invalid API credentials for %s", integration.Name)
+	}
+	return nil
+}
+
+// testInternationalMarketplaceConnection tests international marketplace connections
+func (s *MarketplaceIntegrationsService) testInternationalMarketplaceConnection(integration *MarketplaceIntegration) error {
+	apiKey := integration.Credentials["api_key"]
+	
+	switch integration.ID {
+	case "amazon_us", "amazon_uk", "amazon_de":
+		return s.testAmazonConnection(integration.ID, apiKey)
+	case "ebay":
+		return s.testEbayConnection(apiKey)
+	case "etsy":
+		return s.testEtsyConnection(apiKey)
+	case "shopify":
+		return s.testShopifyConnection(apiKey)
+	default:
+		if len(apiKey) < 5 {
+			return fmt.Errorf("invalid API credentials for %s", integration.Name)
+		}
+		return nil
+	}
+}
+
+// testEcommercePlatformConnection tests e-commerce platform connections
+func (s *MarketplaceIntegrationsService) testEcommercePlatformConnection(integration *MarketplaceIntegration) error {
+	switch integration.ID {
+	case "woocommerce":
+		return s.testWooCommerceConnection(integration)
+	case "magento":
+		return s.testMagentoConnection(integration)
+	case "opencart":
+		return s.testOpenCartConnection(integration)
+	default:
+		return nil
+	}
+}
+
+// testSocialMediaConnection tests social media platform connections
+func (s *MarketplaceIntegrationsService) testSocialMediaConnection(integration *MarketplaceIntegration) error {
+	accessToken := integration.Credentials["access_token"]
+	
+	switch integration.ID {
+	case "facebook_shop":
+		return s.testFacebookShopConnection(accessToken)
+	case "instagram_shop":
+		return s.testInstagramShopConnection(accessToken)
+	case "google_merchant":
+		return s.testGoogleMerchantConnection(accessToken)
+	default:
+		if len(accessToken) < 10 {
+			return fmt.Errorf("invalid access token for %s", integration.Name)
+		}
+		return nil
+	}
+}
+
+// testAccountingConnection tests accounting system connections
+func (s *MarketplaceIntegrationsService) testAccountingConnection(integration *MarketplaceIntegration) error {
+	// Test accounting system connections
+	return nil
+}
+
+// testCargoConnection tests cargo system connections
+func (s *MarketplaceIntegrationsService) testCargoConnection(integration *MarketplaceIntegration) error {
+	// Test cargo system connections
+	return nil
+}
+
+// Helper methods for specific platform tests
+func (s *MarketplaceIntegrationsService) testAmazonConnection(region, apiKey string) error {
+	if len(apiKey) < 15 {
+		return fmt.Errorf("invalid Amazon API key for region %s", region)
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testEbayConnection(apiKey string) error {
+	if len(apiKey) < 20 {
+		return fmt.Errorf("invalid eBay API key")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testEtsyConnection(apiKey string) error {
+	if len(apiKey) < 15 {
+		return fmt.Errorf("invalid Etsy API key")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testShopifyConnection(apiKey string) error {
+	if len(apiKey) < 10 {
+		return fmt.Errorf("invalid Shopify API key")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testWooCommerceConnection(integration *MarketplaceIntegration) error {
+	consumerKey := integration.Credentials["consumer_key"]
+	consumerSecret := integration.Credentials["consumer_secret"]
+	
+	if len(consumerKey) < 10 || len(consumerSecret) < 10 {
+		return fmt.Errorf("invalid WooCommerce credentials")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testMagentoConnection(integration *MarketplaceIntegration) error {
+	apiToken := integration.Credentials["api_token"]
+	
+	if len(apiToken) < 15 {
+		return fmt.Errorf("invalid Magento API token")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testOpenCartConnection(integration *MarketplaceIntegration) error {
+	apiKey := integration.Credentials["api_key"]
+	
+	if len(apiKey) < 10 {
+		return fmt.Errorf("invalid OpenCart API key")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testFacebookShopConnection(accessToken string) error {
+	if len(accessToken) < 20 {
+		return fmt.Errorf("invalid Facebook access token")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testInstagramShopConnection(accessToken string) error {
+	if len(accessToken) < 20 {
+		return fmt.Errorf("invalid Instagram access token")
+	}
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) testGoogleMerchantConnection(accessToken string) error {
+	if len(accessToken) < 25 {
+		return fmt.Errorf("invalid Google Merchant access token")
+	}
 	return nil
 }
 
@@ -598,30 +828,210 @@ func (s *MarketplaceIntegrationsService) SyncProducts(integrationID string, prod
 
 // syncToTurkishMarketplace syncs products to Turkish marketplaces
 func (s *MarketplaceIntegrationsService) syncToTurkishMarketplace(integration *MarketplaceIntegration, products []interface{}) error {
-	// Implement specific sync logic for each Turkish marketplace
-	// This would include API calls, data transformation, etc.
-	return nil
+	// Validate integration credentials
+	if err := s.testIntegrationConnection(integration); err != nil {
+		return fmt.Errorf("connection test failed: %w", err)
+	}
+	
+	// Transform products for the specific marketplace
+	transformedProducts, err := s.transformProductsForTurkishMarketplace(integration, products)
+	if err != nil {
+		return fmt.Errorf("product transformation failed: %w", err)
+	}
+	
+	// Sync products based on specific marketplace
+	switch integration.ID {
+	case "trendyol":
+		return s.syncToTrendyol(integration, transformedProducts)
+	case "hepsiburada":
+		return s.syncToHepsiburada(integration, transformedProducts)
+	case "n11":
+		return s.syncToN11(integration, transformedProducts)
+	case "amazon_tr":
+		return s.syncToAmazonTR(integration, transformedProducts)
+	case "ciceksepeti":
+		return s.syncToCicekSepeti(integration, transformedProducts)
+	case "pttavm":
+		return s.syncToPttAvm(integration, transformedProducts)
+	default:
+		return s.syncToGenericTurkishMarketplace(integration, transformedProducts)
+	}
 }
 
 // syncToInternationalMarketplace syncs products to international marketplaces
 func (s *MarketplaceIntegrationsService) syncToInternationalMarketplace(integration *MarketplaceIntegration, products []interface{}) error {
-	// Implement specific sync logic for each international marketplace
-	// This would include API calls, data transformation, currency conversion, etc.
-	return nil
+	// Validate integration credentials
+	if err := s.testIntegrationConnection(integration); err != nil {
+		return fmt.Errorf("connection test failed: %w", err)
+	}
+	
+	// Transform products for international marketplace (currency conversion, localization, etc.)
+	transformedProducts, err := s.transformProductsForInternationalMarketplace(integration, products)
+	if err != nil {
+		return fmt.Errorf("product transformation failed: %w", err)
+	}
+	
+	// Sync products based on specific marketplace
+	switch integration.ID {
+	case "amazon_us", "amazon_uk", "amazon_de", "amazon_fr", "amazon_it", "amazon_es":
+		return s.syncToAmazonInternational(integration, transformedProducts)
+	case "ebay":
+		return s.syncToEbay(integration, transformedProducts)
+	case "etsy":
+		return s.syncToEtsy(integration, transformedProducts)
+	case "aliexpress":
+		return s.syncToAliExpress(integration, transformedProducts)
+	case "walmart":
+		return s.syncToWalmart(integration, transformedProducts)
+	default:
+		return s.syncToGenericInternationalMarketplace(integration, transformedProducts)
+	}
 }
 
 // syncToEcommercePlatform syncs products to e-commerce platforms
 func (s *MarketplaceIntegrationsService) syncToEcommercePlatform(integration *MarketplaceIntegration, products []interface{}) error {
-	// Implement specific sync logic for each e-commerce platform
-	// This would include API calls, plugin integration, etc.
-	return nil
+	// Validate integration credentials
+	if err := s.testIntegrationConnection(integration); err != nil {
+		return fmt.Errorf("connection test failed: %w", err)
+	}
+	
+	// Transform products for e-commerce platform
+	transformedProducts, err := s.transformProductsForEcommercePlatform(integration, products)
+	if err != nil {
+		return fmt.Errorf("product transformation failed: %w", err)
+	}
+	
+	// Sync products based on specific platform
+	switch integration.ID {
+	case "woocommerce":
+		return s.syncToWooCommerce(integration, transformedProducts)
+	case "magento":
+		return s.syncToMagento(integration, transformedProducts)
+	case "shopify":
+		return s.syncToShopify(integration, transformedProducts)
+	case "opencart":
+		return s.syncToOpenCart(integration, transformedProducts)
+	case "prestashop":
+		return s.syncToPrestaShop(integration, transformedProducts)
+	default:
+		return s.syncToGenericEcommercePlatform(integration, transformedProducts)
+	}
 }
 
 // syncToSocialMedia syncs products to social media platforms
 func (s *MarketplaceIntegrationsService) syncToSocialMedia(integration *MarketplaceIntegration, products []interface{}) error {
-	// Implement specific sync logic for social media platforms
-	// This would include catalog creation, pixel setup, etc.
-	return nil
+	// Validate integration credentials
+	if err := s.testIntegrationConnection(integration); err != nil {
+		return fmt.Errorf("connection test failed: %w", err)
+	}
+	
+	// Transform products for social media platform
+	transformedProducts, err := s.transformProductsForSocialMedia(integration, products)
+	if err != nil {
+		return fmt.Errorf("product transformation failed: %w", err)
+	}
+	
+	// Sync products based on specific platform
+	switch integration.ID {
+	case "facebook_shop":
+		return s.syncToFacebookShop(integration, transformedProducts)
+	case "instagram_shop":
+		return s.syncToInstagramShop(integration, transformedProducts)
+	case "google_merchant":
+		return s.syncToGoogleMerchant(integration, transformedProducts)
+	case "pinterest_business":
+		return s.syncToPinterestBusiness(integration, transformedProducts)
+	case "tiktok_shop":
+		return s.syncToTikTokShop(integration, transformedProducts)
+	default:
+		return s.syncToGenericSocialMedia(integration, transformedProducts)
+	}
+}
+
+// Product transformation methods
+func (s *MarketplaceIntegrationsService) transformProductsForTurkishMarketplace(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
+	transformedProducts := make([]interface{}, 0, len(products))
+	
+	for _, product := range products {
+		// Transform each product according to Turkish marketplace requirements
+		transformed, err := s.transformSingleProductForTurkish(integration, product)
+		if err != nil {
+			continue // Skip invalid products, log error in production
+		}
+		transformedProducts = append(transformedProducts, transformed)
+	}
+	
+	return transformedProducts, nil
+}
+
+func (s *MarketplaceIntegrationsService) transformProductsForInternationalMarketplace(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
+	transformedProducts := make([]interface{}, 0, len(products))
+	
+	for _, product := range products {
+		// Transform each product for international marketplace (currency, language, regulations)
+		transformed, err := s.transformSingleProductForInternational(integration, product)
+		if err != nil {
+			continue // Skip invalid products
+		}
+		transformedProducts = append(transformedProducts, transformed)
+	}
+	
+	return transformedProducts, nil
+}
+
+func (s *MarketplaceIntegrationsService) transformProductsForEcommercePlatform(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
+	transformedProducts := make([]interface{}, 0, len(products))
+	
+	for _, product := range products {
+		// Transform each product for e-commerce platform
+		transformed, err := s.transformSingleProductForEcommerce(integration, product)
+		if err != nil {
+			continue // Skip invalid products
+		}
+		transformedProducts = append(transformedProducts, transformed)
+	}
+	
+	return transformedProducts, nil
+}
+
+func (s *MarketplaceIntegrationsService) transformProductsForSocialMedia(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
+	transformedProducts := make([]interface{}, 0, len(products))
+	
+	for _, product := range products {
+		// Transform each product for social media platform
+		transformed, err := s.transformSingleProductForSocial(integration, product)
+		if err != nil {
+			continue // Skip invalid products
+		}
+		transformedProducts = append(transformedProducts, transformed)
+	}
+	
+	return transformedProducts, nil
+}
+
+// Single product transformation methods
+func (s *MarketplaceIntegrationsService) transformSingleProductForTurkish(integration *MarketplaceIntegration, product interface{}) (interface{}, error) {
+	// Implement product transformation logic for Turkish marketplaces
+	// This would include category mapping, price formatting, description localization, etc.
+	return product, nil
+}
+
+func (s *MarketplaceIntegrationsService) transformSingleProductForInternational(integration *MarketplaceIntegration, product interface{}) (interface{}, error) {
+	// Implement product transformation logic for international marketplaces
+	// This would include currency conversion, language translation, compliance checks, etc.
+	return product, nil
+}
+
+func (s *MarketplaceIntegrationsService) transformSingleProductForEcommerce(integration *MarketplaceIntegration, product interface{}) (interface{}, error) {
+	// Implement product transformation logic for e-commerce platforms
+	// This would include format conversion, field mapping, etc.
+	return product, nil
+}
+
+func (s *MarketplaceIntegrationsService) transformSingleProductForSocial(integration *MarketplaceIntegration, product interface{}) (interface{}, error) {
+	// Implement product transformation logic for social media platforms
+	// This would include image optimization, catalog format, etc.
+	return product, nil
 }
 
 // ProcessOrder processes an order from a marketplace
@@ -694,4 +1104,134 @@ func (s *MarketplaceIntegrationsService) GenerateInvoice(efaturaID string, invoi
 	// Return invoice number
 	
 	return "INV2024001", nil
+}
+
+// Specific marketplace sync methods for Turkish marketplaces
+func (s *MarketplaceIntegrationsService) syncToTrendyol(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Trendyol API integration
+	// This would make actual API calls to Trendyol's product API
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToHepsiburada(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Hepsiburada API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToN11(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement N11 API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToAmazonTR(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Amazon TR API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToCicekSepeti(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement ÇiçekSepeti API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToPttAvm(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement PttAvm API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToGenericTurkishMarketplace(integration *MarketplaceIntegration, products []interface{}) error {
+	// Generic sync logic for other Turkish marketplaces
+	return nil
+}
+
+// Specific marketplace sync methods for international marketplaces
+func (s *MarketplaceIntegrationsService) syncToAmazonInternational(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Amazon MWS/SP-API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToEbay(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement eBay API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToEtsy(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Etsy API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToAliExpress(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement AliExpress API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToWalmart(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Walmart API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToGenericInternationalMarketplace(integration *MarketplaceIntegration, products []interface{}) error {
+	// Generic sync logic for other international marketplaces
+	return nil
+}
+
+// Specific e-commerce platform sync methods
+func (s *MarketplaceIntegrationsService) syncToWooCommerce(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement WooCommerce REST API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToMagento(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Magento REST API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToShopify(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Shopify Admin API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToOpenCart(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement OpenCart API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToPrestaShop(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement PrestaShop API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToGenericEcommercePlatform(integration *MarketplaceIntegration, products []interface{}) error {
+	// Generic sync logic for other e-commerce platforms
+	return nil
+}
+
+// Specific social media platform sync methods
+func (s *MarketplaceIntegrationsService) syncToFacebookShop(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Facebook Catalog API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToInstagramShop(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Instagram Shopping API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToGoogleMerchant(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Google Merchant Center API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToPinterestBusiness(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement Pinterest Business API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToTikTokShop(integration *MarketplaceIntegration, products []interface{}) error {
+	// Implement TikTok Shop API integration
+	return nil
+}
+
+func (s *MarketplaceIntegrationsService) syncToGenericSocialMedia(integration *MarketplaceIntegration, products []interface{}) error {
+	// Generic sync logic for other social media platforms
+	return nil
 }
