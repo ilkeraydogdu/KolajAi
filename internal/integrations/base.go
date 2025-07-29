@@ -3,6 +3,7 @@ package integrations
 import (
 	"context"
 	"time"
+	"kolajAi/internal/security"
 )
 
 // IntegrationType represents the type of integration
@@ -46,6 +47,7 @@ type Integration struct {
 }
 
 // Credentials represents encrypted credentials for an integration
+// DEPRECATED: Use security.CredentialData instead for new implementations
 type Credentials struct {
 	APIKey          string            `json:"-"`
 	APISecret       string            `json:"-"`
@@ -57,6 +59,51 @@ type Credentials struct {
 	SecretAccessKey string            `json:"-"`
 	SellerID        string            `json:"-"`
 	Extra           map[string]string `json:"-"`
+}
+
+// SecureCredentials wraps the new secure credential system
+type SecureCredentials struct {
+	manager *security.CredentialManager
+	id      string
+}
+
+// NewSecureCredentials creates a new secure credentials wrapper
+func NewSecureCredentials(manager *security.CredentialManager, id string) *SecureCredentials {
+	return &SecureCredentials{
+		manager: manager,
+		id:      id,
+	}
+}
+
+// GetCredentialData retrieves decrypted credential data
+func (sc *SecureCredentials) GetCredentialData() (*security.CredentialData, error) {
+	return sc.manager.GetCredential(sc.id)
+}
+
+// ToLegacyCredentials converts to legacy Credentials struct for backward compatibility
+func (sc *SecureCredentials) ToLegacyCredentials() (*Credentials, error) {
+	data, err := sc.manager.GetCredential(sc.id)
+	if err != nil {
+		return nil, err
+	}
+
+	additional := make(map[string]string)
+	if data.Additional != nil {
+		additional = data.Additional
+	}
+
+	return &Credentials{
+		APIKey:          data.APIKey,
+		APISecret:       data.APISecret,
+		AccessToken:     data.AccessToken,
+		RefreshToken:    data.RefreshToken,
+		ClientID:        data.ClientID,
+		ClientSecret:    data.ClientSecret,
+		AccessKeyID:     additional["access_key_id"],
+		SecretAccessKey: additional["secret_access_key"],
+		SellerID:        additional["seller_id"],
+		Extra:           additional,
+	}, nil
 }
 
 // IntegrationMetadata contains metadata about the integration
