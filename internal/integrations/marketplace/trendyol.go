@@ -185,6 +185,35 @@ func (p *TrendyolProvider) HealthCheck(ctx context.Context) error {
 	return nil
 }
 
+// GetName returns the provider name
+func (p *TrendyolProvider) GetName() string {
+	return "Trendyol"
+}
+
+// GetType returns the provider type
+func (p *TrendyolProvider) GetType() string {
+	return "marketplace"
+}
+
+// IsHealthy checks if the provider is healthy
+func (p *TrendyolProvider) IsHealthy(ctx context.Context) (bool, error) {
+	err := p.HealthCheck(ctx)
+	return err == nil, err
+}
+
+// GetMetrics returns provider metrics
+func (p *TrendyolProvider) GetMetrics() map[string]interface{} {
+	return map[string]interface{}{
+		"rate_limit_remaining": p.rateLimit.RequestsRemaining,
+		"rate_limit_per_minute": p.rateLimit.RequestsPerMinute,
+		"rate_limit_resets_at": p.rateLimit.ResetsAt.Unix(),
+		"last_request_time": time.Now().Unix(),
+		"provider_name": "trendyol",
+		"base_url": p.baseURL,
+		"supplier_id": p.supplierID,
+	}
+}
+
 // GetCapabilities returns the capabilities of this integration
 func (p *TrendyolProvider) GetCapabilities() []string {
 	return []string{
@@ -237,6 +266,46 @@ func (p *TrendyolProvider) SyncProducts(ctx context.Context, products []interfac
 	}
 	
 	return nil
+}
+
+// GetProducts retrieves products from Trendyol
+func (p *TrendyolProvider) GetProducts(ctx context.Context, params map[string]interface{}) ([]interface{}, error) {
+	endpoint := fmt.Sprintf("/sapigw/suppliers/%s/products", p.supplierID)
+	
+	// Add query parameters
+	queryParams := make([]string, 0)
+	if page, ok := params["page"].(int); ok {
+		queryParams = append(queryParams, fmt.Sprintf("page=%d", page))
+	}
+	if size, ok := params["size"].(int); ok {
+		queryParams = append(queryParams, fmt.Sprintf("size=%d", size))
+	}
+	if approved, ok := params["approved"].(bool); ok {
+		queryParams = append(queryParams, fmt.Sprintf("approved=%t", approved))
+	}
+	
+	if len(queryParams) > 0 {
+		endpoint += "?" + strings.Join(queryParams, "&")
+	}
+	
+	var response struct {
+		Content []TrendyolProduct `json:"content"`
+		TotalElements int `json:"totalElements"`
+		TotalPages int `json:"totalPages"`
+	}
+	
+	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Convert to generic interface
+	products := make([]interface{}, len(response.Content))
+	for i, product := range response.Content {
+		products[i] = product
+	}
+	
+	return products, nil
 }
 
 // GetOrders retrieves orders from Trendyol
@@ -317,6 +386,50 @@ func (p *TrendyolProvider) UpdateOrderStatus(ctx context.Context, orderID string
 	
 	var response map[string]interface{}
 	return p.makeRequest(ctx, "PUT", endpoint, request, &response)
+}
+
+// GetCategories retrieves categories from Trendyol
+func (p *TrendyolProvider) GetCategories(ctx context.Context) ([]interface{}, error) {
+	endpoint := "/sapigw/categories"
+	
+	var response struct {
+		Categories []Category `json:"categories"`
+	}
+	
+	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Convert to generic interface
+	categories := make([]interface{}, len(response.Categories))
+	for i, category := range response.Categories {
+		categories[i] = category
+	}
+	
+	return categories, nil
+}
+
+// GetBrands retrieves brands from Trendyol
+func (p *TrendyolProvider) GetBrands(ctx context.Context) ([]interface{}, error) {
+	endpoint := "/sapigw/brands"
+	
+	var response struct {
+		Brands []Brand `json:"brands"`
+	}
+	
+	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Convert to generic interface
+	brands := make([]interface{}, len(response.Brands))
+	for i, brand := range response.Brands {
+		brands[i] = brand
+	}
+	
+	return brands, nil
 }
 
 // makeRequest makes an HTTP request to Trendyol API
@@ -412,30 +525,123 @@ func (p *TrendyolProvider) updateRateLimit(headers http.Header) {
 // Helper methods for data conversion
 
 func (p *TrendyolProvider) convertToTrendyolProduct(product interface{}) (TrendyolProduct, error) {
-	// Convert generic product to Trendyol format
-	// This would typically map from your internal product structure
-	// to Trendyol's expected format
-	
-	trendyolProduct := TrendyolProduct{
-		CurrencyType: "TRY",
-		VatRate:      18, // Default VAT rate for Turkey
+	productMap, ok := product.(map[string]interface{})
+	if !ok {
+		return TrendyolProduct{}, fmt.Errorf("invalid product format")
 	}
 	
-	// Add conversion logic based on your product structure
-	// This is a placeholder implementation
+	trendyolProduct := TrendyolProduct{
+		Barcode:          getString(productMap, "barcode"),
+		Title:            getString(productMap, "title"),
+		ProductMainID:    getString(productMap, "product_main_id"),
+		BrandID:          getInt(productMap, "brand_id"),
+		CategoryID:       getInt(productMap, "category_id"),
+		Quantity:         getInt(productMap, "quantity"),
+		StockCode:        getString(productMap, "sku"),
+		DimensionalWeight: getFloat64(productMap, "dimensional_weight"),
+		Description:      getString(productMap, "description"),
+		CurrencyType:     "TRY",
+		ListPrice:        getFloat64(productMap, "list_price"),
+		SalePrice:        getFloat64(productMap, "price"),
+		VatRate:          18, // Default VAT rate for Turkey
+		CargoCompanyID:   1,  // Default cargo company
+	}
+	
+	// Set images
+	if images, ok := productMap["images"].([]interface{}); ok {
+		trendyolImages := make([]TrendyolImage, 0)
+		for _, img := range images {
+			if imgStr, ok := img.(string); ok {
+				trendyolImages = append(trendyolImages, TrendyolImage{URL: imgStr})
+			}
+		}
+		trendyolProduct.Images = trendyolImages
+	}
+	
+	// Set attributes
+	if attributes, ok := productMap["attributes"].(map[string]interface{}); ok {
+		trendyolAttributes := make([]TrendyolAttribute, 0)
+		for key, value := range attributes {
+			if valueStr, ok := value.(string); ok {
+				trendyolAttributes = append(trendyolAttributes, TrendyolAttribute{
+					AttributeID:          getAttributeID(key),
+					AttributeValueID:     getAttributeValueID(key, valueStr),
+					CustomAttributeValue: valueStr,
+				})
+			}
+		}
+		trendyolProduct.Attributes = trendyolAttributes
+	}
 	
 	return trendyolProduct, nil
 }
 
+// Helper functions for Trendyol product conversion
+func getString(m map[string]interface{}, key string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+	return ""
+}
+
+func getInt(m map[string]interface{}, key string) int {
+	if v, ok := m[key].(int); ok {
+		return v
+	}
+	if v, ok := m[key].(float64); ok {
+		return int(v)
+	}
+	return 0
+}
+
+func getFloat64(m map[string]interface{}, key string) float64 {
+	if v, ok := m[key].(float64); ok {
+		return v
+	}
+	if v, ok := m[key].(int); ok {
+		return float64(v)
+	}
+	return 0
+}
+
+func getAttributeID(attributeName string) int {
+	// This would typically be a lookup from your attribute mapping
+	// For now, return a default value
+	attributeMap := map[string]int{
+		"color":  1,
+		"size":   2,
+		"brand":  3,
+		"model":  4,
+	}
+	if id, ok := attributeMap[attributeName]; ok {
+		return id
+	}
+	return 0
+}
+
+func getAttributeValueID(attributeName, value string) int {
+	// This would typically be a lookup from your attribute value mapping
+	// For now, return a default value
+	return 0
+}
+
 func (p *TrendyolProvider) convertToStockPriceItem(update interface{}) (TrendyolStockPriceItem, error) {
-	// Convert generic update to Trendyol format
-	// This would typically map from your internal update structure
-	// to Trendyol's expected format
+	updateMap, ok := update.(map[string]interface{})
+	if !ok {
+		return TrendyolStockPriceItem{}, fmt.Errorf("invalid update format")
+	}
 	
-	item := TrendyolStockPriceItem{}
+	item := TrendyolStockPriceItem{
+		Barcode:   getString(updateMap, "barcode"),
+		Quantity:  getInt(updateMap, "quantity"),
+		SalePrice: getFloat64(updateMap, "price"),
+		ListPrice: getFloat64(updateMap, "list_price"),
+	}
 	
-	// Add conversion logic based on your update structure
-	// This is a placeholder implementation
+	// If list price is not provided, use sale price + margin
+	if item.ListPrice == 0 && item.SalePrice > 0 {
+		item.ListPrice = item.SalePrice * 1.2 // Add 20% margin
+	}
 	
 	return item, nil
 }
