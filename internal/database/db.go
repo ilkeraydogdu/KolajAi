@@ -213,13 +213,37 @@ func (r *MySQLRepository) FindByID(table string, id interface{}, result interfac
 }
 
 // FindAll finds all records with pagination
-func (r *MySQLRepository) FindAll(table string, orderBy string, limit, offset int, dest interface{}) error {
+func (r *MySQLRepository) FindAll(table string, result interface{}, conditions map[string]interface{}, orderBy string, limit, offset int) error {
 	if !validateTableName(table) {
 		return fmt.Errorf("invalid table name: %s", table)
 	}
 
 	qb := NewQueryBuilder(table)
-	query, args := qb.OrderBy(orderBy, Descending).Limit(limit).Offset(offset).Build()
+	
+	// Add conditions
+	if conditions != nil {
+		qb.Filter(conditions)
+	}
+	
+	// Add ordering
+	if orderBy != "" {
+		parts := strings.Fields(orderBy)
+		if len(parts) >= 2 && strings.ToUpper(parts[1]) == "DESC" {
+			qb.OrderBy(parts[0], Descending)
+		} else if len(parts) >= 1 {
+			qb.OrderBy(parts[0], Ascending)
+		}
+	}
+	
+	// Add pagination
+	if limit > 0 {
+		qb.Limit(limit)
+	}
+	if offset > 0 {
+		qb.Offset(offset)
+	}
+	
+	query, args := qb.Build()
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return fmt.Errorf("error preparing statement: %v", err)
@@ -232,7 +256,94 @@ func (r *MySQLRepository) FindAll(table string, orderBy string, limit, offset in
 	}
 	defer rows.Close()
 
-	return rows.Scan(dest)
+	return r.scanRows(rows, result)
+}
+
+// scanRows scans multiple rows into a slice
+func (r *MySQLRepository) scanRows(rows *sql.Rows, result interface{}) error {
+	// Get result value and type
+	resultValue := reflect.ValueOf(result)
+	if resultValue.Kind() != reflect.Ptr {
+		return fmt.Errorf("result must be a pointer")
+	}
+	
+	sliceValue := resultValue.Elem()
+	if sliceValue.Kind() != reflect.Slice {
+		return fmt.Errorf("result must be a pointer to slice")
+	}
+	
+	elementType := sliceValue.Type().Elem()
+	
+	// Get columns
+	columns, err := rows.Columns()
+	if err != nil {
+		return err
+	}
+	
+	// Process each row
+	for rows.Next() {
+		// Create new element
+		var elementValue reflect.Value
+		if elementType.Kind() == reflect.Ptr {
+			elementValue = reflect.New(elementType.Elem())
+		} else {
+			elementValue = reflect.New(elementType).Elem()
+		}
+		
+		// Create scan destinations
+		values := make([]interface{}, len(columns))
+		valuePtrs := make([]interface{}, len(columns))
+		for i := range values {
+			valuePtrs[i] = &values[i]
+		}
+		
+		// Scan row
+		if err := rows.Scan(valuePtrs...); err != nil {
+			return err
+		}
+		
+		// Map columns to struct fields
+		elem := elementValue
+		if elementType.Kind() == reflect.Ptr {
+			elem = elementValue.Elem()
+		}
+		
+		for i, col := range columns {
+			field := elem.FieldByName(strings.Title(col))
+			if !field.IsValid() {
+				// Try with db tag
+				for j := 0; j < elem.NumField(); j++ {
+					structField := elem.Type().Field(j)
+					if structField.Tag.Get("db") == col {
+						field = elem.Field(j)
+						break
+					}
+				}
+			}
+			
+			if field.IsValid() && field.CanSet() {
+				val := values[i]
+				if val != nil {
+					if byteArray, ok := val.([]byte); ok {
+						val = string(byteArray)
+					}
+					fieldValue := reflect.ValueOf(val)
+					if fieldValue.Type().ConvertibleTo(field.Type()) {
+						field.Set(fieldValue.Convert(field.Type()))
+					}
+				}
+			}
+		}
+		
+		// Append to slice
+		if elementType.Kind() == reflect.Ptr {
+			sliceValue.Set(reflect.Append(sliceValue, elementValue))
+		} else {
+			sliceValue.Set(reflect.Append(sliceValue, elementValue))
+		}
+	}
+	
+	return rows.Err()
 }
 
 // FindOne finds a single record

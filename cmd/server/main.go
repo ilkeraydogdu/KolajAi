@@ -191,6 +191,7 @@ func main() {
 	// Yeni gelişmiş AI ve marketplace servisleri
 	aiAdvancedService := services.NewAIAdvancedService(repo, productService, orderService)
 	marketplaceService := services.NewMarketplaceIntegrationsService()
+	paymentService := services.NewPaymentService(repo)
 	
 	// AI Integration Manager
 	MainLogger.Println("AI Integration Manager başlatılıyor...")
@@ -353,6 +354,7 @@ func main() {
 	// Yeni gelişmiş handler'lar
 	aiAdvancedHandler := handlers.NewAIAdvancedHandler(h, aiAdvancedService)
 	marketplaceHandler := handlers.NewMarketplaceHandler(h, marketplaceService)
+	paymentHandler := handlers.NewPaymentHandler(h, paymentService, orderService)
 
 	// Middleware stack oluştur
 	middlewareStack := middleware.NewMiddlewareStack(
@@ -433,6 +435,15 @@ func main() {
 	appRouter.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
 
 	// API rotaları
+	appRouter.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status": "ok",
+			"timestamp": time.Now().Format(time.RFC3339),
+			"service": "KolajAI Enterprise",
+			"version": "2.0.0",
+		})
+	})
 	appRouter.HandleFunc("/api/search", ecommerceHandler.APISearchProducts)
 	appRouter.HandleFunc("/api/cart/update", ecommerceHandler.APIUpdateCart)
 
@@ -483,6 +494,19 @@ func main() {
 	
 	// Integration webhook endpoints
 	appRouter.HandleFunc("/webhooks/integration", webhookService.HandleWebhook)
+	
+	// Payment endpoints
+	appRouter.HandleFunc("/payment/checkout", paymentHandler.PaymentPage)
+	appRouter.HandleFunc("/payment/success", paymentHandler.PaymentSuccess)
+	appRouter.HandleFunc("/payment/failure", paymentHandler.PaymentFailure)
+	
+	// Payment API endpoints
+	appRouter.HandleFunc("/api/payment/intent", paymentHandler.CreatePaymentIntent)
+	appRouter.HandleFunc("/api/payment/process", paymentHandler.ProcessPayment)
+	appRouter.HandleFunc("/api/payment/status/", paymentHandler.GetPaymentStatus)
+	appRouter.HandleFunc("/api/payment/refund", paymentHandler.RefundPayment)
+	appRouter.HandleFunc("/api/payment/methods", paymentHandler.GetPaymentMethods)
+	appRouter.HandleFunc("/api/payment/calculate-fee", paymentHandler.CalculatePaymentFee)
 	
 	// Integration analytics endpoints
 	appRouter.HandleFunc("/api/integration/metrics", func(w http.ResponseWriter, r *http.Request) {

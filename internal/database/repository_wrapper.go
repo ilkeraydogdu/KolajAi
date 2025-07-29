@@ -161,7 +161,7 @@ type Transaction interface {
 // FindAll implements SimpleRepository interface
 func (r *RepositoryWrapper) FindAll(table string, result interface{}, conditions map[string]interface{}, orderBy string, limit, offset int) error {
 	// Simple implementation - just call the underlying FindAll with basic parameters
-	return r.MySQLRepository.FindAll(table, orderBy, limit, offset, result)
+	return r.MySQLRepository.FindAll(table, result, conditions, orderBy, limit, offset)
 }
 
 // FindOne implements SimpleRepository interface

@@ -101,29 +101,55 @@ func NewSessionManager(db *sql.DB, config SessionConfig) (*SessionManager, error
 
 // createSessionsTable creates the sessions table
 func (sm *SessionManager) createSessionsTable() error {
+	// Check if table exists first
+	var count int
+	err := sm.db.QueryRow("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='sessions'").Scan(&count)
+	if err != nil {
+		return err
+	}
+	
+	// If table exists, don't recreate it
+	if count > 0 {
+		return nil
+	}
+
 	query := `
-	CREATE TABLE IF NOT EXISTS sessions (
-		id VARCHAR(128) PRIMARY KEY,
-		user_id BIGINT,
+	CREATE TABLE sessions (
+		id TEXT PRIMARY KEY,
+		user_id INTEGER,
 		user_agent TEXT,
-		ip_address VARCHAR(45),
+		ip_address TEXT,
 		login_time DATETIME,
 		last_activity DATETIME,
 		expires_at DATETIME,
-		is_active BOOLEAN DEFAULT TRUE,
+		is_active INTEGER DEFAULT 1,
 		device_info TEXT,
 		permissions TEXT,
 		preferences TEXT,
 		data TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-		INDEX idx_user_id (user_id),
-		INDEX idx_expires_at (expires_at),
-		INDEX idx_is_active (is_active)
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	)`
 
-	_, err := sm.db.Exec(query)
-	return err
+	_, err = sm.db.Exec(query)
+	if err != nil {
+		return err
+	}
+
+	// Create indexes separately for SQLite
+	indexes := []string{
+		"CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id)",
+		"CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at)",
+		"CREATE INDEX IF NOT EXISTS idx_sessions_is_active ON sessions(is_active)",
+	}
+
+	for _, indexQuery := range indexes {
+		if _, err := sm.db.Exec(indexQuery); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // GenerateSessionID generates a cryptographically secure session ID

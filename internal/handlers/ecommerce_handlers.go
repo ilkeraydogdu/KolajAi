@@ -85,8 +85,8 @@ func (h *EcommerceHandler) Products(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else {
-		// Tüm aktif ürünler (bu fonksiyon ProductService'e eklenmeli)
-		products, err = h.productService.GetFeaturedProducts(limit, offset)
+		// Tüm aktif ürünler
+		products, err = h.productService.GetAllProducts(limit, offset)
 	}
 
 	if err != nil {

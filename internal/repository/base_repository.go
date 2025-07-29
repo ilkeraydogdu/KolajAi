@@ -41,7 +41,7 @@ func (r *BaseRepository) FindByID(table string, id interface{}, result interface
 
 // FindAll retrieves multiple records
 func (r *BaseRepository) FindAll(table string, result interface{}, conditions map[string]interface{}, orderBy string, limit, offset int) error {
-	return r.db.FindAll(table, orderBy, limit, offset, result)
+	return r.db.FindAll(table, result, conditions, orderBy, limit, offset)
 }
 
 // FindOne retrieves a single record

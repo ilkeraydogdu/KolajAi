@@ -1,0 +1,258 @@
+{{define "payment/checkout"}}
+{{template "layout/header" .}}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Ödeme</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Payment Form -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-6">Ödeme Bilgileri</h2>
+                
+                <form id="payment-form">
+                    <input type="hidden" name="order_id" value="{{.OrderID}}">
+                    
+                    <!-- Payment Method Selection -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Ödeme Yöntemi
+                        </label>
+                        <div class="space-y-3">
+                            {{range .PaymentMethods}}
+                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="payment_method" value="{{.}}" class="mr-3">
+                                <div class="flex items-center">
+                                    {{if eq . "credit_card"}}
+                                        <i class="fas fa-credit-card text-blue-600 mr-2"></i>
+                                        <span>Kredi Kartı</span>
+                                    {{else if eq . "debit_card"}}
+                                        <i class="fas fa-credit-card text-green-600 mr-2"></i>
+                                        <span>Banka Kartı</span>
+                                    {{else if eq . "paypal"}}
+                                        <i class="fab fa-paypal text-blue-800 mr-2"></i>
+                                        <span>PayPal</span>
+                                    {{else if eq . "bank_transfer"}}
+                                        <i class="fas fa-university text-gray-600 mr-2"></i>
+                                        <span>Banka Havalesi</span>
+                                    {{else if eq . "cash"}}
+                                        <i class="fas fa-money-bill text-green-600 mr-2"></i>
+                                        <span>Kapıda Ödeme</span>
+                                    {{end}}
+                                </div>
+                            </label>
+                            {{end}}
+                        </div>
+                    </div>
+                    
+                    <!-- Credit Card Details (shown when credit card is selected) -->
+                    <div id="card-details" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Kart Numarası
+                                </label>
+                                <input type="text" name="card_number" placeholder="1234 5678 9012 3456" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Kart Sahibi
+                                </label>
+                                <input type="text" name="card_holder" placeholder="Ad Soyad" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Son Kullanma Tarihi
+                                </label>
+                                <input type="text" name="expiry" placeholder="MM/YY" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    CVV
+                                </label>
+                                <input type="text" name="cvv" placeholder="123" 
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button type="submit" id="pay-button" 
+                            class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition font-semibold">
+                        <i class="fas fa-lock mr-2"></i>
+                        Güvenli Ödeme Yap
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Order Summary -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-6">Sipariş Özeti</h2>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Sipariş No:</span>
+                        <span class="font-medium">#{{.OrderID}}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ara Toplam:</span>
+                        <span class="font-medium">{{formatPrice .Amount}}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Kargo:</span>
+                        <span class="font-medium text-green-600">Ücretsiz</span>
+                    </div>
+                    <div id="payment-fee" class="hidden">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">İşlem Ücreti:</span>
+                            <span class="font-medium" id="fee-amount">₺0.00</span>
+                        </div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="flex justify-between text-lg font-bold">
+                        <span>Toplam:</span>
+                        <span id="total-amount">{{formatPrice .Amount}}</span>
+                    </div>
+                </div>
+                
+                <!-- Security Features -->
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold mb-2 flex items-center">
+                        <i class="fas fa-shield-alt text-green-600 mr-2"></i>
+                        Güvenlik
+                    </h3>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li>• 256-bit SSL şifreleme</li>
+                        <li>• PCI DSS uyumlu</li>
+                        <li>• 3D Secure koruması</li>
+                        <li>• Kart bilgileri saklanmaz</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentForm = document.getElementById('payment-form');
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const cardDetails = document.getElementById('card-details');
+    const paymentFee = document.getElementById('payment-fee');
+    const feeAmount = document.getElementById('fee-amount');
+    const totalAmount = document.getElementById('total-amount');
+    const baseAmount = {{.Amount}};
+    
+    // Show/hide card details based on payment method
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            if (this.value === 'credit_card' || this.value === 'debit_card') {
+                cardDetails.classList.remove('hidden');
+            } else {
+                cardDetails.classList.add('hidden');
+            }
+            
+            // Calculate and show payment fee
+            calculatePaymentFee(this.value);
+        });
+    });
+    
+    // Calculate payment fee
+    function calculatePaymentFee(method) {
+        fetch('/api/payment/calculate-fee', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                amount: baseAmount,
+                method: method
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data.fee > 0) {
+                paymentFee.classList.remove('hidden');
+                feeAmount.textContent = '₺' + data.data.fee.toFixed(2);
+                totalAmount.textContent = '₺' + data.data.total.toFixed(2);
+            } else {
+                paymentFee.classList.add('hidden');
+                totalAmount.textContent = '₺' + baseAmount.toFixed(2);
+            }
+        })
+        .catch(error => {
+            console.error('Error calculating fee:', error);
+        });
+    }
+    
+    // Handle form submission
+    paymentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const selectedMethod = formData.get('payment_method');
+        
+        if (!selectedMethod) {
+            alert('Lütfen bir ödeme yöntemi seçin.');
+            return;
+        }
+        
+        // Prepare payment request
+        const paymentRequest = {
+            order_id: parseInt(formData.get('order_id')),
+            amount: baseAmount,
+            currency: 'TRY',
+            method: selectedMethod,
+            customer_id: 1, // Mock customer ID
+            description: 'Sipariş ödemesi #' + formData.get('order_id')
+        };
+        
+        // Show loading state
+        const payButton = document.getElementById('pay-button');
+        const originalText = payButton.innerHTML;
+        payButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>İşleniyor...';
+        payButton.disabled = true;
+        
+        // Process payment
+        fetch('/api/payment/process', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(paymentRequest)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const payment = data.data;
+                if (payment.status === 'completed') {
+                    window.location.href = '/payment/success?transaction_id=' + payment.transaction_id;
+                } else if (payment.payment_url) {
+                    // Redirect to external payment page
+                    window.location.href = payment.payment_url;
+                } else {
+                    window.location.href = '/payment/success?transaction_id=' + payment.transaction_id;
+                }
+            } else {
+                alert('Ödeme işlemi başarısız: ' + (data.message || 'Bilinmeyen hata'));
+                payButton.innerHTML = originalText;
+                payButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Payment error:', error);
+            alert('Ödeme işlemi sırasında bir hata oluştu.');
+            payButton.innerHTML = originalText;
+            payButton.disabled = false;
+        });
+    });
+});
+</script>
+
+{{template "layout/footer" .}}
+{{end}}
