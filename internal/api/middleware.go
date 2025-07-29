@@ -257,9 +257,9 @@ func (m *APIMiddleware) cacheMiddleware(next http.HandlerFunc) http.HandlerFunc 
 		cacheKey := fmt.Sprintf("api_cache:%s:%s", r.Method, r.URL.String())
 		
 		// Try to get from cache
-		if cached, found := m.CacheManager.Get(cacheKey); found {
+		if cached, err := m.CacheManager.Get(r.Context(), "api", cacheKey); err == nil {
 			w.Header().Set("X-Cache", "HIT")
-			w.Write(cached.([]byte))
+			w.Write(cached)
 			return
 		}
 		
@@ -270,7 +270,7 @@ func (m *APIMiddleware) cacheMiddleware(next http.HandlerFunc) http.HandlerFunc 
 		
 		// Cache successful responses
 		if recorder.statusCode >= 200 && recorder.statusCode < 300 {
-			m.CacheManager.Set(cacheKey, recorder.body, 5*time.Minute)
+			m.CacheManager.Set(r.Context(), "api", cacheKey, recorder.body, 5*time.Minute)
 			w.Header().Set("X-Cache", "MISS")
 		}
 		

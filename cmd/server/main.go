@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -190,6 +191,18 @@ func main() {
 	// Yeni gelişmiş AI ve marketplace servisleri
 	aiAdvancedService := services.NewAIAdvancedService(repo, productService, orderService)
 	marketplaceService := services.NewMarketplaceIntegrationsService()
+	
+	// AI Integration Manager
+	MainLogger.Println("AI Integration Manager başlatılıyor...")
+	aiIntegrationManager := services.NewAIIntegrationManager(marketplaceService, aiService)
+	
+	// Integration Webhook Service
+	MainLogger.Println("Integration Webhook Service başlatılıyor...")
+	webhookService := services.NewIntegrationWebhookService(marketplaceService, aiIntegrationManager)
+	
+	// Integration Analytics Service
+	MainLogger.Println("Integration Analytics Service başlatılıyor...")
+	analyticsService := services.NewIntegrationAnalyticsService(db, marketplaceService, aiIntegrationManager)
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
@@ -467,6 +480,82 @@ func main() {
 	appRouter.HandleFunc("/api/marketplace/create-shipment", marketplaceHandler.CreateShipment)
 	appRouter.HandleFunc("/api/marketplace/generate-invoice", marketplaceHandler.GenerateInvoice)
 	appRouter.HandleFunc("/api/marketplace/update-inventory", marketplaceHandler.UpdateInventory)
+	
+	// Integration webhook endpoints
+	appRouter.HandleFunc("/webhooks/integration", webhookService.HandleWebhook)
+	
+	// Integration analytics endpoints
+	appRouter.HandleFunc("/api/integration/metrics", func(w http.ResponseWriter, r *http.Request) {
+		metrics := analyticsService.GetMetrics()
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+			"metrics": metrics,
+		})
+	})
+	
+	appRouter.HandleFunc("/api/integration/health", func(w http.ResponseWriter, r *http.Request) {
+		integrationID := r.URL.Query().Get("integration_id")
+		if integrationID == "" {
+			http.Error(w, "Integration ID required", http.StatusBadRequest)
+			return
+		}
+		
+		health := analyticsService.GetIntegrationHealth(integrationID)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+			"health":  health,
+		})
+	})
+	
+	appRouter.HandleFunc("/api/integration/report", func(w http.ResponseWriter, r *http.Request) {
+		reportType := r.URL.Query().Get("type")
+		if reportType == "" {
+			reportType = "daily"
+		}
+		
+		// Parse time parameters
+		startTime := time.Now().AddDate(0, 0, -7) // Default to 7 days ago
+		endTime := time.Now()
+		
+		report, err := analyticsService.GenerateReport(reportType, startTime, endTime)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+			"report":  report,
+		})
+	})
+	
+	// AI Integration insights endpoints
+	appRouter.HandleFunc("/api/ai/integration/insights", func(w http.ResponseWriter, r *http.Request) {
+		integrationID := r.URL.Query().Get("integration_id")
+		
+		var insights map[string]interface{}
+		var err error
+		
+		if integrationID != "" {
+			insights, err = aiIntegrationManager.GetAIInsights(integrationID)
+		} else {
+			insights, err = aiIntegrationManager.GetAllAIInsights()
+		}
+		
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success":  true,
+			"insights": insights,
+		})
+	})
 	
 	// AI Editor ve Marketplace sayfaları
 	appRouter.HandleFunc("/ai/editor", func(w http.ResponseWriter, r *http.Request) {
