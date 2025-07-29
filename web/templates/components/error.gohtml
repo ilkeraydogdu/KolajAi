@@ -1,0 +1,43 @@
+{{define "error"}}
+{{template "layout/header" .}}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-lg font-medium text-red-800">
+                        {{if .ErrorTitle}}{{.ErrorTitle}}{{else}}Hata Oluştu{{end}}
+                    </h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <p>{{if .ErrorMessage}}{{.ErrorMessage}}{{else}}Beklenmeyen bir hata oluştu. Lütfen daha sonra tekrar deneyin.{{end}}</p>
+                    </div>
+                    {{if .ErrorDetails}}
+                    <div class="mt-4">
+                        <details class="text-sm text-red-600">
+                            <summary class="cursor-pointer hover:text-red-800">Detaylar</summary>
+                            <pre class="mt-2 bg-red-100 p-2 rounded text-xs overflow-auto">{{.ErrorDetails}}</pre>
+                        </details>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            <div class="mt-6">
+                <div class="flex space-x-3">
+                    <button onclick="history.back()" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+                    </button>
+                    <a href="/" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        <i class="fas fa-home mr-2"></i>Ana Sayfa
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "layout/footer" .}}
+{{end}}

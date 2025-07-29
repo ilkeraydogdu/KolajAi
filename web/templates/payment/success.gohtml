@@ -1,0 +1,110 @@
+{{define "payment/success"}}
+{{template "layout/header" .}}
+
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto text-center">
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <!-- Success Icon -->
+            <div class="mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full">
+                    <i class="fas fa-check text-green-600 text-2xl"></i>
+                </div>
+            </div>
+            
+            <!-- Success Message -->
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">
+                Ödeme Başarılı!
+            </h1>
+            <p class="text-gray-600 mb-8">
+                Ödemeniz başarıyla işleme alınmıştır. Siparişiniz hazırlanmaya başlanacak.
+            </p>
+            
+            <!-- Payment Details -->
+            {{if .Payment}}
+            <div class="bg-gray-50 rounded-lg p-6 mb-8">
+                <h2 class="text-lg font-semibold mb-4">Ödeme Detayları</h2>
+                <div class="space-y-3 text-left">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">İşlem No:</span>
+                        <span class="font-medium">{{.Payment.TransactionID}}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tutar:</span>
+                        <span class="font-medium">{{formatPrice .Payment.Amount}}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Para Birimi:</span>
+                        <span class="font-medium">{{.Payment.Currency}}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Ödeme Yöntemi:</span>
+                        <span class="font-medium">
+                            {{if eq .Payment.Method "credit_card"}}Kredi Kartı
+                            {{else if eq .Payment.Method "debit_card"}}Banka Kartı
+                            {{else if eq .Payment.Method "paypal"}}PayPal
+                            {{else if eq .Payment.Method "bank_transfer"}}Banka Havalesi
+                            {{else if eq .Payment.Method "cash"}}Kapıda Ödeme
+                            {{else}}{{.Payment.Method}}{{end}}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">İşlem Tarihi:</span>
+                        <span class="font-medium">{{formatDate .Payment.CreatedAt}}</span>
+                    </div>
+                    {{if .Payment.CompletedAt}}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tamamlanma Tarihi:</span>
+                        <span class="font-medium">{{formatDate .Payment.CompletedAt}}</span>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+            
+            <!-- Next Steps -->
+            <div class="bg-blue-50 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-blue-900 mb-3">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Sonraki Adımlar
+                </h3>
+                <ul class="text-left text-blue-800 space-y-2">
+                    <li>• Siparişiniz hazırlanmaya başlanacak</li>
+                    <li>• E-posta adresinize onay mesajı gönderilecek</li>
+                    <li>• Kargo bilgileri SMS ile iletilecek</li>
+                    <li>• Siparişinizi hesabınızdan takip edebilirsiniz</li>
+                </ul>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/dashboard" 
+                   class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition font-semibold">
+                    <i class="fas fa-tachometer-alt mr-2"></i>
+                    Hesabım
+                </a>
+                <a href="/products" 
+                   class="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition font-semibold">
+                    <i class="fas fa-shopping-bag mr-2"></i>
+                    Alışverişe Devam Et
+                </a>
+                <a href="/" 
+                   class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition font-semibold">
+                    <i class="fas fa-home mr-2"></i>
+                    Ana Sayfa
+                </a>
+            </div>
+            
+            <!-- Support Info -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <p class="text-sm text-gray-500">
+                    Herhangi bir sorunuz varsa, 
+                    <a href="/contact" class="text-blue-600 hover:underline">müşteri hizmetleri</a> 
+                    ile iletişime geçebilirsiniz.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "layout/footer" .}}
+{{end}}
