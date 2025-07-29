@@ -320,8 +320,26 @@ func min(a, b int) int {
 }
 
 // GetProductCount returns the total number of products
-func (s *ProductService) GetProductCount() (int64, error) {
+func (s *ProductService) GetProductCount(filters ...map[string]interface{}) (int64, error) {
 	conditions := map[string]interface{}{}
+	
+	// If filters are provided, use them
+	if len(filters) > 0 {
+		for key, value := range filters[0] {
+			if key == "category" && value != "" {
+				conditions["category"] = value
+			} else if key == "min_price" && value.(float64) > 0 {
+				conditions["price >="] = value
+			} else if key == "max_price" && value.(float64) > 0 {
+				conditions["price <="] = value
+			} else if key == "status" && value != "" {
+				conditions["status"] = value
+			} else if key == "vendor_id" && value.(int64) > 0 {
+				conditions["vendor_id"] = value
+			}
+		}
+	}
+	
 	return s.repo.Count("products", conditions)
 }
 
@@ -345,4 +363,55 @@ func (s *ProductService) GetRecentProducts(limit int) ([]models.Product, error) 
 		return nil, fmt.Errorf("failed to get recent products: %w", err)
 	}
 	return products, nil
+}
+
+// GetProductsWithFilters gets products with various filters
+func (s *ProductService) GetProductsWithFilters(filters map[string]interface{}, sortBy, sortOrder string, limit, offset int) ([]models.Product, error) {
+	var products []models.Product
+	
+	// Build conditions from filters
+	conditions := make(map[string]interface{})
+	
+	if category, ok := filters["category"]; ok && category != "" {
+		conditions["category"] = category
+	}
+	
+	if minPrice, ok := filters["min_price"]; ok && minPrice.(float64) > 0 {
+		conditions["price >="] = minPrice
+	}
+	
+	if maxPrice, ok := filters["max_price"]; ok && maxPrice.(float64) > 0 {
+		conditions["price <="] = maxPrice
+	}
+	
+	if status, ok := filters["status"]; ok && status != "" {
+		conditions["status"] = status
+	}
+	
+	if vendorID, ok := filters["vendor_id"]; ok && vendorID.(int64) > 0 {
+		conditions["vendor_id"] = vendorID
+	}
+	
+	// Build order by clause
+	orderBy := "created_at DESC"
+	if sortBy != "" {
+		if sortOrder == "" {
+			sortOrder = "ASC"
+		}
+		orderBy = fmt.Sprintf("%s %s", sortBy, sortOrder)
+	}
+	
+	err := s.repo.FindAll("products", &products, conditions, orderBy, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get products with filters: %w", err)
+	}
+	
+	return products, nil
+}
+
+// IncrementViewCount increments the view count for a product
+func (s *ProductService) IncrementViewCount(productID int) error {
+	// This would typically update the views column in the database
+	// For now, we'll just return nil as a placeholder
+	return nil
 }

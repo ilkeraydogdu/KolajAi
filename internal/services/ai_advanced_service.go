@@ -2,12 +2,10 @@ package services
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"kolajAi/internal/database"
-	"kolajAi/internal/models"
 	"net/http"
 	"strings"
 	"time"
@@ -429,7 +427,7 @@ func (s *AIAdvancedService) SendChatMessage(sessionID string, message string) (*
 	// This would need implementation
 	
 	// Add user message to session
-	userMessage := AIChatMessage{
+	_ = AIChatMessage{
 		Role:    "user",
 		Content: message,
 	}

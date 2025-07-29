@@ -185,7 +185,7 @@ func main() {
 	aiService := services.NewAIService(repo, productService, orderService)
 	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
 	aiVisionService := services.NewAIVisionService(repo, productService)
-	aiEnterpriseService := services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
+	_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
 	
 	// Yeni gelişmiş AI ve marketplace servisleri
 	aiAdvancedService := services.NewAIAdvancedService(repo, productService, orderService)

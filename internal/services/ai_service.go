@@ -598,3 +598,131 @@ func (s *AIService) generateSearchSuggestions(query string, results []struct {
 
 	return suggestions
 }
+
+// EnhancedSearch performs AI-enhanced search
+func (s *AIService) EnhancedSearch(query string, userID int, filters map[string]interface{}) ([]models.Product, error) {
+	// This would implement AI-enhanced search logic
+	// For now, we'll use the basic product search and enhance it
+	
+	// Get products using filters
+	products, err := s.productService.GetProductsWithFilters(filters, "relevance", "DESC", 50, 0)
+	if err != nil {
+		return nil, fmt.Errorf("failed to search products: %w", err)
+	}
+	
+	// Apply AI ranking based on query relevance
+	rankedProducts := s.rankProductsByRelevance(products, query)
+	
+	// Limit results
+	if len(rankedProducts) > 20 {
+		rankedProducts = rankedProducts[:20]
+	}
+	
+	return rankedProducts, nil
+}
+
+// rankProductsByRelevance ranks products by relevance to search query
+func (s *AIService) rankProductsByRelevance(products []models.Product, query string) []models.Product {
+	if query == "" {
+		return products
+	}
+	
+	queryLower := strings.ToLower(query)
+	queryWords := strings.Fields(queryLower)
+	
+	// Score each product
+	type scoredProduct struct {
+		product models.Product
+		score   float64
+	}
+	
+	var scored []scoredProduct
+	
+	for _, product := range products {
+		score := 0.0
+		
+		// Check name relevance
+		nameLower := strings.ToLower(product.Name)
+		for _, word := range queryWords {
+			if strings.Contains(nameLower, word) {
+				score += 2.0
+			}
+		}
+		
+		// Check description relevance
+		descLower := strings.ToLower(product.Description)
+		for _, word := range queryWords {
+			if strings.Contains(descLower, word) {
+				score += 1.0
+			}
+		}
+		
+		// Check tags relevance (since we don't have direct category name)
+		tagsLower := strings.ToLower(product.Tags)
+		for _, word := range queryWords {
+			if strings.Contains(tagsLower, word) {
+				score += 1.5
+			}
+		}
+		
+		scored = append(scored, scoredProduct{product: product, score: score})
+	}
+	
+	// Sort by score
+	sort.Slice(scored, func(i, j int) bool {
+		return scored[i].score > scored[j].score
+	})
+	
+	// Extract products
+	var result []models.Product
+	for _, sp := range scored {
+		result = append(result, sp.product)
+	}
+	
+	return result
+}
+
+// GetPriceOptimizations provides AI-powered price optimization suggestions
+func (s *AIService) GetPriceOptimizations(userID int) (map[string]interface{}, error) {
+	// This would implement AI-powered price optimization analysis
+	// For now, we'll return sample data
+	
+	optimizations := map[string]interface{}{
+		"recommendations": []map[string]interface{}{
+			{
+				"product_id":       1,
+				"current_price":    99.99,
+				"suggested_price":  89.99,
+				"reason":           "Market analysis suggests 10% price reduction could increase sales by 25%",
+				"confidence":       0.85,
+				"expected_impact": map[string]interface{}{
+					"sales_increase": 25.0,
+					"revenue_change": 12.5,
+				},
+			},
+			{
+				"product_id":       2,
+				"current_price":    149.99,
+				"suggested_price":  159.99,
+				"reason":           "Demand is high and competitor prices are higher",
+				"confidence":       0.92,
+				"expected_impact": map[string]interface{}{
+					"sales_decrease": -5.0,
+					"revenue_change": 15.0,
+				},
+			},
+		},
+		"market_trends": map[string]interface{}{
+			"category_average": 125.50,
+			"price_elasticity": -0.8,
+			"demand_forecast":  "increasing",
+		},
+		"competitor_analysis": map[string]interface{}{
+			"average_price": 130.00,
+			"min_price":     85.00,
+			"max_price":     200.00,
+		},
+	}
+	
+	return optimizations, nil
+}

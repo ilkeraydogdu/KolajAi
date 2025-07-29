@@ -235,7 +235,7 @@ func (m *APIMiddleware) securityMiddleware(next http.HandlerFunc) http.HandlerFu
 // rateLimitMiddleware applies rate limiting
 func (m *APIMiddleware) rateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if limited, err := m.SecurityManager.CheckRateLimit(r); limited {
+		if limited, _ := m.SecurityManager.CheckRateLimit(r); limited {
 			m.sendErrorResponse(w, r, http.StatusTooManyRequests, "RATE_LIMIT_EXCEEDED", 
 				"Rate limit exceeded")
 			return

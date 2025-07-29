@@ -14,8 +14,10 @@ type User struct {
 	Email     string    `json:"email" db:"email"`
 	Password  string    `json:"-" db:"password"` // Password is not exposed in JSON
 	Phone     string    `json:"phone" db:"phone"`
+	Role      string    `json:"role" db:"role"`
 	IsActive  bool      `json:"is_active" db:"is_active"`
 	IsAdmin   bool      `json:"is_admin" db:"is_admin"`
+	IsSeller  bool      `json:"is_seller" db:"is_seller"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }

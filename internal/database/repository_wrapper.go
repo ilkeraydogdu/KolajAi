@@ -128,9 +128,9 @@ type SimpleRepository interface {
 	BulkDelete(table string, ids []interface{}) error
 	Exists(table string, conditions map[string]interface{}) (bool, error)
 	Exec(query string, args ...interface{}) (Result, error)
+	Begin() (Transaction, error)
 	Query(query string, args ...interface{}) (Rows, error)
 	QueryRow(query string, args ...interface{}) Row
-	Begin() (Transaction, error)
 }
 
 // Result interface for SQL result

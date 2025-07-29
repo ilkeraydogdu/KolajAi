@@ -133,7 +133,7 @@ func getFieldsAndValues(data interface{}) ([]string, []interface{}) {
 	return fields, values
 }
 
-// CreateStruct creates a record from a struct
+// CreateStruct creates a record from a struct (for SimpleRepository compatibility)
 func (r *BaseRepository) CreateStruct(table string, data interface{}) (int64, error) {
 	fields, values := getFieldsAndValues(data)
 	return r.db.Create(table, fields, values)
@@ -162,4 +162,24 @@ func (r *BaseRepository) BulkUpdate(table string, ids []interface{}, data interf
 // BulkDelete deletes multiple records at once
 func (r *BaseRepository) BulkDelete(table string, ids []interface{}) error {
 	return r.db.BulkDelete(table, ids)
+}
+
+// Begin starts a transaction
+func (r *BaseRepository) Begin() (database.Transaction, error) {
+	return r.db.Begin()
+}
+
+// Exec executes a query
+func (r *BaseRepository) Exec(query string, args ...interface{}) (database.Result, error) {
+	return r.db.Exec(query, args...)
+}
+
+// Query executes a query and returns rows
+func (r *BaseRepository) Query(query string, args ...interface{}) (database.Rows, error) {
+	return r.db.Query(query, args...)
+}
+
+// QueryRow executes a query and returns a single row
+func (r *BaseRepository) QueryRow(query string, args ...interface{}) database.Row {
+	return r.db.QueryRow(query, args...)
 }

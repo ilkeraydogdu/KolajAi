@@ -1,9 +1,7 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 )
 
@@ -106,6 +104,46 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 				"category_mapping",
 				"bulk_operations",
 				"real_time_notifications",
+			},
+		}
+	}
+	
+	// Add retail sales modules
+	retailModules := []struct {
+		id   string
+		name string
+	}{
+		{"prapazar_store", "PraPazar Mağazası"},
+		{"prastore", "PraStore Mağazası"},
+	}
+	
+	for _, module := range retailModules {
+		s.integrations[module.id] = &MarketplaceIntegration{
+			ID:       module.id,
+			Name:     module.name,
+			Type:     "retail_module",
+			Region:   "TR",
+			IsActive: true,
+			Config: map[string]interface{}{
+				"api_version":      "v1",
+				"pos_integration":  true,
+				"inventory_sync":   true,
+				"offline_support":  true,
+				"mobile_app":       true,
+			},
+			Credentials: map[string]string{
+				"store_code":   "",
+				"pos_key":      "",
+				"terminal_id":  "",
+			},
+			Features: []string{
+				"pos_integration",
+				"inventory_sync",
+				"sales_reporting",
+				"customer_management",
+				"offline_mode",
+				"mobile_support",
+				"receipt_printing",
 			},
 		}
 	}
@@ -588,7 +626,7 @@ func (s *MarketplaceIntegrationsService) syncToSocialMedia(integration *Marketpl
 
 // ProcessOrder processes an order from a marketplace
 func (s *MarketplaceIntegrationsService) ProcessOrder(integrationID string, orderData interface{}) error {
-	integration, err := s.GetIntegration(integrationID)
+	_, err := s.GetIntegration(integrationID)
 	if err != nil {
 		return err
 	}
@@ -613,7 +651,7 @@ func (s *MarketplaceIntegrationsService) UpdateInventory(productID string, quant
 
 // GetMarketplaceOrders retrieves orders from a specific marketplace
 func (s *MarketplaceIntegrationsService) GetMarketplaceOrders(integrationID string, since time.Time) ([]interface{}, error) {
-	integration, err := s.GetIntegration(integrationID)
+	_, err := s.GetIntegration(integrationID)
 	if err != nil {
 		return nil, err
 	}
