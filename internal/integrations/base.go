@@ -47,11 +47,16 @@ type Integration struct {
 
 // Credentials represents encrypted credentials for an integration
 type Credentials struct {
-	APIKey      string            `json:"-"`
-	APISecret   string            `json:"-"`
-	AccessToken string            `json:"-"`
-	RefreshToken string           `json:"-"`
-	Extra       map[string]string `json:"-"`
+	APIKey          string            `json:"-"`
+	APISecret       string            `json:"-"`
+	AccessToken     string            `json:"-"`
+	RefreshToken    string            `json:"-"`
+	ClientID        string            `json:"-"`
+	ClientSecret    string            `json:"-"`
+	AccessKeyID     string            `json:"-"`
+	SecretAccessKey string            `json:"-"`
+	SellerID        string            `json:"-"`
+	Extra           map[string]string `json:"-"`
 }
 
 // IntegrationMetadata contains metadata about the integration
@@ -68,7 +73,9 @@ type IntegrationMetadata struct {
 // RateLimitInfo contains rate limiting information
 type RateLimitInfo struct {
 	RequestsPerMinute int       `json:"requests_per_minute"`
+	RequestsPerSecond int       `json:"requests_per_second"`
 	RequestsRemaining int       `json:"requests_remaining"`
+	BurstSize         int       `json:"burst_size"`
 	ResetsAt          time.Time `json:"resets_at"`
 }
 
