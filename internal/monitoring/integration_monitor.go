@@ -2,14 +2,12 @@ package monitoring
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"sync"
 	"time"
 
 	"kolajAi/internal/integrations/registry"
-	"kolajAi/internal/errors"
 )
 
 // IntegrationMonitor provides comprehensive monitoring for all integrations

@@ -42,6 +42,17 @@ func (m *MockProvider) Close() error {
 	return nil
 }
 
+func (m *MockProvider) GetCapabilities() []string {
+	return []string{"test-capability"}
+}
+
+func (m *MockProvider) GetRateLimit() RateLimitInfo {
+	return RateLimitInfo{
+		RequestsPerSecond: 10,
+		BurstSize:         20,
+	}
+}
+
 // MockLogger implements IntegrationLogger for testing
 type MockLogger struct {
 	Requests  []IntegrationRequest
@@ -109,16 +120,19 @@ func (m *MockCache) Get(key string) (interface{}, bool) {
 	return val, exists
 }
 
-func (m *MockCache) Set(key string, value interface{}, ttl time.Duration) {
+func (m *MockCache) Set(key string, value interface{}, ttl time.Duration) error {
 	m.storage[key] = value
+	return nil
 }
 
-func (m *MockCache) Delete(key string) {
+func (m *MockCache) Delete(key string) error {
 	delete(m.storage, key)
+	return nil
 }
 
-func (m *MockCache) Clear() {
+func (m *MockCache) Clear(pattern string) error {
 	m.storage = make(map[string]interface{})
+	return nil
 }
 
 func TestManager_RegisterIntegration(t *testing.T) {
