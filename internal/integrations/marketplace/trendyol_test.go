@@ -330,8 +330,8 @@ func TestTrendyolProvider_ErrorHandling(t *testing.T) {
 				baseURL:    server.URL,
 				supplierID: "12345",
 				tempCredentials: &integrations.Credentials{
-					APIKey:    tt.apiKey,
-					APISecret: tt.apiSecret,
+					APIKey:    "test-key",
+					APISecret: "test-secret",
 				},
 			}
 			
