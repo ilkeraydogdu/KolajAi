@@ -19,7 +19,7 @@ type SecurityManager struct {
 	rateLimiter  RateLimiter
 	ipWhitelist  map[string]bool
 	ipBlacklist  map[string]bool
-	validators   map[string]InputValidator
+	validators   map[string]InputValidatorInterface
 	scanners     []VulnerabilityScanner
 }
 
@@ -147,8 +147,8 @@ type RateLimiter interface {
 	Reset(key string) error
 }
 
-// InputValidator interface for input validation
-type InputValidator interface {
+// InputValidatorInterface interface for input validation
+type InputValidatorInterface interface {
 	Validate(input string, rules ValidationRules) []ValidationError
 	SanitizeInput(input string) string
 }
@@ -302,7 +302,7 @@ func NewSecurityManager(db *sql.DB, config SecurityConfig) *SecurityManager {
 		config:      config,
 		ipWhitelist: make(map[string]bool),
 		ipBlacklist: make(map[string]bool),
-		validators:  make(map[string]InputValidator),
+		validators:  make(map[string]InputValidatorInterface),
 		scanners:    make([]VulnerabilityScanner, 0),
 	}
 

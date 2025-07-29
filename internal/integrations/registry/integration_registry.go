@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"kolajAi/internal/integrations"
-	"kolajAi/internal/errors"
 	"kolajAi/internal/security"
 )
 

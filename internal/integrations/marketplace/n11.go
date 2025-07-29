@@ -584,30 +584,4 @@ func (p *N11Provider) convertToN11Product(product map[string]interface{}) N11Pro
 	return n11Product
 }
 
-// Helper functions
-func getString(m map[string]interface{}, key string) string {
-	if v, ok := m[key].(string); ok {
-		return v
-	}
-	return ""
-}
-
-func getFloat64(m map[string]interface{}, key string) float64 {
-	if v, ok := m[key].(float64); ok {
-		return v
-	}
-	if v, ok := m[key].(int); ok {
-		return float64(v)
-	}
-	return 0
-}
-
-func getInt(m map[string]interface{}, key string) int {
-	if v, ok := m[key].(int); ok {
-		return v
-	}
-	if v, ok := m[key].(float64); ok {
-		return int(v)
-	}
-	return 0
-}
+// Helper functions moved to helpers.go

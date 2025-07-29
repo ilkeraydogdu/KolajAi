@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"kolajAi/internal/database"
-	"kolajAi/internal/models"
 	"time"
 )
 

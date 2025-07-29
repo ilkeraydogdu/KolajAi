@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -22,6 +21,7 @@ type TrendyolProvider struct {
 	config         *MarketplaceProviderConfig
 	httpClient     *http.Client
 	credentials    *integrations.SecureCredentials
+	tempCredentials *integrations.Credentials // Temporary storage
 	baseURL        string
 	supplierID     string
 	rateLimit      integrations.RateLimitInfo
@@ -141,7 +141,9 @@ func NewTrendyolProvider() *TrendyolProvider {
 
 // Initialize sets up the Trendyol provider
 func (p *TrendyolProvider) Initialize(ctx context.Context, credentials integrations.Credentials, config map[string]interface{}) error {
-	p.credentials = credentials
+	// For now, we'll store credentials temporarily
+	// In production, this should use SecureCredentials with CredentialManager
+	p.tempCredentials = &credentials
 	
 	// Set base URL based on environment
 	environment, _ := config["environment"].(string)
@@ -515,7 +517,25 @@ func (p *TrendyolProvider) makeRequest(ctx context.Context, method, endpoint str
 // generateAuthHeader generates Trendyol authorization header
 func (p *TrendyolProvider) generateAuthHeader(method, uri, body string) string {
 	// Trendyol uses Basic Auth with API key and secret
-	auth := p.credentials.APIKey + ":" + p.credentials.APISecret
+	var apiKey, apiSecret string
+	
+	if p.credentials != nil {
+		// Get credentials from SecureCredentials
+		creds, err := p.credentials.ToLegacyCredentials()
+		if err != nil {
+			return ""
+		}
+		apiKey = creds.APIKey
+		apiSecret = creds.APISecret
+	} else if p.tempCredentials != nil {
+		// Use temporary credentials
+		apiKey = p.tempCredentials.APIKey
+		apiSecret = p.tempCredentials.APISecret
+	} else {
+		return ""
+	}
+	
+	auth := apiKey + ":" + apiSecret
 	return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
 }
 
@@ -583,33 +603,7 @@ func (p *TrendyolProvider) convertToTrendyolProduct(product interface{}) (Trendy
 	return trendyolProduct, nil
 }
 
-// Helper functions for Trendyol product conversion
-func getString(m map[string]interface{}, key string) string {
-	if v, ok := m[key].(string); ok {
-		return v
-	}
-	return ""
-}
-
-func getInt(m map[string]interface{}, key string) int {
-	if v, ok := m[key].(int); ok {
-		return v
-	}
-	if v, ok := m[key].(float64); ok {
-		return int(v)
-	}
-	return 0
-}
-
-func getFloat64(m map[string]interface{}, key string) float64 {
-	if v, ok := m[key].(float64); ok {
-		return v
-	}
-	if v, ok := m[key].(int); ok {
-		return float64(v)
-	}
-	return 0
-}
+// Helper functions moved to helpers.go
 
 func getAttributeID(attributeName string) int {
 	// This would typically be a lookup from your attribute mapping

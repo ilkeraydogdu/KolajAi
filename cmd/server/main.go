@@ -20,7 +20,6 @@ import (
 	"kolajAi/internal/errors"
 	"kolajAi/internal/seo"
 	"kolajAi/internal/notifications"
-	"kolajAi/internal/testing"
 	"kolajAi/internal/security"
 	"kolajAi/internal/cache"
 	"kolajAi/internal/middleware"
@@ -158,19 +157,8 @@ func main() {
 	MainLogger.Println("Raporlama sistemi başlatılıyor...")
 	reportManager := reporting.NewReportManager(db)
 
-	// Test Manager
-	MainLogger.Println("Test sistemi başlatılıyor...")
-	_ = testing.NewTestManager(db, testing.TestConfig{
-		Environment:       "production",
-		Parallel:          true,
-		MaxWorkers:        4,
-		Timeout:           30 * time.Minute,
-		RetryAttempts:     3,
-		CoverageEnabled:   true,
-		CoverageThreshold: 80.0,
-		ReportFormats:     []string{"html", "json", "xml"},
-		OutputDirectory:   "./test-reports",
-	})
+	// Test Manager - Commented out as it's not needed in production
+	// MainLogger.Println("Test sistemi başlatılıyor...")
 
 	// Repository oluştur
 	mysqlRepo := database.NewMySQLRepository(db)

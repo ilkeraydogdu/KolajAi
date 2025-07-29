@@ -76,34 +76,61 @@ func NewSecureCredentials(manager *security.CredentialManager, id string) *Secur
 }
 
 // GetCredentialData retrieves decrypted credential data
-func (sc *SecureCredentials) GetCredentialData() (*security.CredentialData, error) {
-	return sc.manager.GetCredential(sc.id)
+func (sc *SecureCredentials) GetCredentialData() (map[string]interface{}, error) {
+	return sc.manager.RetrieveCredential(sc.id)
 }
 
 // ToLegacyCredentials converts to legacy Credentials struct for backward compatibility
 func (sc *SecureCredentials) ToLegacyCredentials() (*Credentials, error) {
-	data, err := sc.manager.GetCredential(sc.id)
+	data, err := sc.manager.RetrieveCredential(sc.id)
 	if err != nil {
 		return nil, err
 	}
 
-	additional := make(map[string]string)
-	if data.Additional != nil {
-		additional = data.Additional
+	// Convert map to Credentials struct
+	creds := &Credentials{
+		Extra: make(map[string]string),
+	}
+	
+	// Extract string values from map
+	if apiKey, ok := data["api_key"].(string); ok {
+		creds.APIKey = apiKey
+	}
+	if apiSecret, ok := data["api_secret"].(string); ok {
+		creds.APISecret = apiSecret
+	}
+	if accessToken, ok := data["access_token"].(string); ok {
+		creds.AccessToken = accessToken
+	}
+	if refreshToken, ok := data["refresh_token"].(string); ok {
+		creds.RefreshToken = refreshToken
+	}
+	if clientID, ok := data["client_id"].(string); ok {
+		creds.ClientID = clientID
+	}
+	if clientSecret, ok := data["client_secret"].(string); ok {
+		creds.ClientSecret = clientSecret
+	}
+	
+	// Extract additional fields
+	if additional, ok := data["additional"].(map[string]interface{}); ok {
+		for k, v := range additional {
+			if strVal, ok := v.(string); ok {
+				creds.Extra[k] = strVal
+			}
+		}
+		if accessKeyID, ok := additional["access_key_id"].(string); ok {
+			creds.AccessKeyID = accessKeyID
+		}
+		if secretAccessKey, ok := additional["secret_access_key"].(string); ok {
+			creds.SecretAccessKey = secretAccessKey
+		}
+		if sellerID, ok := additional["seller_id"].(string); ok {
+			creds.SellerID = sellerID
+		}
 	}
 
-	return &Credentials{
-		APIKey:          data.APIKey,
-		APISecret:       data.APISecret,
-		AccessToken:     data.AccessToken,
-		RefreshToken:    data.RefreshToken,
-		ClientID:        data.ClientID,
-		ClientSecret:    data.ClientSecret,
-		AccessKeyID:     additional["access_key_id"],
-		SecretAccessKey: additional["secret_access_key"],
-		SellerID:        additional["seller_id"],
-		Extra:           additional,
-	}, nil
+	return creds, nil
 }
 
 // IntegrationMetadata contains metadata about the integration
