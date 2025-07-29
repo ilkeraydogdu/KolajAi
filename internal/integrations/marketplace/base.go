@@ -9,7 +9,13 @@ import (
 
 // MarketplaceProvider defines the interface for marketplace integrations
 type MarketplaceProvider interface {
-	integrations.IntegrationProvider
+	// Base integration methods
+	Initialize(ctx context.Context, credentials integrations.Credentials, config map[string]interface{}) error
+	GetName() string
+	GetType() string
+	IsHealthy(ctx context.Context) (bool, error)
+	GetMetrics() map[string]interface{}
+	GetRateLimit() integrations.RateLimitInfo
 	
 	// Product operations
 	SyncProducts(ctx context.Context, products []interface{}) error
@@ -23,9 +29,6 @@ type MarketplaceProvider interface {
 	// Category operations
 	GetCategories(ctx context.Context) ([]interface{}, error)
 	GetBrands(ctx context.Context) ([]interface{}, error)
-	
-	// Webhook operations
-	ProcessWebhook(ctx context.Context, payload []byte, headers map[string]string) error
 }
 
 // MarketplaceProviderConfig holds configuration for marketplace providers

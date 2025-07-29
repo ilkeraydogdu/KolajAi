@@ -8,6 +8,9 @@
 |-----------------|------------|-----------------|--------------|------------------|
 | **Trendyol** | 🟢 **ACTIVE** | Official API v1 | Product Sync, Order Management, Inventory, Webhooks | 2025-01-03 |
 | **Hepsiburada** | 🟢 **ACTIVE** | Official API v1 | Product Sync, Order Management, Inventory, Variants | 2025-01-03 |
+| **N11** | 🟢 **ACTIVE** | Official API v1 | Product Sync, Order Management, Stock Updates, Categories | 2025-01-03 |
+| **Amazon Turkey** | 🟢 **ACTIVE** | SP-API v2021 | Product Listings, Order Management, FBA Support, AWS Auth | 2025-01-03 |
+| **ÇiçekSepeti** | 🟢 **ACTIVE** | Custom API v1 | Product Sync, Order Management, Category Mapping | 2025-01-03 |
 | **Iyzico Payment** | 🟢 **ACTIVE** | Official API v1 | Payment Processing, 3D Secure, Refunds | 2025-01-03 |
 
 ### **🚧 IN DEVELOPMENT**

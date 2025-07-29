@@ -1185,12 +1185,59 @@ func (s *MarketplaceIntegrationsService) syncToHepsiburada(integration *Marketpl
 }
 
 func (s *MarketplaceIntegrationsService) syncToN11(integration *MarketplaceIntegration, products []interface{}) error {
-	// Implement N11 API integration
+	// Create N11 provider
+	provider := marketplace.NewN11Provider()
+	
+	credentials := integrations.Credentials{
+		APIKey:    integration.Credentials["api_key"],
+		APISecret: integration.Credentials["api_secret"],
+	}
+	
+	config := map[string]interface{}{
+		"environment": "production", // Use production for real sync
+	}
+	
+	ctx := context.Background()
+	if err := provider.Initialize(ctx, credentials, config); err != nil {
+		return fmt.Errorf("failed to initialize N11 provider: %v", err)
+	}
+	
+	// Sync products
+	if err := provider.SyncProducts(ctx, products); err != nil {
+		return fmt.Errorf("failed to sync products to N11: %v", err)
+	}
+	
 	return nil
 }
 
 func (s *MarketplaceIntegrationsService) syncToAmazonTR(integration *MarketplaceIntegration, products []interface{}) error {
-	// Implement Amazon TR API integration
+	// Create Amazon provider
+	provider := marketplace.NewAmazonProvider()
+	
+	credentials := integrations.Credentials{
+		ClientID:        integration.Credentials["client_id"],
+		ClientSecret:    integration.Credentials["client_secret"],
+		RefreshToken:    integration.Credentials["refresh_token"],
+		AccessKeyID:     integration.Credentials["access_key_id"],
+		SecretAccessKey: integration.Credentials["secret_access_key"],
+		SellerID:        integration.Credentials["seller_id"],
+	}
+	
+	config := map[string]interface{}{
+		"region":         "eu-west-1",
+		"marketplace_id": "A1UNQM1SR2CHM", // Turkey marketplace
+	}
+	
+	ctx := context.Background()
+	if err := provider.Initialize(ctx, credentials, config); err != nil {
+		return fmt.Errorf("failed to initialize Amazon Turkey provider: %v", err)
+	}
+	
+	// Sync products
+	if err := provider.SyncProducts(ctx, products); err != nil {
+		return fmt.Errorf("failed to sync products to Amazon Turkey: %v", err)
+	}
+	
 	return nil
 }
 
