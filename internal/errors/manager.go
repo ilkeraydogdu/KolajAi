@@ -16,7 +16,7 @@ type ErrorManager struct {
 	db           *sql.DB
 	notifier     ErrorNotifier
 	config       ErrorConfig
-	handlers     map[ErrorType]ErrorHandler
+	handlers     map[ErrorType]ErrorHandlerInterface
 	middleware   []ErrorMiddleware
 }
 
@@ -53,16 +53,7 @@ const (
 	ErrorTypeIntegration  ErrorType = "integration"
 )
 
-// ErrorSeverity represents error severity levels
-type ErrorSeverity string
-
-const (
-	SeverityCritical ErrorSeverity = "critical"
-	SeverityHigh     ErrorSeverity = "high"
-	SeverityMedium   ErrorSeverity = "medium"
-	SeverityLow      ErrorSeverity = "low"
-	SeverityInfo     ErrorSeverity = "info"
-)
+// ErrorSeverity is already defined in integration_errors.go
 
 // ApplicationError represents a comprehensive application error
 type ApplicationError struct {
@@ -151,8 +142,8 @@ type GroupingRule struct {
 	MaxGroup   int      `json:"max_group"`
 }
 
-// ErrorHandler handles specific error types
-type ErrorHandler interface {
+// ErrorHandlerInterface handles specific error types
+type ErrorHandlerInterface interface {
 	Handle(ctx context.Context, err *ApplicationError) error
 	CanHandle(errorType ErrorType) bool
 	Priority() int
@@ -168,8 +159,8 @@ type ErrorNotifier interface {
 	Notify(ctx context.Context, err *ApplicationError, rule NotificationRule) error
 }
 
-// ErrorStats represents error statistics
-type ErrorStats struct {
+// ErrorManagerStats represents error statistics
+type ErrorManagerStats struct {
 	TotalErrors     int                        `json:"total_errors"`
 	ErrorsByType    map[ErrorType]int          `json:"errors_by_type"`
 	ErrorsBySeverity map[ErrorSeverity]int     `json:"errors_by_severity"`
@@ -208,7 +199,7 @@ func NewErrorManager(db *sql.DB, notifier ErrorNotifier, config ErrorConfig) *Er
 		db:       db,
 		notifier: notifier,
 		config:   config,
-		handlers: make(map[ErrorType]ErrorHandler),
+		handlers: make(map[ErrorType]ErrorHandlerInterface),
 		middleware: make([]ErrorMiddleware, 0),
 	}
 
@@ -326,7 +317,7 @@ func (em *ErrorManager) createErrorTables() error {
 }
 
 // RegisterHandler registers an error handler for specific error types
-func (em *ErrorManager) RegisterHandler(handler ErrorHandler) {
+func (em *ErrorManager) RegisterHandler(handler ErrorHandlerInterface) {
 	// Implementation would register handlers based on their supported types
 }
 
@@ -749,8 +740,8 @@ func (em *ErrorManager) sendNotification(ctx context.Context, err *ApplicationEr
 }
 
 // GetErrorStats returns error statistics
-func (em *ErrorManager) GetErrorStats(timeRange time.Duration) (*ErrorStats, error) {
-	stats := &ErrorStats{
+func (em *ErrorManager) GetErrorStats(timeRange time.Duration) (*ErrorManagerStats, error) {
+	stats := &ErrorManagerStats{
 		ErrorsByType:     make(map[ErrorType]int),
 		ErrorsBySeverity: make(map[ErrorSeverity]int),
 		ResolutionTime:   make(map[ErrorSeverity]float64),

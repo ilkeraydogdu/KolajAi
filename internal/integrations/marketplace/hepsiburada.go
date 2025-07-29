@@ -666,47 +666,7 @@ func (p *HepsiburadaProvider) convertToHepsiburadaProduct(product interface{}) (
 	return hepsiburadaProduct, nil
 }
 
-// Helper functions for Hepsiburada
-func getString(m map[string]interface{}, key string) string {
-	if v, ok := m[key].(string); ok {
-		return v
-	}
-	return ""
-}
-
-func getStringWithDefault(m map[string]interface{}, key, defaultValue string) string {
-	if v, ok := m[key].(string); ok && v != "" {
-		return v
-	}
-	return defaultValue
-}
-
-func getInt(m map[string]interface{}, key string) int {
-	if v, ok := m[key].(int); ok {
-		return v
-	}
-	if v, ok := m[key].(float64); ok {
-		return int(v)
-	}
-	return 0
-}
-
-func getIntWithDefault(m map[string]interface{}, key string, defaultValue int) int {
-	if v := getInt(m, key); v > 0 {
-		return v
-	}
-	return defaultValue
-}
-
-func getFloat64(m map[string]interface{}, key string) float64 {
-	if v, ok := m[key].(float64); ok {
-		return v
-	}
-	if v, ok := m[key].(int); ok {
-		return float64(v)
-	}
-	return 0
-}
+// Helper functions moved to helpers.go
 
 func (p *HepsiburadaProvider) convertToStockPriceItems(update interface{}) (HepsiburadaStockItem, HepsiburadaPriceItem, error) {
 	updateMap, ok := update.(map[string]interface{})

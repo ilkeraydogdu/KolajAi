@@ -4,12 +4,9 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"testing"
 	"time"
 
-	"kolajAi/internal/integrations"
 	"kolajAi/internal/integrations/registry"
-	"kolajAi/internal/errors"
 	"kolajAi/internal/security"
 )
 

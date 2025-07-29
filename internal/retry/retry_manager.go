@@ -305,9 +305,10 @@ func (rm *RetryManager) ExecuteOperation(ctx context.Context, op RetryableOperat
 	}
 	
 	// Execute with retry
-	result := rm.Execute(ctx, func(ctx context.Context) error {
+	var result *RetryResult
+	result = rm.Execute(ctx, func(ctx context.Context) error {
 		err := fn(ctx)
-		if err != nil && op.OnRetry != nil && result.Attempts < rm.config.MaxAttempts {
+		if err != nil && op.OnRetry != nil && result != nil && result.Attempts < rm.config.MaxAttempts {
 			op.OnRetry(result.Attempts, err)
 		}
 		return err

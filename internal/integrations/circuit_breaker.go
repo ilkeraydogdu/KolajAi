@@ -1,7 +1,6 @@
 package integrations
 
 import (
-	"errors"
 	"sync"
 	"time"
 )
@@ -48,8 +47,8 @@ type CircuitBreaker struct {
 	halfOpenAllowed int
 }
 
-// CircuitBreakerConfig holds configuration for circuit breaker
-type CircuitBreakerConfig struct {
+// CircuitBreakerConfigNew holds configuration for circuit breaker
+type CircuitBreakerConfigNew struct {
 	Name            string
 	MaxFailures     int
 	ResetTimeout    time.Duration
@@ -57,23 +56,23 @@ type CircuitBreakerConfig struct {
 	OnStateChange   func(name string, from, to CircuitBreakerState)
 }
 
-// DefaultCircuitBreakerConfig returns default circuit breaker configuration
-var DefaultCircuitBreakerConfig = CircuitBreakerConfig{
+// DefaultCircuitBreakerConfigNew returns default circuit breaker configuration
+var DefaultCircuitBreakerConfigNew = CircuitBreakerConfigNew{
 	MaxFailures:     5,
 	ResetTimeout:    60 * time.Second,
 	HalfOpenCalls:   3,
 }
 
 // NewCircuitBreaker creates a new circuit breaker
-func NewCircuitBreaker(config CircuitBreakerConfig) *CircuitBreaker {
+func NewCircuitBreaker(config CircuitBreakerConfigNew) *CircuitBreaker {
 	if config.MaxFailures <= 0 {
-		config.MaxFailures = DefaultCircuitBreakerConfig.MaxFailures
+		config.MaxFailures = DefaultCircuitBreakerConfigNew.MaxFailures
 	}
 	if config.ResetTimeout <= 0 {
-		config.ResetTimeout = DefaultCircuitBreakerConfig.ResetTimeout
+		config.ResetTimeout = DefaultCircuitBreakerConfigNew.ResetTimeout
 	}
 	if config.HalfOpenCalls <= 0 {
-		config.HalfOpenCalls = DefaultCircuitBreakerConfig.HalfOpenCalls
+		config.HalfOpenCalls = DefaultCircuitBreakerConfigNew.HalfOpenCalls
 	}
 	
 	return &CircuitBreaker{
@@ -254,11 +253,11 @@ func (cb *CircuitBreaker) Reset() {
 type CircuitBreakerManager struct {
 	breakers map[string]*CircuitBreaker
 	mu       sync.RWMutex
-	config   CircuitBreakerConfig
+	config   CircuitBreakerConfigNew
 }
 
 // NewCircuitBreakerManager creates a new circuit breaker manager
-func NewCircuitBreakerManager(defaultConfig CircuitBreakerConfig) *CircuitBreakerManager {
+func NewCircuitBreakerManager(defaultConfig CircuitBreakerConfigNew) *CircuitBreakerManager {
 	return &CircuitBreakerManager{
 		breakers: make(map[string]*CircuitBreaker),
 		config:   defaultConfig,

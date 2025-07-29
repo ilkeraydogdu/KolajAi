@@ -1,7 +1,6 @@
 package security
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/hashicorp/vault/api"
 )

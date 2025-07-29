@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
+	"regexp"
 	"time"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
@@ -128,6 +130,9 @@ type NotificationType struct {
 
 // LoadConfig loads configuration from file
 func LoadConfig(configPath string) (*Config, error) {
+	// Load .env file if exists
+	loadEnvFile(".env")
+	
 	config := &Config{}
 	
 	// Check if config file exists
@@ -140,6 +145,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	// Replace environment variables
+	data = []byte(expandEnvVars(string(data)))
 	
 	// Parse YAML
 	err = yaml.Unmarshal(data, config)
@@ -334,4 +342,73 @@ func GetNotificationConfig() (NotificationConfig, bool) {
 			},
 		},
 	}, true
+}
+
+// expandEnvVars expands ${VAR} or ${VAR:-default} patterns in the string
+func expandEnvVars(s string) string {
+	re := regexp.MustCompile(`\$\{([^}]+)\}`)
+	return re.ReplaceAllStringFunc(s, func(match string) string {
+		// Remove ${ and }
+		varExpr := match[2 : len(match)-1]
+		
+		// Check for default value syntax
+		parts := strings.SplitN(varExpr, ":-", 2)
+		varName := parts[0]
+		defaultValue := ""
+		if len(parts) > 1 {
+			defaultValue = parts[1]
+		}
+		
+		// Get environment variable or use default
+		if value := os.Getenv(varName); value != "" {
+			return value
+		}
+		return defaultValue
+	})
+}
+
+// loadEnvFile loads environment variables from a .env file
+func loadEnvFile(filename string) {
+	file, err := os.Open(filename)
+	if err != nil {
+		// .env file is optional
+		return
+	}
+	defer file.Close()
+
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		return
+	}
+
+	lines := strings.Split(string(data), "\n")
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		// Skip empty lines and comments
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		// Parse KEY=VALUE
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		
+		// Remove quotes if present
+		if len(value) >= 2 {
+			if (value[0] == '"' && value[len(value)-1] == '"') ||
+			   (value[0] == '\'' && value[len(value)-1] == '\'') {
+				value = value[1 : len(value)-1]
+			}
+		}
+
+		// Only set if not already set
+		if os.Getenv(key) == "" {
+			os.Setenv(key, value)
+		}
+	}
 }
