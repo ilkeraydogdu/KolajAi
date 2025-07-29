@@ -105,9 +105,21 @@ func (e *IntegrationError) JSON() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-// Is checks if the error matches the given error code
-func (e *IntegrationError) Is(code ErrorCode) bool {
-	return e.Code == code
+// Is allows errors.Is to work with *IntegrationError by comparing codes when the target
+// is also an *IntegrationError or implements interface { Code() ErrorCode }.
+// It matches when the error codes are equal.
+func (e *IntegrationError) Is(target error) bool {
+	if target == nil {
+		return false
+	}
+	switch t := target.(type) {
+	case *IntegrationError:
+		return e.Code == t.Code
+	case interface{ Code() ErrorCode }:
+		return e.Code == t.Code()
+	default:
+		return false
+	}
 }
 
 // IsRetryable returns whether the error is retryable
