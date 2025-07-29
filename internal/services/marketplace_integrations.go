@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"sync"
 	"time"
 )
 
@@ -20,12 +21,34 @@ type MarketplaceIntegration struct {
 // MarketplaceIntegrationsService manages all marketplace integrations
 type MarketplaceIntegrationsService struct {
 	integrations map[string]*MarketplaceIntegration
+	rateLimiter  *RateLimitManager
+	circuitBreakers map[string]*CircuitBreaker
+	metrics      map[string]*IntegrationMetrics
+	monitoring   *MonitoringService
+	mu           sync.RWMutex
 }
 
 // NewMarketplaceIntegrationsService creates a new marketplace integrations service
 func NewMarketplaceIntegrationsService() *MarketplaceIntegrationsService {
+	// Create monitoring config
+	monitoringConfig := &MonitoringConfig{
+		CheckInterval: 30 * time.Second,
+		AlertThresholds: AlertThresholds{
+			ErrorRateThreshold:     0.1,  // 10%
+			ResponseTimeThreshold:  5 * time.Second,
+			SuccessRateThreshold:   0.9,  // 90%
+			CircuitBreakerThreshold: 5,
+		},
+		NotificationChannels: []string{"email", "slack"},
+		RetentionPeriod:     24 * time.Hour,
+	}
+
 	service := &MarketplaceIntegrationsService{
-		integrations: make(map[string]*MarketplaceIntegration),
+		integrations:     make(map[string]*MarketplaceIntegration),
+		rateLimiter:      NewRateLimitManager(),
+		circuitBreakers:  make(map[string]*CircuitBreaker),
+		metrics:          make(map[string]*IntegrationMetrics),
+		monitoring:       NewMonitoringService(monitoringConfig),
 	}
 	
 	// Initialize all integrations
@@ -35,6 +58,10 @@ func NewMarketplaceIntegrationsService() *MarketplaceIntegrationsService {
 	service.initializeSocialMediaIntegrations()
 	service.initializeAccountingIntegrations()
 	service.initializeCargoIntegrations()
+	
+	// Initialize rate limits and circuit breakers for all integrations
+	service.initializeRateLimits()
+	service.initializeCircuitBreakers()
 	
 	return service
 }
@@ -574,26 +601,68 @@ func (s *MarketplaceIntegrationsService) testIntegrationConnection(integration *
 	return nil
 }
 
-// SyncProducts syncs products with a marketplace
+// SyncProducts syncs products with a marketplace with enhanced error handling
 func (s *MarketplaceIntegrationsService) SyncProducts(integrationID string, products []interface{}) error {
-	integration, err := s.GetIntegration(integrationID)
-	if err != nil {
-		return err
+	startTime := time.Now()
+	metrics := s.ensureMetrics(integrationID)
+	
+	// Check rate limit
+	if err := s.rateLimiter.CheckRateLimit(integrationID); err != nil {
+		metrics.RecordRequest(false, time.Since(startTime))
+		return fmt.Errorf("rate limit exceeded: %v", err)
 	}
 	
-	// Implement product sync logic based on integration type
-	switch integration.Type {
-	case "turkish":
-		return s.syncToTurkishMarketplace(integration, products)
-	case "international":
-		return s.syncToInternationalMarketplace(integration, products)
-	case "ecommerce_platform":
-		return s.syncToEcommercePlatform(integration, products)
-	case "social_media":
-		return s.syncToSocialMedia(integration, products)
-	default:
-		return fmt.Errorf("unsupported integration type: %s", integration.Type)
+	// Get circuit breaker
+	breaker, exists := s.getCircuitBreaker(integrationID)
+	if !exists {
+		metrics.RecordRequest(false, time.Since(startTime))
+		return fmt.Errorf("circuit breaker not found for integration: %s", integrationID)
 	}
+	
+	// Execute with circuit breaker protection
+	var syncErr error
+	err := breaker.Execute(func() error {
+		integration, err := s.GetIntegration(integrationID)
+		if err != nil {
+			return err
+		}
+		
+		// Sync products based on integration type with retry mechanism
+		retryConfig := NewRetryConfig(3, 1*time.Second)
+		syncErr = RetryOperation(func() error {
+			switch integration.Type {
+			case "turkish":
+				return s.syncToTurkishMarketplace(integration, products)
+			case "international":
+				return s.syncToInternationalMarketplace(integration, products)
+			case "ecommerce_platform":
+				return s.syncToEcommercePlatform(integration, products)
+			case "social_media":
+				return s.syncToSocialMedia(integration, products)
+			default:
+				return fmt.Errorf("unsupported integration type: %s", integration.Type)
+			}
+		}, retryConfig)
+		
+		return syncErr
+	})
+	
+	// Record metrics
+	responseTime := time.Since(startTime)
+	success := err == nil
+	metrics.RecordRequest(success, responseTime)
+	
+	// Update monitoring
+	s.monitoring.MonitorIntegration(integrationID, metrics)
+	
+	// Update health check
+	healthStatus := HealthStatusHealthy
+	if err != nil {
+		healthStatus = HealthStatusUnhealthy
+	}
+	s.monitoring.UpdateHealthCheck(integrationID, healthStatus, responseTime, err)
+	
+	return err
 }
 
 // syncToTurkishMarketplace syncs products to Turkish marketplaces
@@ -624,17 +693,56 @@ func (s *MarketplaceIntegrationsService) syncToSocialMedia(integration *Marketpl
 	return nil
 }
 
-// ProcessOrder processes an order from a marketplace
+// ProcessOrder processes an order from a marketplace with enhanced error handling
 func (s *MarketplaceIntegrationsService) ProcessOrder(integrationID string, orderData interface{}) error {
-	_, err := s.GetIntegration(integrationID)
-	if err != nil {
-		return err
+	startTime := time.Now()
+	metrics := s.ensureMetrics(integrationID)
+	
+	// Check rate limit
+	if err := s.rateLimiter.CheckRateLimit(integrationID); err != nil {
+		metrics.RecordRequest(false, time.Since(startTime))
+		return fmt.Errorf("rate limit exceeded: %v", err)
 	}
 	
-	// Process order based on integration type
-	// This would include order validation, inventory update, notification, etc.
+	// Get circuit breaker
+	breaker, exists := s.getCircuitBreaker(integrationID)
+	if !exists {
+		metrics.RecordRequest(false, time.Since(startTime))
+		return fmt.Errorf("circuit breaker not found for integration: %s", integrationID)
+	}
 	
-	return nil
+	// Execute with circuit breaker protection
+	err := breaker.Execute(func() error {
+		_, err := s.GetIntegration(integrationID)
+		if err != nil {
+			return err
+		}
+		
+		// Process order based on integration type with retry mechanism
+		retryConfig := NewRetryConfig(3, 1*time.Second)
+		return RetryOperation(func() error {
+			// Process order based on integration type
+			// This would include order validation, inventory update, notification, etc.
+			return nil
+		}, retryConfig)
+	})
+	
+	// Record metrics
+	responseTime := time.Since(startTime)
+	success := err == nil
+	metrics.RecordRequest(success, responseTime)
+	
+	// Update monitoring
+	s.monitoring.MonitorIntegration(integrationID, metrics)
+	
+	// Update health check
+	healthStatus := HealthStatusHealthy
+	if err != nil {
+		healthStatus = HealthStatusUnhealthy
+	}
+	s.monitoring.UpdateHealthCheck(integrationID, healthStatus, responseTime, err)
+	
+	return err
 }
 
 // UpdateInventory updates inventory across integrated marketplaces
@@ -694,4 +802,155 @@ func (s *MarketplaceIntegrationsService) GenerateInvoice(efaturaID string, invoi
 	// Return invoice number
 	
 	return "INV2024001", nil
+}
+
+// initializeRateLimits initializes rate limits for all integrations
+func (s *MarketplaceIntegrationsService) initializeRateLimits() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Set default rate limits for different integration types
+	defaultLimits := map[string]*RateLimit{
+		"turkish": {
+			RequestsPerMinute: 60,
+			RequestsPerHour:   1000,
+			RequestsPerDay:    10000,
+			WindowSize:        time.Minute,
+			BurstSize:         100,
+		},
+		"international": {
+			RequestsPerMinute: 30,
+			RequestsPerHour:   500,
+			RequestsPerDay:    5000,
+			WindowSize:        time.Minute,
+			BurstSize:         50,
+		},
+		"ecommerce_platform": {
+			RequestsPerMinute: 100,
+			RequestsPerHour:   2000,
+			RequestsPerDay:    20000,
+			WindowSize:        time.Minute,
+			BurstSize:         200,
+		},
+		"social_media": {
+			RequestsPerMinute: 20,
+			RequestsPerHour:   300,
+			RequestsPerDay:    3000,
+			WindowSize:        time.Minute,
+			BurstSize:         30,
+		},
+		"accounting": {
+			RequestsPerMinute: 10,
+			RequestsPerHour:   100,
+			RequestsPerDay:    1000,
+			WindowSize:        time.Minute,
+			BurstSize:         20,
+		},
+		"cargo": {
+			RequestsPerMinute: 40,
+			RequestsPerHour:   600,
+			RequestsPerDay:    6000,
+			WindowSize:        time.Minute,
+			BurstSize:         80,
+		},
+	}
+
+	// Apply rate limits to all integrations
+	for integrationID, integration := range s.integrations {
+		if limit, exists := defaultLimits[integration.Type]; exists {
+			limit.IntegrationID = integrationID
+			s.rateLimiter.SetRateLimit(integrationID, limit)
+		}
+	}
+}
+
+// initializeCircuitBreakers initializes circuit breakers for all integrations
+func (s *MarketplaceIntegrationsService) initializeCircuitBreakers() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Set default circuit breaker configurations
+	defaultConfigs := map[string]struct {
+		threshold int
+		timeout   time.Duration
+	}{
+		"turkish":            {5, 30 * time.Second},
+		"international":      {3, 60 * time.Second},
+		"ecommerce_platform": {10, 20 * time.Second},
+		"social_media":       {2, 120 * time.Second},
+		"accounting":         {3, 60 * time.Second},
+		"cargo":              {5, 45 * time.Second},
+	}
+
+	// Create circuit breakers for all integrations
+	for integrationID, integration := range s.integrations {
+		if config, exists := defaultConfigs[integration.Type]; exists {
+			s.circuitBreakers[integrationID] = NewCircuitBreaker(config.threshold, config.timeout)
+		}
+	}
+}
+
+// getCircuitBreaker gets circuit breaker for an integration
+func (s *MarketplaceIntegrationsService) getCircuitBreaker(integrationID string) (*CircuitBreaker, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	breaker, exists := s.circuitBreakers[integrationID]
+	return breaker, exists
+}
+
+// getMetrics gets metrics for an integration
+func (s *MarketplaceIntegrationsService) getMetrics(integrationID string) (*IntegrationMetrics, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	metrics, exists := s.metrics[integrationID]
+	return metrics, exists
+}
+
+// ensureMetrics ensures metrics exist for an integration
+func (s *MarketplaceIntegrationsService) ensureMetrics(integrationID string) *IntegrationMetrics {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if metrics, exists := s.metrics[integrationID]; exists {
+		return metrics
+	}
+
+	metrics := NewIntegrationMetrics(integrationID)
+	s.metrics[integrationID] = metrics
+	return metrics
+}
+
+// GetMonitoringService returns the monitoring service
+func (s *MarketplaceIntegrationsService) GetMonitoringService() *MonitoringService {
+	return s.monitoring
+}
+
+// GetAlerts returns all active alerts
+func (s *MarketplaceIntegrationsService) GetAlerts() []*Alert {
+	return s.monitoring.GetAlerts()
+}
+
+// GetAlertsByIntegration returns alerts for a specific integration
+func (s *MarketplaceIntegrationsService) GetAlertsByIntegration(integrationID string) []*Alert {
+	return s.monitoring.GetAlertsByIntegration(integrationID)
+}
+
+// ResolveAlert resolves an alert
+func (s *MarketplaceIntegrationsService) ResolveAlert(alertID string) error {
+	return s.monitoring.ResolveAlert(alertID)
+}
+
+// GetHealthStatus returns health status for an integration
+func (s *MarketplaceIntegrationsService) GetHealthStatus(integrationID string) *HealthCheck {
+	return s.monitoring.GetHealthStatus(integrationID)
+}
+
+// GetMetrics returns metrics for an integration
+func (s *MarketplaceIntegrationsService) GetMetrics(integrationID string) (*IntegrationMetrics, bool) {
+	return s.monitoring.GetMetrics(integrationID)
+}
+
+// GetAllMetrics returns all metrics
+func (s *MarketplaceIntegrationsService) GetAllMetrics() map[string]*IntegrationMetrics {
+	return s.monitoring.GetAllMetrics()
 }
