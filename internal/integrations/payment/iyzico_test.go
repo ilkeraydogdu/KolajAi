@@ -2,9 +2,11 @@ package payment
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -125,24 +127,26 @@ func TestIyzicoProvider_ProcessPayment(t *testing.T) {
 		Currency:    "TRY",
 		OrderID:     "ORDER123",
 		Description: "Test payment",
-		Card: &CardInfo{
-			HolderName: "John Doe",
-			Number:     "5528790000000008",
-			ExpMonth:   "12",
-			ExpYear:    "2030",
-			CVV:        "123",
+		CustomerID:  "CUST123",
+		PaymentMethod: PaymentMethod{
+			Type: PaymentMethodTypeCard,
+			Card: &CardDetails{
+				HolderName: "John Doe",
+				Number:     "5528790000000008",
+				ExpMonth:   "12",
+				ExpYear:    "2030",
+				CVV:        "123",
+			},
 		},
-		Customer: &CustomerInfo{
-			ID:        "CUST123",
-			Email:     "john@example.com",
-			Name:      "John",
-			Surname:   "Doe",
-			Phone:     "+905551234567",
-			IP:        "192.168.1.1",
-			City:      "Istanbul",
-			Country:   "Turkey",
-			Address:   "Test Address",
-			ZipCode:   "34000",
+		BillingAddress: Address{
+			FirstName:    "John",
+			LastName:     "Doe",
+			AddressLine1: "Test Address",
+			City:         "Istanbul",
+			Country:      "Turkey",
+			PostalCode:   "34000",
+			Email:        "john@example.com",
+			Phone:        "+905551234567",
 		},
 		Items: []PaymentItem{
 			{
@@ -156,7 +160,7 @@ func TestIyzicoProvider_ProcessPayment(t *testing.T) {
 	}
 	
 	ctx := context.Background()
-	response, err := provider.ProcessPayment(ctx, paymentRequest)
+	response, err := provider.CreatePayment(ctx, paymentRequest)
 	
 	if err != nil {
 		t.Errorf("ProcessPayment() error = %v, want nil", err)
@@ -170,8 +174,8 @@ func TestIyzicoProvider_ProcessPayment(t *testing.T) {
 		t.Errorf("TransactionID = %v, want %v", response.TransactionID, "12345678")
 	}
 	
-	if response.Status != PaymentStatusSuccess {
-		t.Errorf("Status = %v, want %v", response.Status, PaymentStatusSuccess)
+	if response.Status != PaymentStatusSucceeded {
+		t.Errorf("Status = %v, want %v", response.Status, PaymentStatusSucceeded)
 	}
 }
 
@@ -220,17 +224,21 @@ func TestIyzicoProvider_Create3DSecurePayment(t *testing.T) {
 		Currency:    "TRY",
 		OrderID:     "ORDER123",
 		CallbackURL: "https://callback.example.com",
-		Card: &CardInfo{
-			HolderName: "John Doe",
-			Number:     "5528790000000008",
-			ExpMonth:   "12",
-			ExpYear:    "2030",
-			CVV:        "123",
+		PaymentMethod: PaymentMethod{
+			Type: PaymentMethodTypeCard,
+			Card: &CardDetails{
+				HolderName: "John Doe",
+				Number:     "5528790000000008",
+				ExpMonth:   "12",
+				ExpYear:    "2030",
+				CVV:        "123",
+			},
 		},
+		Enable3DSecure: true,
 	}
 	
 	ctx := context.Background()
-	response, err := provider.Create3DSecurePayment(ctx, paymentRequest)
+	response, err := provider.Initialize3DSecure(ctx, paymentRequest)
 	
 	if err != nil {
 		t.Errorf("Create3DSecurePayment() error = %v, want nil", err)
@@ -279,15 +287,8 @@ func TestIyzicoProvider_RefundPayment(t *testing.T) {
 		},
 	}
 	
-	refundRequest := &RefundRequest{
-		TransactionID: "12345678",
-		Amount:        50.0,
-		Currency:      "TRY",
-		Reason:        "Customer request",
-	}
-	
 	ctx := context.Background()
-	response, err := provider.RefundPayment(ctx, refundRequest)
+	response, err := provider.RefundPayment(ctx, "12345678", 50.0)
 	
 	if err != nil {
 		t.Errorf("RefundPayment() error = %v, want nil", err)
@@ -297,11 +298,11 @@ func TestIyzicoProvider_RefundPayment(t *testing.T) {
 		t.Fatal("Response is nil")
 	}
 	
-	if response.RefundID == "" {
+	if response.ID == "" {
 		t.Error("RefundID should not be empty")
 	}
 	
-	if response.Status != PaymentStatusRefunded {
+	if response.Status != string(PaymentStatusRefunded) {
 		t.Errorf("Status = %v, want %v", response.Status, PaymentStatusRefunded)
 	}
 }
@@ -351,12 +352,12 @@ func TestIyzicoProvider_GetPaymentStatus(t *testing.T) {
 		t.Fatal("Status is nil")
 	}
 	
-	if status.TransactionID != "12345678" {
-		t.Errorf("TransactionID = %v, want %v", status.TransactionID, "12345678")
+	if status.ID != "12345678" {
+		t.Errorf("TransactionID = %v, want %v", status.ID, "12345678")
 	}
 	
-	if status.Status != PaymentStatusSuccess {
-		t.Errorf("Status = %v, want %v", status.Status, PaymentStatusSuccess)
+	if status.Status != PaymentStatusSucceeded {
+		t.Errorf("Status = %v, want %v", status.Status, PaymentStatusSucceeded)
 	}
 	
 	if status.Amount != 100.0 {
@@ -437,7 +438,7 @@ func TestIyzicoProvider_ErrorHandling(t *testing.T) {
 			}
 			
 			ctx := context.Background()
-			_, err := provider.ProcessPayment(ctx, paymentRequest)
+			_, err := provider.CreatePayment(ctx, paymentRequest)
 			
 			if err == nil {
 				t.Error("Expected error, got nil")
@@ -448,6 +449,11 @@ func TestIyzicoProvider_ErrorHandling(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Helper function to check if string contains substring
+func contains(s, substr string) bool {
+	return strings.Contains(s, substr)
 }
 
 // Helper function to encode base64

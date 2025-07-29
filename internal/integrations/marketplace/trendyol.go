@@ -657,3 +657,14 @@ func (p *TrendyolProvider) sendProductBatch(ctx context.Context, products []Tren
 	var response map[string]interface{}
 	return p.makeRequest(ctx, "POST", endpoint, request, &response)
 }
+
+// UpdateStock is a convenience method for updating stock of a single product
+func (p *TrendyolProvider) UpdateStock(ctx context.Context, stockCode string, quantity int) error {
+	updates := []interface{}{
+		map[string]interface{}{
+			"stockCode": stockCode,
+			"quantity":  quantity,
+		},
+	}
+	return p.UpdateStockAndPrice(ctx, updates)
+}

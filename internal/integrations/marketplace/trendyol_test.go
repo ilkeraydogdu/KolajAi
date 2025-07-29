@@ -76,7 +76,7 @@ func TestTrendyolProvider_HealthCheck(t *testing.T) {
 	provider := &TrendyolProvider{
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
@@ -140,7 +140,7 @@ func TestTrendyolProvider_SyncProducts(t *testing.T) {
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
 		supplierID: "12345",
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
@@ -214,7 +214,7 @@ func TestTrendyolProvider_GetOrders(t *testing.T) {
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
 		supplierID: "12345",
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
@@ -269,7 +269,7 @@ func TestTrendyolProvider_UpdateStock(t *testing.T) {
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
 		supplierID: "12345",
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
@@ -322,7 +322,7 @@ func TestTrendyolProvider_ErrorHandling(t *testing.T) {
 			provider := &TrendyolProvider{
 				httpClient: http.DefaultClient,
 				baseURL:    server.URL,
-				credentials: &integrations.SecureCredentials{
+				tempCredentials: &integrations.Credentials{
 					APIKey:    "test-key",
 					APISecret: "test-secret",
 				},
