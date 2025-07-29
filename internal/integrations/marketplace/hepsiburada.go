@@ -599,26 +599,144 @@ func (p *HepsiburadaProvider) validateWebhookSignature(payload []byte, signature
 // Helper methods for data conversion and event handling
 
 func (p *HepsiburadaProvider) convertToHepsiburadaProduct(product interface{}) (HepsiburadaProduct, error) {
-	// Convert generic product to Hepsiburada format
-	hepsiburadaProduct := HepsiburadaProduct{
-		CurrencyType:   "TRY",
-		DispatchTime:   1, // Default dispatch time
-		Status:         "Active",
+	productMap, ok := product.(map[string]interface{})
+	if !ok {
+		return HepsiburadaProduct{}, fmt.Errorf("invalid product format")
 	}
 	
-	// Add conversion logic based on your product structure
-	// This is a placeholder implementation
+	hepsiburadaProduct := HepsiburadaProduct{
+		MerchantSKU:      getString(productMap, "sku"),
+		HepsiburadaSKU:   getString(productMap, "hepsiburada_sku"),
+		ProductName:      getString(productMap, "title"),
+		ProductNameEn:    getString(productMap, "title_en"),
+		Description:      getString(productMap, "description"),
+		DescriptionEn:    getString(productMap, "description_en"),
+		CategoryName:     getString(productMap, "category"),
+		BrandName:        getString(productMap, "brand"),
+		Barcode:          getString(productMap, "barcode"),
+		Price:            getFloat64(productMap, "price"),
+		ListPrice:        getFloat64(productMap, "list_price"),
+		CurrencyType:     "TRY",
+		AvailableStock:   getInt(productMap, "quantity"),
+		DispatchTime:     getIntWithDefault(productMap, "dispatch_time", 1),
+		CargoCompanyName: getStringWithDefault(productMap, "cargo_company", "Aras Kargo"),
+		Status:           getStringWithDefault(productMap, "status", "Active"),
+	}
+	
+	// Set list price if not provided
+	if hepsiburadaProduct.ListPrice == 0 && hepsiburadaProduct.Price > 0 {
+		hepsiburadaProduct.ListPrice = hepsiburadaProduct.Price * 1.2 // Add 20% margin
+	}
+	
+	// Set images
+	if images, ok := productMap["images"].([]interface{}); ok {
+		hepsiburadaImages := make([]HepsiburadaImage, 0)
+		for _, img := range images {
+			if imgStr, ok := img.(string); ok {
+				hepsiburadaImages = append(hepsiburadaImages, HepsiburadaImage{URL: imgStr})
+			}
+		}
+		hepsiburadaProduct.Images = hepsiburadaImages
+	}
+	
+	// Set attributes
+	if attributes, ok := productMap["attributes"].(map[string]interface{}); ok {
+		hepsiburadaAttributes := make([]HepsiburadaAttribute, 0)
+		for key, value := range attributes {
+			if valueStr, ok := value.(string); ok {
+				hepsiburadaAttributes = append(hepsiburadaAttributes, HepsiburadaAttribute{
+					Name:  key,
+					Value: valueStr,
+				})
+			}
+		}
+		hepsiburadaProduct.Attributes = hepsiburadaAttributes
+	}
+	
+	// Set dimensions
+	if dimensions, ok := productMap["dimensions"].(map[string]interface{}); ok {
+		hepsiburadaProduct.Dimensions = HepsiburadaDimensions{
+			Width:  getFloat64(dimensions, "width"),
+			Height: getFloat64(dimensions, "height"),
+			Length: getFloat64(dimensions, "length"),
+			Weight: getFloat64(dimensions, "weight"),
+		}
+	}
 	
 	return hepsiburadaProduct, nil
 }
 
+// Helper functions for Hepsiburada
+func getString(m map[string]interface{}, key string) string {
+	if v, ok := m[key].(string); ok {
+		return v
+	}
+	return ""
+}
+
+func getStringWithDefault(m map[string]interface{}, key, defaultValue string) string {
+	if v, ok := m[key].(string); ok && v != "" {
+		return v
+	}
+	return defaultValue
+}
+
+func getInt(m map[string]interface{}, key string) int {
+	if v, ok := m[key].(int); ok {
+		return v
+	}
+	if v, ok := m[key].(float64); ok {
+		return int(v)
+	}
+	return 0
+}
+
+func getIntWithDefault(m map[string]interface{}, key string, defaultValue int) int {
+	if v := getInt(m, key); v > 0 {
+		return v
+	}
+	return defaultValue
+}
+
+func getFloat64(m map[string]interface{}, key string) float64 {
+	if v, ok := m[key].(float64); ok {
+		return v
+	}
+	if v, ok := m[key].(int); ok {
+		return float64(v)
+	}
+	return 0
+}
+
 func (p *HepsiburadaProvider) convertToStockPriceItems(update interface{}) (HepsiburadaStockItem, HepsiburadaPriceItem, error) {
-	// Convert generic update to Hepsiburada format
-	stockItem := HepsiburadaStockItem{}
-	priceItem := HepsiburadaPriceItem{}
+	updateMap, ok := update.(map[string]interface{})
+	if !ok {
+		return HepsiburadaStockItem{}, HepsiburadaPriceItem{}, fmt.Errorf("invalid update format")
+	}
 	
-	// Add conversion logic based on your update structure
-	// This is a placeholder implementation
+	merchantSKU := getString(updateMap, "sku")
+	if merchantSKU == "" {
+		return HepsiburadaStockItem{}, HepsiburadaPriceItem{}, fmt.Errorf("merchant SKU is required")
+	}
+	
+	stockItem := HepsiburadaStockItem{
+		MerchantSKU:    merchantSKU,
+		AvailableStock: getInt(updateMap, "quantity"),
+	}
+	
+	price := getFloat64(updateMap, "price")
+	listPrice := getFloat64(updateMap, "list_price")
+	
+	// If list price is not provided, use price + margin
+	if listPrice == 0 && price > 0 {
+		listPrice = price * 1.2 // Add 20% margin
+	}
+	
+	priceItem := HepsiburadaPriceItem{
+		MerchantSKU: merchantSKU,
+		Price:       price,
+		ListPrice:   listPrice,
+	}
 	
 	return stockItem, priceItem, nil
 }
