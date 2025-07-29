@@ -17,63 +17,53 @@
 # Go workspace file
 go.work
 
-# IDE files
-.vscode/
+# IDE-specific files
 .idea/
+.vscode/
 *.swp
 *.swo
+*~
 
-# OS generated files
+# OS-specific files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-# Logs
+# Application-specific files
+*.db
 *.log
+logs/
+temp/
+uploads/
+config.local.yaml
 
-# Environment variables
+# Build artifacts
+/server
+/seed
+/db-tools
+/kolajAi
+/kolajAI
+/main
+
+# Test artifacts
+coverage.html
+coverage.out
+test_*.db
+
+# Environment files
 .env
 .env.local
 .env.production
+.env.*.local
 
-# Database files
-*.db
-*.sqlite
-*.sqlite3
+# Credentials and secrets
+credentials/
+secrets/
+*.pem
+*.key
+*.crt
 
-# Temporary files
-tmp/
-temp/
+# Session files
+sessions/
 
-# Python specific (in case of future Python integration)
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Node.js specific (in case of future frontend tooling)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log* 
+# Cache files
+cache/ 
