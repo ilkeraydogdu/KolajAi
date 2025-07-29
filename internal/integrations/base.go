@@ -65,6 +65,9 @@ type Credentials struct {
 type SecureCredentials struct {
 	manager *security.CredentialManager
 	id      string
+	// Legacy fields for backward compatibility (used in tests)
+	APIKey    string
+	APISecret string
 }
 
 // NewSecureCredentials creates a new secure credentials wrapper
@@ -82,6 +85,15 @@ func (sc *SecureCredentials) GetCredentialData() (map[string]interface{}, error)
 
 // ToLegacyCredentials converts to legacy Credentials struct for backward compatibility
 func (sc *SecureCredentials) ToLegacyCredentials() (*Credentials, error) {
+	// If no credential manager set, fall back to legacy fields
+	if sc.manager == nil {
+		return &Credentials{
+			APIKey:    sc.APIKey,
+			APISecret: sc.APISecret,
+			Extra:     make(map[string]string),
+		}, nil
+	}
+
 	data, err := sc.manager.RetrieveCredential(sc.id)
 	if err != nil {
 		return nil, err

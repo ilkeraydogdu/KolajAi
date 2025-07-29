@@ -14,6 +14,8 @@ type MockProvider struct {
 	CloseFunc        func() error
 	IsHealthy        bool
 	CallCount        int
+	// Add capabilities field to optionally configure returned capabilities
+	Capabilities     []string
 }
 
 func (m *MockProvider) Initialize(ctx context.Context, credentials Credentials, config map[string]interface{}) error {
@@ -40,6 +42,19 @@ func (m *MockProvider) Close() error {
 		return m.CloseFunc()
 	}
 	return nil
+}
+
+// GetCapabilities returns mock capabilities
+func (m *MockProvider) GetCapabilities() []string {
+	if len(m.Capabilities) > 0 {
+		return m.Capabilities
+	}
+	return []string{"mock"}
+}
+
+// GetRateLimit returns a zero RateLimitInfo for tests
+func (m *MockProvider) GetRateLimit() RateLimitInfo {
+	return RateLimitInfo{}
 }
 
 // MockLogger implements IntegrationLogger for testing
@@ -109,16 +124,19 @@ func (m *MockCache) Get(key string) (interface{}, bool) {
 	return val, exists
 }
 
-func (m *MockCache) Set(key string, value interface{}, ttl time.Duration) {
+func (m *MockCache) Set(key string, value interface{}, ttl time.Duration) error {
 	m.storage[key] = value
+	return nil
 }
 
-func (m *MockCache) Delete(key string) {
+func (m *MockCache) Delete(key string) error {
 	delete(m.storage, key)
+	return nil
 }
 
-func (m *MockCache) Clear() {
+func (m *MockCache) Clear(pattern string) error {
 	m.storage = make(map[string]interface{})
+	return nil
 }
 
 func TestManager_RegisterIntegration(t *testing.T) {
