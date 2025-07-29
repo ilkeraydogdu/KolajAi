@@ -377,6 +377,15 @@ func (p *TrendyolProvider) UpdateStockAndPrice(ctx context.Context, updates []in
 	return p.makeRequest(ctx, "POST", endpoint, request, &response)
 }
 
+// UpdateStock updates only stock quantity for a single product (helper for backward compatibility)
+func (p *TrendyolProvider) UpdateStock(ctx context.Context, barcode string, quantity int) error {
+    update := map[string]interface{}{
+        "barcode":  barcode,
+        "quantity": quantity,
+    }
+    return p.UpdateStockAndPrice(ctx, []interface{}{update})
+}
+
 // UpdateOrderStatus updates order status
 func (p *TrendyolProvider) UpdateOrderStatus(ctx context.Context, orderID string, status string, params map[string]interface{}) error {
 	endpoint := fmt.Sprintf("/sapigw/suppliers/%s/orders/%s/status", p.supplierID, orderID)
