@@ -3,6 +3,7 @@ package integrations
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 )
@@ -33,6 +34,20 @@ func (m *MockProvider) HealthCheck(ctx context.Context) error {
 		return errors.New("provider unhealthy")
 	}
 	return nil
+}
+
+func (m *MockProvider) GetCapabilities() []string {
+	return []string{"test"}
+}
+
+func (m *MockProvider) GetRateLimit() RateLimitInfo {
+	return RateLimitInfo{
+		RequestsPerMinute: 100,
+		RequestsPerSecond: 10,
+		RequestsRemaining: 50,
+		BurstSize:         20,
+		ResetsAt:          time.Now().Add(time.Minute),
+	}
 }
 
 func (m *MockProvider) Close() error {
@@ -109,16 +124,28 @@ func (m *MockCache) Get(key string) (interface{}, bool) {
 	return val, exists
 }
 
-func (m *MockCache) Set(key string, value interface{}, ttl time.Duration) {
+func (m *MockCache) Set(key string, value interface{}, ttl time.Duration) error {
 	m.storage[key] = value
+	return nil
 }
 
-func (m *MockCache) Delete(key string) {
+func (m *MockCache) Delete(key string) error {
 	delete(m.storage, key)
+	return nil
 }
 
-func (m *MockCache) Clear() {
-	m.storage = make(map[string]interface{})
+func (m *MockCache) Clear(pattern string) error {
+	if pattern == "" {
+		m.storage = make(map[string]interface{})
+	} else {
+		// Simple pattern matching - remove keys that contain the pattern
+		for key := range m.storage {
+			if strings.Contains(key, pattern) {
+				delete(m.storage, key)
+			}
+		}
+	}
+	return nil
 }
 
 func TestManager_RegisterIntegration(t *testing.T) {
