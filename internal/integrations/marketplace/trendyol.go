@@ -7,20 +7,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"kolajAi/internal/integrations"
+	"kolajAi/internal/errors"
+	"kolajAi/internal/retry"
+	"kolajAi/internal/security"
 )
 
 // TrendyolProvider implements marketplace provider for Trendyol
 type TrendyolProvider struct {
-	config      *MarketplaceProviderConfig
-	httpClient  *http.Client
-	credentials integrations.Credentials
-	baseURL     string
-	supplierID  string
-	rateLimit   integrations.RateLimitInfo
+	config         *MarketplaceProviderConfig
+	httpClient     *http.Client
+	credentials    *integrations.SecureCredentials
+	baseURL        string
+	supplierID     string
+	rateLimit      integrations.RateLimitInfo
+	retryManager   *retry.RetryManager
+	inputValidator *security.InputValidator
+	errorHandler   *errors.ErrorHandler
 }
 
 // TrendyolProduct represents a Trendyol product structure
