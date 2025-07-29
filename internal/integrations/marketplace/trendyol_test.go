@@ -76,7 +76,7 @@ func TestTrendyolProvider_HealthCheck(t *testing.T) {
 	provider := &TrendyolProvider{
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
@@ -140,7 +140,7 @@ func TestTrendyolProvider_SyncProducts(t *testing.T) {
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
 		supplierID: "12345",
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
@@ -214,7 +214,7 @@ func TestTrendyolProvider_GetOrders(t *testing.T) {
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
 		supplierID: "12345",
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
@@ -269,17 +269,23 @@ func TestTrendyolProvider_UpdateStock(t *testing.T) {
 		httpClient: http.DefaultClient,
 		baseURL:    server.URL,
 		supplierID: "12345",
-		credentials: &integrations.SecureCredentials{
+		tempCredentials: &integrations.Credentials{
 			APIKey:    "test-key",
 			APISecret: "test-secret",
 		},
 	}
 	
 	ctx := context.Background()
-	err := provider.UpdateStock(ctx, "TEST123", 50)
+	updates := []interface{}{
+		map[string]interface{}{
+			"barcode":  "TEST123",
+			"quantity": 50,
+		},
+	}
+	err := provider.UpdateStockAndPrice(ctx, updates)
 	
 	if err != nil {
-		t.Errorf("UpdateStock() error = %v, want nil", err)
+		t.Errorf("UpdateStockAndPrice() error = %v, want nil", err)
 	}
 }
 
@@ -322,9 +328,10 @@ func TestTrendyolProvider_ErrorHandling(t *testing.T) {
 			provider := &TrendyolProvider{
 				httpClient: http.DefaultClient,
 				baseURL:    server.URL,
-				credentials: &integrations.SecureCredentials{
-					APIKey:    "test-key",
-					APISecret: "test-secret",
+				supplierID: "12345",
+				tempCredentials: &integrations.Credentials{
+					APIKey:    tt.apiKey,
+					APISecret: tt.apiSecret,
 				},
 			}
 			
