@@ -72,7 +72,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 			}
 
 			// Oturum oluştur
-			err := h.SessionManager.SetSession(w, r, "user", user)
+			permissions := []string{"user"} // Temel kullanıcı izinleri
+			_, err := h.SessionManager.CreateSession(w, r, user.ID, permissions)
 			if err != nil {
 				AuthLogger.Printf("Login - Oturum oluşturma hatası: %v", err)
 				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
@@ -107,12 +108,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	AuthLogger.Printf("Logout handler çağrıldı: Method=%s, URL=%s", r.Method, r.URL.Path)
 
-	// Tüm çerezleri temizle
-	AuthLogger.Printf("Logout - Tüm çerezler temizleniyor")
-	h.SessionManager.CleanupAllCookies(w, r)
-
 	// Oturumu temizle
-	err := h.SessionManager.ClearSession(w, r)
+	err := h.SessionManager.DestroySession(w, r)
 	if err != nil {
 		AuthLogger.Printf("Logout - Oturum temizleme hatası: %v", err)
 	} else {

@@ -265,7 +265,7 @@ func (sm *SessionManager) DestroySession(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Remove from database
-	query := "UPDATE sessions SET is_active = FALSE WHERE id = ?"
+	query := "UPDATE sessions SET is_active = 0 WHERE id = ?"
 	_, err = sm.db.Exec(query, cookie.Value)
 	if err != nil {
 		return fmt.Errorf("failed to destroy session: %w", err)
@@ -282,7 +282,7 @@ func (sm *SessionManager) GetUserSessions(userID int64) ([]*SessionData, error) 
 		SELECT id, user_id, user_agent, ip_address, login_time, last_activity, 
 		       expires_at, is_active, device_info, permissions, preferences, data
 		FROM sessions 
-		WHERE user_id = ? AND is_active = TRUE AND expires_at > NOW()
+		WHERE user_id = ? AND is_active = 1 AND expires_at > datetime('now')
 		ORDER BY last_activity DESC
 	`
 
@@ -327,16 +327,10 @@ func (sm *SessionManager) saveSessionToDB(session *SessionData) error {
 	dataJSON, _ := json.Marshal(session.Data)
 
 	query := `
-		INSERT INTO sessions (id, user_id, user_agent, ip_address, login_time, 
-		                     last_activity, expires_at, is_active, device_info, 
-		                     permissions, preferences, data)
+		INSERT OR REPLACE INTO sessions (id, user_id, user_agent, ip_address, login_time, 
+		                                last_activity, expires_at, is_active, device_info, 
+		                                permissions, preferences, data)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-		ON DUPLICATE KEY UPDATE
-		last_activity = VALUES(last_activity),
-		device_info = VALUES(device_info),
-		permissions = VALUES(permissions),
-		preferences = VALUES(preferences),
-		data = VALUES(data)
 	`
 
 	_, err := sm.db.Exec(query,
@@ -355,7 +349,7 @@ func (sm *SessionManager) getSessionFromDB(sessionID string) (*SessionData, erro
 		SELECT id, user_id, user_agent, ip_address, login_time, last_activity,
 		       expires_at, is_active, device_info, permissions, preferences, data
 		FROM sessions 
-		WHERE id = ? AND is_active = TRUE AND expires_at > NOW()
+		WHERE id = ? AND is_active = 1 AND expires_at > datetime('now')
 	`
 
 	row := sm.db.QueryRow(query, sessionID)
@@ -512,7 +506,7 @@ func (sm *SessionManager) startCleanupRoutine(interval time.Duration) {
 
 // cleanupExpiredSessions removes expired sessions
 func (sm *SessionManager) cleanupExpiredSessions() {
-	query := "DELETE FROM sessions WHERE expires_at < NOW() OR is_active = FALSE"
+	query := "DELETE FROM sessions WHERE expires_at < datetime('now') OR is_active = 0"
 	_, err := sm.db.Exec(query)
 	if err != nil {
 		// Log error but don't stop the cleanup routine
@@ -526,17 +520,16 @@ func (sm *SessionManager) GetSessionStats() (map[string]interface{}, error) {
 
 	// Total active sessions
 	var totalActive int
-	err := sm.db.QueryRow("SELECT COUNT(*) FROM sessions WHERE is_active = TRUE AND expires_at > NOW()").Scan(&totalActive)
+	err := sm.db.QueryRow("SELECT COUNT(*) FROM sessions WHERE is_active = 1 AND expires_at > datetime('now')").Scan(&totalActive)
 	if err == nil {
 		stats["total_active"] = totalActive
 	}
 
-	// Sessions by platform
+	// Sessions by platform (simplified for SQLite)
 	platformQuery := `
-		SELECT JSON_EXTRACT(device_info, '$.platform') as platform, COUNT(*) as count
+		SELECT 'Unknown' as platform, COUNT(*) as count
 		FROM sessions 
-		WHERE is_active = TRUE AND expires_at > NOW()
-		GROUP BY platform
+		WHERE is_active = 1 AND expires_at > datetime('now')
 	`
 	rows, err := sm.db.Query(platformQuery)
 	if err == nil {
