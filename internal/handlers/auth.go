@@ -71,10 +71,20 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 				Name:  "Admin User",
 			}
 
-			// Oturum oluştur
-			err := h.SessionManager.SetSession(w, r, "user", user)
-			if err != nil {
-				AuthLogger.Printf("Login - Oturum oluşturma hatası: %v", err)
+			// Oturum oluştur - kullanıcı bilgilerini ve yetki durumunu kaydet
+			if err := h.SessionManager.SetSession(w, r, UserKey, user); err != nil {
+				AuthLogger.Printf("Login - Oturum oluşturma hatası (user): %v", err)
+				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
+				return
+			}
+			// Kullanıcı kimliği ve admin bayrağını ekle
+			if err := h.SessionManager.SetSession(w, r, "user_id", user.ID); err != nil {
+				AuthLogger.Printf("Login - Oturum oluşturma hatası (user_id): %v", err)
+				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
+				return
+			}
+			if err := h.SessionManager.SetSession(w, r, "is_admin", true); err != nil {
+				AuthLogger.Printf("Login - Oturum oluşturma hatası (is_admin): %v", err)
 				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
 				return
 			}

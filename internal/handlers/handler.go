@@ -13,12 +13,11 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-// contextKey, context değerleri için özel anahtar tipi
-type contextKey string
-
+// Sabitler - oturum ve context anahtarları
 const (
 	SessionCookieName = "kolaj-session"
-	UserKey           = contextKey("user")
+	// UserKey hem context aktarımında hem de oturum verilerinde kullanılacak
+	UserKey           = "user"
 	FlashKey          = "flash"
 )
 
