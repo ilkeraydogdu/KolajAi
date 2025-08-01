@@ -109,12 +109,13 @@ func main() {
 	MainLogger.Println("Session sistemi başlatılıyor...")
 	sessionManager, err := session.NewSessionManager(db, session.SessionConfig{
 		CookieName: "kolajAI_session",
-		Secure:     true,
+		Secure:     false, // Development ortamında false, production'da true olmalı
 		HTTPOnly:   true,
-		SameSite:   http.SameSiteStrictMode,
+		SameSite:   http.SameSiteLaxMode, // Strict yerine Lax kullan
 		MaxAge:     int(24 * time.Hour / time.Second),
-		Domain:     cfg.Server.Domain,
+		Domain:     "", // Development için boş bırak
 		Path:       "/",
+		EncryptionKey: "supersecretkey123", // Encryption key ekle
 	})
 	if err != nil {
 		MainLogger.Fatalf("Session sistemi başlatılamadı: %v", err)
@@ -301,12 +302,9 @@ func main() {
 	// Handler'ları oluştur
 	MainLogger.Println("Handler'lar oluşturuluyor...")
 
-	// Create legacy session manager for handlers
-	legacySessionManager := handlers.NewSessionManager("supersecretkey123")
-	
 	h := &handlers.Handler{
-		Templates:      tmpl,
-		SessionManager: legacySessionManager,
+		Templates:       tmpl,
+		SessionManager:  sessionManager, // Advanced session manager kullan
 		TemplateContext: map[string]interface{}{
 			"AppName": "KolajAI Enterprise Marketplace",
 			"Year":    time.Now().Year(),

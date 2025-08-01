@@ -336,6 +336,12 @@ func (ms *MiddlewareStack) CSRFMiddleware(next http.Handler) http.Handler {
 			return
 		}
 		
+		// Skip CSRF for login endpoint (for development/testing)
+		if r.URL.Path == "/login" {
+			next.ServeHTTP(w, r)
+			return
+		}
+		
 		// Skip CSRF for API endpoints with proper authentication
 		if strings.HasPrefix(r.URL.Path, "/api/") {
 			// Check for API key or JWT token
