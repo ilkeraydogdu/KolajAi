@@ -25,6 +25,8 @@ import (
 	"kolajAi/internal/middleware"
 	"kolajAi/internal/router"
 	"kolajAi/internal/config"
+	"kolajAi/internal/repository"
+	"kolajAi/internal/email"
 
 )
 
@@ -108,13 +110,15 @@ func main() {
 	// Session Manager
 	MainLogger.Println("Session sistemi başlatılıyor...")
 	sessionManager, err := session.NewSessionManager(db, session.SessionConfig{
-		CookieName: "kolajAI_session",
-		Secure:     true,
-		HTTPOnly:   true,
-		SameSite:   http.SameSiteStrictMode,
-		MaxAge:     int(24 * time.Hour / time.Second),
-		Domain:     cfg.Server.Domain,
-		Path:       "/",
+		CookieName:      "kolajAI_session",
+		Secure:          cfg.Environment == "production", // Production'da true
+		HTTPOnly:        true,
+		SameSite:        http.SameSiteStrictMode,
+		MaxAge:          int(24 * time.Hour / time.Second),
+		Domain:          cfg.Server.Domain,
+		Path:            "/",
+		EncryptionKey:   cfg.Security.SessionSecret,
+		CleanupInterval: 1 * time.Hour,
 	})
 	if err != nil {
 		MainLogger.Fatalf("Session sistemi başlatılamadı: %v", err)
@@ -166,7 +170,25 @@ func main() {
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
-	authService := services.NewAuthService(nil, nil) // Placeholder - implement properly
+	
+	// Repository'leri oluştur
+	userRepo := repository.NewUserRepository(db)
+	
+	// Email service'i oluştur
+	emailService := email.NewService(email.Config{
+		SMTPHost:     cfg.Email.SMTPHost,
+		SMTPPort:     cfg.Email.SMTPPort,
+		SMTPUser:     cfg.Email.SMTPUser,
+		SMTPPassword: cfg.Email.SMTPPassword,
+		FromEmail:    cfg.Email.FromEmail,
+		FromName:     cfg.Email.FromName,
+		UseSSL:       cfg.Email.UseSSL,
+		UseTLS:       cfg.Email.UseTLS,
+	})
+	
+	// Auth service'i oluştur
+	authService := services.NewAuthService(userRepo, emailService)
+	
 	vendorService := services.NewVendorService(repo)
 	productService := services.NewProductService(repo)
 	orderService := services.NewOrderService(repo)
@@ -301,17 +323,19 @@ func main() {
 	// Handler'ları oluştur
 	MainLogger.Println("Handler'lar oluşturuluyor...")
 
-	// Create legacy session manager for handlers
-	legacySessionManager := handlers.NewSessionManager("supersecretkey123")
-	
+	// Handler struct'ını oluştur - gelişmiş session manager ile
 	h := &handlers.Handler{
 		Templates:      tmpl,
-		SessionManager: legacySessionManager,
+		SessionManager: sessionManager, // Gelişmiş session manager'ı kullan
 		TemplateContext: map[string]interface{}{
 			"AppName": "KolajAI Enterprise Marketplace",
 			"Year":    time.Now().Year(),
 		},
+		ErrorManager: errorManager,
 	}
+	
+	// Auth handler'ı oluştur
+	authHandler := handlers.NewAuthHandler(h, authService)
 
 	// E-ticaret handler'ı oluştur
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
@@ -386,10 +410,10 @@ func main() {
 	})
 
 	// Auth işlemleri
-	appRouter.HandleFunc("/login", h.Login)
-	appRouter.HandleFunc("/register", h.Register)
-	appRouter.HandleFunc("/forgot-password", h.ForgotPassword)
-	appRouter.HandleFunc("/reset-password", h.ResetPassword)
+	appRouter.HandleFunc("/login", authHandler.Login)
+	appRouter.HandleFunc("/register", authHandler.Register)
+	appRouter.HandleFunc("/forgot-password", authHandler.ForgotPassword)
+	appRouter.HandleFunc("/reset-password", authHandler.ResetPassword)
 
 	// Auth gerektiren sayfalar
 	appRouter.HandleFunc("/dashboard", func(w http.ResponseWriter, r *http.Request) {
@@ -405,7 +429,7 @@ func main() {
 			h.RedirectWithFlash(w, r, "/login", "Zaten çıkış yapılmış")
 			return
 		}
-		h.Logout(w, r)
+		authHandler.Logout(w, r)
 	})
 
 	// E-ticaret rotaları
@@ -598,25 +622,44 @@ func main() {
 	appRouter.HandleFunc("/ai/analytics/pricing-strategy", aiAnalyticsHandler.GetPricingStrategyPage)
 
 	// Admin rotaları - Gelişmiş admin paneli
-	appRouter.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
+	// Admin middleware oluştur
+	adminMiddleware := func(next http.HandlerFunc) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			// Authentication kontrolü
+			if !h.IsAuthenticated(r) {
+				h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
+				return
+			}
+			
+			// Admin yetkisi kontrolü
+			if !h.HasPermission(r, "admin") {
+				http.Error(w, "Bu sayfaya erişim yetkiniz yok", http.StatusForbidden)
+				return
+			}
+			
+			next(w, r)
+		}
+	}
+	
+	appRouter.HandleFunc("/admin/", adminMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/admin/" || r.URL.Path == "/admin" {
 			adminHandler.AdminDashboard(w, r)
 			return
 		}
 		http.NotFound(w, r)
-	})
-	appRouter.HandleFunc("/admin/dashboard", adminHandler.AdminDashboard)
-	appRouter.HandleFunc("/admin/products", adminHandler.AdminProducts)
-	appRouter.HandleFunc("/admin/products/edit/", adminHandler.AdminProductEdit)
-	appRouter.HandleFunc("/admin/vendors", adminHandler.AdminVendors)
-	appRouter.HandleFunc("/admin/vendors/approve", adminHandler.AdminVendorApprove)
-	appRouter.HandleFunc("/admin/users", adminHandler.AdminUsers)
-	appRouter.HandleFunc("/admin/users/", adminHandler.AdminUserDetail)
-	appRouter.HandleFunc("/admin/reports", adminHandler.AdminReports)
-	appRouter.HandleFunc("/admin/seo", adminHandler.AdminSEO)
-	appRouter.HandleFunc("/admin/notifications", adminHandler.AdminNotifications)
-	appRouter.HandleFunc("/admin/system", adminHandler.AdminSystem)
-	appRouter.HandleFunc("/admin/settings", adminHandler.AdminSettings)
+	}))
+	appRouter.HandleFunc("/admin/dashboard", adminMiddleware(adminHandler.AdminDashboard))
+	appRouter.HandleFunc("/admin/products", adminMiddleware(adminHandler.AdminProducts))
+	appRouter.HandleFunc("/admin/products/edit/", adminMiddleware(adminHandler.AdminProductEdit))
+	appRouter.HandleFunc("/admin/vendors", adminMiddleware(adminHandler.AdminVendors))
+	appRouter.HandleFunc("/admin/vendors/approve", adminMiddleware(adminHandler.AdminVendorApprove))
+	appRouter.HandleFunc("/admin/users", adminMiddleware(adminHandler.AdminUsers))
+	appRouter.HandleFunc("/admin/users/", adminMiddleware(adminHandler.AdminUserDetail))
+	appRouter.HandleFunc("/admin/reports", adminMiddleware(adminHandler.AdminReports))
+	appRouter.HandleFunc("/admin/seo", adminMiddleware(adminHandler.AdminSEO))
+	appRouter.HandleFunc("/admin/notifications", adminMiddleware(adminHandler.AdminNotifications))
+	appRouter.HandleFunc("/admin/system", adminMiddleware(adminHandler.AdminSystem))
+	appRouter.HandleFunc("/admin/settings", adminMiddleware(adminHandler.AdminSettings))
 
 	// Test rotaları (sadece development ortamında)
 	if cfg.Environment == "development" {

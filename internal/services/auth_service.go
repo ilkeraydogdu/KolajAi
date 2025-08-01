@@ -64,12 +64,19 @@ func (s *AuthService) RegisterUser(userData map[string]string) (int64, error) {
 		})
 	}
 
-	// Generate a random password
-	randomPassword := s.GenerateRandomPassword(10)
-	log.Printf("Generated random password for user %s: %s", email, randomPassword)
+	// Get password from userData or generate random
+	password := userData["password"]
+	sendWelcomeEmail := false
+	
+	if password == "" {
+		// Generate a random password if not provided
+		password = s.GenerateRandomPassword(10)
+		sendWelcomeEmail = true
+		log.Printf("Generated random password for user %s", email)
+	}
 
 	// Hash the password
-	hashedPassword, err := s.CreateUserPassword(randomPassword)
+	hashedPassword, err := s.CreateUserPassword(password)
 	if err != nil {
 		log.Printf("Error creating password hash: %v", err)
 		return 0, core.NewAuthError("Şifre oluşturma hatası", err)
@@ -87,11 +94,13 @@ func (s *AuthService) RegisterUser(userData map[string]string) (int64, error) {
 		return 0, core.NewDatabaseError("Kullanıcı kaydı yapılırken hata oluştu", err)
 	}
 
-	// Send welcome email with password
-	err = s.SendWelcomeEmail(email, userData["name"], randomPassword)
-	if err != nil {
-		log.Printf("Failed to send welcome email: %v", err)
-		// Don't fail the registration, just log the error
+	// Send welcome email with password only if we generated it
+	if sendWelcomeEmail {
+		err = s.SendWelcomeEmail(email, userData["name"], password)
+		if err != nil {
+			log.Printf("Failed to send welcome email: %v", err)
+			// Don't fail the registration, just log the error
+		}
 	}
 
 	return userID, nil

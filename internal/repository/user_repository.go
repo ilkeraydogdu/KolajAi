@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -229,7 +230,13 @@ func (r *UserRepository) ResetUserPassword(email, newPassword string) error {
 	// Doğrudan SQL sorgusu ile şifre güncelleme ve hesabı aktifleştirme
 	log.Printf("INFO - ResetUserPassword: Şifre ve hesap durumu güncelleniyor. Kullanıcı ID: %d", user.ID)
 	updateQuery := "UPDATE users SET password = ?, is_active = true, updated_at = ? WHERE id = ?"
-	stmt, err := database.DB.Prepare(updateQuery)
+	
+	db := r.db.GetDB()
+	if db == nil {
+		return fmt.Errorf("database connection is nil")
+	}
+	
+	stmt, err := db.Prepare(updateQuery)
 	if err != nil {
 		log.Printf("ERROR - ResetUserPassword: SQL hazırlama hatası: %v", err)
 		return core.NewDatabaseError("error preparing SQL statement", err)
@@ -401,7 +408,13 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 	query := `SELECT id, name, email, password, phone, is_active, is_admin, created_at, updated_at 
 			  FROM users WHERE email = ?`
 
-	err := database.DB.QueryRow(query, email).Scan(
+	// MySQLRepository üzerinden DB'ye erişmek için GetDB metodunu kullan
+	db := r.db.GetDB()
+	if db == nil {
+		return nil, fmt.Errorf("database connection is nil")
+	}
+	
+	err := db.QueryRow(query, email).Scan(
 		&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone,
 		&user.IsActive, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt,
 	)

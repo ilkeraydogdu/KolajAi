@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"kolajAi/internal/middleware"
+	"kolajAi/internal/session"
 )
 
 // Router represents the application router
@@ -141,14 +142,36 @@ func (r *Router) applyRouteMiddleware(handler http.HandlerFunc, options RouteOpt
 func (r *Router) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		// Get session from context
-		session := req.Context().Value("session")
-		if session == nil {
+		sessionValue := req.Context().Value("session")
+		if sessionValue == nil {
 			r.redirectToLogin(w, req)
 			return
 		}
-
+		
+		// Type assert to SessionData
+		sessionData, ok := sessionValue.(*session.SessionData)
+		if !ok || sessionData == nil {
+			r.redirectToLogin(w, req)
+			return
+		}
+		
 		// Check if session is valid and active
-		// This would use the session manager to validate
+		if !sessionData.IsActive {
+			r.redirectToLogin(w, req)
+			return
+		}
+		
+		// Check if session is expired
+		if time.Now().After(sessionData.ExpiresAt) {
+			r.redirectToLogin(w, req)
+			return
+		}
+		
+		// Check if user ID is valid
+		if sessionData.UserID <= 0 {
+			r.redirectToLogin(w, req)
+			return
+		}
 		
 		next.ServeHTTP(w, req)
 	})
@@ -158,14 +181,39 @@ func (r *Router) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 func (r *Router) adminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		// Get session from context
-		session := req.Context().Value("session")
-		if session == nil {
+		sessionValue := req.Context().Value("session")
+		if sessionValue == nil {
 			r.redirectToLogin(w, req)
 			return
 		}
-
+		
+		// Type assert to SessionData
+		sessionData, ok := sessionValue.(*session.SessionData)
+		if !ok || sessionData == nil {
+			r.redirectToLogin(w, req)
+			return
+		}
+		
+		// Check if session is valid
+		if !sessionData.IsActive || time.Now().After(sessionData.ExpiresAt) {
+			r.redirectToLogin(w, req)
+			return
+		}
+		
 		// Check admin privileges
-		// This would use the session manager to check user role
+		hasAdmin := false
+		for _, perm := range sessionData.Permissions {
+			if perm == "admin" {
+				hasAdmin = true
+				break
+			}
+		}
+		
+		if !hasAdmin {
+			// Not an admin, show forbidden
+			http.Error(w, "Bu sayfaya erişim yetkiniz yok", http.StatusForbidden)
+			return
+		}
 		
 		next.ServeHTTP(w, req)
 	})
@@ -175,14 +223,39 @@ func (r *Router) adminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 func (r *Router) vendorMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		// Get session from context
-		session := req.Context().Value("session")
-		if session == nil {
+		sessionValue := req.Context().Value("session")
+		if sessionValue == nil {
 			r.redirectToLogin(w, req)
 			return
 		}
-
+		
+		// Type assert to SessionData
+		sessionData, ok := sessionValue.(*session.SessionData)
+		if !ok || sessionData == nil {
+			r.redirectToLogin(w, req)
+			return
+		}
+		
+		// Check if session is valid
+		if !sessionData.IsActive || time.Now().After(sessionData.ExpiresAt) {
+			r.redirectToLogin(w, req)
+			return
+		}
+		
 		// Check vendor privileges
-		// This would use the session manager to check user role
+		hasVendor := false
+		for _, perm := range sessionData.Permissions {
+			if perm == "vendor" || perm == "admin" {
+				hasVendor = true
+				break
+			}
+		}
+		
+		if !hasVendor {
+			// Not a vendor, show forbidden
+			http.Error(w, "Bu sayfaya erişim yetkiniz yok", http.StatusForbidden)
+			return
+		}
 		
 		next.ServeHTTP(w, req)
 	})

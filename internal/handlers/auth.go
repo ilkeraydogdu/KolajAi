@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	
+	"kolajAi/internal/services"
 )
 
 var (
@@ -22,18 +24,26 @@ func init() {
 	}
 }
 
+// AuthHandler handles authentication related requests
+type AuthHandler struct {
+	*Handler
+	authService *services.AuthService
+}
+
+// NewAuthHandler creates a new auth handler
+func NewAuthHandler(h *Handler, authService *services.AuthService) *AuthHandler {
+	return &AuthHandler{
+		Handler:     h,
+		authService: authService,
+	}
+}
+
 // Login handles the login request
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+func (ah *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	AuthLogger.Printf("Login handler çağrıldı: Method=%s, URL=%s", r.Method, r.URL.Path)
 
-	// Tüm çerezleri logla
-	AuthLogger.Printf("Login - Request'teki tüm çerezler:")
-	for _, cookie := range r.Cookies() {
-		AuthLogger.Printf("- Çerez: %s=%s, Path=%s, MaxAge=%d", cookie.Name, cookie.Value, cookie.Path, cookie.MaxAge)
-	}
-
 	// Eğer kullanıcı zaten oturum açmışsa, anasayfaya yönlendir
-	if h.IsAuthenticated(r) {
+	if ah.IsAuthenticated(r) {
 		AuthLogger.Printf("Login - Kullanıcı zaten oturum açmış, dashboard'a yönlendiriliyor")
 		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 		return
@@ -46,7 +56,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseForm()
 		if err != nil {
 			AuthLogger.Printf("Login - Form parse hatası: %v", err)
-			h.RedirectWithFlash(w, r, "/login", "Form işlenirken hata oluştu")
+			ah.RedirectWithFlash(w, r, "/login", "Form işlenirken hata oluştu")
 			return
 		}
 
@@ -55,38 +65,31 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 		AuthLogger.Printf("Login - Giriş denemesi: Email=%s", email)
 
-		// Basitleştirilmiş kimlik doğrulama (gerçek uygulamada veritabanı sorgusu ile doğrulama yapılmalı)
-		// Not: Bu örnek sadece demo amaçlıdır, gerçek uygulamalarda güvenli kimlik doğrulama kullanılmalıdır
-		if email == "admin@example.com" && password == "password" {
-			AuthLogger.Printf("Login - Başarılı giriş: %s", email)
-
-			// Kullanıcı bilgilerini oluştur
-			user := struct {
-				ID    int64
-				Email string
-				Name  string
-			}{
-				ID:    1,
-				Email: email,
-				Name:  "Admin User",
-			}
-
-			// Oturum oluştur
-			err := h.SessionManager.SetSession(w, r, "user", user)
-			if err != nil {
-				AuthLogger.Printf("Login - Oturum oluşturma hatası: %v", err)
-				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
-				return
-			}
-
-			AuthLogger.Printf("Login - Oturum başarıyla oluşturuldu, dashboard'a yönlendiriliyor")
-			http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		// AuthService kullanarak doğrulama yap
+		user, err := ah.authService.LoginUser(email, password)
+		if err != nil {
+			AuthLogger.Printf("Login - Giriş hatası: %v", err)
+			ah.RedirectWithFlash(w, r, "/login", "Hatalı e-posta veya şifre")
 			return
 		}
 
-		// Hatalı giriş
-		AuthLogger.Printf("Login - Hatalı giriş denemesi: %s", email)
-		h.RedirectWithFlash(w, r, "/login", "Hatalı e-posta veya şifre")
+		// Kullanıcı permissions'larını al
+		permissions := user.GetPermissions()
+		
+		AuthLogger.Printf("Login - Başarılı giriş: UserID=%d, Email=%s, Role=%s", user.ID, user.Email, user.Role)
+
+		// Gelişmiş session manager ile oturum oluştur
+		sessionData, err := ah.SessionManager.CreateSession(w, r, user.ID, permissions)
+		if err != nil {
+			AuthLogger.Printf("Login - Oturum oluşturma hatası: %v", err)
+			ah.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
+			return
+		}
+
+		AuthLogger.Printf("Login - Oturum başarıyla oluşturuldu: SessionID=%s, UserID=%d", sessionData.ID, sessionData.UserID)
+		
+		// Dashboard'a yönlendir
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 		return
 	}
 
@@ -100,32 +103,28 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Şablonu render et
-	h.RenderTemplate(w, r, "auth/login", data)
+	ah.RenderTemplate(w, r, "auth/login", data)
 }
 
 // Logout logs out the user
-func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+func (ah *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	AuthLogger.Printf("Logout handler çağrıldı: Method=%s, URL=%s", r.Method, r.URL.Path)
 
-	// Tüm çerezleri temizle
-	AuthLogger.Printf("Logout - Tüm çerezler temizleniyor")
-	h.SessionManager.CleanupAllCookies(w, r)
-
-	// Oturumu temizle
-	err := h.SessionManager.ClearSession(w, r)
+	// Session'ı sonlandır
+	err := ah.SessionManager.DestroySession(w, r)
 	if err != nil {
-		AuthLogger.Printf("Logout - Oturum temizleme hatası: %v", err)
+		AuthLogger.Printf("Logout - Session sonlandırma hatası: %v", err)
 	} else {
-		AuthLogger.Printf("Logout - Oturum başarıyla temizlendi")
+		AuthLogger.Printf("Logout - Session başarıyla sonlandırıldı")
 	}
 
 	// Kullanıcıyı login sayfasına yönlendir
 	AuthLogger.Printf("Logout - Kullanıcı login sayfasına yönlendiriliyor")
-	h.RedirectWithFlash(w, r, "/login", "Başarıyla çıkış yapıldı")
+	ah.RedirectWithFlash(w, r, "/login", "Başarıyla çıkış yapıldı")
 }
 
 // ForgotPassword handles the forgot password request
-func (h *Handler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+func (ah *AuthHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	AuthLogger.Printf("ForgotPassword handler çağrıldı: Method=%s", r.Method)
 
 	if r.Method == http.MethodPost {
@@ -135,15 +134,16 @@ func (h *Handler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		AuthLogger.Printf("ForgotPassword - İstek email: %s", email)
 
-		// Kullanıcı var mı kontrol et (gerçek uygulamada veritabanı sorgusu ile yapılmalı)
-		if email != "" {
-			AuthLogger.Printf("ForgotPassword - Sıfırlama bağlantısı gönderildi (simüle): %s", email)
-			h.RedirectWithFlash(w, r, "/login", "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi")
+		// AuthService kullanarak şifre sıfırlama işlemini başlat
+		err := ah.authService.ForgotPassword(email)
+		if err != nil {
+			AuthLogger.Printf("ForgotPassword - Hata: %v", err)
+			ah.RedirectWithFlash(w, r, "/forgot-password", "İşlem sırasında bir hata oluştu")
 			return
 		}
 
-		AuthLogger.Printf("ForgotPassword - Geçersiz e-posta")
-		h.RedirectWithFlash(w, r, "/forgot-password", "Geçersiz e-posta adresi")
+		AuthLogger.Printf("ForgotPassword - Sıfırlama e-postası gönderildi: %s", email)
+		ah.RedirectWithFlash(w, r, "/login", "Şifre sıfırlama bağlantısı e-posta adresinize gönderildi")
 		return
 	}
 
@@ -155,11 +155,11 @@ func (h *Handler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		"PageSubHeading": "Şifrenizi sıfırlamak için e-posta adresinizi girin!",
 	}
 
-	h.RenderTemplate(w, r, "auth/forgot-password", data)
+	ah.RenderTemplate(w, r, "auth/forgot-password", data)
 }
 
 // ResetPassword handles the password reset process
-func (h *Handler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+func (ah *AuthHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	AuthLogger.Printf("ResetPassword handler çağrıldı: Method=%s", r.Method)
 
 	if r.Method == http.MethodPost {
@@ -175,13 +175,20 @@ func (h *Handler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		// Şifrelerin eşleştiğini kontrol et
 		if password != confirmPassword {
 			AuthLogger.Printf("ResetPassword - Şifreler eşleşmiyor")
-			h.RedirectWithFlash(w, r, fmt.Sprintf("/reset-password?email=%s", email), "Şifreler eşleşmiyor")
+			ah.RedirectWithFlash(w, r, fmt.Sprintf("/reset-password?email=%s", email), "Şifreler eşleşmiyor")
 			return
 		}
 
-		// Şifre değiştirme işlemi (gerçek uygulamada veritabanı güncellemesi yapılmalı)
-		AuthLogger.Printf("ResetPassword - Şifre başarıyla değiştirildi (simüle): %s", email)
-		h.RedirectWithFlash(w, r, "/login", "Şifreniz başarıyla değiştirildi. Şimdi giriş yapabilirsiniz.")
+		// AuthService kullanarak şifre değiştir
+		err := ah.authService.ResetPassword(email, password)
+		if err != nil {
+			AuthLogger.Printf("ResetPassword - Hata: %v", err)
+			ah.RedirectWithFlash(w, r, fmt.Sprintf("/reset-password?email=%s", email), "Şifre değiştirme işlemi başarısız")
+			return
+		}
+
+		AuthLogger.Printf("ResetPassword - Şifre başarıyla değiştirildi: %s", email)
+		ah.RedirectWithFlash(w, r, "/login", "Şifreniz başarıyla değiştirildi. Şimdi giriş yapabilirsiniz.")
 		return
 	}
 
@@ -194,12 +201,9 @@ func (h *Handler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	// Email parametresi kontrolü
 	if email == "" {
 		AuthLogger.Printf("ResetPassword - Email parametresi eksik, giriş sayfasına yönlendiriliyor")
-		h.RedirectWithFlash(w, r, "/login", "Geçersiz şifre sıfırlama bağlantısı")
+		ah.RedirectWithFlash(w, r, "/login", "Geçersiz şifre sıfırlama bağlantısı")
 		return
 	}
-
-	// Token kontrolü (gerçek uygulamada veritabanı sorgusu ile doğrulanmalı)
-	// Bu örnekte token kontrolünü atlıyoruz
 
 	data := map[string]interface{}{
 		"Title":          "Şifre Sıfırla - KolajAI",
@@ -209,11 +213,11 @@ func (h *Handler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	AuthLogger.Printf("ResetPassword - Şifre sıfırlama sayfası gösteriliyor: %s", email)
-	h.RenderTemplate(w, r, "auth/reset-password", data)
+	ah.RenderTemplate(w, r, "auth/reset-password", data)
 }
 
 // Register handles the user registration process
-func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
+func (ah *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	AuthLogger.Printf("Register handler çağrıldı: Method=%s", r.Method)
 
 	if r.Method == http.MethodPost {
@@ -223,20 +227,34 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		name := r.FormValue("name")
 		email := r.FormValue("email")
 		password := r.FormValue("password")
+		phone := r.FormValue("phone")
 
 		AuthLogger.Printf("Register - Kayıt denemesi: Name=%s, Email=%s", name, email)
 
 		// Basit doğrulama
 		if name == "" || email == "" || password == "" {
 			AuthLogger.Printf("Register - Eksik form verileri")
-			h.RedirectWithFlash(w, r, "/register", "Lütfen tüm alanları doldurun")
+			ah.RedirectWithFlash(w, r, "/register", "Lütfen tüm alanları doldurun")
 			return
 		}
 
-		// Kullanıcı kaydı (gerçek uygulamada veritabanına kayıt yapılmalı)
-		// Bu örnek sadece demo amaçlıdır
-		AuthLogger.Printf("Register - Kullanıcı başarıyla kaydedildi (simüle): %s", email)
-		h.RedirectWithFlash(w, r, "/login", "Kaydınız başarıyla tamamlandı. Şimdi giriş yapabilirsiniz.")
+		// AuthService kullanarak kullanıcı kaydı yap
+		userData := map[string]string{
+			"name":     name,
+			"email":    email,
+			"phone":    phone,
+			"password": password, // Kullanıcının verdiği şifreyi ekle
+		}
+		
+		userID, err := ah.authService.RegisterUser(userData)
+		if err != nil {
+			AuthLogger.Printf("Register - Kayıt hatası: %v", err)
+			ah.RedirectWithFlash(w, r, "/register", "Kayıt işlemi başarısız: " + err.Error())
+			return
+		}
+
+		AuthLogger.Printf("Register - Kullanıcı başarıyla kaydedildi: UserID=%d, Email=%s", userID, email)
+		ah.RedirectWithFlash(w, r, "/login", "Kaydınız başarıyla tamamlandı. Şimdi giriş yapabilirsiniz.")
 		return
 	}
 
@@ -249,5 +267,5 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		"PageSubHeading": "Yeni bir hesap oluşturmak için lütfen bilgilerinizi girin!",
 	}
 
-	h.RenderTemplate(w, r, "auth/register", data)
+	ah.RenderTemplate(w, r, "auth/register", data)
 }

@@ -21,12 +21,13 @@ database:
   conn_max_lifetime: 5
 
 security:
-  # These should be loaded from environment variables in production
-  encryption_key: "${ENCRYPTION_KEY:-supersecretkey32byteslongforencryption}"
-  jwt_secret: "${JWT_SECRET:-jwtsecretkey}"
-  csrf_secret: "${CSRF_SECRET:-csrfsecretkey}"
-  session_secret: "${SESSION_SECRET:-sessionsecretkey}"
-  two_factor_enabled: false
+  # UYARI: Bu değerler sadece development içindir!
+  # Production'da mutlaka environment variable'lardan yüklenmelidir!
+  encryption_key: "${ENCRYPTION_KEY:-developmentsecretkey32byteslong!}"
+  jwt_secret: "${JWT_SECRET:-dev-jwt-secret-key}"
+  csrf_secret: "${CSRF_SECRET:-dev-csrf-secret-key}"
+  session_secret: "${SESSION_SECRET:-dev-session-secret-key}"
+  two_factor_enabled: false  # Production'da true olmalı
   rate_limit_enabled: true
   cors_enabled: true
   allowed_origins:

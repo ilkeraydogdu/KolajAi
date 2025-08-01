@@ -49,6 +49,11 @@ func NewMySQLRepository(db *sql.DB) *MySQLRepository {
 	return &MySQLRepository{db: db}
 }
 
+// GetDB returns the underlying database connection
+func (r *MySQLRepository) GetDB() *sql.DB {
+	return r.db
+}
+
 // SetConnectionPool sets the connection pool parameters
 func (r *MySQLRepository) SetConnectionPool(maxOpen, maxIdle int, maxLifetime time.Duration) {
 	r.db.SetMaxOpenConns(maxOpen)
