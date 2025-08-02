@@ -1,0 +1,315 @@
+environment: production
+
+server:
+  port: 8080
+  host: "0.0.0.0"
+  domain: "${DOMAIN:-kolajAi.com}"
+  read_timeout: 30
+  write_timeout: 30
+  idle_timeout: 120
+  max_header_bytes: 1048576
+  enable_https: true
+  cert_file: "${SSL_CERT_FILE:-/etc/ssl/certs/kolajAi.crt}"
+  key_file: "${SSL_KEY_FILE:-/etc/ssl/private/kolajAi.key}"
+
+database:
+  driver: "${DB_DRIVER:-mysql}"
+  host: "${DB_HOST:-localhost}"
+  port: "${DB_PORT:-3306}"
+  name: "${DB_NAME:-kolajAi_prod}"
+  user: "${DB_USER:-kolajAi}"
+  password: "${DB_PASSWORD}"
+  max_open_conns: 100
+  max_idle_conns: 50
+  conn_max_lifetime: 3600
+  ssl_mode: "require"
+  charset: "utf8mb4"
+  timezone: "UTC"
+
+security:
+  encryption_key: "${ENCRYPTION_KEY}"
+  jwt_secret: "${JWT_SECRET}"
+  csrf_secret: "${CSRF_SECRET}"
+  session_secret: "${SESSION_SECRET}"
+  two_factor_enabled: true
+  rate_limit_enabled: true
+  cors_enabled: true
+  allowed_origins:
+    - "https://${DOMAIN:-kolajAi.com}"
+    - "https://www.${DOMAIN:-kolajAi.com}"
+    - "https://admin.${DOMAIN:-kolajAi.com}"
+  
+  # Enhanced security headers
+  security_headers:
+    strict_transport_security: "max-age=31536000; includeSubDomains; preload"
+    content_security_policy: "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.kolajAi.com"
+    x_frame_options: "DENY"
+    x_content_type_options: "nosniff"
+    x_xss_protection: "1; mode=block"
+    referrer_policy: "strict-origin-when-cross-origin"
+    permissions_policy: "geolocation=(), microphone=(), camera=()"
+  
+  # Vault configuration for production
+  vault:
+    enabled: "${VAULT_ENABLED:-true}"
+    address: "${VAULT_ADDR:-https://vault.kolajAi.com:8200}"
+    token: "${VAULT_TOKEN}"
+    path: "${VAULT_PATH:-secret/kolajAi/production}"
+    ca_cert: "${VAULT_CA_CERT}"
+    client_cert: "${VAULT_CLIENT_CERT}"
+    client_key: "${VAULT_CLIENT_KEY}"
+  
+  # Enhanced credential rotation
+  credential_rotation:
+    enabled: true
+    check_interval: "1h"
+    default_rotation_period: "168h" # 7 days
+    notify_before: "24h" # 1 day
+    auto_rotate: true
+    backup_old_credentials: true
+
+  # Rate limiting rules
+  rate_limit_rules:
+    - path: "/api/auth/login"
+      method: "POST"
+      requests_per_minute: 5
+      requests_per_hour: 20
+      burst_size: 10
+    - path: "/api/"
+      method: "*"
+      requests_per_minute: 100
+      requests_per_hour: 1000
+      burst_size: 200
+    - path: "/admin/"
+      method: "*"
+      requests_per_minute: 50
+      requests_per_hour: 500
+      burst_size: 100
+
+cache:
+  driver: "redis"
+  host: "${REDIS_HOST:-localhost}"
+  port: "${REDIS_PORT:-6379}"
+  password: "${REDIS_PASSWORD}"
+  db: "${REDIS_DB:-0}"
+  default_ttl: "1h"
+  max_memory_usage: 2147483648 # 2GB
+  cluster_enabled: "${REDIS_CLUSTER_ENABLED:-false}"
+  cluster_nodes: "${REDIS_CLUSTER_NODES}"
+  sentinel_enabled: "${REDIS_SENTINEL_ENABLED:-false}"
+  sentinel_master: "${REDIS_SENTINEL_MASTER}"
+  sentinel_nodes: "${REDIS_SENTINEL_NODES}"
+
+email:
+  smtp_host: "${SMTP_HOST:-smtp.gmail.com}"
+  smtp_port: "${SMTP_PORT:-587}"
+  smtp_user: "${SMTP_USER}"
+  smtp_password: "${SMTP_PASSWORD}"
+  from_email: "${FROM_EMAIL:-noreply@kolajAi.com}"
+  from_name: "${FROM_NAME:-KolajAI}"
+  use_ssl: "${SMTP_USE_SSL:-false}"
+  use_tls: "${SMTP_USE_TLS:-true}"
+  max_retries: 3
+  retry_delay: "5m"
+  template_cache_enabled: true
+
+seo:
+  site_name: "KolajAI Enterprise Marketplace"
+  site_description: "Advanced AI-powered e-commerce platform for enterprise businesses"
+  site_keywords:
+    - "e-commerce"
+    - "AI"
+    - "marketplace"
+    - "enterprise"
+    - "online shopping"
+    - "artificial intelligence"
+  default_language: "tr"
+  languages:
+    - "tr"
+    - "en"
+    - "ar"
+  google_analytics: "${GOOGLE_ANALYTICS_ID}"
+  google_tag_manager: "${GOOGLE_TAG_MANAGER_ID}"
+  google_search_console: "${GOOGLE_SEARCH_CONSOLE_ID}"
+  facebook_pixel: "${FACEBOOK_PIXEL_ID}"
+  sitemap_enabled: true
+  robots_txt_enabled: true
+
+logging:
+  level: "info"
+  format: "json"
+  output: "file"
+  file_path: "/var/log/kolajAi/app.log"
+  max_size: 500 # MB
+  max_backups: 10
+  max_age: 30 # days
+  compress: true
+  enable_caller: false
+  enable_stacktrace: false
+  
+  # Structured logging fields
+  fields:
+    service: "kolajAi"
+    version: "2.0.0"
+    environment: "production"
+
+# Enhanced monitoring configuration
+monitoring:
+  enabled: true
+  metrics_enabled: true
+  health_check_enabled: true
+  profiling_enabled: false # Disable in production
+  
+  # Prometheus metrics
+  prometheus:
+    enabled: "${PROMETHEUS_ENABLED:-true}"
+    port: "${PROMETHEUS_PORT:-9090}"
+    path: "/metrics"
+    
+  # Health check endpoints
+  health_checks:
+    - name: "database"
+      endpoint: "/health/db"
+      interval: "30s"
+      timeout: "5s"
+    - name: "cache"
+      endpoint: "/health/cache"
+      interval: "30s"
+      timeout: "5s"
+    - name: "external_apis"
+      endpoint: "/health/apis"
+      interval: "60s"
+      timeout: "10s"
+
+# AI service configuration
+ai:
+  openai_key: "${OPENAI_API_KEY}"
+  anthropic_key: "${ANTHROPIC_API_KEY}"
+  stability_ai_key: "${STABILITY_AI_API_KEY}"
+  replicate_key: "${REPLICATE_API_KEY}"
+  huggingface_key: "${HUGGINGFACE_API_KEY}"
+  
+  # Production limits
+  default_credits: 1000
+  max_requests_per_minute: 60
+  max_requests_per_hour: 1000
+  
+  credit_costs:
+    image_generation: 50
+    content_generation: 15
+    template_creation: 75
+    chat_message: 8
+    image_analysis: 20
+    
+  # Circuit breaker settings
+  circuit_breaker:
+    failure_threshold: 5
+    recovery_timeout: "30s"
+    max_requests: 100
+
+# Marketplace integrations - production settings
+marketplace:
+  trendyol:
+    enabled: true
+    api_key: "${TRENDYOL_API_KEY}"
+    api_secret: "${TRENDYOL_API_SECRET}"
+    supplier_id: "${TRENDYOL_SUPPLIER_ID}"
+    environment: "production"
+    rate_limit: 100 # requests per minute
+    timeout: "30s"
+    retry_attempts: 3
+  
+  hepsiburada:
+    enabled: true
+    merchant_id: "${HEPSIBURADA_MERCHANT_ID}"
+    api_key: "${HEPSIBURADA_API_KEY}"
+    api_secret: "${HEPSIBURADA_API_SECRET}"
+    environment: "production"
+    rate_limit: 100
+    timeout: "30s"
+    retry_attempts: 3
+  
+  n11:
+    enabled: true
+    api_key: "${N11_API_KEY}"
+    api_secret: "${N11_API_SECRET}"
+    environment: "production"
+    rate_limit: 100
+    timeout: "30s"
+    retry_attempts: 3
+  
+  amazon:
+    enabled: true
+    merchant_id: "${AMAZON_MERCHANT_ID}"
+    access_key: "${AMAZON_ACCESS_KEY}"
+    secret_key: "${AMAZON_SECRET_KEY}"
+    marketplace_id: "${AMAZON_MARKETPLACE_ID}"
+    environment: "production"
+    rate_limit: 100
+    timeout: "30s"
+    retry_attempts: 3
+  
+  ciceksepeti:
+    enabled: true
+    api_key: "${CICEKSEPETI_API_KEY}"
+    branch_code: "${CICEKSEPETI_BRANCH_CODE}"
+    environment: "production"
+    rate_limit: 100
+    timeout: "30s"
+    retry_attempts: 3
+
+# Payment integrations - production settings
+payment:
+  iyzico:
+    enabled: true
+    api_key: "${IYZICO_API_KEY}"
+    api_secret: "${IYZICO_API_SECRET}"
+    environment: "production"
+    webhook_secret: "${IYZICO_WEBHOOK_SECRET}"
+    timeout: "30s"
+    retry_attempts: 3
+
+# Performance optimization
+performance:
+  enable_gzip: true
+  gzip_level: 6
+  enable_etag: true
+  enable_cors: true
+  max_request_size: "10MB"
+  read_buffer_size: 4096
+  write_buffer_size: 4096
+  
+  # Connection limits
+  max_idle_conns_per_host: 100
+  max_conns_per_host: 200
+  idle_conn_timeout: "90s"
+  
+  # Timeouts
+  dial_timeout: "30s"
+  keep_alive_timeout: "30s"
+  tls_handshake_timeout: "10s"
+  expect_continue_timeout: "1s"
+
+# Backup and disaster recovery
+backup:
+  enabled: true
+  schedule: "0 2 * * *" # Daily at 2 AM
+  retention_days: 30
+  storage_type: "s3"
+  s3_bucket: "${BACKUP_S3_BUCKET}"
+  s3_region: "${BACKUP_S3_REGION}"
+  s3_access_key: "${BACKUP_S3_ACCESS_KEY}"
+  s3_secret_key: "${BACKUP_S3_SECRET_KEY}"
+  encryption_enabled: true
+  compression_enabled: true
+
+# Feature flags
+features:
+  enable_ai_features: true
+  enable_marketplace_sync: true
+  enable_advanced_analytics: true
+  enable_real_time_notifications: true
+  enable_audit_logging: true
+  enable_performance_monitoring: true
+  enable_security_scanning: true
+  enable_auto_scaling: true
