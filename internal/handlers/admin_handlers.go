@@ -538,7 +538,7 @@ func (h *AdminHandler) getSecurityAlerts() []map[string]interface{} {
 	}
 }
 
-func (h *AdminHandler) getUserCount(filters map[string]interface{}) (int, error) {
+func (h *AdminHandler) getUserCount(_ map[string]interface{}) (int, error) {
 	// Implementation would count users with filters
 	return 0, nil
 }
@@ -580,28 +580,28 @@ func (h *AdminHandler) getVendors() []models.Vendor {
 	return []models.Vendor{}
 }
 
-func (h *AdminHandler) generateSalesReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateSalesReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"total_sales": 0,
 		"period": "monthly",
 	}, nil
 }
 
-func (h *AdminHandler) generateProductReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateProductReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"total_products": 0,
 		"categories": []string{},
 	}, nil
 }
 
-func (h *AdminHandler) generateUserReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateUserReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"total_users": 0,
 		"active_users": 0,
 	}, nil
 }
 
-func (h *AdminHandler) generateInventoryReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateInventoryReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"low_stock": 0,
 		"out_of_stock": 0,

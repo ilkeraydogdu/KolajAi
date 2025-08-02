@@ -175,7 +175,7 @@ func TestIyzicoProvider_ProcessPayment(t *testing.T) {
 		t.Errorf("TransactionID = %v, want %v", response.TransactionID, "12345678")
 	}
 	
-	if response.Status != string(PaymentStatusSucceeded) {
+	if response.Status != PaymentStatusSucceeded {
 		t.Errorf("Status = %v, want %v", response.Status, PaymentStatusSucceeded)
 	}
 }
@@ -358,7 +358,7 @@ func TestIyzicoProvider_GetPaymentStatus(t *testing.T) {
 		t.Errorf("TransactionID = %v, want %v", status.ID, "12345678")
 	}
 	
-	if status.Status != string(PaymentStatusSucceeded) {
+	if status.Status != PaymentStatusSucceeded {
 		t.Errorf("Status = %v, want %v", status.Status, PaymentStatusSucceeded)
 	}
 	
