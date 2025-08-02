@@ -18,8 +18,10 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/boombuler/barcode v1.0.1-0.20190219062509-6c824513bacc // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -33,6 +35,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/pquerna/otp v1.5.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
