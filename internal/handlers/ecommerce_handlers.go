@@ -145,7 +145,7 @@ func (h *EcommerceHandler) ProductDetail(w http.ResponseWriter, r *http.Request)
 	}
 
 	// Benzer ürünler
-	similarProducts, err := h.productService.GetProductsByCategory(product.CategoryID, 4, 0)
+	similarProducts, err := h.productService.GetProductsByCategory(int(product.CategoryID), 4, 0)
 	if err == nil {
 		data["SimilarProducts"] = similarProducts
 	}

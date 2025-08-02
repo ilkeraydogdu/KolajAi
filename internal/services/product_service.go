@@ -176,7 +176,7 @@ func (s *ProductService) CreateCategory(category *models.Category) error {
 	if err != nil {
 		return fmt.Errorf("failed to create category: %w", err)
 	}
-	category.ID = int(id)
+	category.ID = uint(id)
 	return nil
 }
 

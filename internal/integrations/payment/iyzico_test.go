@@ -248,12 +248,12 @@ func TestIyzicoProvider_Create3DSecurePayment(t *testing.T) {
 		t.Fatal("Response is nil")
 	}
 	
-	if response.Requires3DSecure != true {
-		t.Error("Requires3DSecure should be true")
+		if response.Status != "requires_3d_secure" {
+		t.Error("Status should be requires_3d_secure")
 	}
-	
-	if response.RedirectHTML == "" {
-		t.Error("RedirectHTML should not be empty")
+
+	if response.HTMLContent == "" {
+		t.Error("HTMLContent should not be empty")
 	}
 }
 

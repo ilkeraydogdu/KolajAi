@@ -330,7 +330,7 @@ func (s *AIVisionService) predictCategories(img image.Image, objects []DetectedO
 		confidence := s.calculateCategoryConfidence(img, objects, category)
 		if confidence > 0.1 {
 			predictions = append(predictions, CategoryPrediction{
-				CategoryID:   category.ID,
+								CategoryID: int(category.ID),
 				CategoryName: category.Name,
 				Confidence:   confidence,
 			})
@@ -1638,14 +1638,14 @@ func (s *AIVisionService) SuggestProductCategories(imageID string, userID int) (
 							// Check if not already in suggestions
 							found := false
 							for _, existing := range suggestions {
-								if existing.CategoryID == cat.ID {
+								if existing.CategoryID == int(cat.ID) {
 									found = true
 									break
 								}
 							}
 							if !found {
 								suggestions = append(suggestions, CategoryPrediction{
-									CategoryID:   cat.ID,
+												CategoryID: int(cat.ID),
 									CategoryName: cat.Name,
 									Confidence:   obj.Confidence * 0.8, // Slightly lower confidence for derived suggestions
 								})
