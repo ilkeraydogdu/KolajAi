@@ -103,6 +103,8 @@ func (m *MigrationService) RunMigrations() error {
 		{"015_create_ai_vision_tables", CreateAIVisionTables},
 		{"016_create_enterprise_ai_tables", CreateEnterpriseAITables},
 		{"017_create_ai_advanced_tables", AITablesMigration.Up},
+		{"020_create_customers_table", CreateCustomersTable},
+		{"021_create_payments_table", CreatePaymentsTable},
 	}
 
 	// Run pending migrations
