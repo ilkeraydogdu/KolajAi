@@ -455,6 +455,20 @@ func (p *IyzicoProvider) GetBalance(ctx context.Context) (*Balance, error) {
 	}
 }
 
+// ListTransactions lists transactions with filters
+func (p *IyzicoProvider) ListTransactions(ctx context.Context, filters TransactionFilters) ([]*Transaction, error) {
+	// Basic implementation - in production this would use Iyzico's reporting API
+	// For now, return empty list with a note
+	log.Printf("ListTransactions called with filters: %+v", filters)
+	
+	// In a real implementation, this would:
+	// 1. Build query parameters from filters
+	// 2. Make API call to Iyzico reporting endpoint
+	// 3. Parse response and convert to Transaction structs
+	
+	return []*Transaction{}, nil
+}
+
 // Helper methods
 
 // makeRequest makes an HTTP request to Iyzico API

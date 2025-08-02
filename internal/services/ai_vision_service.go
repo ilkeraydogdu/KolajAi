@@ -10,6 +10,7 @@ import (
 	"io"
 	"kolajAi/internal/database"
 	"kolajAi/internal/models"
+	"log"
 	"math"
 	"mime/multipart"
 	"os"
@@ -1569,7 +1570,9 @@ func (s *AIVisionService) GetUserImageStats(userID int) (map[string]interface{},
 				formats[format] = count
 			}
 		}
-		rows.Close()
+		if err := rows.Close(); err != nil {
+			log.Printf("Error closing rows: %v", err)
+		}
 		stats["format_distribution"] = formats
 	}
 

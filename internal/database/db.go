@@ -154,7 +154,7 @@ func (r *MySQLRepository) Update(table string, id interface{}, data interface{})
 	return nil
 }
 
-// Delete deletes a record
+// Delete removes a record from the database
 func (r *MySQLRepository) Delete(table string, id interface{}) error {
 	if !validateTableName(table) {
 		return &DatabaseError{
@@ -163,24 +163,87 @@ func (r *MySQLRepository) Delete(table string, id interface{}) error {
 		}
 	}
 
-	qb := NewQueryBuilder(table)
-	query, args := qb.Where("id", Equal, id).BuildDelete()
+	query := fmt.Sprintf("DELETE FROM %s WHERE id = ?", table)
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
 		return &DatabaseError{
 			Code:    "PREPARE_ERROR",
-			Message: "error preparing statement",
+			Message: "failed to prepare delete statement",
 			Err:     err,
 		}
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(args...)
+	result, err := stmt.Exec(id)
 	if err != nil {
 		return &DatabaseError{
 			Code:    "EXEC_ERROR",
-			Message: "error executing query",
+			Message: "failed to execute delete",
 			Err:     err,
+		}
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return &DatabaseError{
+			Code:    "ROWS_AFFECTED_ERROR",
+			Message: "failed to get rows affected",
+			Err:     err,
+		}
+	}
+
+	if rowsAffected == 0 {
+		return &DatabaseError{
+			Code:    "NOT_FOUND",
+			Message: "record not found",
+		}
+	}
+
+	return nil
+}
+
+// SoftDelete marks a record as deleted without actually removing it
+func (r *MySQLRepository) SoftDelete(table string, id interface{}) error {
+	if !validateTableName(table) {
+		return &DatabaseError{
+			Code:    "INVALID_TABLE",
+			Message: fmt.Sprintf("invalid table name: %s", table),
+		}
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET deleted_at = CURRENT_TIMESTAMP WHERE id = ? AND deleted_at IS NULL", table)
+	stmt, err := r.db.Prepare(query)
+	if err != nil {
+		return &DatabaseError{
+			Code:    "PREPARE_ERROR",
+			Message: "failed to prepare soft delete statement",
+			Err:     err,
+		}
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(id)
+	if err != nil {
+		return &DatabaseError{
+			Code:    "EXEC_ERROR",
+			Message: "failed to execute soft delete",
+			Err:     err,
+		}
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return &DatabaseError{
+			Code:    "ROWS_AFFECTED_ERROR",
+			Message: "failed to get rows affected",
+			Err:     err,
+		}
+	}
+
+	if rowsAffected == 0 {
+		return &DatabaseError{
+			Code:    "NOT_FOUND",
+			Message: "record not found or already deleted",
 		}
 	}
 
@@ -565,14 +628,6 @@ func (r *MySQLRepository) Transaction(fn func(*sql.Tx) error) error {
 // Close closes the database connection
 func (r *MySQLRepository) Close() error {
 	return r.db.Close()
-}
-
-// SoftDelete performs a soft delete operation
-func (r *MySQLRepository) SoftDelete(table string, id interface{}) error {
-	return r.Update(table, id, map[string]interface{}{
-		"deleted_at": time.Now(),
-		"is_deleted": true,
-	})
 }
 
 // BulkCreate performs bulk insert operations
