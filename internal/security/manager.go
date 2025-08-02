@@ -557,7 +557,7 @@ func (sm *SecurityManager) SetSecurityHeaders(w http.ResponseWriter) {
 	w.Header().Set("X-Frame-Options", "DENY")
 	w.Header().Set("X-XSS-Protection", "1; mode=block")
 	w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-	w.Header().Set("Content-Security-Policy", "default-src 'self'")
+	w.Header().Set("Content-Security-Policy", "default-src 'self'; style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self'")
 	w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 }
 

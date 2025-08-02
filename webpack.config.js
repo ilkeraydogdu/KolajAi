@@ -4,7 +4,8 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-const { WorkboxPlugin } = require('workbox-webpack-plugin');
+const WorkboxPlugin = require('workbox-webpack-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -15,14 +16,11 @@ module.exports = (env, argv) => {
       // Main application bundle
       main: './web/static/js/main.js',
       
-      // Admin panel bundle
-      admin: './web/static/js/admin/admin.js',
+      // Auth bundle
+      auth: './web/static/js/auth.js',
       
-      // AI features bundle
-      ai: './web/static/js/ai/ai-main.js',
-      
-      // Marketplace bundle
-      marketplace: './web/static/js/marketplace/marketplace.js',
+      // Notifications bundle
+      notifications: './web/static/js/notifications.js',
       
       // Vendor bundle for third-party libraries
       vendor: [
@@ -73,9 +71,9 @@ module.exports = (env, argv) => {
                 '@babel/preset-typescript'
               ],
               plugins: [
-                '@babel/plugin-proposal-class-properties',
-                '@babel/plugin-proposal-optional-chaining',
-                '@babel/plugin-proposal-nullish-coalescing-operator'
+                '@babel/plugin-transform-class-properties',
+                '@babel/plugin-transform-optional-chaining',
+                '@babel/plugin-transform-nullish-coalescing-operator'
               ]
             }
           }
@@ -152,6 +150,13 @@ module.exports = (env, argv) => {
 
       // Bundle analyzer (only in analyze mode)
       ...(process.env.ANALYZE ? [new BundleAnalyzerPlugin()] : []),
+
+      // Manifest plugin to generate asset mapping
+      new WebpackManifestPlugin({
+        fileName: 'manifest.json',
+        publicPath: '/static/',
+        writeToFileEmit: true
+      }),
 
       // Service Worker for PWA (production only)
       ...(isProduction ? [

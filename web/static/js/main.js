@@ -1,37 +1,25 @@
 // Main application entry point
+// Import styles
+import '../sass/main.scss';
+
 import Alpine from 'alpinejs';
 import axios from 'axios';
 import { format, formatDistanceToNow } from 'date-fns';
 import { tr } from 'date-fns/locale';
 
-// Import components
-import './components/SearchComponent';
-import './components/NotificationComponent';
-import './components/ShoppingCartComponent';
-import './components/ProductCardComponent';
-import './components/FilterComponent';
-
-// Import utilities
-import { debounce, throttle } from './utils/performance';
-import { showToast, showModal, showConfirm } from './utils/ui';
-import { formatCurrency, formatNumber } from './utils/formatters';
-import { validateEmail, validatePhone } from './utils/validators';
-
-// Import services
-import ApiService from './services/ApiService';
-import AuthService from './services/AuthService';
-import CartService from './services/CartService';
-import NotificationService from './services/NotificationService';
-
-// Import styles
-import '../css/main.scss';
+// Basic utilities (will create these if needed)
+// import { debounce, throttle } from './utils/performance';
+// import { showToast, showModal, showConfirm } from './utils/ui';
+// import { formatCurrency, formatNumber } from './utils/formatters';
+// import { validateEmail, validatePhone } from './utils/validators';
 
 class KolajAIApp {
   constructor() {
-    this.apiService = new ApiService();
-    this.authService = new AuthService();
-    this.cartService = new CartService();
-    this.notificationService = new NotificationService();
+    // Services will be initialized when available
+    // this.apiService = new ApiService();
+    // this.authService = new AuthService();
+    // this.cartService = new CartService();
+    // this.notificationService = new NotificationService();
     
     this.init();
   }

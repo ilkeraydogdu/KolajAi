@@ -118,6 +118,13 @@
             initSearch();
         });
     </script>
+    
+    <!-- Webpack Built JS -->
+    {{if .Assets}}
+      {{range .Assets.JS}}
+      <script src="{{.}}" type="text/javascript"></script>
+      {{end}}
+    {{end}}
 </body>
 </html>
 {{end}}
