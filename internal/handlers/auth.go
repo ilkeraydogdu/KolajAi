@@ -12,13 +12,24 @@ var (
 )
 
 func init() {
-	// Auth işlemleri için log dosyası oluştur
-	logFile, err := os.OpenFile("auth_ops_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Println("Auth log dosyası oluşturulamadı:", err)
-		AuthLogger = log.New(os.Stdout, "[AUTH-OPS-DEBUG] ", log.LstdFlags)
+	// Environment'a göre log seviyesini ayarla
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = os.Getenv("GIN_MODE")
+	}
+	
+	if env == "production" || env == "release" {
+		// Production'da sadece stdout'a minimal log
+		AuthLogger = log.New(os.Stdout, "[AUTH] ", log.LstdFlags)
 	} else {
-		AuthLogger = log.New(logFile, "[AUTH-OPS-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		// Development'ta debug log dosyası
+		logFile, err := os.OpenFile("auth_ops_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println("Auth log dosyası oluşturulamadı:", err)
+			AuthLogger = log.New(os.Stdout, "[AUTH-OPS-DEBUG] ", log.LstdFlags)
+		} else {
+			AuthLogger = log.New(logFile, "[AUTH-OPS-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		}
 	}
 }
 

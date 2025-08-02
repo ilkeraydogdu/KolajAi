@@ -441,8 +441,16 @@ func (f *FileUploadService) extractMetadata(data []byte, mimeType string) map[st
 	
 	// Extract image metadata if it's an image
 	if strings.HasPrefix(mimeType, "image/") {
-		// TODO: Extract EXIF data, dimensions, etc.
 		metadata["type"] = "image"
+		
+		// Basic image metadata extraction
+		// Production'da image/jpeg ve image/png için daha detaylı EXIF extraction yapılabilir
+		metadata["file_size"] = len(data)
+		metadata["processed_at"] = time.Now()
+		
+		// EXIF data extraction burada implement edilebilir
+		// Örneğin: github.com/rwcarlsen/goexif/exif paketi kullanılabilir
+		metadata["exif_extracted"] = false // Placeholder
 	}
 	
 	// Extract document metadata if it's a document

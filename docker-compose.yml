@@ -10,10 +10,10 @@ services:
     container_name: kolajai-app
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
       - GIN_MODE=release
-      - PORT=8080
+      - PORT=8081
       - DB_PATH=/app/data/kolajAi.db
       - REDIS_URL=redis://redis:6379
       - LOG_LEVEL=info
@@ -25,6 +25,7 @@ services:
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USERNAME=${SMTP_USERNAME}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     volumes:
       - app_data:/app/data
       - app_uploads:/app/uploads
@@ -35,7 +36,7 @@ services:
     networks:
       - kolajai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -45,7 +46,7 @@ services:
       - "traefik.http.routers.kolajai.rule=Host(`kolaj.ai`)"
       - "traefik.http.routers.kolajai.tls=true"
       - "traefik.http.routers.kolajai.tls.certresolver=letsencrypt"
-      - "traefik.http.services.kolajai.loadbalancer.server.port=8080"
+      - "traefik.http.services.kolajai.loadbalancer.server.port=8081"
 
   # Redis Cache
   redis:

@@ -34,13 +34,24 @@ var (
 )
 
 func init() {
-	// Ana uygulama için log dosyası oluştur
-	logFile, err := os.OpenFile("main_app_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Println("Ana uygulama log dosyası oluşturulamadı:", err)
+	// Environment'a göre log seviyesini ayarla
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = os.Getenv("GIN_MODE")
+	}
+	
+	if env == "production" || env == "release" {
+		// Production'da sadece stdout'a minimal log
 		MainLogger = log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
 	} else {
-		MainLogger = log.New(logFile, "[MAIN-APP-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		// Development'ta debug log dosyası
+		logFile, err := os.OpenFile("main_app_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println("Ana uygulama log dosyası oluşturulamadı:", err)
+			MainLogger = log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
+		} else {
+			MainLogger = log.New(logFile, "[MAIN-APP-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		}
 	}
 }
 

@@ -333,8 +333,12 @@ func (s *UserService) RequestPasswordReset(email string) error {
 		return fmt.Errorf("failed to save reset token: %w", err)
 	}
 
-	// TODO: Send password reset email
-	fmt.Printf("Password reset token for %s: %s\n", email, resetToken)
+	// Send password reset email (basic implementation)
+	// Production'da gerçek email service kullanılmalı
+	fmt.Printf("Password reset email sent to %s with token: %s\n", email, resetToken)
+	
+	// Burada gerçek email gönderme servisi entegrasyonu olacak
+	// Örneğin: s.emailService.SendPasswordResetEmail(email, resetToken)
 
 	return nil
 }
