@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -373,10 +374,16 @@ func (p *IyzicoProvider) CreateSubscription(ctx context.Context, subscription *S
 	subscriptionID := fmt.Sprintf("sub_%d", time.Now().Unix())
 	
 	return &SubscriptionResponse{
-		SubscriptionID: subscriptionID,
-		Status:         "active",
-		CreatedAt:      time.Now(),
-		NextBillingDate: time.Now().AddDate(0, 1, 0), // Next month
+		ID:              subscriptionID,
+		PlanID:          subscription.PlanID,
+		CustomerID:      subscription.CustomerID,
+		Status:          "active",
+		CurrentPeriodStart: time.Now(),
+		CurrentPeriodEnd:   time.Now().AddDate(0, 1, 0),
+		NextBillingDate:    time.Now().AddDate(0, 1, 0),
+		Amount:          0, // Would be set from plan
+		Currency:        "TRY",
+		CreatedAt:       time.Now(),
 	}, nil
 }
 
@@ -393,10 +400,14 @@ func (p *IyzicoProvider) UpdateSubscription(ctx context.Context, subscriptionID 
 	// Basic subscription update implementation
 	// In production, this would integrate with Iyzico's actual subscription API
 	return &SubscriptionResponse{
-		SubscriptionID: subscriptionID,
-		Status:         "active",
-		CreatedAt:      time.Now().AddDate(0, -1, 0), // Created last month
-		NextBillingDate: time.Now().AddDate(0, 1, 0), // Next month
+		ID:              subscriptionID,
+		Status:          "active",
+		CurrentPeriodStart: time.Now().AddDate(0, -1, 0),
+		CurrentPeriodEnd:   time.Now().AddDate(0, 1, 0),
+		NextBillingDate:    time.Now().AddDate(0, 1, 0),
+		Amount:          0, // Would be updated from request
+		Currency:        "TRY",
+		CreatedAt:       time.Now().AddDate(0, -1, 0),
 	}, nil
 }
 

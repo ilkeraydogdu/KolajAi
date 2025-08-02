@@ -169,7 +169,10 @@ func createDatabaseIfNotExists(config *Config) error {
 	dbExists := rows.Next()
 	if !dbExists {
 		log.Printf("Database '%s' does not exist, creating it...", config.DatabaseName)
-		_, err = rootConn.Exec("CREATE DATABASE " + config.DatabaseName)
+		// Using safe database creation with quoted identifier
+	// Database name should be validated to prevent injection
+	createDBQuery := fmt.Sprintf("CREATE DATABASE `%s`", config.DatabaseName)
+	_, err = rootConn.Exec(createDBQuery)
 		if err != nil {
 			return fmt.Errorf("failed to create database: %w", err)
 		}

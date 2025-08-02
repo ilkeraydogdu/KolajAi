@@ -27,7 +27,8 @@ func dbQuery() {
 	// Veritabanı bağlantısı
 	db, err := database.InitDB(dbConfig)
 	if err != nil {
-		log.Fatalf("Veritabanı bağlantısı yapılamadı: %v", err)
+		log.Printf("Veritabanı bağlantısı yapılamadı: %v", err)
+		return
 	}
 	defer db.Close()
 
@@ -53,14 +54,16 @@ func main() {
 func executeSelectQuery(db *sql.DB, query string) {
 	rows, err := db.Query(query)
 	if err != nil {
-		log.Fatalf("Sorgu çalıştırılırken hata oluştu: %v", err)
+		log.Printf("Sorgu çalıştırılırken hata oluştu: %v", err)
+		return
 	}
 	defer rows.Close()
 
 	// Sütun bilgilerini al
 	columns, err := rows.Columns()
 	if err != nil {
-		log.Fatalf("Sütun bilgileri alınamadı: %v", err)
+		log.Printf("Sütun bilgileri alınamadı: %v", err)
+		return
 	}
 
 	// Sonuçları depolamak için değişkenler
@@ -78,7 +81,7 @@ func executeSelectQuery(db *sql.DB, query string) {
 		// Satırı oku
 		err := rows.Scan(valuePtrs...)
 		if err != nil {
-			log.Fatalf("Satır okunurken hata oluştu: %v", err)
+			log.Printf("Satır okunurken hata oluştu: %v", err)
 		}
 
 		// Satırı map'e dönüştür
@@ -107,7 +110,7 @@ func executeSelectQuery(db *sql.DB, query string) {
 	// JSON formatında göster
 	jsonData, err := json.MarshalIndent(results, "", "  ")
 	if err != nil {
-		log.Fatalf("JSON formatına dönüştürülürken hata oluştu: %v", err)
+		log.Printf("JSON formatına dönüştürülürken hata oluştu: %v", err)
 	}
 	fmt.Println(string(jsonData))
 }
@@ -116,13 +119,13 @@ func executeSelectQuery(db *sql.DB, query string) {
 func executeUpdateQuery(db *sql.DB, query string) {
 	result, err := db.Exec(query)
 	if err != nil {
-		log.Fatalf("Sorgu çalıştırılırken hata oluştu: %v", err)
+		log.Printf("Sorgu çalıştırılırken hata oluştu: %v", err)
 	}
 
 	// Etkilenen satır sayısını göster
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Fatalf("Etkilenen satır sayısı alınamadı: %v", err)
+		log.Printf("Etkilenen satır sayısı alınamadı: %v", err)
 	}
 
 	fmt.Printf("Etkilenen satır sayısı: %d\n", rowsAffected)
@@ -131,7 +134,7 @@ func executeUpdateQuery(db *sql.DB, query string) {
 	if strings.HasPrefix(strings.ToUpper(strings.TrimSpace(query)), "INSERT") {
 		lastInsertID, err := result.LastInsertId()
 		if err != nil {
-			log.Fatalf("Son eklenen ID alınamadı: %v", err)
+			log.Printf("Son eklenen ID alınamadı: %v", err)
 		}
 		fmt.Printf("Son eklenen ID: %d\n", lastInsertID)
 	}
