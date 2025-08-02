@@ -42,7 +42,7 @@ func main() {
 		if err != nil {
 			log.Printf("Kategori eklenirken hata: %v", err)
 		} else {
-			categories[i].ID = int(id)
+			categories[i].ID = uint(id)
 			fmt.Printf("Kategori eklendi: %s\n", category.Name)
 		}
 	}
