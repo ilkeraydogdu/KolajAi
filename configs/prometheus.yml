@@ -22,7 +22,7 @@ scrape_configs:
   # KolajAI Application
   - job_name: 'kolajai-app'
     static_configs:
-      - targets: ['app:8080']
+      - targets: ['app:8081']
     metrics_path: '/metrics'
     scrape_interval: 30s
     scrape_timeout: 10s
@@ -63,7 +63,7 @@ scrape_configs:
   # Custom application metrics
   - job_name: 'kolajai-business-metrics'
     static_configs:
-      - targets: ['app:8080']
+      - targets: ['app:8081']
     metrics_path: '/api/metrics/business'
     scrape_interval: 60s
     scrape_timeout: 30s
@@ -71,20 +71,20 @@ scrape_configs:
   # Database metrics
   - job_name: 'kolajai-db-metrics'
     static_configs:
-      - targets: ['app:8080']
+      - targets: ['app:8081']
     metrics_path: '/api/metrics/database'
     scrape_interval: 60s
 
   # Security metrics
   - job_name: 'kolajai-security-metrics'
     static_configs:
-      - targets: ['app:8080']
+      - targets: ['app:8081']
     metrics_path: '/api/metrics/security'
     scrape_interval: 30s
 
   # Performance metrics
   - job_name: 'kolajai-performance-metrics'
     static_configs:
-      - targets: ['app:8080']
+      - targets: ['app:8081']
     metrics_path: '/api/metrics/performance'
     scrape_interval: 15s

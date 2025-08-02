@@ -83,14 +83,14 @@ USER kolajai
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD curl -f http://localhost:8081/health || exit 1
 
 # Expose port
-EXPOSE 8080
+EXPOSE 8081
 
 # Set environment variables
 ENV GIN_MODE=release
-ENV PORT=8080
+ENV PORT=8081
 ENV DB_PATH=/app/data/kolajAi.db
 ENV UPLOAD_PATH=/app/uploads
 ENV LOG_PATH=/app/logs

@@ -269,7 +269,7 @@ const ResetPassword = {
     
     // Doğrulama için AJAX isteği
     AuthHelpers.sendAjaxRequest(
-      'http://localhost:8080/verify-temp-password',
+      '/api/verify-temp-password',
       'POST',
       {
         email: $('input[name="email"]').val(),

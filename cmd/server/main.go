@@ -329,6 +329,7 @@ func main() {
 	h := &handlers.Handler{
 		Templates:      tmpl,
 		SessionManager: legacySessionManager,
+		DB:             db,
 		TemplateContext: map[string]interface{}{
 			"AppName": "KolajAI Enterprise Marketplace",
 			"Year":    time.Now().Year(),
@@ -452,6 +453,9 @@ func main() {
 	// Satıcı rotaları
 	appRouter.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
 
+	// Auth API rotaları
+	appRouter.HandleFunc("/api/verify-temp-password", h.VerifyTempPassword)
+	
 	// API rotaları
 	appRouter.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

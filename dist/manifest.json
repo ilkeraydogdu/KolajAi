@@ -1,6 +1,6 @@
 {
   "main.js": "/static/js/main.2fb703ad.js",
-  "auth.js": "/static/js/auth.af64b213.js",
+  "auth.js": "/static/js/auth.2ec72bdb.js",
   "notifications.js": "/static/js/notifications.a8f15033.js",
   "vendor.js": "/static/js/vendor.ac5ac4fe.js",
   "runtime.js": "/static/js/runtime.78eef8d9.js",
@@ -15,7 +15,7 @@
   "service-worker.js.map": "/static/service-worker.js.map",
   "service-worker.js": "/static/service-worker.js",
   "main.2fb703ad.js.map": "/static/js/main.2fb703ad.js.map",
-  "auth.af64b213.js.map": "/static/js/auth.af64b213.js.map",
+  "auth.2ec72bdb.js.map": "/static/js/auth.2ec72bdb.js.map",
   "notifications.a8f15033.js.map": "/static/js/notifications.a8f15033.js.map",
   "runtime.78eef8d9.js.map": "/static/js/runtime.78eef8d9.js.map",
   "vendors.9b04e1c8.js.map": "/static/js/vendors.9b04e1c8.js.map"

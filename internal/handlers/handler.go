@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -199,6 +200,7 @@ type Handler struct {
 	Templates       *template.Template
 	SessionManager  *SessionManager
 	TemplateContext map[string]interface{}
+	DB              *sql.DB
 }
 
 // WithUser kullanıcı bilgisini context'e ekler
