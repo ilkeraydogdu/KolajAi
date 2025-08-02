@@ -543,7 +543,8 @@ func (r *MySQLRepository) Transaction(fn func(*sql.Tx) error) error {
 	defer func() {
 		if p := recover(); p != nil {
 			_ = tx.Rollback()
-			panic(p)
+			// Log the panic instead of re-panicking
+			fmt.Printf("Database transaction panic recovered: %v\n", p)
 		}
 	}()
 

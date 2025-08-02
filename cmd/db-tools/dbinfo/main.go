@@ -20,7 +20,8 @@ func main() {
 	// Veritabanı bağlantısı
 	db, err := database.InitDB(dbConfig)
 	if err != nil {
-		log.Fatalf("Veritabanı bağlantısı yapılamadı: %v", err)
+		log.Printf("Veritabanı bağlantısı yapılamadı: %v", err)
+		return
 	}
 	defer db.Close()
 
@@ -29,7 +30,8 @@ func main() {
 	// Tabloları listele
 	tables, err := getTables(db)
 	if err != nil {
-		log.Fatalf("Tablolar listelenirken hata oluştu: %v", err)
+		log.Printf("Tablolar listelenirken hata oluştu: %v", err)
+		return
 	}
 
 	fmt.Println("\nVeritabanı Tabloları:")

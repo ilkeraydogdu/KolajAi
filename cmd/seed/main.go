@@ -19,7 +19,8 @@ func main() {
 	// Veritabanı bağlantısı
 	db, err := database.NewSQLiteConnection("kolajAi.db")
 	if err != nil {
-		log.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
+		log.Printf("Veritabanı bağlantısı kurulamadı: %v", err)
+		return
 	}
 	defer db.Close()
 

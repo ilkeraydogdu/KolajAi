@@ -13,6 +13,8 @@ import (
 	"kolajAi/internal/database"
 	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
+	"kolajAi/internal/repository"
+	"kolajAi/internal/email"
 
 	"kolajAi/internal/services"
 	"kolajAi/internal/session"
@@ -178,7 +180,10 @@ func main() {
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
-	authService := services.NewAuthService(nil, nil) // Placeholder - implement properly
+	// UserRepository için MySQLRepository kullanıyoruz
+	userRepo := repository.NewUserRepository(mysqlRepo)
+	emailService := email.NewService() // Email service'i initialize et
+	authService := services.NewAuthService(userRepo, emailService)
 	vendorService := services.NewVendorService(repo)
 	productService := services.NewProductService(repo)
 	orderService := services.NewOrderService(repo)
@@ -466,8 +471,9 @@ func main() {
 			"version": "2.0.0",
 		})
 	})
-	appRouter.HandleFunc("/api/search", ecommerceHandler.APISearchProducts)
-	appRouter.HandleFunc("/api/cart/update", ecommerceHandler.APIUpdateCart)
+	// Legacy API endpoints (deprecated - use /api/v1/ instead)
+	appRouter.HandleFunc("/api/legacy/search", ecommerceHandler.APISearchProducts)
+	appRouter.HandleFunc("/api/legacy/cart/update", ecommerceHandler.APIUpdateCart)
 
 	// AI rotaları
 	appRouter.HandleFunc("/ai/dashboard", aiHandler.GetAIDashboard)

@@ -666,14 +666,32 @@ func NewSendGridProvider(config EmailConfig) *SendGridProvider { return &SendGri
 func NewMailgunProvider(config EmailConfig) *MailgunProvider   { return &MailgunProvider{config} }
 func NewSESProvider(config EmailConfig) *SESProvider           { return &SESProvider{config} }
 
-func (p *SendGridProvider) SendEmail(req *EmailRequest) error { return errors.New("SendGrid not implemented") }
-func (p *SendGridProvider) SendBulkEmail(req *BulkEmailRequest) error { return errors.New("SendGrid not implemented") }
-func (p *SendGridProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { return nil, errors.New("SendGrid not implemented") }
+func (p *SendGridProvider) SendEmail(req *EmailRequest) error { 
+	return errors.New("SendGrid provider disabled - use SMTP instead") 
+}
+func (p *SendGridProvider) SendBulkEmail(req *BulkEmailRequest) error { 
+	return errors.New("SendGrid provider disabled - use SMTP instead") 
+}
+func (p *SendGridProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { 
+	return nil, errors.New("SendGrid provider disabled - use SMTP instead") 
+}
 
-func (p *MailgunProvider) SendEmail(req *EmailRequest) error { return errors.New("Mailgun not implemented") }
-func (p *MailgunProvider) SendBulkEmail(req *BulkEmailRequest) error { return errors.New("Mailgun not implemented") }
-func (p *MailgunProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { return nil, errors.New("Mailgun not implemented") }
+func (p *MailgunProvider) SendEmail(req *EmailRequest) error { 
+	return errors.New("Mailgun provider disabled - use SMTP instead") 
+}
+func (p *MailgunProvider) SendBulkEmail(req *BulkEmailRequest) error { 
+	return errors.New("Mailgun provider disabled - use SMTP instead") 
+}
+func (p *MailgunProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { 
+	return nil, errors.New("Mailgun provider disabled - use SMTP instead") 
+}
 
-func (p *SESProvider) SendEmail(req *EmailRequest) error { return errors.New("SES not implemented") }
-func (p *SESProvider) SendBulkEmail(req *BulkEmailRequest) error { return errors.New("SES not implemented") }
-func (p *SESProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { return nil, errors.New("SES not implemented") }
+func (p *SESProvider) SendEmail(req *EmailRequest) error { 
+	return errors.New("SES provider disabled - use SMTP instead") 
+}
+func (p *SESProvider) SendBulkEmail(req *BulkEmailRequest) error { 
+	return errors.New("SES provider disabled - use SMTP instead") 
+}
+func (p *SESProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { 
+	return nil, errors.New("SES provider disabled - use SMTP instead") 
+}

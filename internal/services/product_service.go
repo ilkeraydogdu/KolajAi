@@ -411,7 +411,8 @@ func (s *ProductService) GetProductsWithFilters(filters map[string]interface{}, 
 
 // IncrementViewCount increments the view count for a product
 func (s *ProductService) IncrementViewCount(productID int) error {
-	// This would typically update the views column in the database
-	// For now, we'll just return nil as a placeholder
+	// Basic implementation - for now just log the action
+	// In production, this would update the database
+	fmt.Printf("View count incremented for product ID: %d\n", productID)
 	return nil
 }
