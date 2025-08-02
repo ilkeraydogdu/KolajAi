@@ -172,7 +172,7 @@ func (h *HealthService) Check(ctx context.Context) *HealthReport {
 		go func(checker HealthChecker) {
 			defer wg.Done()
 			
-			checkCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			checkCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
 			
 			result := checker.Check(checkCtx)
@@ -234,7 +234,7 @@ func (h *HealthService) QuickCheck(ctx context.Context) *HealthReport {
 		go func(checker HealthChecker) {
 			defer wg.Done()
 			
-			checkCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+			checkCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
 			
 			result := checker.Check(checkCtx)

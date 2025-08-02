@@ -18,7 +18,7 @@
         {{if .Required}}required{{end}}
         {{if .Disabled}}disabled{{end}}
         {{if .ReadOnly}}readonly{{end}}
-        {{range $key, $value := .Attributes}}{{$key}}="{{$value}}"{{end}}
+        {{range $key, $value := .Attributes}}{{$key | html}}="{{$value | html}}"{{end}}
     />
     
     {{if .Help}}
@@ -50,7 +50,7 @@
         {{if .Required}}required{{end}}
         {{if .Disabled}}disabled{{end}}
         {{if .ReadOnly}}readonly{{end}}
-        {{range $key, $value := .Attributes}}{{$key}}="{{$value}}"{{end}}
+        {{range $key, $value := .Attributes}}{{$key | html}}="{{$value | html}}"{{end}}
     >{{.Value}}</textarea>
     
     {{if .Help}}
@@ -80,7 +80,7 @@
         {{if .Required}}required{{end}}
         {{if .Disabled}}disabled{{end}}
         {{if .Multiple}}multiple{{end}}
-        {{range $key, $value := .Attributes}}{{$key}}="{{$value}}"{{end}}
+        {{range $key, $value := .Attributes}}{{$key | html}}="{{$value | html}}"{{end}}
     >
         {{if .Placeholder}}
         <option value="">{{.Placeholder}}</option>
@@ -116,7 +116,7 @@
             {{if .Checked}}checked{{end}}
             {{if .Required}}required{{end}}
             {{if .Disabled}}disabled{{end}}
-            {{range $key, $value := .Attributes}}{{$key}}="{{$value}}"{{end}}
+            {{range $key, $value := .Attributes}}{{$key | html}}="{{$value | html}}"{{end}}
         />
         {{if .Label}}
         <label for="{{.ID}}" class="ml-2 block text-sm text-gray-700">
@@ -159,7 +159,7 @@
                     {{if eq .Value $.Value}}checked{{end}}
                     {{if .Disabled}}disabled{{end}}
                     {{if $.Required}}required{{end}}
-                    {{range $key, $value := $.Attributes}}{{$key}}="{{$value}}"{{end}}
+                    {{range $key, $value := $.Attributes}}{{$key | html}}="{{$value | html}}"{{end}}
                 />
                 <label for="{{$.ID}}_{{.Value}}" class="ml-2 block text-sm text-gray-700">
                     {{.Label}}
@@ -209,7 +209,7 @@
                         {{if .Accept}}accept="{{.Accept}}"{{end}}
                         {{if .Required}}required{{end}}
                         {{if .Disabled}}disabled{{end}}
-                        {{range $key, $value := .Attributes}}{{$key}}="{{$value}}"{{end}}
+                        {{range $key, $value := .Attributes}}{{$key | html}}="{{$value | html}}"{{end}}
                     />
                 </label>
                 <p class="pl-1">or drag and drop</p>
@@ -236,7 +236,7 @@
     type="{{.Type | default "button"}}"
     class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed {{.Class}}"
     {{if .Disabled}}disabled{{end}}
-    {{range $key, $value := .Attributes}}{{$key}}="{{$value}}"{{end}}
+    {{range $key, $value := .Attributes}}{{$key | html}}="{{$value | html}}"{{end}}
 >
     {{if .Loading}}
     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

@@ -31,6 +31,13 @@ import (
 
 )
 
+// Build-time variables (set by ldflags)
+var (
+	Version   = "dev"
+	BuildTime = "unknown"
+	GitCommit = "unknown"
+)
+
 var (
 	MainLogger *log.Logger
 )

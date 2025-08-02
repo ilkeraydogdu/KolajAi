@@ -21,11 +21,12 @@ database:
   conn_max_lifetime: 5
 
 security:
-  # These should be loaded from environment variables in production
-  encryption_key: "${ENCRYPTION_KEY:-supersecretkey32byteslongforencryption}"
-  jwt_secret: "${JWT_SECRET:-jwtsecretkey}"
-  csrf_secret: "${CSRF_SECRET:-csrfsecretkey}"
-  session_secret: "${SESSION_SECRET:-sessionsecretkey}"
+  # CRITICAL: All secrets MUST be loaded from environment variables in production
+  # Default values are for development only and should NEVER be used in production
+  encryption_key: "${ENCRYPTION_KEY:-CHANGE_ME_IN_PRODUCTION_32_BYTES}"
+  jwt_secret: "${JWT_SECRET:-CHANGE_ME_IN_PRODUCTION}"
+  csrf_secret: "${CSRF_SECRET:-CHANGE_ME_IN_PRODUCTION}"
+  session_secret: "${SESSION_SECRET:-CHANGE_ME_IN_PRODUCTION}"
   two_factor_enabled: false
   rate_limit_enabled: true
   cors_enabled: true

@@ -3,9 +3,9 @@ import axios from 'axios';
 class ApiService {
   constructor() {
     this.baseURL = window.location.origin;
-    this.timeout = 10000;
-    this.retryAttempts = 3;
-    this.retryDelay = 1000;
+    this.timeout = 5000; // Reduced from 10s to 5s
+    this.retryAttempts = 2; // Reduced from 3 to 2
+    this.retryDelay = 500; // Reduced from 1s to 500ms
     
     this.setupInterceptors();
   }
@@ -14,8 +14,8 @@ class ApiService {
     // Request interceptor
     axios.interceptors.request.use(
       (config) => {
-        // Add timestamp to prevent caching
-        if (config.method === 'get') {
+        // Add timestamp to prevent caching (only for specific endpoints that need it)
+        if (config.method === 'get' && config.url.includes('/api/health')) {
           config.params = {
             ...config.params,
             _t: Date.now()
