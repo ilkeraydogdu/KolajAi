@@ -18,6 +18,7 @@ import (
 	"kolajAi/internal/session"
 	"kolajAi/internal/reporting"
 	"kolajAi/internal/errors"
+	"kolajAi/internal/utils"
 	"kolajAi/internal/seo"
 	"kolajAi/internal/notifications"
 	"kolajAi/internal/security"
@@ -193,6 +194,10 @@ func main() {
 	MainLogger.Println("Integration Analytics Service başlatılıyor...")
 	analyticsService := services.NewIntegrationAnalyticsService(db, marketplaceService, aiIntegrationManager)
 
+	// Asset Manager'ı başlat
+	MainLogger.Println("Asset Manager başlatılıyor...")
+	assetManager := utils.NewAssetManager("dist/manifest.json")
+
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
 
@@ -217,6 +222,12 @@ func main() {
 		},
 		"safeHTML": func(s string) template.HTML {
 			return template.HTML(s)
+		},
+		"default": func(defaultValue, value interface{}) interface{} {
+			if value == nil || value == "" {
+				return defaultValue
+			}
+			return value
 		},
 		"formatPrice": func(price float64) string {
 			return fmt.Sprintf("%.2f TL", price)
@@ -310,6 +321,10 @@ func main() {
 		TemplateContext: map[string]interface{}{
 			"AppName": "KolajAI Enterprise Marketplace",
 			"Year":    time.Now().Year(),
+			"Assets": map[string]interface{}{
+				"CSS": assetManager.GetCSSAssets(),
+				"JS":  assetManager.GetJSAssets(),
+			},
 		},
 	}
 
