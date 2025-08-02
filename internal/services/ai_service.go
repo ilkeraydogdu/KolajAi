@@ -398,7 +398,7 @@ func (s *AIService) PredictProductCategory(productName, description string) ([]*
 
 		if confidence > 0.1 { // Minimum confidence threshold
 			predictions = append(predictions, &CategoryPrediction{
-				CategoryID:   category.ID,
+								CategoryID: int(category.ID),
 				CategoryName: category.Name,
 				Confidence:   confidence,
 			})

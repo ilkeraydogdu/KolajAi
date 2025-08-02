@@ -101,6 +101,7 @@ func TestIyzicoProvider_ProcessPayment(t *testing.T) {
 			"binNumber":            "552608",
 			"lastFourDigits":       "0006",
 			"basketId":             request["basketId"],
+			"paymentStatus":        "SUCCESS",
 		})
 	}))
 	defer server.Close()
@@ -174,7 +175,7 @@ func TestIyzicoProvider_ProcessPayment(t *testing.T) {
 		t.Errorf("TransactionID = %v, want %v", response.TransactionID, "12345678")
 	}
 	
-	if response.Status != PaymentStatusSucceeded {
+	if response.Status != string(PaymentStatusSucceeded) {
 		t.Errorf("Status = %v, want %v", response.Status, PaymentStatusSucceeded)
 	}
 }
@@ -248,12 +249,12 @@ func TestIyzicoProvider_Create3DSecurePayment(t *testing.T) {
 		t.Fatal("Response is nil")
 	}
 	
-	if response.Requires3DSecure != true {
-		t.Error("Requires3DSecure should be true")
+		if response.Status != string(PaymentStatusPending) {
+		t.Errorf("Status = %v, want %v", response.Status, PaymentStatusPending)
 	}
-	
-	if response.RedirectHTML == "" {
-		t.Error("RedirectHTML should not be empty")
+
+	if response.HTMLContent == "" {
+		t.Error("HTMLContent should not be empty")
 	}
 }
 
@@ -270,6 +271,7 @@ func TestIyzicoProvider_RefundPayment(t *testing.T) {
 			"paymentId":      "12345678",
 			"price":          50.0,
 			"currency":       "TRY",
+			"paymentStatus":  "REFUNDED",
 		})
 	}))
 	defer server.Close()
@@ -356,7 +358,7 @@ func TestIyzicoProvider_GetPaymentStatus(t *testing.T) {
 		t.Errorf("TransactionID = %v, want %v", status.ID, "12345678")
 	}
 	
-	if status.Status != PaymentStatusSucceeded {
+	if status.Status != string(PaymentStatusSucceeded) {
 		t.Errorf("Status = %v, want %v", status.Status, PaymentStatusSucceeded)
 	}
 	

@@ -6,24 +6,13 @@ import (
 	"time"
 )
 
-// Category represents a product category
-type Category struct {
-	ID          int       `json:"id" db:"id"`
-	Name        string    `json:"name" db:"name"`
-	Description string    `json:"description" db:"description"`
-	ParentID    *int      `json:"parent_id" db:"parent_id"`
-	Image       string    `json:"image" db:"image"`
-	IsActive    bool      `json:"is_active" db:"is_active"`
-	SortOrder   int       `json:"sort_order" db:"sort_order"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
-}
+// Note: Category struct moved to category.go model
 
 // Product represents a product in the marketplace
 type Product struct {
 	ID              int       `json:"id" db:"id"`
 	VendorID        int       `json:"vendor_id" db:"vendor_id"`
-	CategoryID      int       `json:"category_id" db:"category_id"`
+	CategoryID      uint      `json:"category_id" db:"category_id"`
 	Name            string    `json:"name" db:"name"`
 	Description     string    `json:"description" db:"description"`
 	ShortDesc       string    `json:"short_desc" db:"short_desc"`

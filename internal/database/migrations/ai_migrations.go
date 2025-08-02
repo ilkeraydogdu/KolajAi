@@ -1,16 +1,7 @@
 package migrations
 
-// Migration represents a database migration
-type Migration struct {
-	Name string
-	Up   string
-	Down string
-}
-
-// AITablesMigration creates AI-related tables
-var AITablesMigration = Migration{
-	Name: "create_ai_tables",
-	Up: `
+// CreateAIAdvancedTables creates AI-related tables  
+var CreateAIAdvancedTables = `
 		-- AI Credits table
 		CREATE TABLE IF NOT EXISTS ai_credits (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,14 +106,4 @@ var AITablesMigration = Migration{
 		INSERT INTO ai_credits (user_id, credits)
 		SELECT id, 100 FROM users
 		WHERE id NOT IN (SELECT user_id FROM ai_credits);
-	`,
-	Down: `
-		DROP TABLE IF EXISTS marketplace_sync_logs;
-		DROP TABLE IF EXISTS marketplace_integration_configs;
-		DROP TABLE IF EXISTS ai_chat_sessions;
-		DROP TABLE IF EXISTS ai_templates;
-		DROP TABLE IF EXISTS ai_generated_content;
-		DROP TABLE IF EXISTS ai_credit_transactions;
-		DROP TABLE IF EXISTS ai_credits;
-	`,
-}
+	`

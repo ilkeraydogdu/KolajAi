@@ -1,0 +1,271 @@
+{{define "mobile-nav"}}
+<!-- Mobile Navigation -->
+<nav class="bg-white shadow-lg relative" x-data="{ mobileMenuOpen: false, searchOpen: false }">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+            <!-- Mobile Menu Button -->
+            <div class="md:hidden">
+                <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                        class="text-gray-600 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition duration-150 ease-in-out">
+                    <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+                        <path x-show="!mobileMenuOpen" fill-rule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
+                        <path x-show="mobileMenuOpen" fill-rule="evenodd" d="M18.278 16.864a1 1 0 0 1-1.414 1.414l-4.829-4.828-4.828 4.828a1 1 0 0 1-1.414-1.414l4.828-4.829-4.828-4.828a1 1 0 0 1 1.414-1.414l4.829 4.828 4.828-4.828a1 1 0 1 1 1.414 1.414l-4.828 4.829 4.828 4.828z"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="/" class="text-xl md:text-2xl font-bold text-blue-600">
+                    <i class="fas fa-brain mr-2"></i>
+                    {{.AppName | default "KolajAI"}}
+                </a>
+            </div>
+            
+            <!-- Desktop Search Bar -->
+            <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                <form action="/products" method="get" class="w-full">
+                    <div class="relative">
+                        <input type="text" name="search" placeholder="Ürün ara..." 
+                               value="{{.SearchQuery}}"
+                               class="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150 ease-in-out">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
+                        <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                            <i class="fas fa-arrow-right text-blue-600 hover:text-blue-800"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Mobile Search Button -->
+            <div class="md:hidden">
+                <button @click="searchOpen = !searchOpen" 
+                        class="text-gray-600 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition duration-150 ease-in-out">
+                    <i class="fas fa-search text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Desktop Navigation Links -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="/products" class="text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out">
+                    <i class="fas fa-shopping-bag mr-1"></i>
+                    Ürünler
+                </a>
+                <a href="/marketplace" class="text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out">
+                    <i class="fas fa-store mr-1"></i>
+                    Marketplace
+                </a>
+                <a href="/ai-tools" class="text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out">
+                    <i class="fas fa-robot mr-1"></i>
+                    AI Araçları
+                </a>
+                
+                {{if .User}}
+                <!-- User Menu -->
+                <div class="relative" x-data="{ userMenuOpen: false }">
+                    <button @click="userMenuOpen = !userMenuOpen" 
+                            class="flex items-center text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out">
+                        <img class="h-8 w-8 rounded-full mr-2" 
+                             src="{{.User.Avatar | default "/static/images/default-avatar.png"}}" 
+                             alt="{{.User.Name}}">
+                        <span class="hidden lg:block">{{.User.Name}}</span>
+                        <i class="fas fa-chevron-down ml-1"></i>
+                    </button>
+                    
+                    <!-- User Dropdown -->
+                    <div x-show="userMenuOpen" 
+                         @click.away="userMenuOpen = false"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                        <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-user mr-2"></i>Profil
+                        </a>
+                        <a href="/orders" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-shopping-cart mr-2"></i>Siparişlerim
+                        </a>
+                        <a href="/wishlist" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-heart mr-2"></i>Favoriler
+                        </a>
+                        <a href="/notifications" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-bell mr-2"></i>Bildirimler
+                            {{if .UnreadNotifications}}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 ml-2">
+                                {{.UnreadNotifications}}
+                            </span>
+                            {{end}}
+                        </a>
+                        <div class="border-t border-gray-100"></div>
+                        {{if .User.IsAdmin}}
+                        <a href="/admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-cog mr-2"></i>Admin Panel
+                        </a>
+                        {{end}}
+                        <a href="/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Çıkış Yap
+                        </a>
+                    </div>
+                </div>
+                {{else}}
+                <!-- Guest Links -->
+                <a href="/login" class="text-gray-700 hover:text-blue-600 transition duration-150 ease-in-out">
+                    <i class="fas fa-sign-in-alt mr-1"></i>
+                    Giriş Yap
+                </a>
+                <a href="/register" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-150 ease-in-out">
+                    <i class="fas fa-user-plus mr-1"></i>
+                    Kayıt Ol
+                </a>
+                {{end}}
+            </div>
+        </div>
+        
+        <!-- Mobile Search Bar -->
+        <div x-show="searchOpen" 
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="transform opacity-0 scale-95"
+             x-transition:enter-end="transform opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="transform opacity-100 scale-100"
+             x-transition:leave-end="transform opacity-0 scale-95"
+             class="md:hidden pb-4">
+            <form action="/products" method="get">
+                <div class="relative">
+                    <input type="text" name="search" placeholder="Ürün ara..." 
+                           value="{{.SearchQuery}}"
+                           class="w-full px-4 py-3 pl-10 pr-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <button type="submit" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                        <i class="fas fa-arrow-right text-blue-600"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Mobile Menu -->
+    <div x-show="mobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100"
+         x-transition:leave-end="transform opacity-0 scale-95"
+         class="md:hidden bg-white border-t border-gray-200">
+        <div class="px-2 pt-2 pb-3 space-y-1">
+            <a href="/products" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                <i class="fas fa-shopping-bag mr-3 w-5"></i>
+                Ürünler
+            </a>
+            <a href="/marketplace" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                <i class="fas fa-store mr-3 w-5"></i>
+                Marketplace
+            </a>
+            <a href="/ai-tools" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                <i class="fas fa-robot mr-3 w-5"></i>
+                AI Araçları
+            </a>
+            
+            {{if .User}}
+            <!-- Mobile User Menu -->
+            <div class="border-t border-gray-200 pt-4 pb-3">
+                <div class="flex items-center px-3 mb-3">
+                    <img class="h-10 w-10 rounded-full" 
+                         src="{{.User.Avatar | default "/static/images/default-avatar.png"}}" 
+                         alt="{{.User.Name}}">
+                    <div class="ml-3">
+                        <div class="text-base font-medium text-gray-800">{{.User.Name}}</div>
+                        <div class="text-sm font-medium text-gray-500">{{.User.Email}}</div>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <a href="/profile" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                        <i class="fas fa-user mr-3 w-5"></i>
+                        Profil
+                    </a>
+                    <a href="/orders" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                        <i class="fas fa-shopping-cart mr-3 w-5"></i>
+                        Siparişlerim
+                    </a>
+                    <a href="/wishlist" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                        <i class="fas fa-heart mr-3 w-5"></i>
+                        Favoriler
+                    </a>
+                    <a href="/notifications" class="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                        <i class="fas fa-bell mr-3 w-5"></i>
+                        Bildirimler
+                        {{if .UnreadNotifications}}
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 ml-auto">
+                            {{.UnreadNotifications}}
+                        </span>
+                        {{end}}
+                    </a>
+                    {{if .User.IsAdmin}}
+                    <a href="/admin" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                        <i class="fas fa-cog mr-3 w-5"></i>
+                        Admin Panel
+                    </a>
+                    {{end}}
+                    <a href="/logout" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md transition duration-150 ease-in-out">
+                        <i class="fas fa-sign-out-alt mr-3 w-5"></i>
+                        Çıkış Yap
+                    </a>
+                </div>
+            </div>
+            {{else}}
+            <!-- Mobile Guest Links -->
+            <div class="border-t border-gray-200 pt-4 pb-3 space-y-1">
+                <a href="/login" class="block px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 rounded-md transition duration-150 ease-in-out">
+                    <i class="fas fa-sign-in-alt mr-3 w-5"></i>
+                    Giriş Yap
+                </a>
+                <a href="/register" class="block px-3 py-2 text-base font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition duration-150 ease-in-out">
+                    <i class="fas fa-user-plus mr-3 w-5"></i>
+                    Kayıt Ol
+                </a>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</nav>
+
+<!-- Alpine.js for mobile interactions -->
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<style>
+    /* Mobile-first responsive design */
+    @media (max-width: 768px) {
+        .container {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        /* Touch-friendly tap targets */
+        button, a {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        /* Improved text readability on mobile */
+        body {
+            -webkit-text-size-adjust: 100%;
+            -webkit-font-smoothing: antialiased;
+        }
+    }
+    
+    /* Smooth transitions */
+    * {
+        transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+    }
+</style>
+{{end}}

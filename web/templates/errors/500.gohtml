@@ -1,0 +1,115 @@
+{{define "500"}}
+<!DOCTYPE html>
+<html lang="tr" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunucu Hatası - KolajAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+<body class="h-full bg-gray-50">
+    <div class="min-h-full flex flex-col">
+        <main class="flex-grow flex flex-col bg-white">
+            <div class="flex-grow mx-auto max-w-7xl w-full flex flex-col px-4 sm:px-6 lg:px-8">
+                <div class="flex-shrink-0 my-auto py-16 sm:py-32">
+                    <div class="text-center">
+                        <div class="flex justify-center">
+                            <svg class="h-24 w-24 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <p class="mt-4 text-sm font-semibold text-red-600 uppercase tracking-wide">500 Hata</p>
+                        <h1 class="mt-2 text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">
+                            Sunucu hatası
+                        </h1>
+                        <p class="mt-2 text-base text-gray-500 max-w-md mx-auto">
+                            Üzgünüz, beklenmeyen bir hata oluştu. Teknik ekibimiz durumdan haberdar edildi.
+                        </p>
+                        
+                        {{if .ShowDetails}}
+                        <div class="mt-8 bg-red-50 border border-red-200 rounded-md p-4 text-left max-w-2xl mx-auto">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-red-800">Hata Detayları</h3>
+                                    <div class="mt-2 text-sm text-red-700">
+                                        {{if .Error}}
+                                        <p class="font-mono text-xs bg-red-100 p-2 rounded border">{{.Error}}</p>
+                                        {{end}}
+                                        {{if .RequestID}}
+                                        <p class="mt-2"><strong>İstek ID:</strong> {{.RequestID}}</p>
+                                        {{end}}
+                                        {{if .Timestamp}}
+                                        <p><strong>Zaman:</strong> {{.Timestamp}}</p>
+                                        {{end}}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                        
+                        <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+                            <a href="/" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                                Ana Sayfaya Dön
+                            </a>
+                            <button onclick="window.location.reload()" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <svg class="mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Yeniden Dene
+                            </button>
+                        </div>
+                        
+                        <div class="mt-8 text-sm text-gray-500">
+                            <p>Sorun devam ederse, lütfen <a href="/contact" class="text-blue-600 hover:text-blue-500">destek ekibimizle iletişime geçin</a>.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Track server errors for analytics
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'server_error', {
+                'error_type': '500',
+                'page_location': window.location.href,
+                'error_id': '{{.RequestID}}'
+            });
+        }
+        
+        // Auto-refresh after 30 seconds if user hasn't interacted
+        let autoRefreshTimer;
+        let userInteracted = false;
+        
+        function resetAutoRefresh() {
+            userInteracted = true;
+            if (autoRefreshTimer) {
+                clearTimeout(autoRefreshTimer);
+            }
+        }
+        
+        // Listen for user interactions
+        document.addEventListener('click', resetAutoRefresh);
+        document.addEventListener('keydown', resetAutoRefresh);
+        document.addEventListener('scroll', resetAutoRefresh);
+        
+        // Set auto-refresh timer
+        autoRefreshTimer = setTimeout(() => {
+            if (!userInteracted) {
+                window.location.reload();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
+{{end}}

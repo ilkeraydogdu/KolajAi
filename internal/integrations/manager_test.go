@@ -215,6 +215,7 @@ func TestManager_ExecuteRequest_WithCircuitBreaker(t *testing.T) {
 		EnableCaching:        false,
 		EnableMetrics:        false,
 		DefaultTimeout:       30 * time.Second,
+		HealthCheckInterval:  1 * time.Minute,
 	}
 	
 	manager := NewManager(config)
@@ -272,6 +273,7 @@ func TestManager_ExecuteRequest_WithCache(t *testing.T) {
 		EnableCaching:        true,
 		EnableMetrics:        false,
 		DefaultTimeout:       30 * time.Second,
+		HealthCheckInterval:  1 * time.Minute,
 	}
 	
 	manager := NewManager(config)

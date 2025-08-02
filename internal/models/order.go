@@ -338,11 +338,4 @@ const (
 	OrderStatusRefunded   = "refunded"
 )
 
-// Constants for payment statuses
-const (
-	PaymentStatusPending = "pending"
-	PaymentStatusPaid    = "paid"
-	PaymentStatusFailed  = "failed"
-	PaymentStatusRefunded = "refunded"
-	PaymentStatusPartial = "partial"
-)
+// Note: PaymentStatus constants moved to payment.go model

@@ -622,13 +622,30 @@ func (p *IyzicoProvider) parsePaymentResponse(iyzicoResp map[string]interface{},
 		paymentStatus = PaymentStatusSucceeded
 	}
 	
+	// Safely extract values with type assertions
+	var paymentID, currency, authCode string
+	var amount float64
+	
+	if id, ok := iyzicoResp["paymentId"].(string); ok {
+		paymentID = id
+	}
+	if curr, ok := iyzicoResp["currency"].(string); ok {
+		currency = curr
+	}
+	if code, ok := iyzicoResp["authCode"].(string); ok {
+		authCode = code
+	}
+	if price, ok := iyzicoResp["price"].(float64); ok {
+		amount = price
+	}
+	
 	response := &PaymentResponse{
-		ID:              iyzicoResp["paymentId"].(string),
+		ID:              paymentID,
 		Status:          paymentStatus,
-		Amount:          iyzicoResp["price"].(float64),
-		Currency:        iyzicoResp["currency"].(string),
-		TransactionID:   iyzicoResp["paymentId"].(string),
-		AuthCode:        iyzicoResp["authCode"].(string),
+		Amount:          amount,
+		Currency:        currency,
+		TransactionID:   paymentID,
+		AuthCode:        authCode,
 		CreatedAt:       time.Now(),
 	}
 	

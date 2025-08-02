@@ -1,511 +1,536 @@
-// Main JavaScript for KolajAI Marketplace
+// Main application entry point
+import Alpine from 'alpinejs';
+import axios from 'axios';
+import { format, formatDistanceToNow } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
-// DOM Ready
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
+// Import components
+import './components/SearchComponent';
+import './components/NotificationComponent';
+import './components/ShoppingCartComponent';
+import './components/ProductCardComponent';
+import './components/FilterComponent';
+
+// Import utilities
+import { debounce, throttle } from './utils/performance';
+import { showToast, showModal, showConfirm } from './utils/ui';
+import { formatCurrency, formatNumber } from './utils/formatters';
+import { validateEmail, validatePhone } from './utils/validators';
+
+// Import services
+import ApiService from './services/ApiService';
+import AuthService from './services/AuthService';
+import CartService from './services/CartService';
+import NotificationService from './services/NotificationService';
+
+// Import styles
+import '../css/main.scss';
+
+class KolajAIApp {
+  constructor() {
+    this.apiService = new ApiService();
+    this.authService = new AuthService();
+    this.cartService = new CartService();
+    this.notificationService = new NotificationService();
+    
+    this.init();
+  }
+
+  async init() {
+    try {
+      // Initialize Alpine.js
+      this.initAlpine();
+      
+      // Setup global axios configuration
+      this.setupAxios();
+      
+      // Initialize services
+      await this.initServices();
+      
+      // Setup event listeners
+      this.setupEventListeners();
+      
+      // Initialize PWA features
+      this.initPWA();
+      
+      // Setup performance monitoring
+      this.setupPerformanceMonitoring();
+      
+      console.log('KolajAI App initialized successfully');
+      
+    } catch (error) {
+      console.error('Failed to initialize KolajAI App:', error);
+      this.handleInitError(error);
+    }
+  }
+
+  initAlpine() {
+    // Global Alpine data
+    Alpine.data('app', () => ({
+      // Global state
+      user: null,
+      cart: {
+        items: [],
+        total: 0,
+        count: 0
+      },
+      notifications: [],
+      isLoading: false,
+      
+      // UI state
+      mobileMenuOpen: false,
+      searchOpen: false,
+      cartOpen: false,
+      notificationsOpen: false,
+      
+      // Search
+      searchQuery: '',
+      searchResults: [],
+      searchLoading: false,
+      
+      // Filters
+      filters: {
+        category: '',
+        priceRange: [0, 1000],
+        rating: 0,
+        availability: 'all'
+      },
+      
+      // Methods
+      async init() {
+        await this.loadUser();
+        await this.loadCart();
+        await this.loadNotifications();
+      },
+      
+      async loadUser() {
+        try {
+          const response = await window.app.authService.getCurrentUser();
+          this.user = response.data;
+        } catch (error) {
+          console.log('User not authenticated');
+        }
+      },
+      
+      async loadCart() {
+        try {
+          this.cart = await window.app.cartService.getCart();
+        } catch (error) {
+          console.error('Failed to load cart:', error);
+        }
+      },
+      
+      async loadNotifications() {
+        if (!this.user) return;
+        
+        try {
+          const response = await window.app.notificationService.getNotifications();
+          this.notifications = response.data;
+        } catch (error) {
+          console.error('Failed to load notifications:', error);
+        }
+      },
+      
+      // Search functionality
+      async search() {
+        if (!this.searchQuery.trim()) {
+          this.searchResults = [];
+          return;
+        }
+        
+        this.searchLoading = true;
+        
+        try {
+          const response = await window.app.apiService.get('/api/search', {
+            params: { q: this.searchQuery, ...this.filters }
+          });
+          this.searchResults = response.data.results;
+        } catch (error) {
+          console.error('Search failed:', error);
+          showToast('Arama sırasında bir hata oluştu', 'error');
+        } finally {
+          this.searchLoading = false;
+        }
+      },
+      
+      // Cart functionality
+      async addToCart(productId, quantity = 1) {
+        try {
+          await window.app.cartService.addItem(productId, quantity);
+          await this.loadCart();
+          showToast('Ürün sepete eklendi', 'success');
+        } catch (error) {
+          console.error('Failed to add to cart:', error);
+          showToast('Ürün sepete eklenemedi', 'error');
+        }
+      },
+      
+      async removeFromCart(itemId) {
+        try {
+          await window.app.cartService.removeItem(itemId);
+          await this.loadCart();
+          showToast('Ürün sepetten kaldırıldı', 'info');
+        } catch (error) {
+          console.error('Failed to remove from cart:', error);
+          showToast('Ürün sepetten kaldırılamadı', 'error');
+        }
+      },
+      
+      // Utility methods
+      formatCurrency,
+      formatNumber,
+      formatDate: (date) => format(new Date(date), 'dd MMMM yyyy', { locale: tr }),
+      formatTimeAgo: (date) => formatDistanceToNow(new Date(date), { 
+        addSuffix: true, 
+        locale: tr 
+      }),
+      
+      // Navigation
+      toggleMobileMenu() {
+        this.mobileMenuOpen = !this.mobileMenuOpen;
+      },
+      
+      toggleSearch() {
+        this.searchOpen = !this.searchOpen;
+        if (this.searchOpen) {
+          this.$nextTick(() => {
+            this.$refs.searchInput?.focus();
+          });
+        }
+      },
+      
+      toggleCart() {
+        this.cartOpen = !this.cartOpen;
+      },
+      
+      toggleNotifications() {
+        this.notificationsOpen = !this.notificationsOpen;
+      }
+    }));
+
+    // Global Alpine stores
+    Alpine.store('theme', {
+      current: localStorage.getItem('theme') || 'light',
+      toggle() {
+        this.current = this.current === 'light' ? 'dark' : 'light';
+        localStorage.setItem('theme', this.current);
+        document.documentElement.classList.toggle('dark', this.current === 'dark');
+      }
+    });
+
+    Alpine.store('preferences', {
+      language: localStorage.getItem('language') || 'tr',
+      currency: localStorage.getItem('currency') || 'TRY',
+      notifications: JSON.parse(localStorage.getItem('notifications') || 'true'),
+      
+      setLanguage(lang) {
+        this.language = lang;
+        localStorage.setItem('language', lang);
+        // Reload page to apply language changes
+        window.location.reload();
+      },
+      
+      setCurrency(currency) {
+        this.currency = currency;
+        localStorage.setItem('currency', currency);
+      },
+      
+      toggleNotifications() {
+        this.notifications = !this.notifications;
+        localStorage.setItem('notifications', JSON.stringify(this.notifications));
+      }
+    });
+
+    // Start Alpine
+    Alpine.start();
+    
+    // Make Alpine globally available
+    window.Alpine = Alpine;
+  }
+
+  setupAxios() {
+    // Set default base URL
+    axios.defaults.baseURL = window.location.origin;
+    
+    // Add CSRF token to all requests
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+    if (csrfToken) {
+      axios.defaults.headers.common['X-CSRF-Token'] = csrfToken;
+    }
+    
+    // Add auth token if available
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    }
+    
+    // Request interceptor
+    axios.interceptors.request.use(
+      (config) => {
+        // Show loading indicator for non-background requests
+        if (!config.background) {
+          document.body.classList.add('loading');
+        }
+        return config;
+      },
+      (error) => {
+        document.body.classList.remove('loading');
+        return Promise.reject(error);
+      }
+    );
+    
+    // Response interceptor
+    axios.interceptors.response.use(
+      (response) => {
+        document.body.classList.remove('loading');
+        return response;
+      },
+      (error) => {
+        document.body.classList.remove('loading');
+        
+        // Handle common errors
+        if (error.response?.status === 401) {
+          this.authService.logout();
+          showToast('Oturum süreniz doldu, lütfen tekrar giriş yapın', 'warning');
+        } else if (error.response?.status === 403) {
+          showToast('Bu işlem için yetkiniz bulunmuyor', 'error');
+        } else if (error.response?.status >= 500) {
+          showToast('Sunucu hatası oluştu, lütfen daha sonra tekrar deneyin', 'error');
+        }
+        
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  async initServices() {
+    // Initialize all services
+    await Promise.all([
+      this.authService.init(),
+      this.cartService.init(),
+      this.notificationService.init()
+    ]);
+  }
+
+  setupEventListeners() {
+    // Handle online/offline status
+    window.addEventListener('online', () => {
+      showToast('İnternet bağlantısı yeniden kuruldu', 'success');
+      this.syncOfflineData();
+    });
+    
+    window.addEventListener('offline', () => {
+      showToast('İnternet bağlantısı kesildi', 'warning');
+    });
+    
+    // Handle visibility change
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        // Refresh data when page becomes visible
+        this.refreshData();
+      }
+    });
+    
+    // Handle beforeunload
+    window.addEventListener('beforeunload', (e) => {
+      // Save any pending data
+      this.savePendingData();
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Ctrl/Cmd + K for search
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        Alpine.store('app').toggleSearch();
+      }
+      
+      // Escape to close modals
+      if (e.key === 'Escape') {
+        // Close any open modals
+        document.querySelectorAll('[x-show]').forEach(el => {
+          if (el._x_dataStack?.[0]?.open) {
+            el._x_dataStack[0].open = false;
+          }
+        });
+      }
+    });
+  }
+
+  initPWA() {
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js');
+          console.log('SW registered: ', registration);
+          
+          // Handle updates
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // Show update available notification
+                this.showUpdateAvailable();
+              }
+            });
+          });
+        } catch (error) {
+          console.log('SW registration failed: ', error);
+        }
+      });
+    }
+    
+    // Handle app installation
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      this.showInstallPrompt(deferredPrompt);
+    });
+    
+    // Handle app installed
+    window.addEventListener('appinstalled', () => {
+      showToast('Uygulama başarıyla yüklendi!', 'success');
+      deferredPrompt = null;
+    });
+  }
+
+  setupPerformanceMonitoring() {
+    // Monitor Core Web Vitals
+    if ('web-vital' in window) {
+      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+        getCLS(console.log);
+        getFID(console.log);
+        getFCP(console.log);
+        getLCP(console.log);
+        getTTFB(console.log);
+      });
+    }
+    
+    // Monitor long tasks
+    if ('PerformanceObserver' in window) {
+      try {
+        const observer = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (entry.duration > 50) {
+              console.warn('Long task detected:', entry);
+            }
+          }
+        });
+        observer.observe({ entryTypes: ['longtask'] });
+      } catch (e) {
+        // PerformanceObserver not supported
+      }
+    }
+  }
+
+  handleInitError(error) {
+    // Show user-friendly error message
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'fixed inset-0 bg-red-50 flex items-center justify-center z-50';
+    errorDiv.innerHTML = `
+      <div class="text-center p-8">
+        <div class="text-red-600 text-6xl mb-4">⚠️</div>
+        <h1 class="text-2xl font-bold text-red-800 mb-2">Uygulama Başlatılamadı</h1>
+        <p class="text-red-600 mb-4">Bir hata oluştu. Lütfen sayfayı yenileyin.</p>
+        <button onclick="window.location.reload()" 
+                class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
+          Sayfayı Yenile
+        </button>
+      </div>
+    `;
+    document.body.appendChild(errorDiv);
+  }
+
+  async syncOfflineData() {
+    // Sync any offline data when connection is restored
+    try {
+      await this.cartService.syncOfflineData();
+      await this.notificationService.syncOfflineData();
+    } catch (error) {
+      console.error('Failed to sync offline data:', error);
+    }
+  }
+
+  async refreshData() {
+    // Refresh data when page becomes visible
+    try {
+      const app = Alpine.store('app');
+      if (app) {
+        await Promise.all([
+          app.loadCart(),
+          app.loadNotifications()
+        ]);
+      }
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+    }
+  }
+
+  savePendingData() {
+    // Save any pending data before page unload
+    try {
+      this.cartService.savePendingData();
+    } catch (error) {
+      console.error('Failed to save pending data:', error);
+    }
+  }
+
+  showUpdateAvailable() {
+    const updateBanner = document.createElement('div');
+    updateBanner.className = 'fixed top-0 left-0 right-0 bg-blue-600 text-white p-4 z-50';
+    updateBanner.innerHTML = `
+      <div class="flex items-center justify-between max-w-7xl mx-auto">
+        <span>Yeni bir sürüm mevcut!</span>
+        <button onclick="window.location.reload()" 
+                class="bg-blue-700 px-4 py-2 rounded hover:bg-blue-800">
+          Güncelle
+        </button>
+      </div>
+    `;
+    document.body.appendChild(updateBanner);
+  }
+
+  showInstallPrompt(deferredPrompt) {
+    // Show install prompt after some user interaction
+    setTimeout(() => {
+      const installBanner = document.createElement('div');
+      installBanner.className = 'fixed bottom-4 right-4 bg-white shadow-lg rounded-lg p-4 max-w-sm z-50';
+      installBanner.innerHTML = `
+        <div class="flex items-center space-x-3">
+          <div class="flex-1">
+            <h3 class="font-semibold">Uygulamayı Yükle</h3>
+            <p class="text-sm text-gray-600">Daha iyi deneyim için uygulamayı yükleyin</p>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                    class="text-gray-400 hover:text-gray-600">×</button>
+            <button onclick="window.app.installApp()" 
+                    class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">
+              Yükle
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(installBanner);
+    }, 5000);
+  }
+
+  async installApp() {
+    if (this.deferredPrompt) {
+      this.deferredPrompt.prompt();
+      const { outcome } = await this.deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      this.deferredPrompt = null;
+    }
+  }
+}
+
+// Initialize app when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  window.app = new KolajAIApp();
 });
 
-// Initialize application
-function initializeApp() {
-    initSearch();
-    initCart();
-    initAuctions();
-    initModals();
-    initTooltips();
-    initLazyLoading();
-}
-
-// Search functionality
-function initSearch() {
-    const searchForm = document.querySelector('form[action="/products"]');
-    const searchInput = searchForm?.querySelector('input[name="search"]');
-    
-    if (searchInput) {
-        let searchTimeout;
-        
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                if (this.value.length >= 3) {
-                    performSearch(this.value);
-                }
-            }, 300);
-        });
-        
-        // Hide search results when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!searchForm.contains(e.target)) {
-                hideSearchResults();
-            }
-        });
-    }
-}
-
-// Perform search
-async function performSearch(query) {
-    try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const products = await response.json();
-        showSearchResults(products);
-    } catch (error) {
-        console.error('Search error:', error);
-    }
-}
-
-// Show search results
-function showSearchResults(products) {
-    const searchForm = document.querySelector('form[action="/products"]');
-    let resultsContainer = document.getElementById('search-results');
-    
-    if (!resultsContainer) {
-        resultsContainer = document.createElement('div');
-        resultsContainer.id = 'search-results';
-        resultsContainer.className = 'search-results';
-        searchForm.appendChild(resultsContainer);
-    }
-    
-    if (products.length === 0) {
-        resultsContainer.innerHTML = '<div class="search-result-item">Ürün bulunamadı</div>';
-    } else {
-        resultsContainer.innerHTML = products.slice(0, 5).map(product => `
-            <div class="search-result-item" onclick="window.location.href='/product/${product.id}'">
-                <div class="flex items-center space-x-3">
-                    <img src="${product.image || '/static/images/placeholder.jpg'}" 
-                         alt="${product.name}" class="w-10 h-10 object-cover rounded">
-                    <div>
-                        <div class="font-medium">${product.name}</div>
-                        <div class="text-sm text-gray-600">${formatPrice(product.price)}</div>
-                    </div>
-                </div>
-            </div>
-        `).join('');
-    }
-    
-    resultsContainer.style.display = 'block';
-}
-
-// Hide search results
-function hideSearchResults() {
-    const resultsContainer = document.getElementById('search-results');
-    if (resultsContainer) {
-        resultsContainer.style.display = 'none';
-    }
-}
-
-// Cart functionality
-function initCart() {
-    // Add to cart buttons
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const productId = this.dataset.productId;
-            const quantity = this.dataset.quantity || 1;
-            addToCart(productId, quantity);
-        });
-    });
-    
-    // Cart quantity updates
-    document.querySelectorAll('.cart-quantity').forEach(input => {
-        input.addEventListener('change', function() {
-            const itemId = this.dataset.itemId;
-            const quantity = parseInt(this.value);
-            updateCartItem(itemId, quantity);
-        });
-    });
-    
-    // Remove from cart
-    document.querySelectorAll('.remove-from-cart').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const itemId = this.dataset.itemId;
-            removeFromCart(itemId);
-        });
-    });
-}
-
-// Add product to cart
-async function addToCart(productId, quantity = 1) {
-    try {
-        const formData = new FormData();
-        formData.append('product_id', productId);
-        formData.append('quantity', quantity);
-        
-        const response = await fetch('/add-to-cart', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (response.ok) {
-            showNotification('Ürün sepete eklendi', 'success');
-            updateCartCount();
-        } else {
-            showNotification('Ürün sepete eklenemedi', 'error');
-        }
-    } catch (error) {
-        console.error('Add to cart error:', error);
-        showNotification('Bir hata oluştu', 'error');
-    }
-}
-
-// Update cart item
-async function updateCartItem(itemId, quantity) {
-    try {
-        const response = await fetch('/api/cart/update', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                item_id: parseInt(itemId),
-                quantity: quantity
-            })
-        });
-        
-        if (response.ok) {
-            location.reload(); // Reload to update totals
-        } else {
-            showNotification('Sepet güncellenemedi', 'error');
-        }
-    } catch (error) {
-        console.error('Update cart error:', error);
-        showNotification('Bir hata oluştu', 'error');
-    }
-}
-
-// Remove from cart
-async function removeFromCart(itemId) {
-    if (!confirm('Bu ürünü sepetten çıkarmak istediğinizden emin misiniz?')) {
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/cart/update', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                item_id: parseInt(itemId),
-                quantity: 0
-            })
-        });
-        
-        if (response.ok) {
-            location.reload();
-        } else {
-            showNotification('Ürün çıkarılamadı', 'error');
-        }
-    } catch (error) {
-        console.error('Remove from cart error:', error);
-        showNotification('Bir hata oluştu', 'error');
-    }
-}
-
-// Update cart count in header
-async function updateCartCount() {
-    try {
-        const response = await fetch('/api/cart/count');
-        const data = await response.json();
-        const cartBadge = document.querySelector('.cart-count');
-        if (cartBadge) {
-            cartBadge.textContent = data.count;
-        }
-    } catch (error) {
-        console.error('Update cart count error:', error);
-    }
-}
-
-// Auction functionality
-function initAuctions() {
-    // Place bid forms
-    document.querySelectorAll('.bid-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const auctionId = this.dataset.auctionId;
-            const amount = this.querySelector('input[name="amount"]').value;
-            placeBid(auctionId, amount);
-        });
-    });
-    
-    // Watch auction buttons
-    document.querySelectorAll('.watch-auction').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const auctionId = this.dataset.auctionId;
-            toggleWatchAuction(auctionId);
-        });
-    });
-    
-    // Initialize countdown timers
-    initCountdownTimers();
-}
-
-// Place bid on auction
-async function placeBid(auctionId, amount) {
-    try {
-        const formData = new FormData();
-        formData.append('auction_id', auctionId);
-        formData.append('amount', amount);
-        
-        const response = await fetch('/place-bid', {
-            method: 'POST',
-            body: formData
-        });
-        
-        if (response.ok) {
-            location.reload(); // Reload to show updated bid
-        } else {
-            const text = await response.text();
-            showNotification(text || 'Teklif verilemedi', 'error');
-        }
-    } catch (error) {
-        console.error('Place bid error:', error);
-        showNotification('Bir hata oluştu', 'error');
-    }
-}
-
-// Toggle watch auction
-async function toggleWatchAuction(auctionId) {
-    try {
-        const response = await fetch(`/api/auction/${auctionId}/watch`, {
-            method: 'POST'
-        });
-        
-        if (response.ok) {
-            const button = document.querySelector(`[data-auction-id="${auctionId}"]`);
-            button.classList.toggle('watching');
-            const isWatching = button.classList.contains('watching');
-            button.textContent = isWatching ? 'Takipten Çıkar' : 'Takip Et';
-        }
-    } catch (error) {
-        console.error('Toggle watch error:', error);
-    }
-}
-
-// Initialize countdown timers
-function initCountdownTimers() {
-    document.querySelectorAll('.countdown-timer').forEach(timer => {
-        const endTime = new Date(timer.dataset.endTime).getTime();
-        updateCountdown(timer, endTime);
-        
-        setInterval(() => {
-            updateCountdown(timer, endTime);
-        }, 1000);
-    });
-}
-
-// Update countdown display
-function updateCountdown(element, endTime) {
-    const now = new Date().getTime();
-    const distance = endTime - now;
-    
-    if (distance < 0) {
-        element.innerHTML = 'Süresi Doldu';
-        element.classList.add('expired');
-        return;
-    }
-    
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-    
-    let display = '';
-    if (days > 0) display += `${days}g `;
-    display += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    
-    element.innerHTML = display;
-}
-
-// Modal functionality
-function initModals() {
-    // Open modal buttons
-    document.querySelectorAll('[data-modal-target]').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const modalId = this.dataset.modalTarget;
-            openModal(modalId);
-        });
-    });
-    
-    // Close modal buttons
-    document.querySelectorAll('[data-modal-close]').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const modalId = this.dataset.modalClose;
-            closeModal(modalId);
-        });
-    });
-    
-    // Close modal on backdrop click
-    document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
-        backdrop.addEventListener('click', function(e) {
-            if (e.target === this) {
-                const modal = this.closest('.modal');
-                closeModal(modal.id);
-            }
-        });
-    });
-}
-
-// Open modal
-function openModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-}
-
-// Close modal
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-}
-
-// Tooltip functionality
-function initTooltips() {
-    document.querySelectorAll('[data-tooltip]').forEach(element => {
-        element.addEventListener('mouseenter', showTooltip);
-        element.addEventListener('mouseleave', hideTooltip);
-    });
-}
-
-// Show tooltip
-function showTooltip(e) {
-    const text = e.target.dataset.tooltip;
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip absolute bg-gray-800 text-white px-2 py-1 rounded text-sm z-50';
-    tooltip.textContent = text;
-    tooltip.id = 'tooltip';
-    
-    document.body.appendChild(tooltip);
-    
-    const rect = e.target.getBoundingClientRect();
-    tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
-    tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
-}
-
-// Hide tooltip
-function hideTooltip() {
-    const tooltip = document.getElementById('tooltip');
-    if (tooltip) {
-        tooltip.remove();
-    }
-}
-
-// Lazy loading for images
-function initLazyLoading() {
-    const images = document.querySelectorAll('img[data-src]');
-    
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src;
-                    img.classList.remove('lazy');
-                    imageObserver.unobserve(img);
-                }
-            });
-        });
-        
-        images.forEach(img => imageObserver.observe(img));
-    } else {
-        // Fallback for older browsers
-        images.forEach(img => {
-            img.src = img.dataset.src;
-        });
-    }
-}
-
-// Notification system
-function showNotification(message, type = 'info', duration = 5000) {
-    const notification = document.createElement('div');
-    notification.className = `notification fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 transform translate-x-full`;
-    
-    // Set notification style based on type
-    switch (type) {
-        case 'success':
-            notification.classList.add('bg-green-500', 'text-white');
-            break;
-        case 'error':
-            notification.classList.add('bg-red-500', 'text-white');
-            break;
-        case 'warning':
-            notification.classList.add('bg-yellow-500', 'text-white');
-            break;
-        default:
-            notification.classList.add('bg-blue-500', 'text-white');
-    }
-    
-    notification.innerHTML = `
-        <div class="flex items-center space-x-2">
-            <span>${message}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                </svg>
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(notification);
-    
-    // Animate in
-    setTimeout(() => {
-        notification.classList.remove('translate-x-full');
-    }, 100);
-    
-    // Auto remove
-    setTimeout(() => {
-        notification.classList.add('translate-x-full');
-        setTimeout(() => {
-            notification.remove();
-        }, 300);
-    }, duration);
-}
-
-// Utility functions
-function formatPrice(price) {
-    return new Intl.NumberFormat('tr-TR', {
-        style: 'currency',
-        currency: 'TRY'
-    }).format(price);
-}
-
-function formatDate(date) {
-    return new Intl.DateTimeFormat('tr-TR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    }).format(new Date(date));
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-// Export functions for global use
-window.KolajAI = {
-    addToCart,
-    updateCartItem,
-    removeFromCart,
-    placeBid,
-    showNotification,
-    formatPrice,
-    formatDate
-};
+// Export for use in other modules
+export default KolajAIApp;

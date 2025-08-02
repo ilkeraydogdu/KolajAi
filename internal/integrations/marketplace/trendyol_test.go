@@ -44,8 +44,8 @@ func TestTrendyolProvider_Initialize(t *testing.T) {
 		t.Errorf("supplierID = %v, want %v", provider.supplierID, "12345")
 	}
 	
-	if provider.baseURL != "https://sandbox-api.trendyol.com" {
-		t.Errorf("baseURL = %v, want %v", provider.baseURL, "https://sandbox-api.trendyol.com")
+	if provider.baseURL != "https://stageapi.trendyol.com" {
+		t.Errorf("baseURL = %v, want %v", provider.baseURL, "https://stageapi.trendyol.com")
 	}
 }
 
@@ -60,7 +60,7 @@ func TestTrendyolProvider_HealthCheck(t *testing.T) {
 		
 		// Verify user agent
 		userAgent := r.Header.Get("User-Agent")
-		expectedUserAgent := "KolajAI-Trendyol/1.0"
+		expectedUserAgent := "KolajAI-Integration/1.0"
 		if userAgent != expectedUserAgent {
 			t.Errorf("User-Agent = %v, want %v", userAgent, expectedUserAgent)
 		}
@@ -99,7 +99,7 @@ func TestTrendyolProvider_SyncProducts(t *testing.T) {
 		}
 		
 		// Verify path
-		expectedPath := "/sapigw/suppliers/12345/v2/products"
+		expectedPath := "/sapigw/suppliers/12345/products"
 		if r.URL.Path != expectedPath {
 			t.Errorf("Path = %v, want %v", r.URL.Path, expectedPath)
 		}
