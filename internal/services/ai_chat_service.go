@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"kolajAi/internal/models"
+
 	"kolajAi/internal/repository"
 )
 
@@ -595,7 +595,7 @@ Provide helpful, accurate, and engaging responses. If discussing products, be sp
 Response:`, context, chatContext, message)
 }
 
-func (s *AIChatService) callOpenAI(ctx context.Context, prompt, model string, maxTokens int) (string, error) {
+func (s *AIChatService) callOpenAI(_ context.Context, _, _ string, _ int) (string, error) {
 	// This would integrate with OpenAI API
 	// For now, return a mock response
 	return "I'm KolajAI, your intelligent shopping assistant. How can I help you today?", nil
@@ -616,26 +616,21 @@ func (s *AIChatService) generateChatActions(message, context string) []ChatActio
 	return actions
 }
 
-func (s *AIChatService) generateSuggestions(message, context string) []string {
+func (s *AIChatService) generateSuggestions(_, _ string) []string {
 	suggestions := []string{
 		"Can you recommend similar products?",
 		"What are the best deals today?",
 		"Help me find products in my budget",
-	}
-
-	if context == "support" {
-		suggestions = []string{
-			"I need help with my order",
-			"How do I return a product?",
-			"Contact customer support",
-		}
+		"I need help with my order",
+		"How do I return a product?",
+		"Contact customer support",
 	}
 
 	return suggestions
 }
 
 // Additional helper methods would be implemented here...
-func (s *AIChatService) buildIntentAnalysisPrompt(message, context string) string { return "" }
+func (s *AIChatService) buildIntentAnalysisPrompt(_, _ string) string { return "" }
 func (s *AIChatService) parseIntentResponse(response string) (*IntentAnalytics, error) { return nil, nil }
 func (s *AIChatService) getUserProfile(ctx context.Context, userID int64) (map[string]interface{}, error) { return nil, nil }
 func (s *AIChatService) buildRecommendationPrompt(message string, profile map[string]interface{}) string { return "" }

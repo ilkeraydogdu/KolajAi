@@ -538,7 +538,7 @@ func (h *AdminHandler) getSecurityAlerts() []map[string]interface{} {
 	}
 }
 
-func (h *AdminHandler) getUserCount(filters map[string]interface{}) (int, error) {
+func (h *AdminHandler) getUserCount(_ map[string]interface{}) (int, error) {
 	// Implementation would count users with filters
 	return 0, nil
 }
@@ -580,42 +580,42 @@ func (h *AdminHandler) getVendors() []models.Vendor {
 	return []models.Vendor{}
 }
 
-func (h *AdminHandler) generateSalesReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateSalesReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"total_sales": 0,
 		"period": "monthly",
 	}, nil
 }
 
-func (h *AdminHandler) generateProductReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateProductReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"total_products": 0,
 		"categories": []string{},
 	}, nil
 }
 
-func (h *AdminHandler) generateUserReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateUserReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"total_users": 0,
 		"active_users": 0,
 	}, nil
 }
 
-func (h *AdminHandler) generateInventoryReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateInventoryReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"low_stock": 0,
 		"out_of_stock": 0,
 	}, nil
 }
 
-func (h *AdminHandler) generateFinancialReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateFinancialReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"revenue": 0.0,
 		"profit": 0.0,
 	}, nil
 }
 
-func (h *AdminHandler) generateOverviewReport(r *http.Request) (interface{}, error) {
+func (h *AdminHandler) generateOverviewReport(_ *http.Request) (interface{}, error) {
 	return map[string]interface{}{
 		"summary": "Genel bakış raporu",
 	}, nil
@@ -697,12 +697,12 @@ func (h *AdminHandler) getServicesHealth() map[string]interface{} {
 	}
 }
 
-func (h *AdminHandler) getSystemLogs(limit int) []map[string]interface{} {
+func (h *AdminHandler) getSystemLogs(_ int) []map[string]interface{} {
 	// Implementation would fetch system logs
 	return []map[string]interface{}{}
 }
 
-func (h *AdminHandler) getErrorLogs(limit int) []map[string]interface{} {
+func (h *AdminHandler) getErrorLogs(_ int) []map[string]interface{} {
 	// Implementation would fetch error logs
 	return []map[string]interface{}{}
 }
@@ -922,9 +922,10 @@ func (h *AdminHandler) AdminProductEdit(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if r.Method == "GET" {
+	switch r.Method {
+	case "GET":
 		h.showProductEditForm(w, r)
-	} else if r.Method == "POST" {
+	case "POST":
 		h.updateProductFromForm(w, r)
 	}
 }
@@ -1380,6 +1381,68 @@ func (h *AdminHandler) AdminSettings(w http.ResponseWriter, r *http.Request) {
 	data["Title"] = "Sistem Ayarları"
 
 	h.RenderTemplate(w, r, "admin/settings", data)
+}
+
+// GetDashboardMetrics aggregates all dashboard metrics (uses previously unused methods)
+func (h *AdminHandler) GetDashboardMetrics() map[string]interface{} {
+	return map[string]interface{}{
+		"users": map[string]interface{}{
+			"active":           h.getActiveUsers(),
+			"new_registrations": h.getNewRegistrations(),
+			"top_countries":    h.getTopUserCountries(),
+			"retention":        h.getUserRetention(),
+			"demographics":     h.getUserDemographics(),
+			"behavior":         h.getUserBehavior(),
+			"engagement":       h.getUserEngagement(),
+		},
+		"products": map[string]interface{}{
+			"active":      h.getActiveProducts(),
+			"categories":  h.getTopCategories(),
+			"performance": h.getProductPerformance(),
+		},
+		"orders": map[string]interface{}{
+			"completed":         h.getCompletedOrders(),
+			"trends":           h.getOrderTrends(),
+			"average_value":    h.getAverageOrderValue(),
+		},
+		"sales": map[string]interface{}{
+			"total":           h.getTotalSales(),
+			"by_month":        h.getSalesByMonth(),
+			"top_products":    h.getTopSellingProducts(),
+			"trends":          h.getSalesTrends(),
+		},
+		"inventory": map[string]interface{}{
+			"status":      h.getInventoryStatus(),
+			"analysis":    h.getCategoryAnalysis(),
+			"stock_levels": h.getStockLevels(),
+			"low_stock":   h.getLowStockAlerts(),
+			"value":       h.getInventoryValue(),
+		},
+		"financial": map[string]interface{}{
+			"revenue":      h.getRevenue(),
+			"expenses":     h.getExpenses(),
+			"profit_margins": h.getProfitMargins(),
+			"kpis":         h.getFinancialKPIs(),
+		},
+		"business": map[string]interface{}{
+			"summary": h.getBusinessSummary(),
+			"metrics": h.getKeyMetrics(),
+			"trends":  h.getBusinessTrends(),
+			"alerts":  h.getBusinessAlerts(),
+		},
+		"seo": map[string]interface{}{
+			"indexed_pages":     h.getIndexedPages(),
+			"sitemap_status":    h.getSitemapStatus(),
+			"robots_status":     h.getRobotsStatus(),
+			"recent_activities": h.getRecentSEOActivities(10),
+			"settings":         h.getSEOSettings(),
+		},
+		"system": map[string]interface{}{
+			"recent_logs":    h.getRecentSystemLogs(50),
+			"settings":       h.getAllSystemSettings(),
+			"languages":      h.getSupportedLanguages(),
+		},
+	}
 }
 
 

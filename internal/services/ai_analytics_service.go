@@ -181,7 +181,7 @@ func (s *AIAnalyticsService) analyzeCategoryTrend(category models.Category) (*Ma
 }
 
 // generateTrendPrediction generates a human-readable trend prediction
-func (s *AIAnalyticsService) generateTrendPrediction(trendScore float64, sales, views int) string {
+func (s *AIAnalyticsService) generateTrendPrediction(trendScore float64, _, _ int) string {
 	if trendScore > 0.5 {
 		return "Güçlü büyüme trendi - Yatırım fırsatı"
 	} else if trendScore > 0.2 {
@@ -304,7 +304,7 @@ func (s *AIAnalyticsService) analyzeSentiment(product *models.Product) float64 {
 }
 
 // determineMarketPosition determines the market position of a product
-func (s *AIAnalyticsService) determineMarketPosition(product *models.Product, performanceScore float64) string {
+func (s *AIAnalyticsService) determineMarketPosition(_ *models.Product, performanceScore float64) string {
 	if performanceScore > 0.8 {
 		return "leader"
 	} else if performanceScore > 0.6 {
@@ -604,7 +604,7 @@ func (s *AIAnalyticsService) calculatePriceImpact(product *models.Product, newPr
 	return salesChange, revenueChange, marketShare
 }
 
-func (s *AIAnalyticsService) determinePricingStrategy(product *models.Product, recommendedPrice float64, similarProducts []*models.Product) string {
+func (s *AIAnalyticsService) determinePricingStrategy(_ *models.Product, recommendedPrice float64, similarProducts []*models.Product) string {
 	if len(similarProducts) == 0 {
 		return "value"
 	}

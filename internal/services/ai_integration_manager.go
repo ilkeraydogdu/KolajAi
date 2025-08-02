@@ -433,11 +433,8 @@ func (aim *AIIntegrationManager) runPerformanceMonitoring() {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 	
-	for {
-		select {
-		case <-ticker.C:
-			aim.analyzePerformanceMetrics()
-		}
+	for range ticker.C {
+		aim.analyzePerformanceMetrics()
 	}
 }
 
@@ -446,11 +443,8 @@ func (aim *AIIntegrationManager) runPredictiveAnalysis() {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
 	
-	for {
-		select {
-		case <-ticker.C:
-			aim.runPredictiveModels()
-		}
+	for range ticker.C {
+		aim.runPredictiveModels()
 	}
 }
 
@@ -459,11 +453,8 @@ func (aim *AIIntegrationManager) runAutoOptimization() {
 	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
 	
-	for {
-		select {
-		case <-ticker.C:
-			aim.executeOptimizations()
-		}
+	for range ticker.C {
+		aim.executeOptimizations()
 	}
 }
 
@@ -472,11 +463,8 @@ func (aim *AIIntegrationManager) runHealthMonitoring() {
 	ticker := time.NewTicker(15 * time.Second)
 	defer ticker.Stop()
 	
-	for {
-		select {
-		case <-ticker.C:
-			aim.monitorIntegrationHealth()
-		}
+	for range ticker.C {
+		aim.monitorIntegrationHealth()
 	}
 }
 
@@ -485,11 +473,8 @@ func (aim *AIIntegrationManager) runModelTraining() {
 	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
 	
-	for {
-		select {
-		case <-ticker.C:
-			aim.trainModels()
-		}
+	for range ticker.C {
+		aim.trainModels()
 	}
 }
 
@@ -568,7 +553,7 @@ func (aim *AIIntegrationManager) getIntegrationHealthFactor(integrationID string
 }
 
 // getCurrentLoadFactor gets current load factor
-func (aim *AIIntegrationManager) getCurrentLoadFactor(integrationID string) float64 {
+func (aim *AIIntegrationManager) getCurrentLoadFactor(_ string) float64 {
 	// Simulate load factor calculation
 	return 0.8 + (0.4 * math.Sin(float64(time.Now().Unix())/200.0))
 }
@@ -717,7 +702,7 @@ func (aim *AIIntegrationManager) optimizeIntegration(integrationID string, metri
 }
 
 // generateOptimizations generates optimization recommendations
-func (aim *AIIntegrationManager) generateOptimizations(integrationID string, metric *PerformanceMetric) []OptimizationTip {
+func (aim *AIIntegrationManager) generateOptimizations(_ string, metric *PerformanceMetric) []OptimizationTip {
 	tips := []OptimizationTip{}
 	
 	if metric.ResponseTime > 2000 {
@@ -800,13 +785,13 @@ func (aim *AIIntegrationManager) getPerformanceScore(integrationID string) float
 }
 
 // getReliabilityScore gets reliability score
-func (aim *AIIntegrationManager) getReliabilityScore(integrationID string) float64 {
+func (aim *AIIntegrationManager) getReliabilityScore(_ string) float64 {
 	// Simulate reliability score calculation
 	return 0.95 + (0.1 * math.Sin(float64(time.Now().Unix())/1000))
 }
 
 // getAvailabilityScore gets availability score
-func (aim *AIIntegrationManager) getAvailabilityScore(integrationID string) float64 {
+func (aim *AIIntegrationManager) getAvailabilityScore(_ string) float64 {
 	// Simulate availability score calculation
 	return 0.99 + (0.01 * math.Sin(float64(time.Now().Unix())/2000))
 }
@@ -874,7 +859,7 @@ func (aim *AIIntegrationManager) getCurrentMetrics(integrationID string) map[str
 }
 
 // getHistoricalBaseline gets historical baseline for an integration
-func (aim *AIIntegrationManager) getHistoricalBaseline(integrationID string) map[string]interface{} {
+func (aim *AIIntegrationManager) getHistoricalBaseline(_ string) map[string]interface{} {
 	// Simulate historical baseline
 	return map[string]interface{}{
 		"response_time": 150.0,
