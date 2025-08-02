@@ -357,6 +357,11 @@ func main() {
 
 	// Statik dosyalar
 	appRouter.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+	
+	// Webpack built assets
+	appRouter.Handle("/static/css/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
+	appRouter.Handle("/static/js/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
+	appRouter.Handle("/static/images/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
 
 	// SEO rotaları
 	appRouter.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
