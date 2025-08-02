@@ -208,7 +208,7 @@ func NewIntegrationMetrics() *IntegrationMetrics {
 func NewAlertManager() *AlertManager {
 	return &AlertManager{
 		rules:         make([]IntegrationAlertRule, 0),
-		notifications: make(chan Alert, 1000),
+		notifications: make(chan Alert, 100), // Reduced from 1000 to 100
 		subscribers:   make([]AlertSubscriber, 0),
 	}
 }

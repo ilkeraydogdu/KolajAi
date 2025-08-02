@@ -16,6 +16,7 @@
 
 <div class="form-body mt-4">
   <form class="row g-3" method="POST" action="/register" data-validate="true" id="registerForm" data-rules='{{.ValidationRules}}'>
+    {{if .CSRFToken}}<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">{{end}}
     <div class="col-12">
       <label for="inputName" class="form-label">Ad Soyad</label>
       <input type="text" class="form-control" id="inputName" name="name" placeholder="Ahmet Yılmaz" required minlength="5" 

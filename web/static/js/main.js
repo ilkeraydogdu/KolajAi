@@ -44,10 +44,18 @@ class KolajAIApp {
       // Setup performance monitoring
       this.setupPerformanceMonitoring();
       
-      console.log('KolajAI App initialized successfully');
+      // Only log in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('KolajAI App initialized successfully');
+      }
       
     } catch (error) {
-      console.error('Failed to initialize KolajAI App:', error);
+      // Always log errors but sanitize in production
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to initialize KolajAI App:', error);
+      } else {
+        console.error('Application initialization failed');
+      }
       this.handleInitError(error);
     }
   }

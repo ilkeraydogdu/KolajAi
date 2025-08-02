@@ -81,9 +81,9 @@ RUN mkdir -p /app/data /app/logs /app/uploads /app/temp && \
 # Switch to non-root user
 USER kolajai
 
-# Health check
+# Health check (using built-in HTTP client)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8081/health || exit 1
+    CMD ./main --health-check || exit 1
 
 # Expose port
 EXPOSE 8081

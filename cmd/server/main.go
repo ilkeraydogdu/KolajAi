@@ -67,6 +67,15 @@ func init() {
 
 
 func main() {
+	// Handle health check flag
+	if len(os.Args) > 1 && os.Args[1] == "--health-check" {
+		resp, err := http.Get("http://localhost:8081/health")
+		if err != nil || resp.StatusCode != 200 {
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
 	MainLogger.Println("KolajAI Enterprise uygulaması başlatılıyor...")
 
 	// Konfigürasyon yükle

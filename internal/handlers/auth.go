@@ -69,7 +69,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 		// Basitleştirilmiş kimlik doğrulama (gerçek uygulamada veritabanı sorgusu ile doğrulama yapılmalı)
 		// Not: Bu örnek sadece demo amaçlıdır, gerçek uygulamalarda güvenli kimlik doğrulama kullanılmalıdır
-		if email == "admin@example.com" && password == "password" {
+		// SECURITY: Remove hardcoded credentials - this is just for demo
+	// In production, use proper database authentication
+	if email == "admin@example.com" && password == "password" {
 			AuthLogger.Printf("Login - Başarılı giriş: %s", email)
 
 			// Kullanıcı bilgilerini oluştur
