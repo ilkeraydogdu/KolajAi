@@ -263,7 +263,7 @@ func (h *AIHandler) GetAIDashboard(w http.ResponseWriter, r *http.Request) {
 	recommendations, err := h.aiService.GetPersonalizedRecommendations(int(user.ID), 6)
 	if err != nil {
 		Logger.Printf("Error getting recommendations for dashboard: %v", err)
-		recommendations = make([]*services.ProductRecommendation, 0)
+		recommendations = make([]*services.AIProductRecommendation, 0)
 	}
 	data["Recommendations"] = recommendations
 
@@ -301,7 +301,7 @@ func (h *AIHandler) GetRecommendationsPage(w http.ResponseWriter, r *http.Reques
 	recommendations, err := h.aiService.GetPersonalizedRecommendations(int(user.ID), limit)
 	if err != nil {
 		Logger.Printf("Error getting recommendations: %v", err)
-		recommendations = make([]*services.ProductRecommendation, 0)
+		recommendations = make([]*services.AIProductRecommendation, 0)
 	}
 
 	// Prepare template data

@@ -3,9 +3,7 @@ package services
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
 	"fmt"
-	"math"
 	"sort"
 	"time"
 
@@ -68,7 +66,7 @@ type CustomerMetrics struct {
 	CustomerRetention   float64                `json:"customer_retention"`
 	CustomerLifetime    float64                `json:"customer_lifetime_value"`
 	ChurnRate           float64                `json:"churn_rate"`
-	CustomerSegments    []CustomerSegment      `json:"customer_segments"`
+	CustomerSegments    []AnalyticsCustomerSegment      `json:"customer_segments"`
 	CustomerBehavior    CustomerBehavior       `json:"customer_behavior"`
 	CustomerSatisfaction CustomerSatisfaction  `json:"customer_satisfaction"`
 	CustomerJourney     CustomerJourneyAnalysis `json:"customer_journey"`
@@ -159,7 +157,7 @@ type SalesFunnelAnalysis struct {
 	Conversion  float64 `json:"conversion_rate"`
 }
 
-type CustomerSegment struct {
+type AnalyticsCustomerSegment struct {
 	Name        string  `json:"name"`
 	Count       int     `json:"count"`
 	Revenue     float64 `json:"revenue"`
@@ -625,8 +623,8 @@ func (s *AdvancedAnalyticsService) GetRealTimeMetrics(ctx context.Context) (map[
 }
 
 // GetCustomerSegmentAnalysis analyzes customer segments
-func (s *AdvancedAnalyticsService) GetCustomerSegmentAnalysis(ctx context.Context) ([]CustomerSegment, error) {
-	segments := []CustomerSegment{}
+func (s *AdvancedAnalyticsService) GetCustomerSegmentAnalysis(ctx context.Context) ([]AnalyticsCustomerSegment, error) {
+	segments := []AnalyticsCustomerSegment{}
 
 	// RFM Analysis (Recency, Frequency, Monetary)
 	query := `
@@ -691,7 +689,7 @@ func (s *AdvancedAnalyticsService) GetCustomerSegmentAnalysis(ctx context.Contex
 
 	totalCustomers := 0
 	for rows.Next() {
-		var segment CustomerSegment
+		var segment AnalyticsCustomerSegment
 		var avgScore float64
 		
 		err := rows.Scan(&segment.Name, &segment.Count, &avgScore)
@@ -923,18 +921,18 @@ func (s *AdvancedAnalyticsService) generateProductMetrics(ctx context.Context, s
 	return metrics, nil
 }
 
-func (s *AdvancedAnalyticsService) generateMarketingMetrics(ctx context.Context, startDate, endDate time.Time) (*MarketingMetrics, error) {
+func (s *AdvancedAnalyticsService) generateMarketingMetrics(_ context.Context, _, _ time.Time) (*MarketingMetrics, error) {
 	return &MarketingMetrics{
 		ChannelAttribution: make(map[string]float64),
 		CampaignPerformance: []CampaignAnalysis{},
 	}, nil
 }
 
-func (s *AdvancedAnalyticsService) generateOperationalMetrics(ctx context.Context, startDate, endDate time.Time) (*OperationalMetrics, error) {
+func (s *AdvancedAnalyticsService) generateOperationalMetrics(_ context.Context, _, _ time.Time) (*OperationalMetrics, error) {
 	return &OperationalMetrics{}, nil
 }
 
-func (s *AdvancedAnalyticsService) generatePredictionMetrics(ctx context.Context, startDate, endDate time.Time) (*PredictionMetrics, error) {
+func (s *AdvancedAnalyticsService) generatePredictionMetrics(_ context.Context, _, _ time.Time) (*PredictionMetrics, error) {
 	return &PredictionMetrics{
 		SalesForecast:    []ForecastPoint{},
 		DemandForecast:   []DemandPrediction{},

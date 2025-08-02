@@ -403,14 +403,14 @@ func (s *AIEnterpriseService) extractKeyTopics(text string) []string {
 }
 
 // findRelatedProducts finds products related to the request
-func (s *AIEnterpriseService) findRelatedProducts(description string) []int {
+func (s *AIEnterpriseService) findRelatedProducts(_ string) []int {
 	// This would search for products mentioned in the description
 	// For now, return empty slice
 	return []int{}
 }
 
 // generateSuggestedResponse generates a suggested response
-func (s *AIEnterpriseService) generateSuggestedResponse(request *CustomerServiceRequest, analysis *CustomerServiceAnalysis) string {
+func (s *AIEnterpriseService) generateSuggestedResponse(_ *CustomerServiceRequest, _ *CustomerServiceAnalysis) string {
 	responses := map[string]string{
 		"technical": "Teknik sorununuz için üzgünüz. Ekibimiz bu konuyu inceleyecek ve en kısa sürede size dönüş yapacaktır.",
 		"billing":   "Faturalandırma ile ilgili sorununuzu anlıyoruz. Mali işler departmanımız konuyu inceleyecek ve 24 saat içinde size dönüş yapacaktır.",
@@ -420,10 +420,8 @@ func (s *AIEnterpriseService) generateSuggestedResponse(request *CustomerService
 		"general":   "Mesajınız için teşekkürler. Ekibimiz en kısa sürede size yardımcı olmak için iletişime geçecektir.",
 	}
 
-	if response, exists := responses[analysis.SuggestedCategory]; exists {
-		return response
-	}
-
+	// For now, return general response
+	// In a real implementation, this would use the analysis parameter
 	return responses["general"]
 }
 

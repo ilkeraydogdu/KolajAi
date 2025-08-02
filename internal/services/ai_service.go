@@ -27,14 +27,14 @@ func NewAIService(repo database.SimpleRepository, productService *ProductService
 }
 
 // ProductRecommendation represents a product recommendation with score
-type ProductRecommendation struct {
+type AIProductRecommendation struct {
 	Product *models.Product `json:"product"`
 	Score   float64         `json:"score"`
 	Reason  string          `json:"reason"`
 }
 
-// PriceOptimization represents price optimization suggestions
-type PriceOptimization struct {
+// AIPriceOptimization represents price optimization suggestions
+type AIPriceOptimization struct {
 	ProductID          int     `json:"product_id"`
 	CurrentPrice       float64 `json:"current_price"`
 	SuggestedPrice     float64 `json:"suggested_price"`
@@ -61,7 +61,7 @@ type SearchResult struct {
 }
 
 // GetPersonalizedRecommendations returns personalized product recommendations for a user
-func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*ProductRecommendation, error) {
+func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*AIProductRecommendation, error) {
 	startTime := time.Now()
 
 	// Get user's order history
@@ -101,7 +101,7 @@ func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*Pr
 		return nil, fmt.Errorf("failed to get products: %w", err)
 	}
 
-	recommendations := make([]*ProductRecommendation, 0)
+	recommendations := make([]*AIProductRecommendation, 0)
 
 	// Score products based on user preferences
 	for _, product := range allProducts {
@@ -113,7 +113,7 @@ func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*Pr
 		reason := s.generateRecommendationReason(&product, score)
 
 		if score > 0.3 { // Minimum threshold
-			recommendations = append(recommendations, &ProductRecommendation{
+			recommendations = append(recommendations, &AIProductRecommendation{
 				Product: &product,
 				Score:   score,
 				Reason:  reason,
@@ -136,7 +136,7 @@ func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*Pr
 }
 
 // calculateRecommendationScore calculates a recommendation score for a product
-func (s *AIService) calculateRecommendationScore(product *models.Product, categoryScores, brandScores map[string]float64, priceRange struct{ min, max, avg float64 }) float64 {
+func (s *AIService) calculateRecommendationScore(product *models.Product, _, _ map[string]float64, priceRange struct{ min, max, avg float64 }) float64 {
 	score := 0.0
 
 	// Base score from product popularity (view count, rating, etc.)
@@ -199,7 +199,7 @@ func (s *AIService) generateRecommendationReason(product *models.Product, score 
 }
 
 // OptimizeProductPricing provides AI-powered price optimization suggestions
-func (s *AIService) OptimizeProductPricing(productID int) (*PriceOptimization, error) {
+func (s *AIService) OptimizeProductPricing(productID int) (*AIPriceOptimization, error) {
 	product, err := s.productService.GetProductByID(productID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get product: %w", err)
@@ -222,7 +222,7 @@ func (s *AIService) OptimizeProductPricing(productID int) (*PriceOptimization, e
 	}
 
 	if validProducts == 0 {
-		return &PriceOptimization{
+		return &AIPriceOptimization{
 			ProductID:          productID,
 			CurrentPrice:       product.Price,
 			SuggestedPrice:     product.Price,
@@ -244,7 +244,7 @@ func (s *AIService) OptimizeProductPricing(productID int) (*PriceOptimization, e
 	confidence := s.calculatePriceConfidence(validProducts, product.ViewCount)
 	reasoning := s.generatePriceReasoning(product.Price, suggestedPrice, marketAverage)
 
-	return &PriceOptimization{
+	return &AIPriceOptimization{
 		ProductID:          productID,
 		CurrentPrice:       product.Price,
 		SuggestedPrice:     suggestedPrice,
@@ -318,7 +318,7 @@ func (s *AIService) getSimilarProducts(product *models.Product, limit int) ([]*m
 }
 
 // calculateOptimalPrice calculates the optimal price based on market data
-func (s *AIService) calculateOptimalPrice(product *models.Product, marketAverage float64, similarProducts []*models.Product) float64 {
+func (s *AIService) calculateOptimalPrice(product *models.Product, marketAverage float64, _ []*models.Product) float64 {
 	// Base price on market average
 	suggestedPrice := marketAverage
 

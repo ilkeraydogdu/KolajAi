@@ -196,14 +196,14 @@ func (s *AIAdvancedService) generateWithDALLE3(req AIImageGenerationRequest) (*A
 }
 
 // generateWithStableDiffusion generates images using Stable Diffusion
-func (s *AIAdvancedService) generateWithStableDiffusion(req AIImageGenerationRequest) (*AIImageGenerationResponse, error) {
+func (s *AIAdvancedService) generateWithStableDiffusion(_ AIImageGenerationRequest) (*AIImageGenerationResponse, error) {
 	// Implement Stable Diffusion API call
 	// This would use Stability AI or Replicate API
 	return nil, fmt.Errorf("stable diffusion implementation pending")
 }
 
 // generateWithMidjourney generates images using Midjourney
-func (s *AIAdvancedService) generateWithMidjourney(req AIImageGenerationRequest) (*AIImageGenerationResponse, error) {
+func (s *AIAdvancedService) generateWithMidjourney(_ AIImageGenerationRequest) (*AIImageGenerationResponse, error) {
 	// Implement Midjourney API call
 	// This would use unofficial Midjourney API or Discord integration
 	return nil, fmt.Errorf("midjourney implementation pending")
@@ -445,7 +445,7 @@ func (s *AIAdvancedService) SendChatMessage(sessionID string, message string) (*
 }
 
 // getAIChatResponse gets AI response for a chat message
-func (s *AIAdvancedService) getAIChatResponse(sessionID, message string) (*AIChatMessage, error) {
+func (s *AIAdvancedService) getAIChatResponse(_, message string) (*AIChatMessage, error) {
 	// Get session history
 	// This would need implementation
 	

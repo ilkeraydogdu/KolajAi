@@ -105,8 +105,16 @@ func (e *IntegrationError) JSON() ([]byte, error) {
 	return json.Marshal(e)
 }
 
-// Is checks if the error matches the given error code
-func (e *IntegrationError) Is(code ErrorCode) bool {
+// Is checks if the error matches a specific error
+func (e *IntegrationError) Is(target error) bool {
+	if targetErr, ok := target.(*IntegrationError); ok {
+		return e.Code == targetErr.Code
+	}
+	return false
+}
+
+// HasCode checks if the error matches a specific error code
+func (e *IntegrationError) HasCode(code ErrorCode) bool {
 	return e.Code == code
 }
 
