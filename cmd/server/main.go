@@ -673,5 +673,12 @@ func main() {
 
 	MainLogger.Printf("KolajAI Enterprise uygulaması başlatıldı. %s adresinde dinleniyor...", addr)
 	MainLogger.Printf("Tüm gelişmiş sistemler aktif: Session, Cache, Security, SEO, Notifications, Reporting, Testing, Error Management")
-	MainLogger.Fatal(server.ListenAndServe())
+	MainLogger.Printf("Web tarayıcınızda http://localhost%s adresini ziyaret edin", addr)
+	MainLogger.Printf("Static dosyalar /static/ altında serve ediliyor")
+	MainLogger.Printf("Templates web/templates/ klasöründen yüklendi")
+	
+	// Server'ı başlat
+	if err := server.ListenAndServe(); err != nil {
+		MainLogger.Fatalf("Server başlatılamadı: %v", err)
+	}
 }

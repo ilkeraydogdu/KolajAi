@@ -252,6 +252,9 @@ func (h *Handler) RenderTemplate(w http.ResponseWriter, r *http.Request, name st
 
 	h.SessionManager.Logger.Printf("Şablon verileri: %+v", templateContext)
 
+	// Content-Type header'ını ayarla
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
 	// Şablonu render et
 	err = h.Templates.ExecuteTemplate(w, name, templateContext)
 	if err != nil {
