@@ -6,50 +6,57 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"log"
 	
 	"github.com/gorilla/mux"
+	"kolajAi/internal/repository"
+	"kolajAi/internal/models"
+	"kolajAi/internal/database"
 )
 
 // AdminHandler handles admin-related requests
 type AdminHandler struct {
 	*Handler
+	AdminRepo *repository.AdminRepository
 }
 
 // NewAdminHandler creates a new admin handler
-func NewAdminHandler(h *Handler) *AdminHandler {
+func NewAdminHandler(h *Handler, db *database.MySQLRepository) *AdminHandler {
 	return &AdminHandler{
-		Handler: h,
+		Handler:   h,
+		AdminRepo: repository.NewAdminRepository(db),
 	}
 }
 
 // AdminDashboard handles admin dashboard page
 func (h *AdminHandler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
-	// Mock admin dashboard data
+	// Get dashboard statistics from database
+	stats, err := h.AdminRepo.GetDashboardStats()
+	if err != nil {
+		log.Printf("Error getting dashboard stats: %v", err)
+		h.HandleError(w, r, err, "Dashboard verilerini alırken hata oluştu")
+		return
+	}
+
+	// Get recent orders
+	recentOrders, err := h.AdminRepo.GetRecentOrders(5)
+	if err != nil {
+		log.Printf("Error getting recent orders: %v", err)
+		recentOrders = []map[string]interface{}{}
+	}
+
+	// Get recent users
+	recentUsers, err := h.AdminRepo.GetRecentUsers(5)
+	if err != nil {
+		log.Printf("Error getting recent users: %v", err)
+		recentUsers = []map[string]interface{}{}
+	}
+
 	data := map[string]interface{}{
-		"Title": "Admin Dashboard",
-		"Stats": map[string]interface{}{
-			"TotalUsers":    1234,
-			"TotalOrders":   567,
-			"TotalProducts": 890,
-			"TotalRevenue":  "₺123,456.78",
-		},
-		"RecentOrders": []map[string]interface{}{
-			{
-				"ID":          "ORD-001",
-				"CustomerName": "John Doe",
-				"Amount":      "₺299.99",
-				"Status":      "completed",
-				"Date":        "2024-01-15",
-			},
-		},
-		"RecentUsers": []map[string]interface{}{
-			{
-				"ID":    1,
-				"Name":  "Jane Smith",
-				"Email": "jane@example.com",
-				"Date":  "2024-01-15",
-			},
-		},
+		"Title":        "Admin Dashboard",
+		"Stats":        stats,
+		"RecentOrders": recentOrders,
+		"RecentUsers":  recentUsers,
 	}
 	
 	h.RenderTemplate(w, r, "admin/dashboard", data)
@@ -57,22 +64,54 @@ func (h *AdminHandler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 
 // AdminUsers handles admin users page
 func (h *AdminHandler) AdminUsers(w http.ResponseWriter, r *http.Request) {
-	// Mock users data
+	// Get query parameters
+	page := 1
+	if p := r.URL.Query().Get("page"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+
+	limit := 20
+	filters := make(map[string]interface{})
+	
+	// Get filters from query params
+	if status := r.URL.Query().Get("status"); status != "" {
+		filters["status"] = status
+	}
+	if role := r.URL.Query().Get("role"); role != "" {
+		filters["role"] = role
+	}
+	if search := r.URL.Query().Get("search"); search != "" {
+		filters["search"] = search
+	}
+
+	// Get users from database
+	users, total, err := h.AdminRepo.GetUsers(page, limit, filters)
+	if err != nil {
+		log.Printf("Error getting users: %v", err)
+		h.HandleError(w, r, err, "Kullanıcı verileri alınırken hata oluştu")
+		return
+	}
+
+	// Calculate pagination
+	totalPages := int((total + int64(limit) - 1) / int64(limit))
+
+	// Get user statistics
+	stats, err := h.AdminRepo.GetDashboardStats()
+	if err != nil {
+		log.Printf("Error getting user stats: %v", err)
+		stats = make(map[string]interface{})
+	}
+
 	data := map[string]interface{}{
-		"Title": "User Management",
-		"Users": []map[string]interface{}{
-			{
-				"ID":        1,
-				"Name":      "John Doe",
-				"Email":     "john@example.com",
-				"Status":    "active",
-				"CreatedAt": "2024-01-01",
-				"LastLogin": "2024-01-15",
-			},
-		},
-		"TotalCount":  100,
-		"CurrentPage": 1,
-		"TotalPages":  10,
+		"Title":       "User Management",
+		"Users":       users,
+		"TotalCount":  total,
+		"CurrentPage": page,
+		"TotalPages":  totalPages,
+		"Stats":       stats,
+		"Filters":     filters,
 	}
 	
 	h.RenderTemplate(w, r, "admin/users", data)
@@ -80,35 +119,51 @@ func (h *AdminHandler) AdminUsers(w http.ResponseWriter, r *http.Request) {
 
 // AdminOrders handles admin orders page
 func (h *AdminHandler) AdminOrders(w http.ResponseWriter, r *http.Request) {
-	// Mock orders data
+	// Get query parameters
+	page := 1
+	if p := r.URL.Query().Get("page"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+
+	limit := 20
+	filters := make(map[string]interface{})
+	
+	// Get filters from query params
+	if status := r.URL.Query().Get("status"); status != "" {
+		filters["status"] = status
+	}
+	if paymentStatus := r.URL.Query().Get("payment_status"); paymentStatus != "" {
+		filters["payment_status"] = paymentStatus
+	}
+
+	// Get orders from database
+	orders, total, err := h.AdminRepo.GetOrders(page, limit, filters)
+	if err != nil {
+		log.Printf("Error getting orders: %v", err)
+		h.HandleError(w, r, err, "Sipariş verileri alınırken hata oluştu")
+		return
+	}
+
+	// Calculate pagination
+	totalPages := int((total + int64(limit) - 1) / int64(limit))
+
+	// Get order statistics
+	stats, err := h.AdminRepo.GetDashboardStats()
+	if err != nil {
+		log.Printf("Error getting order stats: %v", err)
+		stats = make(map[string]interface{})
+	}
+
 	data := map[string]interface{}{
-		"Title": "Order Management",
-		"Orders": []map[string]interface{}{
-			{
-				"ID":            "ORD-001",
-				"CustomerName":  "John Doe",
-				"CustomerEmail": "john@example.com",
-				"Amount":        "₺299.99",
-				"Status":        "pending",
-				"CreatedAt":     "2024-01-15",
-				"Items": []map[string]interface{}{
-					{
-						"Name":     "Product 1",
-						"Quantity": 2,
-						"Price":    "₺149.99",
-					},
-				},
-			},
-		},
-		"Stats": map[string]interface{}{
-			"TotalOrders":     567,
-			"PendingOrders":   23,
-			"CompletedOrders": 544,
-			"TotalRevenue":    "₺123,456.78",
-		},
-		"TotalCount":  567,
-		"CurrentPage": 1,
-		"TotalPages":  57,
+		"Title":       "Order Management",
+		"Orders":      orders,
+		"TotalCount":  total,
+		"CurrentPage": page,
+		"TotalPages":  totalPages,
+		"Stats":       stats,
+		"Filters":     filters,
 	}
 	
 	h.RenderTemplate(w, r, "admin/orders", data)
@@ -116,29 +171,52 @@ func (h *AdminHandler) AdminOrders(w http.ResponseWriter, r *http.Request) {
 
 // AdminProducts handles admin products page
 func (h *AdminHandler) AdminProducts(w http.ResponseWriter, r *http.Request) {
-	// Mock products data
+	// Get query parameters
+	page := 1
+	if p := r.URL.Query().Get("page"); p != "" {
+		if parsed, err := strconv.Atoi(p); err == nil && parsed > 0 {
+			page = parsed
+		}
+	}
+
+	limit := 20
+	filters := make(map[string]interface{})
+	
+	// Get filters from query params
+	if status := r.URL.Query().Get("status"); status != "" {
+		filters["status"] = status
+	}
+	if categoryID := r.URL.Query().Get("category_id"); categoryID != "" {
+		filters["category_id"] = categoryID
+	}
+
+	// Get products from database
+	products, total, err := h.AdminRepo.GetProducts(page, limit, filters)
+	if err != nil {
+		log.Printf("Error getting products: %v", err)
+		h.HandleError(w, r, err, "Ürün verileri alınırken hata oluştu")
+		return
+	}
+
+	// Calculate pagination
+	totalPages := int((total + int64(limit) - 1) / int64(limit))
+
+	// Get categories for filter dropdown (simplified for now)
+	categories := []map[string]interface{}{
+		{"ID": 1, "Name": "Electronics"},
+		{"ID": 2, "Name": "Clothing"},
+		{"ID": 3, "Name": "Books"},
+		{"ID": 4, "Name": "Home & Garden"},
+	}
+
 	data := map[string]interface{}{
-		"Title": "Product Management",
-		"Products": []map[string]interface{}{
-			{
-				"ID":          1,
-				"Name":        "Sample Product",
-				"SKU":         "SKU-001",
-				"Price":       "₺99.99",
-				"Stock":       50,
-				"Status":      "active",
-				"Category":    "Electronics",
-				"CreatedAt":   "2024-01-01",
-				"Image":       "/static/images/product-placeholder.jpg",
-			},
-		},
-		"Categories": []map[string]interface{}{
-			{"ID": 1, "Name": "Electronics"},
-			{"ID": 2, "Name": "Clothing"},
-		},
-		"TotalCount":  890,
-		"CurrentPage": 1,
-		"TotalPages":  89,
+		"Title":       "Product Management",
+		"Products":    products,
+		"Categories":  categories,
+		"TotalCount":  total,
+		"CurrentPage": page,
+		"TotalPages":  totalPages,
+		"Filters":     filters,
 	}
 	
 	h.RenderTemplate(w, r, "admin/products", data)
@@ -247,19 +325,27 @@ func (h *AdminHandler) AdminVendors(w http.ResponseWriter, r *http.Request) {
 
 // AdminSystemHealth handles admin system health page
 func (h *AdminHandler) AdminSystemHealth(w http.ResponseWriter, r *http.Request) {
-	// Mock system health data
+	// Get real system health data
+	systemHealth, err := h.AdminRepo.GetSystemHealth()
+	if err != nil {
+		log.Printf("Error getting system health: %v", err)
+		systemHealth = map[string]interface{}{
+			"OverallStatus": "unhealthy",
+			"HealthScore":   0,
+			"DatabaseStatus": "disconnected",
+		}
+	}
+
+	// Add additional system metrics (these would typically come from system monitoring tools)
+	systemHealth["Uptime"] = "Runtime metrics not available"
+	systemHealth["ServerLoad"] = "N/A"
+	systemHealth["MemoryUsage"] = "N/A"
+	systemHealth["MemoryUsed"] = "N/A"
+	systemHealth["DatabaseConnections"] = "N/A"
+
 	data := map[string]interface{}{
 		"Title": "System Health",
-		"SystemHealth": map[string]interface{}{
-			"OverallStatus":       "healthy",
-			"HealthScore":         95,
-			"ServerLoad":          75,
-			"Uptime":             "15 days",
-			"DatabaseStatus":     "connected",
-			"DatabaseConnections": 25,
-			"MemoryUsage":        68,
-			"MemoryUsed":         "2.1GB",
-		},
+		"SystemHealth": systemHealth,
 		"ServerStatus": map[string]interface{}{
 			"CPU": map[string]interface{}{
 				"Status": "healthy",
@@ -476,11 +562,16 @@ func (h *AdminHandler) AdminSEO(w http.ResponseWriter, r *http.Request) {
 
 // APIGetUserStats returns user statistics
 func (h *AdminHandler) APIGetUserStats(w http.ResponseWriter, r *http.Request) {
-	stats := map[string]interface{}{
-		"totalUsers":    1234,
-		"activeUsers":   1100,
-		"newUsers":      134,
-		"bannedUsers":   0,
+	stats, err := h.AdminRepo.GetDashboardStats()
+	if err != nil {
+		log.Printf("Error getting user stats: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "İstatistikler alınırken hata oluştu",
+		})
+		return
 	}
 	
 	w.Header().Set("Content-Type", "application/json")
@@ -493,57 +584,139 @@ func (h *AdminHandler) APIGetUserStats(w http.ResponseWriter, r *http.Request) {
 // APIUpdateUserStatus updates user status
 func (h *AdminHandler) APIUpdateUserStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userID := vars["id"]
+	userIDStr := vars["id"]
+	
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz kullanıcı ID",
+		})
+		return
+	}
 	
 	var request struct {
 		Status string `json:"status"`
 	}
 	
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz istek formatı",
+		})
 		return
 	}
 	
-	// Mock update
+	// Convert status to boolean
+	isActive := request.Status == "active"
+	
+	// Update user status in database
+	err = h.AdminRepo.UpdateUserStatus(userID, isActive)
+	if err != nil {
+		log.Printf("Error updating user status: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Kullanıcı durumu güncellenirken hata oluştu",
+		})
+		return
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": fmt.Sprintf("User %s status updated to %s", userID, request.Status),
+		"message": fmt.Sprintf("Kullanıcı %d durumu %s olarak güncellendi", userID, request.Status),
 	})
 }
 
 // APIUpdateOrderStatus updates order status
 func (h *AdminHandler) APIUpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	orderID := vars["id"]
+	orderIDStr := vars["id"]
+	
+	orderID, err := strconv.ParseInt(orderIDStr, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz sipariş ID",
+		})
+		return
+	}
 	
 	var request struct {
 		Status string `json:"status"`
 	}
 	
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz istek formatı",
+		})
 		return
 	}
 	
-	// Mock update
+	// Update order status in database
+	err = h.AdminRepo.UpdateOrderStatus(orderID, request.Status)
+	if err != nil {
+		log.Printf("Error updating order status: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Sipariş durumu güncellenirken hata oluştu",
+		})
+		return
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": fmt.Sprintf("Order %s status updated to %s", orderID, request.Status),
+		"message": fmt.Sprintf("Sipariş %d durumu %s olarak güncellendi", orderID, request.Status),
 	})
 }
 
 // APIDeleteUser deletes a user
 func (h *AdminHandler) APIDeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	userID := vars["id"]
+	userIDStr := vars["id"]
 	
-	// Mock deletion
+	userID, err := strconv.ParseInt(userIDStr, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz kullanıcı ID",
+		})
+		return
+	}
+	
+	// Delete user in database (soft delete)
+	err = h.AdminRepo.DeleteUser(userID)
+	if err != nil {
+		log.Printf("Error deleting user: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Kullanıcı silinirken hata oluştu",
+		})
+		return
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": fmt.Sprintf("User %s deleted successfully", userID),
+		"message": fmt.Sprintf("Kullanıcı %d başarıyla silindi", userID),
 	})
 }
 
@@ -562,17 +735,39 @@ func (h *AdminHandler) APIDeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 // APISystemHealthCheck performs system health check
 func (h *AdminHandler) APISystemHealthCheck(w http.ResponseWriter, r *http.Request) {
-	// Mock health check
-	healthData := map[string]interface{}{
-		"status":       "healthy",
-		"score":        95,
-		"timestamp":    time.Now().Format(time.RFC3339),
-		"checks": []map[string]interface{}{
-			{"name": "database", "status": "pass", "responseTime": "12ms"},
-			{"name": "cache", "status": "pass", "responseTime": "5ms"},
-			{"name": "storage", "status": "pass", "usage": "45%"},
-		},
+	// Get real system health data
+	healthData, err := h.AdminRepo.GetSystemHealth()
+	if err != nil {
+		log.Printf("Error getting system health: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Sistem sağlığı kontrol edilirken hata oluştu",
+		})
+		return
 	}
+	
+	// Add timestamp and format response
+	healthData["timestamp"] = time.Now().Format(time.RFC3339)
+	
+	// Add basic checks
+	checks := []map[string]interface{}{}
+	if healthData["DatabaseStatus"] == "connected" {
+		checks = append(checks, map[string]interface{}{
+			"name": "database", 
+			"status": "pass", 
+			"details": "Database connection successful",
+		})
+	} else {
+		checks = append(checks, map[string]interface{}{
+			"name": "database", 
+			"status": "fail", 
+			"details": "Database connection failed",
+		})
+	}
+	
+	healthData["checks"] = checks
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -615,6 +810,232 @@ func (h *AdminHandler) APIAnalyzeSEO(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
 		"data":    analysisData,
+	})
+}
+
+// APICreateUser creates a new user
+func (h *AdminHandler) APICreateUser(w http.ResponseWriter, r *http.Request) {
+	var user models.User
+	
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz istek formatı",
+		})
+		return
+	}
+	
+	// Validate user data
+	if err := user.Validate(); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		})
+		return
+	}
+	
+	// Set timestamps
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+	
+	// Create user in database
+	userID, err := h.AdminRepo.Create("users", user)
+	if err != nil {
+		log.Printf("Error creating user: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Kullanıcı oluşturulurken hata oluştu",
+		})
+		return
+	}
+	
+	user.ID = userID
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Kullanıcı başarıyla oluşturuldu",
+		"data":    user,
+	})
+}
+
+// APIBulkProductAction handles bulk product actions
+func (h *AdminHandler) APIBulkProductAction(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		Action     string  `json:"action"`
+		ProductIDs []int64 `json:"product_ids"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz istek formatı",
+		})
+		return
+	}
+	
+	if len(request.ProductIDs) == 0 {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "En az bir ürün seçilmelidir",
+		})
+		return
+	}
+	
+	// Process bulk action
+	var newStatus string
+	switch request.Action {
+	case "approve":
+		newStatus = "active"
+	case "deactivate":
+		newStatus = "inactive"
+	case "reject":
+		newStatus = "rejected"
+	case "delete":
+		// For delete, we'll set status to inactive (soft delete)
+		newStatus = "inactive"
+	default:
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz işlem",
+		})
+		return
+	}
+	
+	// Update products in database
+	successCount := 0
+	for _, productID := range request.ProductIDs {
+		err := h.AdminRepo.Update("products", productID, map[string]interface{}{
+			"status":     newStatus,
+			"updated_at": time.Now(),
+		})
+		if err != nil {
+			log.Printf("Error updating product %d: %v", productID, err)
+		} else {
+			successCount++
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("%d ürün başarıyla güncellendi", successCount),
+		"data": map[string]interface{}{
+			"processed": len(request.ProductIDs),
+			"success":   successCount,
+			"failed":    len(request.ProductIDs) - successCount,
+		},
+	})
+}
+
+// APIUpdateProductStatus updates individual product status
+func (h *AdminHandler) APIUpdateProductStatus(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	productIDStr := vars["id"]
+	
+	productID, err := strconv.ParseInt(productIDStr, 10, 64)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz ürün ID",
+		})
+		return
+	}
+	
+	var request struct {
+		Status string `json:"status"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz istek formatı",
+		})
+		return
+	}
+	
+	// Update product status in database
+	err = h.AdminRepo.Update("products", productID, map[string]interface{}{
+		"status":     request.Status,
+		"updated_at": time.Now(),
+	})
+	if err != nil {
+		log.Printf("Error updating product status: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Ürün durumu güncellenirken hata oluştu",
+		})
+		return
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("Ürün %d durumu %s olarak güncellendi", productID, request.Status),
+	})
+}
+
+// APIExportUsers exports user data
+func (h *AdminHandler) APIExportUsers(w http.ResponseWriter, r *http.Request) {
+	var request struct {
+		Format string   `json:"format"`
+		Fields []string `json:"fields"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz istek formatı",
+		})
+		return
+	}
+	
+	// Get all users (for now, we'll limit to 1000)
+	users, _, err := h.AdminRepo.GetUsers(1, 1000, map[string]interface{}{})
+	if err != nil {
+		log.Printf("Error getting users for export: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Kullanıcı verileri alınırken hata oluştu",
+		})
+		return
+	}
+	
+	// For now, we'll return the data as JSON
+	// In a real implementation, you would generate CSV/Excel/PDF based on the format
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("%d kullanıcı %s formatında hazırlandı", len(users), request.Format),
+		"data": map[string]interface{}{
+			"format":     request.Format,
+			"fields":     request.Fields,
+			"users":      users,
+			"total":      len(users),
+			"exportedAt": time.Now().Format(time.RFC3339),
+		},
 	})
 }
 

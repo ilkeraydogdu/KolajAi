@@ -415,7 +415,7 @@ func main() {
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
 
 	// Admin handler'ı oluştur
-	adminHandler := handlers.NewAdminHandler(h)
+	adminHandler := handlers.NewAdminHandler(h, db)
 
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
@@ -717,32 +717,36 @@ func main() {
 	appRouter.HandleFunc("/ai/analytics/customer-segments", aiAnalyticsHandler.GetCustomerSegmentsPage)
 	appRouter.HandleFunc("/ai/analytics/pricing-strategy", aiAnalyticsHandler.GetPricingStrategyPage)
 
-	// Admin rotaları
-	appRouter.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
+	// Admin rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/admin/", middlewareStack.AdminMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/admin/" || r.URL.Path == "/admin" {
 			adminHandler.AdminDashboard(w, r)
 			return
 		}
 		http.NotFound(w, r)
-	})
-	appRouter.HandleFunc("/admin/dashboard", adminHandler.AdminDashboard)
-	appRouter.HandleFunc("/admin/users", adminHandler.AdminUsers)
-	appRouter.HandleFunc("/admin/orders", adminHandler.AdminOrders)
-	appRouter.HandleFunc("/admin/products", adminHandler.AdminProducts)
-	appRouter.HandleFunc("/admin/reports", adminHandler.AdminReports)
-	appRouter.HandleFunc("/admin/vendors", adminHandler.AdminVendors)
-	appRouter.HandleFunc("/admin/system-health", adminHandler.AdminSystemHealth)
-	appRouter.HandleFunc("/admin/seo", adminHandler.AdminSEO)
+	})))
+	appRouter.Handle("/admin/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminDashboard)))
+	appRouter.Handle("/admin/users", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminUsers)))
+	appRouter.Handle("/admin/orders", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminOrders)))
+	appRouter.Handle("/admin/products", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminProducts)))
+	appRouter.Handle("/admin/reports", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminReports)))
+	appRouter.Handle("/admin/vendors", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminVendors)))
+	appRouter.Handle("/admin/system-health", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminSystemHealth)))
+	appRouter.Handle("/admin/seo", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.AdminSEO)))
 
-	// Admin API rotaları
-	appRouter.HandleFunc("/api/admin/users/stats", adminHandler.APIGetUserStats)
-	appRouter.HandleFunc("/api/admin/users/{id}/status", adminHandler.APIUpdateUserStatus)
-	appRouter.HandleFunc("/api/admin/users/{id}", adminHandler.APIDeleteUser)
-	appRouter.HandleFunc("/api/admin/orders/{id}/status", adminHandler.APIUpdateOrderStatus)
-	appRouter.HandleFunc("/api/admin/orders/{id}", adminHandler.APIDeleteOrder)
-	appRouter.HandleFunc("/api/admin/system/health", adminHandler.APISystemHealthCheck)
-	appRouter.HandleFunc("/api/admin/seo/sitemap", adminHandler.APIGenerateSitemap)
-	appRouter.HandleFunc("/api/admin/seo/analyze", adminHandler.APIAnalyzeSEO)
+	// Admin API rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/api/admin/users/stats", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIGetUserStats)))
+	appRouter.Handle("/api/admin/users/create", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APICreateUser)))
+	appRouter.Handle("/api/admin/users/export", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIExportUsers)))
+	appRouter.Handle("/api/admin/users/{id}/status", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIUpdateUserStatus)))
+	appRouter.Handle("/api/admin/users/{id}", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIDeleteUser)))
+	appRouter.Handle("/api/admin/orders/{id}/status", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIUpdateOrderStatus)))
+	appRouter.Handle("/api/admin/orders/{id}", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIDeleteOrder)))
+	appRouter.Handle("/api/admin/products/bulk-action", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIBulkProductAction)))
+	appRouter.Handle("/api/admin/products/{id}/status", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIUpdateProductStatus)))
+	appRouter.Handle("/api/admin/system/health", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APISystemHealthCheck)))
+	appRouter.Handle("/api/admin/seo/sitemap", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIGenerateSitemap)))
+	appRouter.Handle("/api/admin/seo/analyze", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIAnalyzeSEO)))
 
 	// Test rotaları (sadece development ortamında)
 	if cfg.Environment == "development" {
