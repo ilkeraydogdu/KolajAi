@@ -283,6 +283,47 @@ func main() {
 			}
 			return result
 		},
+		"iterate": func(n int) []int {
+			result := make([]int, n)
+			for i := 0; i < n; i++ {
+				result[i] = i
+			}
+			return result
+		},
+		"sub": func(a, b int) int {
+			return a - b
+		},
+		"lt": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal < bVal
+		},
 		"mul": func(a, b interface{}) float64 {
 			var numA, numB float64
 			switch v := a.(type) {

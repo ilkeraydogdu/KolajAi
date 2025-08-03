@@ -64,7 +64,7 @@ func (h *EcommerceHandler) Products(w http.ResponseWriter, r *http.Request) {
 	categoryID := r.URL.Query().Get("category")
 	search := r.URL.Query().Get("search")
 	page := h.getPageFromQuery(r)
-	limit := 20
+	limit := services.DefaultProductLimit
 	offset := (page - 1) * limit
 
 	var products []models.Product

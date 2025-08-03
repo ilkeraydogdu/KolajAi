@@ -21,7 +21,7 @@ func (s *ProductService) CreateProduct(product *models.Product) error {
 	product.CreatedAt = time.Now()
 	product.UpdatedAt = time.Now()
 	if product.Status == "" {
-		product.Status = "draft"
+		product.Status = ProductStatusDraft
 	}
 
 	id, err := s.repo.CreateStruct("products", product)
@@ -78,7 +78,7 @@ func (s *ProductService) GetProductsByCategory(categoryID int, limit, offset int
 	var products []models.Product
 	conditions := map[string]interface{}{
 		"category_id": categoryID,
-		"status":      "active",
+		"status":      ProductStatusActive,
 	}
 
 	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, offset)
@@ -105,7 +105,7 @@ func (s *ProductService) GetFeaturedProducts(limit, offset int) ([]models.Produc
 	var products []models.Product
 	conditions := map[string]interface{}{
 		"is_featured": true,
-		"status":      "active",
+		"status":      ProductStatusActive,
 	}
 
 	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, offset)
@@ -127,9 +127,9 @@ func (s *ProductService) UpdateProductStock(productID int, quantity int) error {
 
 	// Update status based on stock
 	if quantity <= 0 {
-		product.Status = "out_of_stock"
-	} else if product.Status == "out_of_stock" {
-		product.Status = "active"
+		product.Status = ProductStatusOutOfStock
+	} else if product.Status == ProductStatusOutOfStock {
+		product.Status = ProductStatusActive
 	}
 
 	return s.UpdateProduct(productID, product)
@@ -161,7 +161,7 @@ func (s *ProductService) IncrementProductSales(productID int, quantity int) erro
 
 	// Update status if out of stock
 	if product.Stock <= 0 {
-		product.Status = "out_of_stock"
+		product.Status = ProductStatusOutOfStock
 	}
 
 	return s.UpdateProduct(productID, product)
@@ -231,7 +231,7 @@ func (s *ProductService) AddProductReview(review *models.ProductReview) error {
 	review.CreatedAt = time.Now()
 	review.UpdatedAt = time.Now()
 	if review.Status == "" {
-		review.Status = "pending"
+		review.Status = ReviewStatusPending
 	}
 
 	id, err := s.repo.CreateStruct("product_reviews", review)
@@ -240,8 +240,12 @@ func (s *ProductService) AddProductReview(review *models.ProductReview) error {
 	}
 	review.ID = int(id)
 
-	// Update product rating
-	go s.updateProductRating(review.ProductID)
+	// Update product rating synchronously to avoid race conditions
+	// In production, this should be moved to a job queue
+	if err := s.updateProductRating(review.ProductID); err != nil {
+		// Log error but don't fail the review creation
+		fmt.Printf("Warning: Failed to update product rating for product %d: %v\n", review.ProductID, err)
+	}
 
 	return nil
 }
@@ -251,7 +255,7 @@ func (s *ProductService) GetProductReviews(productID int, limit, offset int) ([]
 	var reviews []models.ProductReview
 	conditions := map[string]interface{}{
 		"product_id": productID,
-		"status":     "approved",
+		"status":     ReviewStatusApproved,
 	}
 
 	err := s.repo.FindAll("product_reviews", &reviews, conditions, "created_at DESC", limit, offset)
@@ -262,16 +266,25 @@ func (s *ProductService) GetProductReviews(productID int, limit, offset int) ([]
 }
 
 // updateProductRating updates the average rating for a product
-func (s *ProductService) updateProductRating(productID int) {
-	// This would typically be done with a SQL query to calculate average
-	// For now, we'll implement a basic version
-	reviews, err := s.GetProductReviews(productID, 0, 0)
+func (s *ProductService) updateProductRating(productID int) error {
+	// Get only approved reviews with limit to avoid memory issues
+	reviews, err := s.GetProductReviews(productID, MaxReviewsForRatingCalc, 0)
 	if err != nil {
-		return
+		return fmt.Errorf("failed to get product reviews: %w", err)
 	}
 
 	if len(reviews) == 0 {
-		return
+		// If no reviews, set rating to 0
+		product, err := s.GetProductByID(productID)
+		if err != nil {
+			return fmt.Errorf("failed to get product: %w", err)
+		}
+
+		product.Rating = 0
+		product.ReviewCount = 0
+		product.UpdatedAt = time.Now()
+
+		return s.UpdateProduct(productID, product)
 	}
 
 	var totalRating float64
@@ -283,14 +296,14 @@ func (s *ProductService) updateProductRating(productID int) {
 
 	product, err := s.GetProductByID(productID)
 	if err != nil {
-		return
+		return fmt.Errorf("failed to get product: %w", err)
 	}
 
 	product.Rating = avgRating
 	product.ReviewCount = len(reviews)
 	product.UpdatedAt = time.Now()
 
-	s.UpdateProduct(productID, product)
+	return s.UpdateProduct(productID, product)
 }
 
 // GetProductsBySKU retrieves a product by SKU
@@ -369,41 +382,82 @@ func (s *ProductService) GetRecentProducts(limit int) ([]models.Product, error) 
 func (s *ProductService) GetProductsWithFilters(filters map[string]interface{}, sortBy, sortOrder string, limit, offset int) ([]models.Product, error) {
 	var products []models.Product
 	
-	// Build conditions from filters
+	// Build conditions from filters with proper type checking
 	conditions := make(map[string]interface{})
 	
 	if category, ok := filters["category"]; ok && category != "" {
-		conditions["category"] = category
+		if categoryStr, ok := category.(string); ok && categoryStr != "" {
+			conditions["category_id"] = categoryStr
+		}
 	}
 	
-	if minPrice, ok := filters["min_price"]; ok && minPrice.(float64) > 0 {
-		conditions["price >="] = minPrice
+	if minPrice, ok := filters["min_price"]; ok {
+		if price, ok := minPrice.(float64); ok && price > 0 {
+			// Use proper field name without operators to avoid SQL injection
+			conditions["price_min"] = price // Repository should handle this properly
+		}
 	}
 	
-	if maxPrice, ok := filters["max_price"]; ok && maxPrice.(float64) > 0 {
-		conditions["price <="] = maxPrice
+	if maxPrice, ok := filters["max_price"]; ok {
+		if price, ok := maxPrice.(float64); ok && price > 0 {
+			conditions["price_max"] = price // Repository should handle this properly
+		}
 	}
 	
 	if status, ok := filters["status"]; ok && status != "" {
-		conditions["status"] = status
+		if statusStr, ok := status.(string); ok {
+			// Validate status to prevent injection
+			for _, validStatus := range ValidProductStatuses {
+				if statusStr == validStatus {
+					conditions["status"] = statusStr
+					break
+				}
+			}
+		}
 	}
 	
-	if vendorID, ok := filters["vendor_id"]; ok && vendorID.(int64) > 0 {
-		conditions["vendor_id"] = vendorID
+	if vendorID, ok := filters["vendor_id"]; ok {
+		if id, ok := vendorID.(int64); ok && id > 0 {
+			conditions["vendor_id"] = id
+		}
 	}
 	
-	// Build order by clause
+	// Validate and sanitize sort parameters to prevent SQL injection
 	orderBy := "created_at DESC"
 	if sortBy != "" {
-		if sortOrder == "" {
-			sortOrder = "ASC"
+		// Whitelist allowed sort columns
+		sortByValid := false
+		for _, col := range AllowedProductSortColumns {
+			if sortBy == col {
+				sortByValid = true
+				break
+			}
 		}
-		orderBy = fmt.Sprintf("%s %s", sortBy, sortOrder)
+		
+		if sortByValid {
+			// Validate sort order
+			sortOrderValid := false
+			for _, order := range ValidSortOrders {
+				if sortOrder == order {
+					sortOrderValid = true
+					break
+				}
+			}
+			if !sortOrderValid {
+				sortOrder = "ASC"
+			}
+			orderBy = fmt.Sprintf("%s %s", sortBy, sortOrder)
+		}
 	}
 	
 	err := s.repo.FindAll("products", &products, conditions, orderBy, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products with filters: %w", err)
+	}
+	
+	// Calculate discount prices for products
+	for i := range products {
+		products[i].CalculateDiscountPrice()
 	}
 	
 	return products, nil
