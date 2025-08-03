@@ -167,7 +167,8 @@ func CreateDefaultAdminUser(db *sql.DB) error {
 	if adminPassword == "" {
 		adminPassword = "admin123" // Fallback for development only
 	}
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
+	// Use stronger bcrypt cost for production security (12 instead of default 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), 12)
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}

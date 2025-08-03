@@ -79,9 +79,9 @@ const AuthHelpers = {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json'
       },
-      crossDomain: true,
+      crossDomain: false, // Restrict to same origin for security
       xhrFields: {
-        withCredentials: false
+        withCredentials: true // Include credentials for proper authentication
       },
       success: function(response) {
         console.log("AJAX response:", response);

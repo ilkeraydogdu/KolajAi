@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -51,8 +52,15 @@ func runDBQuery() {
 		os.Exit(1)
 	}
 
+	// Validate query argument to prevent command injection
+	query := os.Args[2]
+	if strings.Contains(query, ";") || strings.Contains(query, "&") || strings.Contains(query, "|") {
+		fmt.Println("Hata: Güvenlik nedeniyle geçersiz karakterler tespit edildi")
+		os.Exit(1)
+	}
+
 	args := []string{"run", filepath.Join("cmd", "db-tools", "dbquery", "main.go")}
-	args = append(args, os.Args[2:]...)
+	args = append(args, query) // Only add validated query
 
 	cmd := exec.Command("go", args...)
 	cmd.Stdout = os.Stdout

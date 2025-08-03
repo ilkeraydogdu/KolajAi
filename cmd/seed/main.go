@@ -58,7 +58,8 @@ func main() {
 		defaultAdminPassword = "admin123" // Fallback, production'da mutlaka env var kullanılmalı
 		fmt.Println("WARNING: ADMIN_PASSWORD environment variable not set, using default password")
 	}
-	adminPassword, _ := bcrypt.GenerateFromPassword([]byte(defaultAdminPassword), bcrypt.DefaultCost)
+	// Use stronger bcrypt cost for production security (12 instead of default 10)
+	adminPassword, _ := bcrypt.GenerateFromPassword([]byte(defaultAdminPassword), 12)
 	adminUser := models.User{
 		Name:      "Admin User",
 		Email:     "admin@kolajAi.com",

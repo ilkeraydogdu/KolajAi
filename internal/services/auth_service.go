@@ -154,7 +154,8 @@ func (s *AuthService) LoginUser(email, password string) (*models.User, error) {
 // CreateUserPassword creates a hashed password for a user
 func (s *AuthService) CreateUserPassword(password string) (string, error) {
 	// Şifreyi hashle
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// Use stronger bcrypt cost for production security (12 instead of default 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
 		return "", core.NewAuthError("Şifre hash'leme hatası", err)

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -220,13 +221,17 @@ func (ws *IntegrationWebhookService) extractEventType(headers map[string]string,
 	
 	// Try to extract from payload
 	var payload map[string]interface{}
-	if err := json.Unmarshal(body, &payload); err == nil {
-		if eventType, ok := payload["event_type"].(string); ok {
-			return eventType
-		}
-		if eventType, ok := payload["type"].(string); ok {
-			return eventType
-		}
+	if err := json.Unmarshal(body, &payload); err != nil {
+		// Log the error but continue processing
+		log.Printf("WARN - Failed to unmarshal webhook payload for event type detection: %v", err)
+		return "unknown"
+	}
+	
+	if eventType, ok := payload["event_type"].(string); ok {
+		return eventType
+	}
+	if eventType, ok := payload["type"].(string); ok {
+		return eventType
 	}
 	
 	return "unknown"

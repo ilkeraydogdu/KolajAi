@@ -57,7 +57,8 @@ func (r *UserRepository) RegisterUser(name, email, password, phone string) (int6
 
 	// Şifreyi hash'le
 	log.Printf("INFO - RegisterUser: Şifre hash'leme başlıyor")
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// Use stronger bcrypt cost for production security (12 instead of default 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		log.Printf("ERROR - RegisterUser: Şifre hash'leme hatası: %v", err)
 		return 0, core.NewDatabaseError("error hashing password", err)
@@ -211,7 +212,8 @@ func (r *UserRepository) ResetUserPassword(email, newPassword string) error {
 	} else {
 		// Yeni şifreyi hashle
 		log.Printf("INFO - ResetUserPassword: Şifre hash'leme başlıyor. Şifre uzunluğu: %d", len(newPassword))
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+		// Use stronger bcrypt cost for production security (12 instead of default 10)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
 		if err != nil {
 			log.Printf("ERROR - ResetUserPassword: Şifre hash'leme hatası: %v", err)
 			return core.NewDatabaseError("error hashing password", err)

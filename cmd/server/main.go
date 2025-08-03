@@ -70,10 +70,18 @@ func init() {
 func main() {
 	// Handle health check flag
 	if len(os.Args) > 1 && os.Args[1] == "--health-check" {
-		resp, err := http.Get("http://localhost:8081/health")
+		// Create HTTP client with timeout to prevent DoS
+		client := &http.Client{
+			Timeout: 5 * time.Second,
+		}
+		resp, err := client.Get("http://localhost:8081/health")
 		if err != nil || resp.StatusCode != 200 {
+			if resp != nil {
+				resp.Body.Close()
+			}
 			os.Exit(1)
 		}
+		resp.Body.Close()
 		os.Exit(0)
 	}
 
