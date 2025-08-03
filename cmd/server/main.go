@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -698,6 +699,17 @@ func main() {
 		ReadTimeout:  time.Duration(cfg.Server.ReadTimeout) * time.Second,
 		WriteTimeout: time.Duration(cfg.Server.WriteTimeout) * time.Second,
 		IdleTimeout:  time.Duration(cfg.Server.IdleTimeout) * time.Second,
+		// Security headers
+		TLSConfig: &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+			PreferServerCipherSuites: true,
+			CipherSuites: []uint16{
+				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+				tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+				tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			},
+		},
 	}
 
 	// Graceful shutdown için background process'ler başlat
@@ -714,7 +726,20 @@ func main() {
 	MainLogger.Printf("Templates web/templates/ klasöründen yüklendi")
 	
 	// Server'ı başlat
-	if err := server.ListenAndServe(); err != nil {
-		MainLogger.Fatalf("Server başlatılamadı: %v", err)
+	// Check for TLS certificates
+	certFile := os.Getenv("TLS_CERT_FILE")
+	keyFile := os.Getenv("TLS_KEY_FILE")
+	
+	if certFile != "" && keyFile != "" {
+		MainLogger.Printf("HTTPS sunucu başlatılıyor (TLS): %s", addr)
+		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {
+			MainLogger.Fatalf("HTTPS Server başlatılamadı: %v", err)
+		}
+	} else {
+		MainLogger.Printf("HTTP sunucu başlatılıyor (TLS YOK - sadece development): %s", addr)
+		MainLogger.Printf("Production için TLS_CERT_FILE ve TLS_KEY_FILE environment variables ayarlayın")
+		if err := server.ListenAndServe(); err != nil {
+			MainLogger.Fatalf("HTTP Server başlatılamadı: %v", err)
+		}
 	}
 }

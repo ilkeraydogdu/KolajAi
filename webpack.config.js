@@ -15,6 +15,8 @@ module.exports = {
   entry: {
     main: './web/static/js/main.js',
     auth: './web/static/js/auth.js',
+    utils: './web/static/js/utils.js',
+    services: './web/static/js/services.js',
     vendor: ['lodash', 'axios', 'chart.js']
   },
   

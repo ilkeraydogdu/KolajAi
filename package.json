@@ -14,7 +14,6 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "clean": "rimraf dist",
-    "serve": "serve -s dist",
     "pwa:generate": "workbox generateSW workbox-config.js"
   },
   "keywords": [
@@ -54,7 +53,6 @@
     "rimraf": "^5.0.5",
     "sass": "^1.69.5",
     "sass-loader": "^13.3.2",
-    "serve": "^10.0.2",
     "style-loader": "^3.3.3",
     "terser-webpack-plugin": "^5.3.9",
     "typescript": "^5.2.2",

@@ -23,10 +23,10 @@ database:
 security:
   # CRITICAL: All secrets MUST be loaded from environment variables in production
   # Default values are for development only and should NEVER be used in production
-  encryption_key: "${ENCRYPTION_KEY:-CHANGE_ME_IN_PRODUCTION_32_BYTES}"
-  jwt_secret: "${JWT_SECRET:-CHANGE_ME_IN_PRODUCTION}"
-  csrf_secret: "${CSRF_SECRET:-CHANGE_ME_IN_PRODUCTION}"
-  session_secret: "${SESSION_SECRET:-CHANGE_ME_IN_PRODUCTION}"
+  encryption_key: "${ENCRYPTION_KEY:-dev-key-32-chars-1234567890123}"
+  jwt_secret: "${JWT_SECRET:-dev-jwt-secret-change-in-production}"
+  csrf_secret: "${CSRF_SECRET:-dev-csrf-secret-change-in-production}"
+  session_secret: "${SESSION_SECRET:-dev-session-secret-change-in-production}"
   two_factor_enabled: false
   rate_limit_enabled: true
   cors_enabled: true

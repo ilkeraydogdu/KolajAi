@@ -21,7 +21,7 @@ COPY postcss.config.js ./
 RUN npm run build
 
 # Stage 2: Go Build
-FROM golang:1.21-alpine AS go-builder
+FROM golang:1.23-alpine AS go-builder
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates tzdata gcc musl-dev sqlite-dev

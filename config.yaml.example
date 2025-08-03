@@ -1,0 +1,156 @@
+environment: development
+
+server:
+  port: 8081
+  host: "0.0.0.0"
+  domain: "localhost"
+  read_timeout: 10
+  write_timeout: 10
+  idle_timeout: 120
+  max_header_bytes: 1048576
+
+database:
+  driver: "sqlite3"
+  host: "localhost"
+  port: 3306
+  name: "kolajAi.db"
+  user: ""
+  password: ""
+  max_open_conns: 25
+  max_idle_conns: 25
+  conn_max_lifetime: 5
+
+security:
+  # CRITICAL: All secrets MUST be loaded from environment variables in production
+  # Set these environment variables:
+  # export ENCRYPTION_KEY="your-32-character-encryption-key"
+  # export JWT_SECRET="your-jwt-secret"
+  # export CSRF_SECRET="your-csrf-secret"
+  # export SESSION_SECRET="your-session-secret"
+  encryption_key: "${ENCRYPTION_KEY}"
+  jwt_secret: "${JWT_SECRET}"
+  csrf_secret: "${CSRF_SECRET}"
+  session_secret: "${SESSION_SECRET}"
+  two_factor_enabled: false
+  rate_limit_enabled: true
+  cors_enabled: true
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8081"
+  
+  # Vault configuration
+  vault:
+    enabled: "${VAULT_ENABLED:-false}"
+    address: "${VAULT_ADDR:-http://localhost:8200}"
+    token: "${VAULT_TOKEN}"
+    path: "${VAULT_PATH:-secret/kolajAi}"
+  
+  # Credential rotation
+  credential_rotation:
+    enabled: true
+    check_interval: "1h"
+    default_rotation_period: "720h" # 30 days
+    notify_before: "72h" # 3 days
+
+cache:
+  driver: "memory"
+  host: "localhost"
+  port: 6379
+  password: ""
+  db: 0
+  default_ttl: "30m"
+  max_memory_usage: 1073741824
+
+email:
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 587
+  smtp_user: "${SMTP_USER}"
+  smtp_password: "${SMTP_PASSWORD}"
+  from_email: "noreply@kolajAi.com"
+  from_name: "KolajAI"
+  use_ssl: false
+  use_tls: true
+
+seo:
+  site_name: "KolajAI Enterprise Marketplace"
+  site_description: "Advanced AI-powered e-commerce platform"
+  site_keywords:
+    - "e-commerce"
+    - "AI"
+    - "marketplace"
+    - "online shopping"
+  default_language: "tr"
+  languages:
+    - "tr"
+    - "en"
+    - "ar"
+  google_analytics: "${GOOGLE_ANALYTICS_ID}"
+  google_tag_manager: "${GOOGLE_TAG_MANAGER_ID}"
+
+logging:
+  level: "info"
+  format: "json"
+  output: "stdout"
+  max_size: 100
+  max_backups: 3
+  max_age: 28
+  compress: true
+
+ai:
+  # AI API keys should be stored in vault or environment variables
+  openai_key: "${OPENAI_API_KEY}"
+  anthropic_key: "${ANTHROPIC_API_KEY}"
+  stability_ai_key: "${STABILITY_AI_API_KEY}"
+  replicate_key: "${REPLICATE_API_KEY}"
+  huggingface_key: "${HUGGINGFACE_API_KEY}"
+  default_credits: 100
+  credit_costs:
+    image_generation: 40
+    content_generation: 10
+    template_creation: 50
+    chat_message: 5
+    image_analysis: 15
+
+# Marketplace integrations - credentials should be in vault
+marketplace:
+  trendyol:
+    enabled: true
+    api_key: "${TRENDYOL_API_KEY}"
+    api_secret: "${TRENDYOL_API_SECRET}"
+    supplier_id: "${TRENDYOL_SUPPLIER_ID}"
+    environment: "sandbox"
+  
+  hepsiburada:
+    enabled: true
+    merchant_id: "${HEPSIBURADA_MERCHANT_ID}"
+    api_key: "${HEPSIBURADA_API_KEY}"
+    api_secret: "${HEPSIBURADA_API_SECRET}"
+    environment: "sandbox"
+  
+  n11:
+    enabled: true
+    api_key: "${N11_API_KEY}"
+    api_secret: "${N11_API_SECRET}"
+    environment: "sandbox"
+  
+  amazon:
+    enabled: true
+    merchant_id: "${AMAZON_MERCHANT_ID}"
+    access_key: "${AMAZON_ACCESS_KEY}"
+    secret_key: "${AMAZON_SECRET_KEY}"
+    marketplace_id: "${AMAZON_MARKETPLACE_ID}"
+    environment: "sandbox"
+  
+  ciceksepeti:
+    enabled: true
+    api_key: "${CICEKSEPETI_API_KEY}"
+    branch_code: "${CICEKSEPETI_BRANCH_CODE}"
+    environment: "sandbox"
+
+# Payment integrations - credentials should be in vault
+payment:
+  iyzico:
+    enabled: true
+    api_key: "${IYZICO_API_KEY}"
+    api_secret: "${IYZICO_API_SECRET}"
+    environment: "sandbox"
