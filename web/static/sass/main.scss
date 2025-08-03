@@ -1767,10 +1767,11 @@ form select.error:focus {
 
 
 .welcome-back-img {
+  position: relative;
+  
   @media (min-width:1280px) {
     position: absolute;
     bottom: 0;
     right: 2rem;
   }
-  position: relative;
 }

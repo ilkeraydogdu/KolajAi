@@ -1,0 +1,525 @@
+{{define "seller/dashboard"}}
+{{template "layout/dashboard" .}}
+
+{{define "content"}}
+<div class="seller-dashboard">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0">Satıcı Dashboard</h4>
+            <p class="mb-0 text-muted">{{.Seller.BusinessName}} - Hoş geldiniz!</p>
+        </div>
+        <div class="d-flex align-items-center">
+            <span class="badge bg-{{if eq .Seller.Status "active"}}success{{else if eq .Seller.Status "pending"}}warning{{else}}danger{{end}} me-2">
+                {{.Seller.StatusText}}
+            </span>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="material-icons-outlined me-2">settings</i>Hızlı İşlemler
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="/seller/products/add"><i class="material-icons-outlined me-2">add</i>Ürün Ekle</a></li>
+                    <li><a class="dropdown-item" href="/seller/orders"><i class="material-icons-outlined me-2">shopping_bag</i>Siparişler</a></li>
+                    <li><a class="dropdown-item" href="/seller/settings"><i class="material-icons-outlined me-2">store</i>Mağaza Ayarları</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/seller/help"><i class="material-icons-outlined me-2">help</i>Yardım</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-primary text-white me-3">
+                            <i class="material-icons-outlined">inventory</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{.Stats.TotalProducts}}</h5>
+                            <p class="mb-0 text-muted">Toplam Ürün</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-success">
+                            <i class="material-icons-outlined">trending_up</i>
+                            {{.Stats.ActiveProducts}} aktif
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-success text-white me-3">
+                            <i class="material-icons-outlined">shopping_cart</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{.Stats.TotalOrders}}</h5>
+                            <p class="mb-0 text-muted">Toplam Sipariş</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-warning">
+                            <i class="material-icons-outlined">pending</i>
+                            {{.Stats.PendingOrders}} bekleyen
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-info text-white me-3">
+                            <i class="material-icons-outlined">payments</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">₺{{.Stats.TotalRevenue}}</h5>
+                            <p class="mb-0 text-muted">Toplam Gelir</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-success">
+                            <i class="material-icons-outlined">trending_up</i>
+                            Bu ay: ₺{{.Stats.MonthlyRevenue}}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-warning text-white me-3">
+                            <i class="material-icons-outlined">star</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{.Stats.AverageRating}}</h5>
+                            <p class="mb-0 text-muted">Ortalama Puan</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-info">
+                            <i class="material-icons-outlined">rate_review</i>
+                            {{.Stats.TotalReviews}} değerlendirme
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-12 col-lg-8">
+            <!-- Recent Orders -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Son Siparişler</h6>
+                    <a href="/seller/orders" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                </div>
+                <div class="card-body p-0">
+                    {{if .RecentOrders}}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sipariş No</th>
+                                    <th>Müşteri</th>
+                                    <th>Ürün</th>
+                                    <th>Durum</th>
+                                    <th>Tutar</th>
+                                    <th>Tarih</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .RecentOrders}}
+                                <tr>
+                                    <td><strong>#{{.OrderNumber}}</strong></td>
+                                    <td>{{.Customer.FirstName}} {{.Customer.LastName}}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="{{index .Product.Images 0}}" alt="{{.Product.Name}}" 
+                                                 class="rounded me-2" width="40" height="40">
+                                            <div>
+                                                <div class="fw-bold">{{.Product.Name}}</div>
+                                                <small class="text-muted">Adet: {{.Quantity}}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{.StatusColor}}">{{.StatusText}}</span>
+                                    </td>
+                                    <td><strong>₺{{.TotalAmount}}</strong></td>
+                                    <td>{{.CreatedAt | formatDate}}</td>
+                                    <td>
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                                İşlem
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="/seller/orders/{{.ID}}">Detay</a></li>
+                                                {{if eq .Status "pending"}}
+                                                <li><a class="dropdown-item" onclick="updateOrderStatus({{.ID}}, 'processing')">Onayla</a></li>
+                                                {{end}}
+                                                {{if eq .Status "processing"}}
+                                                <li><a class="dropdown-item" onclick="updateOrderStatus({{.ID}}, 'shipped')">Kargola</a></li>
+                                                {{end}}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                    {{else}}
+                    <div class="text-center py-4">
+                        <i class="material-icons-outlined text-muted" style="font-size: 3rem;">shopping_bag</i>
+                        <p class="text-muted mt-2">Henüz sipariş yok</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+
+            <!-- Products Performance -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Ürün Performansı</h6>
+                    <a href="/seller/products" class="btn btn-sm btn-outline-primary">Ürünleri Yönet</a>
+                </div>
+                <div class="card-body">
+                    {{if .TopProducts}}
+                    <div class="row">
+                        {{range .TopProducts}}
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-center p-3 border rounded">
+                                <img src="{{index .Images 0}}" alt="{{.Name}}" class="rounded me-3" width="60" height="60">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{.Name}}</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">{{.SalesCount}} satış</small>
+                                        <small class="text-success fw-bold">₺{{.Revenue}}</small>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 4px;">
+                                        <div class="progress-bar" style="width: {{.PerformancePercentage}}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{else}}
+                    <div class="text-center py-3">
+                        <p class="text-muted">Ürün performans verisi yok</p>
+                        <a href="/seller/products/add" class="btn btn-primary">İlk Ürününüzü Ekleyin</a>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+
+            <!-- Sales Chart -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Satış Grafiği</h6>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-12 col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Hızlı İşlemler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="/seller/products/add" class="btn btn-primary">
+                            <i class="material-icons-outlined me-2">add</i>Yeni Ürün Ekle
+                        </a>
+                        <a href="/seller/inventory" class="btn btn-outline-warning">
+                            <i class="material-icons-outlined me-2">inventory_2</i>Stok Yönetimi
+                        </a>
+                        <a href="/seller/promotions" class="btn btn-outline-success">
+                            <i class="material-icons-outlined me-2">local_offer</i>Kampanya Oluştur
+                        </a>
+                        <a href="/seller/analytics" class="btn btn-outline-info">
+                            <i class="material-icons-outlined me-2">analytics</i>Detaylı Raporlar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Bildirimler</h6>
+                    <a href="/seller/notifications" class="text-primary">Tümü</a>
+                </div>
+                <div class="card-body p-0">
+                    {{if .Notifications}}
+                    <div class="list-group list-group-flush">
+                        {{range .Notifications}}
+                        <div class="list-group-item d-flex align-items-start">
+                            <div class="notification-icon bg-{{.Type}} me-3">
+                                <i class="material-icons-outlined">{{.Icon}}</i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{.Title}}</h6>
+                                <p class="mb-1 text-muted small">{{.Message}}</p>
+                                <small class="text-muted">{{.CreatedAt | formatTime}}</small>
+                            </div>
+                            {{if not .IsRead}}
+                            <div class="notification-dot"></div>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+                    {{else}}
+                    <div class="text-center py-3">
+                        <i class="material-icons-outlined text-muted">notifications</i>
+                        <p class="text-muted small mt-1">Yeni bildirim yok</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+
+            <!-- Store Performance -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Mağaza Performansı</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-primary">{{.Stats.StoreViews}}</h4>
+                                <small class="text-muted">Mağaza Görüntüleme</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success">{{.Stats.ConversionRate}}%</h4>
+                            <small class="text-muted">Dönüşüm Oranı</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-warning">{{.Stats.RepeatCustomers}}</h4>
+                                <small class="text-muted">Tekrar Müşteri</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info">{{.Stats.AverageOrderValue}}</h4>
+                            <small class="text-muted">Ort. Sipariş Tutarı</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reviews -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">Son Değerlendirmeler</h6>
+                    <a href="/seller/reviews" class="text-primary">Tümü</a>
+                </div>
+                <div class="card-body p-0">
+                    {{if .RecentReviews}}
+                    <div class="list-group list-group-flush">
+                        {{range .RecentReviews}}
+                        <div class="list-group-item">
+                            <div class="d-flex align-items-start">
+                                <img src="{{.Customer.Avatar}}" alt="{{.Customer.Name}}" class="rounded-circle me-2" width="32" height="32">
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h6 class="mb-0">{{.Customer.Name}}</h6>
+                                        <div class="text-warning">
+                                            {{range $i := iterate .Rating}}★{{end}}
+                                        </div>
+                                    </div>
+                                    <p class="mb-1 small">{{.Comment}}</p>
+                                    <small class="text-muted">{{.Product.Name}} - {{.CreatedAt | formatDate}}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{else}}
+                    <div class="text-center py-3">
+                        <i class="material-icons-outlined text-muted">rate_review</i>
+                        <p class="text-muted small mt-1">Henüz değerlendirme yok</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "page_css"}}
+<style>
+.widget-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.notification-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+}
+
+.notification-icon.bg-info {
+    background-color: #0dcaf0;
+}
+
+.notification-icon.bg-warning {
+    background-color: #ffc107;
+}
+
+.notification-icon.bg-success {
+    background-color: #198754;
+}
+
+.notification-icon.bg-danger {
+    background-color: #dc3545;
+}
+
+.notification-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #dc3545;
+    border-radius: 50%;
+    margin-top: 4px;
+}
+
+.progress {
+    background-color: #e9ecef;
+}
+
+.progress-bar {
+    background-color: #0d6efd;
+}
+</style>
+{{end}}
+
+{{define "page_js"}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Sales Chart
+const ctx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [{{range .SalesChartData.Labels}}'{{.}}',{{end}}],
+        datasets: [{
+            label: 'Satışlar',
+            data: [{{range .SalesChartData.Sales}}{{.}},{{end}}],
+            borderColor: '#0d6efd',
+            backgroundColor: 'rgba(13, 110, 253, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Gelir',
+            data: [{{range .SalesChartData.Revenue}}{{.}},{{end}}],
+            borderColor: '#198754',
+            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            tension: 0.4,
+            fill: true,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                grid: {
+                    drawOnChartArea: false,
+                },
+            }
+        }
+    }
+});
+
+function updateOrderStatus(orderId, status) {
+    if (confirm('Sipariş durumunu güncellemek istediğinizden emin misiniz?')) {
+        fetch('/seller/orders/' + orderId + '/status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Durum güncellenirken hata oluştu!');
+            }
+        })
+        .catch(error => {
+            alert('Bir hata oluştu!');
+        });
+    }
+}
+
+// Auto refresh notifications every 30 seconds
+setInterval(function() {
+    fetch('/seller/notifications/count')
+        .then(response => response.json())
+        .then(data => {
+            if (data.unread > 0) {
+                // Update notification badge if exists
+                const badge = document.querySelector('.notification-badge');
+                if (badge) {
+                    badge.textContent = data.unread;
+                    badge.style.display = 'block';
+                }
+            }
+        });
+}, 30000);
+
+// Initialize tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
+</script>
+{{end}}
+{{end}}

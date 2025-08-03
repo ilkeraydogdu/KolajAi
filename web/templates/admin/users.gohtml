@@ -1,0 +1,704 @@
+{{define "admin/users"}}
+{{template "layout/dashboard" .}}
+
+{{define "content"}}
+<div class="admin-users-page">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0">Kullanıcı Yönetimi</h4>
+            <p class="mb-0 text-muted">Tüm kullanıcıları yönetin ve düzenleyin</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                <i class="material-icons-outlined me-2">download</i>Dışa Aktar
+            </button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                <i class="material-icons-outlined me-2">person_add</i>Kullanıcı Ekle
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-primary text-white me-3">
+                            <i class="material-icons-outlined">people</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{.Stats.TotalUsers}}</h5>
+                            <p class="mb-0 text-muted">Toplam Kullanıcı</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-success">
+                            <i class="material-icons-outlined">trending_up</i>
+                            +{{.Stats.NewUsersThisWeek}} bu hafta
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-success text-white me-3">
+                            <i class="material-icons-outlined">verified_user</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{.Stats.ActiveUsers}}</h5>
+                            <p class="mb-0 text-muted">Aktif Kullanıcı</p>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-info">
+                            {{.Stats.ActiveUsersPercent}}% toplam
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-warning text-white me-3">
+                            <i class="material-icons-outlined">block</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{.Stats.BannedUsers}}</h5>
+                            <p class="mb-0 text-muted">Yasaklı Kullanıcı</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="widget-icon bg-info text-white me-3">
+                            <i class="material-icons-outlined">login</i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">{{.Stats.OnlineUsers}}</h5>
+                            <p class="mb-0 text-muted">Çevrimiçi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form id="filterForm" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Arama</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="search" placeholder="Ad, soyad, email..." value="{{.Filters.Search}}">
+                        <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                            <i class="material-icons-outlined">clear</i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select class="form-select" name="status">
+                        <option value="">Tümü</option>
+                        <option value="active" {{if eq .Filters.Status "active"}}selected{{end}}>Aktif</option>
+                        <option value="inactive" {{if eq .Filters.Status "inactive"}}selected{{end}}>Pasif</option>
+                        <option value="banned" {{if eq .Filters.Status "banned"}}selected{{end}}>Yasaklı</option>
+                        <option value="pending" {{if eq .Filters.Status "pending"}}selected{{end}}>Bekleyen</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Rol</label>
+                    <select class="form-select" name="role">
+                        <option value="">Tümü</option>
+                        <option value="user" {{if eq .Filters.Role "user"}}selected{{end}}>Kullanıcı</option>
+                        <option value="seller" {{if eq .Filters.Role "seller"}}selected{{end}}>Satıcı</option>
+                        <option value="admin" {{if eq .Filters.Role "admin"}}selected{{end}}>Admin</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Kayıt Tarihi</label>
+                    <select class="form-select" name="date_range">
+                        <option value="">Tümü</option>
+                        <option value="today" {{if eq .Filters.DateRange "today"}}selected{{end}}>Bugün</option>
+                        <option value="week" {{if eq .Filters.DateRange "week"}}selected{{end}}>Bu Hafta</option>
+                        <option value="month" {{if eq .Filters.DateRange "month"}}selected{{end}}>Bu Ay</option>
+                        <option value="year" {{if eq .Filters.DateRange "year"}}selected{{end}}>Bu Yıl</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Sıralama</label>
+                    <select class="form-select" name="sort">
+                        <option value="created_at_desc" {{if eq .Filters.Sort "created_at_desc"}}selected{{end}}>En Yeni</option>
+                        <option value="created_at_asc" {{if eq .Filters.Sort "created_at_asc"}}selected{{end}}>En Eski</option>
+                        <option value="name_asc" {{if eq .Filters.Sort "name_asc"}}selected{{end}}>A-Z</option>
+                        <option value="name_desc" {{if eq .Filters.Sort "name_desc"}}selected{{end}}>Z-A</option>
+                        <option value="last_login_desc" {{if eq .Filters.Sort "last_login_desc"}}selected{{end}}>Son Giriş</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="material-icons-outlined me-2">search</i>Filtrele
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()">
+                        <i class="material-icons-outlined me-2">clear_all</i>Temizle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Kullanıcı Listesi</h6>
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-3">{{.Pagination.From}}-{{.Pagination.To}} / {{.Pagination.Total}}</span>
+                <div class="btn-group" role="group">
+                    <input type="checkbox" class="btn-check" id="selectAll" onchange="toggleSelectAll()">
+                    <label class="btn btn-outline-secondary btn-sm" for="selectAll">Tümünü Seç</label>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <!-- Bulk Actions -->
+            <div id="bulkActions" class="p-3 bg-light border-bottom" style="display: none;">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="text-muted me-3"><span id="selectedCount">0</span> kullanıcı seçildi</span>
+                    <button class="btn btn-sm btn-success" onclick="bulkAction('activate')">
+                        <i class="material-icons-outlined">check_circle</i> Aktifleştir
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="bulkAction('deactivate')">
+                        <i class="material-icons-outlined">pause_circle</i> Pasifleştir
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="bulkAction('ban')">
+                        <i class="material-icons-outlined">block</i> Yasakla
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="bulkAction('delete')">
+                        <i class="material-icons-outlined">delete</i> Sil
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="50">
+                                <input type="checkbox" id="headerCheckbox" onchange="toggleSelectAll()">
+                            </th>
+                            <th>Kullanıcı</th>
+                            <th>İletişim</th>
+                            <th>Rol</th>
+                            <th>Durum</th>
+                            <th>Kayıt Tarihi</th>
+                            <th>Son Giriş</th>
+                            <th>İstatistikler</th>
+                            <th width="120">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Users}}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="user-checkbox" value="{{.ID}}" onchange="updateBulkActions()">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-3">
+                                        {{if .Avatar}}
+                                        <img src="{{.Avatar}}" alt="{{.FirstName}}" class="rounded-circle" width="40" height="40">
+                                        {{else}}
+                                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            {{substr .FirstName 0 1}}{{substr .LastName 0 1}}
+                                        </div>
+                                        {{end}}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{.FirstName}} {{.LastName}}</h6>
+                                        <small class="text-muted">ID: {{.ID}}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <div class="mb-1">
+                                        <i class="material-icons-outlined text-muted me-1" style="font-size: 16px;">email</i>
+                                        <a href="mailto:{{.Email}}" class="text-decoration-none">{{.Email}}</a>
+                                    </div>
+                                    {{if .Phone}}
+                                    <div>
+                                        <i class="material-icons-outlined text-muted me-1" style="font-size: 16px;">phone</i>
+                                        <a href="tel:{{.Phone}}" class="text-decoration-none">{{.Phone}}</a>
+                                    </div>
+                                    {{end}}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{.RoleColor}} bg-opacity-10 text-{{.RoleColor}}">
+                                    {{.RoleName}}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{.StatusColor}}">
+                                    {{.StatusName}}
+                                </span>
+                            </td>
+                            <td>
+                                <div>
+                                    <div>{{.CreatedAt | formatDate}}</div>
+                                    <small class="text-muted">{{.CreatedAt | timeAgo}}</small>
+                                </div>
+                            </td>
+                            <td>
+                                {{if .LastLoginAt}}
+                                <div>
+                                    <div>{{.LastLoginAt | formatDate}}</div>
+                                    <small class="text-muted">{{.LastLoginAt | timeAgo}}</small>
+                                </div>
+                                {{else}}
+                                <span class="text-muted">Hiç giriş yapmamış</span>
+                                {{end}}
+                            </td>
+                            <td>
+                                <div class="small">
+                                    <div>Sipariş: {{.OrderCount}}</div>
+                                    <div>Harcama: {{.TotalSpent | currency}}</div>
+                                    {{if .IsSeller}}
+                                    <div>Satış: {{.SalesCount}}</div>
+                                    {{end}}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                        <i class="material-icons-outlined">more_vert</i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#" onclick="viewUser({{.ID}})">
+                                            <i class="material-icons-outlined me-2">visibility</i>Görüntüle
+                                        </a></li>
+                                        <li><a class="dropdown-item" href="#" onclick="editUser({{.ID}})">
+                                            <i class="material-icons-outlined me-2">edit</i>Düzenle
+                                        </a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        {{if eq .Status "active"}}
+                                        <li><a class="dropdown-item text-warning" href="#" onclick="changeUserStatus({{.ID}}, 'inactive')">
+                                            <i class="material-icons-outlined me-2">pause_circle</i>Pasifleştir
+                                        </a></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="changeUserStatus({{.ID}}, 'banned')">
+                                            <i class="material-icons-outlined me-2">block</i>Yasakla
+                                        </a></li>
+                                        {{else if eq .Status "inactive"}}
+                                        <li><a class="dropdown-item text-success" href="#" onclick="changeUserStatus({{.ID}}, 'active')">
+                                            <i class="material-icons-outlined me-2">check_circle</i>Aktifleştir
+                                        </a></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="changeUserStatus({{.ID}}, 'banned')">
+                                            <i class="material-icons-outlined me-2">block</i>Yasakla
+                                        </a></li>
+                                        {{else if eq .Status "banned"}}
+                                        <li><a class="dropdown-item text-success" href="#" onclick="changeUserStatus({{.ID}}, 'active')">
+                                            <i class="material-icons-outlined me-2">check_circle</i>Yasağı Kaldır
+                                        </a></li>
+                                        {{end}}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#" onclick="loginAsUser({{.ID}})">
+                                            <i class="material-icons-outlined me-2">login</i>Kullanıcı Olarak Giriş
+                                        </a></li>
+                                        <li><a class="dropdown-item text-danger" href="#" onclick="deleteUser({{.ID}})">
+                                            <i class="material-icons-outlined me-2">delete</i>Sil
+                                        </a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="9" class="text-center py-5">
+                                <i class="material-icons-outlined text-muted" style="font-size: 48px;">people_outline</i>
+                                <div class="mt-2 text-muted">Kullanıcı bulunamadı</div>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        {{if .Pagination}}
+        <div class="card-footer">
+            <nav>
+                <ul class="pagination justify-content-center mb-0">
+                    {{if .Pagination.HasPrev}}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{.Pagination.PrevPage}}{{.Pagination.QueryString}}">Önceki</a>
+                    </li>
+                    {{end}}
+                    
+                    {{range .Pagination.Pages}}
+                    <li class="page-item {{if .IsCurrent}}active{{end}}">
+                        <a class="page-link" href="?page={{.Number}}{{$.Pagination.QueryString}}">{{.Number}}</a>
+                    </li>
+                    {{end}}
+                    
+                    {{if .Pagination.HasNext}}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{.Pagination.NextPage}}{{.Pagination.QueryString}}">Sonraki</a>
+                    </li>
+                    {{end}}
+                </ul>
+            </nav>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Kullanıcı Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addUserForm">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" class="form-control" name="first_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Soyad *</label>
+                            <input type="text" class="form-control" name="last_name" required>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">E-posta *</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" name="phone">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Şifre *</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Rol</label>
+                            <select class="form-select" name="role">
+                                <option value="user">Kullanıcı</option>
+                                <option value="seller">Satıcı</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Durum</label>
+                            <select class="form-select" name="status">
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Pasif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" name="send_welcome_email" checked>
+                                <label class="form-check-label">Hoş geldin e-postası gönder</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kullanıcı Ekle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Export Modal -->
+<div class="modal fade" id="exportModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Kullanıcıları Dışa Aktar</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="exportForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Format</label>
+                        <select class="form-select" name="format">
+                            <option value="csv">CSV</option>
+                            <option value="excel">Excel</option>
+                            <option value="pdf">PDF</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dahil Edilecek Alanlar</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="fields[]" value="basic_info" checked>
+                            <label class="form-check-label">Temel Bilgiler</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="fields[]" value="contact_info" checked>
+                            <label class="form-check-label">İletişim Bilgileri</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="fields[]" value="statistics">
+                            <label class="form-check-label">İstatistikler</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="fields[]" value="login_info">
+                            <label class="form-check-label">Giriş Bilgileri</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Dışa Aktar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "page_js"}}
+<script>
+// Filter form submission
+document.getElementById('filterForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const params = new URLSearchParams();
+    
+    for (let [key, value] of formData.entries()) {
+        if (value) params.append(key, value);
+    }
+    
+    window.location.href = '/admin/users?' + params.toString();
+});
+
+// Clear filters
+function clearFilters() {
+    window.location.href = '/admin/users';
+}
+
+// Clear search
+function clearSearch() {
+    document.querySelector('input[name="search"]').value = '';
+    document.getElementById('filterForm').dispatchEvent(new Event('submit'));
+}
+
+// Bulk actions
+function toggleSelectAll() {
+    const headerCheckbox = document.getElementById('headerCheckbox');
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    
+    checkboxes.forEach(cb => {
+        cb.checked = headerCheckbox.checked;
+    });
+    
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (checkedBoxes.length > 0) {
+        bulkActions.style.display = 'block';
+        selectedCount.textContent = checkedBoxes.length;
+    } else {
+        bulkActions.style.display = 'none';
+    }
+}
+
+function bulkAction(action) {
+    const checkedBoxes = document.querySelectorAll('.user-checkbox:checked');
+    const userIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (userIds.length === 0) {
+        alert('Lütfen en az bir kullanıcı seçin.');
+        return;
+    }
+    
+    let confirmMessage = '';
+    switch(action) {
+        case 'activate':
+            confirmMessage = `${userIds.length} kullanıcıyı aktifleştirmek istediğinizden emin misiniz?`;
+            break;
+        case 'deactivate':
+            confirmMessage = `${userIds.length} kullanıcıyı pasifleştirmek istediğinizden emin misiniz?`;
+            break;
+        case 'ban':
+            confirmMessage = `${userIds.length} kullanıcıyı yasaklamak istediğinizden emin misiniz?`;
+            break;
+        case 'delete':
+            confirmMessage = `${userIds.length} kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!`;
+            break;
+    }
+    
+    if (confirm(confirmMessage)) {
+        fetch('/admin/users/bulk-action', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: action,
+                user_ids: userIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('İşlem başarıyla tamamlandı.');
+                window.location.reload();
+            } else {
+                alert('İşlem sırasında hata oluştu: ' + data.message);
+            }
+        });
+    }
+}
+
+// Individual user actions
+function viewUser(userId) {
+    window.open(`/admin/users/${userId}`, '_blank');
+}
+
+function editUser(userId) {
+    window.location.href = `/admin/users/${userId}/edit`;
+}
+
+function changeUserStatus(userId, status) {
+    let confirmMessage = '';
+    switch(status) {
+        case 'active':
+            confirmMessage = 'Kullanıcıyı aktifleştirmek istediğinizden emin misiniz?';
+            break;
+        case 'inactive':
+            confirmMessage = 'Kullanıcıyı pasifleştirmek istediğinizden emin misiniz?';
+            break;
+        case 'banned':
+            confirmMessage = 'Kullanıcıyı yasaklamak istediğinizden emin misiniz?';
+            break;
+    }
+    
+    if (confirm(confirmMessage)) {
+        fetch(`/admin/users/${userId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('İşlem sırasında hata oluştu: ' + data.message);
+            }
+        });
+    }
+}
+
+function loginAsUser(userId) {
+    if (confirm('Bu kullanıcı olarak giriş yapmak istediğinizden emin misiniz?')) {
+        fetch(`/admin/users/${userId}/login-as`, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.open(data.redirect_url, '_blank');
+            } else {
+                alert('İşlem sırasında hata oluştu: ' + data.message);
+            }
+        });
+    }
+}
+
+function deleteUser(userId) {
+    if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz!')) {
+        fetch(`/admin/users/${userId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('İşlem sırasında hata oluştu: ' + data.message);
+            }
+        });
+    }
+}
+
+// Add user form
+document.getElementById('addUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const submitBtn = this.querySelector('button[type="submit"]');
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Ekleniyor...';
+    
+    fetch('/admin/users', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Kullanıcı başarıyla eklendi.');
+            window.location.reload();
+        } else {
+            alert('Hata: ' + data.message);
+        }
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Kullanıcı Ekle';
+    });
+});
+
+// Export form
+document.getElementById('exportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const params = new URLSearchParams();
+    
+    for (let [key, value] of formData.entries()) {
+        params.append(key, value);
+    }
+    
+    window.open('/admin/users/export?' + params.toString(), '_blank');
+    
+    // Close modal
+    bootstrap.Modal.getInstance(document.getElementById('exportModal')).hide();
+});
+</script>
+{{end}}
+{{end}}

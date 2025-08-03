@@ -1,0 +1,576 @@
+{{define "pages/faq"}}
+{{template "layout/header" .}}
+
+<div class="faq-page">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-3xl mx-auto">
+                <h1 class="text-4xl font-bold mb-4">
+                    <i class="fas fa-question-circle mr-3"></i>
+                    Sık Sorulan Sorular
+                </h1>
+                <p class="text-xl">Merak ettiğiniz her şeyin cevabı burada</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-12">
+        <!-- Search Bar -->
+        <div class="max-w-2xl mx-auto mb-12">
+            <div class="relative">
+                <input type="text" 
+                       placeholder="Soru ara..." 
+                       class="w-full px-6 py-4 pr-12 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                       id="faqSearch">
+                <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-600">
+                    <i class="fas fa-search text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- FAQ Categories -->
+        <div class="flex flex-wrap justify-center gap-4 mb-12">
+            <button class="faq-category-btn active" data-category="all">
+                <i class="fas fa-th-large mr-2"></i>Tümü
+            </button>
+            <button class="faq-category-btn" data-category="account">
+                <i class="fas fa-user mr-2"></i>Hesap
+            </button>
+            <button class="faq-category-btn" data-category="orders">
+                <i class="fas fa-shopping-cart mr-2"></i>Siparişler
+            </button>
+            <button class="faq-category-btn" data-category="payment">
+                <i class="fas fa-credit-card mr-2"></i>Ödeme
+            </button>
+            <button class="faq-category-btn" data-category="shipping">
+                <i class="fas fa-truck mr-2"></i>Kargo
+            </button>
+            <button class="faq-category-btn" data-category="seller">
+                <i class="fas fa-store mr-2"></i>Satıcı
+            </button>
+            <button class="faq-category-btn" data-category="technical">
+                <i class="fas fa-cog mr-2"></i>Teknik
+            </button>
+        </div>
+
+        <!-- FAQ Items -->
+        <div class="max-w-4xl mx-auto">
+            <!-- Account Questions -->
+            <div class="faq-section" data-category="account">
+                <h2 class="text-2xl font-bold mb-6 text-blue-600">
+                    <i class="fas fa-user mr-3"></i>Hesap İşlemleri
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Nasıl hesap oluşturabilirim?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">KolajMarket'te hesap oluşturmak çok kolay:</p>
+                            <ol class="list-decimal list-inside space-y-2">
+                                <li>Ana sayfada sağ üstteki "Kayıt Ol" butonuna tıklayın</li>
+                                <li>E-posta adresinizi ve güvenli bir şifre girin</li>
+                                <li>Kişisel bilgilerinizi doldurun</li>
+                                <li>E-posta doğrulama linkine tıklayın</li>
+                                <li>Hesabınız aktif hale gelir!</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Şifremi unuttum, ne yapmalıyım?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Şifrenizi unuttuysanız:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li>Giriş sayfasında "Şifremi Unuttum" linkine tıklayın</li>
+                                <li>E-posta adresinizi girin</li>
+                                <li>E-postanıza gelen linke tıklayın</li>
+                                <li>Yeni şifrenizi belirleyin</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Hesabımı nasıl silebilirim?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Hesabınızı silmek için:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li>Hesabım > Ayarlar sayfasına gidin</li>
+                                <li>"Hesabı Sil" seçeneğine tıklayın</li>
+                                <li>İşlemi onaylayın</li>
+                                <li>Tüm verileriniz kalıcı olarak silinir</li>
+                            </ul>
+                            <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                <p class="text-yellow-800 text-sm">
+                                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                                    Bu işlem geri alınamaz. Hesabınızı silmeden önce önemli bilgilerinizi yedeklediğinizden emin olun.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Questions -->
+            <div class="faq-section mt-12" data-category="orders">
+                <h2 class="text-2xl font-bold mb-6 text-green-600">
+                    <i class="fas fa-shopping-cart mr-3"></i>Sipariş İşlemleri
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Siparişimi nasıl takip edebilirim?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Siparişinizi takip etmek için:</p>
+                            <ol class="list-decimal list-inside space-y-2">
+                                <li>Hesabınıza giriş yapın</li>
+                                <li>"Siparişlerim" sayfasına gidin</li>
+                                <li>Takip etmek istediğiniz siparişe tıklayın</li>
+                                <li>Kargo takip numarasını kullanarak kargo firmasından takip edin</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Siparişimi iptal edebilir miyim?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Sipariş iptali koşulları:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Hazırlanıyor durumunda:</strong> Ücretsiz iptal</li>
+                                <li><strong>Kargoya verildi:</strong> İade süreci başlar</li>
+                                <li><strong>Teslim edildi:</strong> 14 gün içinde iade hakkınız var</li>
+                            </ul>
+                            <p class="mt-3">İptal için "Siparişlerim" sayfasından ilgili siparişin yanındaki "İptal Et" butonuna tıklayın.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Questions -->
+            <div class="faq-section mt-12" data-category="payment">
+                <h2 class="text-2xl font-bold mb-6 text-purple-600">
+                    <i class="fas fa-credit-card mr-3"></i>Ödeme İşlemleri
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Hangi ödeme yöntemlerini kabul ediyorsunuz?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Kabul ettiğimiz ödeme yöntemleri:</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h4 class="font-semibold mb-2">Kredi/Banka Kartları:</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-sm">
+                                        <li>Visa</li>
+                                        <li>Mastercard</li>
+                                        <li>American Express</li>
+                                        <li>Troy</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold mb-2">Diğer Yöntemler:</h4>
+                                    <ul class="list-disc list-inside space-y-1 text-sm">
+                                        <li>PayPal</li>
+                                        <li>Apple Pay</li>
+                                        <li>Google Pay</li>
+                                        <li>Kapıda Ödeme</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Ödeme güvenliği nasıl sağlanıyor?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Ödeme güvenliğiniz için aldığımız önlemler:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>SSL Şifreleme:</strong> Tüm ödeme bilgileri şifrelenir</li>
+                                <li><strong>PCI DSS Uyumluluğu:</strong> Uluslararası güvenlik standartları</li>
+                                <li><strong>3D Secure:</strong> Ekstra güvenlik katmanı</li>
+                                <li><strong>Tokenizasyon:</strong> Kart bilgileri güvenli şekilde saklanır</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Questions -->
+            <div class="faq-section mt-12" data-category="shipping">
+                <h2 class="text-2xl font-bold mb-6 text-orange-600">
+                    <i class="fas fa-truck mr-3"></i>Kargo ve Teslimat
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Kargo ücreti ne kadar?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <div class="space-y-3">
+                                <p><strong>Ücretsiz Kargo:</strong> 150₺ ve üzeri siparişlerde</p>
+                                <p><strong>Standart Kargo:</strong> 15₺ (3-5 iş günü)</p>
+                                <p><strong>Hızlı Kargo:</strong> 25₺ (1-2 iş günü)</p>
+                                <p><strong>Aynı Gün Teslimat:</strong> 35₺ (İstanbul, Ankara, İzmir)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Hangi kargo firmalarıyla çalışıyorsunuz?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Anlaşmalı kargo firmalarımız:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li>Yurtiçi Kargo</li>
+                                <li>MNG Kargo</li>
+                                <li>Aras Kargo</li>
+                                <li>PTT Kargo</li>
+                                <li>Sürat Kargo</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seller Questions -->
+            <div class="faq-section mt-12" data-category="seller">
+                <h2 class="text-2xl font-bold mb-6 text-red-600">
+                    <i class="fas fa-store mr-3"></i>Satıcı İşlemleri
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Nasıl satıcı olabilirim?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Satıcı olmak için gereken adımlar:</p>
+                            <ol class="list-decimal list-inside space-y-2">
+                                <li>KolajMarket hesabı oluşturun</li>
+                                <li>"Satıcı Ol" formunu doldurun</li>
+                                <li>Gerekli belgeleri yükleyin (vergi levhası, kimlik vb.)</li>
+                                <li>Mağaza bilgilerinizi tamamlayın</li>
+                                <li>Onay sürecini bekleyin (2-3 iş günü)</li>
+                                <li>Ürün eklemeye başlayın!</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Komisyon oranları nedir?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Kategori bazlı komisyon oranlarımız:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Elektronik:</strong> %8</li>
+                                <li><strong>Moda & Tekstil:</strong> %12</li>
+                                <li><strong>Ev & Yaşam:</strong> %10</li>
+                                <li><strong>Kitap & Müzik:</strong> %5</li>
+                                <li><strong>Spor & Outdoor:</strong> %10</li>
+                                <li><strong>Diğer kategoriler:</strong> %8-15 arası</li>
+                            </ul>
+                            <p class="mt-3 text-sm text-gray-500">Komisyon oranları satış hacmine göre indirim yapılabilir.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Questions -->
+            <div class="faq-section mt-12" data-category="technical">
+                <h2 class="text-2xl font-bold mb-6 text-indigo-600">
+                    <i class="fas fa-cog mr-3"></i>Teknik Destek
+                </h2>
+                
+                <div class="space-y-4">
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Site yavaş açılıyor, ne yapmalıyım?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Site performansını artırmak için:</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li>Tarayıcı önbelleğini temizleyin</li>
+                                <li>Farklı bir tarayıcı deneyin</li>
+                                <li>İnternet bağlantınızı kontrol edin</li>
+                                <li>Reklam engelleyicileri devre dışı bırakın</li>
+                                <li>Tarayıcınızı güncelleyin</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="faq-item bg-white rounded-lg shadow-md">
+                        <button class="faq-question w-full text-left p-6 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-lg font-semibold">Mobil uygulamanız var mı?</h3>
+                                <i class="fas fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                        </button>
+                        <div class="faq-answer hidden p-6 pt-0 text-gray-600">
+                            <p class="mb-3">Evet! KolajMarket mobil uygulamalarımız mevcuttur:</p>
+                            <div class="flex space-x-4">
+                                <a href="#" class="inline-flex items-center px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition">
+                                    <i class="fab fa-apple mr-2"></i>App Store
+                                </a>
+                                <a href="#" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                                    <i class="fab fa-google-play mr-2"></i>Google Play
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Support -->
+        <div class="bg-blue-50 rounded-lg p-8 mt-12 text-center">
+            <h3 class="text-2xl font-bold mb-4">Sorunuz burada yok mu?</h3>
+            <p class="text-gray-600 mb-6">7/24 müşteri destek ekibimiz size yardımcı olmaya hazır!</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="/contact" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
+                    <i class="fas fa-envelope mr-2"></i>İletişime Geçin
+                </a>
+                <a href="#" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition" onclick="startLiveChat()">
+                    <i class="fas fa-comments mr-2"></i>Canlı Destek
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "layout/footer" .}}
+{{end}}
+
+{{define "page_css"}}
+<style>
+.faq-category-btn {
+    @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300;
+}
+
+.faq-category-btn.active {
+    @apply bg-blue-600 text-white;
+}
+
+.faq-item {
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.faq-question:hover h3 {
+    color: #2563eb;
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.faq-answer.show {
+    max-height: 1000px;
+}
+
+.faq-question.active i {
+    transform: rotate(180deg);
+}
+
+.faq-section {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.faq-section.hidden {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    left: -9999px;
+}
+
+@media (max-width: 768px) {
+    .faq-category-btn {
+        @apply text-sm px-3 py-2;
+    }
+}
+</style>
+{{end}}
+
+{{define "page_js"}}
+<script>
+// FAQ Toggle
+function toggleFAQ(button) {
+    const answer = button.parentNode.querySelector('.faq-answer');
+    const icon = button.querySelector('i');
+    
+    // Close all other FAQs
+    document.querySelectorAll('.faq-answer.show').forEach(item => {
+        if (item !== answer) {
+            item.classList.remove('show');
+            item.parentNode.querySelector('.faq-question i').classList.remove('rotate-180');
+            item.parentNode.querySelector('.faq-question').classList.remove('active');
+        }
+    });
+    
+    // Toggle current FAQ
+    answer.classList.toggle('show');
+    button.classList.toggle('active');
+}
+
+// Category Filter
+document.querySelectorAll('.faq-category-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const category = this.dataset.category;
+        
+        // Update active button
+        document.querySelectorAll('.faq-category-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Show/hide sections
+        document.querySelectorAll('.faq-section').forEach(section => {
+            if (category === 'all' || section.dataset.category === category) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+    });
+});
+
+// Search functionality
+document.getElementById('faqSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const faqItems = document.querySelectorAll('.faq-item');
+    
+    faqItems.forEach(item => {
+        const question = item.querySelector('.faq-question h3').textContent.toLowerCase();
+        const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+        
+        if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+            item.style.display = 'block';
+            // Show parent section
+            const section = item.closest('.faq-section');
+            section.classList.remove('hidden');
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    // If searching, show all sections initially
+    if (searchTerm) {
+        document.querySelectorAll('.faq-section').forEach(section => {
+            section.classList.remove('hidden');
+        });
+        
+        // Hide sections with no visible items
+        document.querySelectorAll('.faq-section').forEach(section => {
+            const visibleItems = section.querySelectorAll('.faq-item[style="display: block"], .faq-item:not([style*="display: none"])');
+            if (visibleItems.length === 0) {
+                section.classList.add('hidden');
+            }
+        });
+    } else {
+        // Reset to show all items
+        faqItems.forEach(item => {
+            item.style.display = 'block';
+        });
+        
+        // Reset category filter
+        const activeCategory = document.querySelector('.faq-category-btn.active').dataset.category;
+        if (activeCategory !== 'all') {
+            document.querySelectorAll('.faq-section').forEach(section => {
+                if (section.dataset.category !== activeCategory) {
+                    section.classList.add('hidden');
+                }
+            });
+        }
+    }
+});
+
+// Live chat function
+function startLiveChat() {
+    // This would integrate with your live chat system
+    alert('Canlı destek sistemi yakında aktif olacak! Şimdilik iletişim formunu kullanabilirsiniz.');
+}
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Auto-expand FAQ from URL hash
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.location.hash) {
+        const targetFAQ = document.querySelector(window.location.hash);
+        if (targetFAQ && targetFAQ.classList.contains('faq-item')) {
+            const button = targetFAQ.querySelector('.faq-question');
+            toggleFAQ(button);
+            targetFAQ.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+});
+</script>
+{{end}}

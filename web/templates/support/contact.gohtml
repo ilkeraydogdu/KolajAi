@@ -1,0 +1,344 @@
+{{define "support/contact"}}
+{{template "layout/header" .}}
+
+<div class="contact-page">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">
+                <i class="fas fa-headset mr-3"></i>
+                İletişim
+            </h1>
+            <p class="text-xl mb-8">Size nasıl yardımcı olabiliriz?</p>
+        </div>
+    </div>
+
+    <!-- Contact Options -->
+    <div class="container mx-auto px-4 py-16">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <!-- Phone Support -->
+            <div class="bg-white p-8 rounded-lg shadow-md text-center hover:shadow-lg transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-phone text-blue-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Telefon Desteği</h3>
+                <p class="text-gray-600 mb-4">7/24 canlı destek hattımızdan bize ulaşabilirsiniz</p>
+                <div class="space-y-2">
+                    <p class="font-semibold text-blue-600">0850 123 45 67</p>
+                    <p class="text-sm text-gray-500">Hafta içi: 09:00 - 18:00</p>
+                    <p class="text-sm text-gray-500">Hafta sonu: 10:00 - 16:00</p>
+                </div>
+                <button class="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                    Hemen Ara
+                </button>
+            </div>
+
+            <!-- Live Chat -->
+            <div class="bg-white p-8 rounded-lg shadow-md text-center hover:shadow-lg transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-comments text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Canlı Sohbet</h3>
+                <p class="text-gray-600 mb-4">Anlık mesajlaşma ile hızlı çözümler alın</p>
+                <div class="space-y-2">
+                    <p class="font-semibold text-green-600">Ortalama Yanıt: 2 dk</p>
+                    <p class="text-sm text-gray-500">Aktif: 09:00 - 22:00</p>
+                    <div class="flex items-center justify-center">
+                        <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span class="text-sm text-green-600">12 temsilci çevrimiçi</span>
+                    </div>
+                </div>
+                <button class="mt-4 bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition" onclick="startLiveChat()">
+                    Sohbeti Başlat
+                </button>
+            </div>
+
+            <!-- Email Support -->
+            <div class="bg-white p-8 rounded-lg shadow-md text-center hover:shadow-lg transition">
+                <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-envelope text-purple-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">E-posta Desteği</h3>
+                <p class="text-gray-600 mb-4">Detaylı sorularınız için e-posta gönderin</p>
+                <div class="space-y-2">
+                    <p class="font-semibold text-purple-600">destek@kolaj.ai</p>
+                    <p class="text-sm text-gray-500">Yanıt süresi: 4-6 saat</p>
+                    <p class="text-sm text-gray-500">7/24 aktif</p>
+                </div>
+                <button class="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                    E-posta Gönder
+                </button>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Form -->
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <h2 class="text-2xl font-bold mb-6">Bize Mesaj Gönderin</h2>
+                <form id="contactForm" method="POST" action="/support/contact">
+                    {{if .CSRFToken}}<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">{{end}}
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ad</label>
+                            <input type="text" name="first_name" required 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Soyad</label>
+                            <input type="text" name="last_name" required 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+                            <input type="email" name="email" required 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefon</label>
+                            <input type="tel" name="phone" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Konu</label>
+                        <select name="subject" required 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Konu seçiniz</option>
+                            <option value="order">Sipariş ile ilgili</option>
+                            <option value="product">Ürün sorunu</option>
+                            <option value="payment">Ödeme sorunu</option>
+                            <option value="shipping">Kargo sorunu</option>
+                            <option value="return">İade/değişim</option>
+                            <option value="account">Hesap sorunu</option>
+                            <option value="technical">Teknik sorun</option>
+                            <option value="suggestion">Öneri/şikayet</option>
+                            <option value="other">Diğer</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sipariş Numarası (Opsiyonel)</label>
+                        <input type="text" name="order_number" placeholder="#12345" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mesajınız</label>
+                        <textarea name="message" rows="5" required placeholder="Lütfen sorununuzu detaylı olarak açıklayın..."
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dosya Ekle (Opsiyonel)</label>
+                        <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" 
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Maksimum 5MB - PDF, JPG, PNG, DOC formatları</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="newsletter" class="mr-2">
+                            <span class="text-sm text-gray-700">Kampanya ve duyurulardan haberdar olmak istiyorum</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Mesajı Gönder
+                    </button>
+                </form>
+            </div>
+
+            <!-- Contact Info & Map -->
+            <div class="space-y-8">
+                <!-- Office Info -->
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-6">İletişim Bilgileri</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <i class="fas fa-map-marker-alt text-blue-600 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="font-medium">Adres</h4>
+                                <p class="text-gray-600">Maslak Mahallesi, Büyükdere Caddesi<br>No: 123, Kat: 15<br>34485 Sarıyer/İstanbul</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-phone text-blue-600 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="font-medium">Telefon</h4>
+                                <p class="text-gray-600">0850 123 45 67</p>
+                                <p class="text-gray-600">+90 212 123 45 67</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-envelope text-blue-600 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="font-medium">E-posta</h4>
+                                <p class="text-gray-600">destek@kolaj.ai</p>
+                                <p class="text-gray-600">info@kolaj.ai</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-clock text-blue-600 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="font-medium">Çalışma Saatleri</h4>
+                                <p class="text-gray-600">Pazartesi - Cuma: 09:00 - 18:00</p>
+                                <p class="text-gray-600">Cumartesi: 10:00 - 16:00</p>
+                                <p class="text-gray-600">Pazar: Kapalı</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-6">Ofis Konumu</h3>
+                    <div class="aspect-w-16 aspect-h-9">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3006.8!2d29.0196!3d41.0853!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDHCsDA1JzA3LjEiTiAyOcKwMDEnMTAuNiJF!5e0!3m2!1str!2str!4v1234567890"
+                                width="100%" height="300" style="border:0;" allowfullscreen="" loading="lazy" 
+                                referrerpolicy="no-referrer-when-downgrade" class="rounded-lg"></iframe>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <a href="https://maps.google.com/?q=Maslak,İstanbul" target="_blank" 
+                           class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-external-link-alt mr-2"></i>
+                            Google Maps'te Aç
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Social Media -->
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-6">Sosyal Medya</h3>
+                    <div class="flex space-x-4">
+                                        <a href="https://facebook.com/kolajmarket" class="w-12 h-12 bg-blue-600 text-white rounded-lg flex items-center justify-center hover:bg-blue-700 transition" target="_blank" rel="noopener">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://twitter.com/kolajmarket" class="w-12 h-12 bg-blue-400 text-white rounded-lg flex items-center justify-center hover:bg-blue-500 transition" target="_blank" rel="noopener">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="https://instagram.com/kolajmarket" class="w-12 h-12 bg-pink-600 text-white rounded-lg flex items-center justify-center hover:bg-pink-700 transition" target="_blank" rel="noopener">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="https://linkedin.com/company/kolajmarket" class="w-12 h-12 bg-blue-800 text-white rounded-lg flex items-center justify-center hover:bg-blue-900 transition" target="_blank" rel="noopener">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a href="https://wa.me/905551234567" class="w-12 h-12 bg-green-500 text-white rounded-lg flex items-center justify-center hover:bg-green-600 transition" target="_blank" rel="noopener">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                    <p class="text-sm text-gray-600 mt-4">Sosyal medya hesaplarımızdan da bize ulaşabilir, güncel duyurularımızı takip edebilirsiniz.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="mt-16">
+            <h2 class="text-2xl font-bold text-center mb-8">Sıkça Sorulan Sorular</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="space-y-4">
+                    <div class="bg-white border border-gray-200 rounded-lg">
+                        <button class="w-full px-6 py-4 text-left font-medium hover:bg-gray-50 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <span>Siparişimi nasıl takip edebilirim?</span>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </div>
+                        </button>
+                        <div class="hidden px-6 pb-4">
+                            <p class="text-gray-600">Sipariş verdiğinizde size gönderilen e-postadaki takip numarası ile "Siparişlerim" sayfasından veya kargo firmasının web sitesinden takip edebilirsiniz.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg">
+                        <button class="w-full px-6 py-4 text-left font-medium hover:bg-gray-50 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <span>İade ve değişim koşulları nelerdir?</span>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </div>
+                        </button>
+                        <div class="hidden px-6 pb-4">
+                            <p class="text-gray-600">14 gün içerisinde, orijinal ambalajında ve kullanılmamış durumda olan ürünleri iade edebilirsiniz. Detaylar için İade ve Değişim sayfamızı ziyaret edin.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-gray-200 rounded-lg">
+                        <button class="w-full px-6 py-4 text-left font-medium hover:bg-gray-50 focus:outline-none" onclick="toggleFAQ(this)">
+                            <div class="flex justify-between items-center">
+                                <span>Hangi ödeme yöntemlerini kabul ediyorsunuz?</span>
+                                <i class="fas fa-chevron-down transition-transform"></i>
+                            </div>
+                        </button>
+                        <div class="hidden px-6 pb-4">
+                            <p class="text-gray-600">Kredi kartı, banka kartı, havale/EFT, kapıda ödeme ve dijital cüzdan seçeneklerini kabul ediyoruz. Tüm ödemeler SSL ile güvence altındadır.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <a href="/support/faq" class="text-blue-600 hover:text-blue-800 font-medium">
+                        Tüm SSS'leri Görüntüle <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "layout/footer" .}}
+{{end}}
+
+{{define "page_js"}}
+<script>
+function startLiveChat() {
+    // Initialize live chat widget
+    if (typeof window.LiveChatWidget !== 'undefined') {
+        window.LiveChatWidget.call('maximize');
+    } else {
+        alert('Canlı sohbet şu anda mevcut değil. Lütfen daha sonra tekrar deneyin.');
+    }
+}
+
+function toggleFAQ(button) {
+    const content = button.nextElementSibling;
+    const icon = button.querySelector('i');
+    
+    if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+    }
+}
+
+// Form submission
+document.getElementById('contactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/support/contact', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Mesajınız başarıyla gönderildi! En kısa sürede size dönüş yapacağız.');
+            this.reset();
+        } else {
+            alert('Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+        }
+    })
+    .catch(error => {
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+});
+</script>
+{{end}}

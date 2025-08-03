@@ -1,0 +1,539 @@
+{{define "pages/careers"}}
+{{template "layout/header" .}}
+
+<div class="careers-page">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-4xl mx-auto">
+                <h1 class="text-5xl font-bold mb-6">
+                    <i class="fas fa-rocket mr-3"></i>
+                    Geleceği Birlikte Şekillendirelim
+                </h1>
+                <p class="text-xl leading-relaxed mb-8">
+                    KolajMarket'te yetenekli ve tutkulu insanlarla birlikte çalışarak, 
+                    Türkiye'nin dijital ticaret geleceğini yazıyoruz.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#open-positions" class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                        <i class="fas fa-briefcase mr-2"></i>Açık Pozisyonlar
+                    </a>
+                    <a href="#culture" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition">
+                        <i class="fas fa-heart mr-2"></i>Şirket Kültürü
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-16">
+        <!-- Why Work With Us -->
+        <div class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Neden KolajMarket?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-lightbulb text-purple-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">İnovasyon Odaklı</h3>
+                    <p class="text-gray-600">En son teknolojilerle çalışarak sektöre öncülük ediyoruz. AI, ML ve blockchain gibi gelecek teknolojilerinde uzmanlaşma fırsatı.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-users text-blue-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Güçlü Takım</h3>
+                    <p class="text-gray-600">Deneyimli ve genç profesyonellerden oluşan dinamik ekibimizle birlikte öğrenme ve gelişme imkanı.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-chart-line text-green-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Hızlı Büyüme</h3>
+                    <p class="text-gray-600">Türkiye'nin en hızlı büyüyen e-ticaret platformunda kariyerinizi hızla ilerletme şansı.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-balance-scale text-yellow-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">İş-Yaşam Dengesi</h3>
+                    <p class="text-gray-600">Esnek çalışma saatleri, uzaktan çalışma imkanı ve kişisel gelişime destek.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-graduation-cap text-red-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Sürekli Öğrenme</h3>
+                    <p class="text-gray-600">Konferanslar, eğitimler ve sertifikasyon programları ile sürekli gelişim desteği.</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i class="fas fa-globe text-indigo-600 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-4">Global Vizyon</h3>
+                    <p class="text-gray-600">Uluslararası pazarlarda faaliyet gösteren bir şirkette global deneyim kazanma fırsatı.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Culture -->
+        <div id="culture" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Şirket Kültürümüz</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <img src="/static/assets/images/team-culture.jpg" alt="Team Culture" class="rounded-lg shadow-lg w-full">
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold mb-6">Değerlerimiz</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-star text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-2">Mükemmellik</h4>
+                                <p class="text-gray-600">Her projede en yüksek kaliteyi hedefliyoruz.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-handshake text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-2">İşbirliği</h4>
+                                <p class="text-gray-600">Birlikte çalışarak daha büyük başarılara ulaşıyoruz.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-leaf text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-2">Sürdürülebilirlik</h4>
+                                <p class="text-gray-600">Çevreye ve topluma duyarlı bir şirket olmaya odaklanıyoruz.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-4 mt-1">
+                                <i class="fas fa-rocket text-yellow-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-2">İnovasyon</h4>
+                                <p class="text-gray-600">Sürekli yenilik yaparak sektöre öncülük ediyoruz.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits -->
+        <div class="bg-gray-50 rounded-lg p-8 mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Çalışan Avantajları</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-money-bill-wave text-green-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Rekabetçi Maaş</h4>
+                    <p class="text-sm text-gray-600">Sektörün üzerinde maaş ve performans primleri</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-medkit text-blue-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Sağlık Sigortası</h4>
+                    <p class="text-sm text-gray-600">Kapsamlı sağlık sigortası ve aile üyelerine destek</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-laptop text-purple-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Teknoloji Desteği</h4>
+                    <p class="text-sm text-gray-600">En son teknoloji ekipmanları ve yazılım lisansları</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-plane text-orange-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Tatil Desteği</h4>
+                    <p class="text-sm text-gray-600">Yıllık izin desteği ve tatil bonusları</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-dumbbell text-red-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Spor Üyeliği</h4>
+                    <p class="text-sm text-gray-600">Spor salonu üyeliği ve wellness programları</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-coffee text-brown-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Ofis İmkanları</h4>
+                    <p class="text-sm text-gray-600">Ücretsiz yemek, kahve ve sosyal alanlar</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-home text-indigo-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Uzaktan Çalışma</h4>
+                    <p class="text-sm text-gray-600">Hibrit çalışma modeli ve esnek saatler</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-certificate text-teal-600 text-3xl mb-4"></i>
+                    <h4 class="font-bold mb-2">Eğitim Desteği</h4>
+                    <p class="text-sm text-gray-600">Konferans, kurs ve sertifikasyon destekleri</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Positions -->
+        <div id="open-positions" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Açık Pozisyonlar</h2>
+            
+            <!-- Department Filter -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <button class="dept-filter-btn active" data-dept="all">
+                    <i class="fas fa-th-large mr-2"></i>Tümü
+                </button>
+                <button class="dept-filter-btn" data-dept="engineering">
+                    <i class="fas fa-code mr-2"></i>Yazılım
+                </button>
+                <button class="dept-filter-btn" data-dept="design">
+                    <i class="fas fa-paint-brush mr-2"></i>Tasarım
+                </button>
+                <button class="dept-filter-btn" data-dept="marketing">
+                    <i class="fas fa-bullhorn mr-2"></i>Pazarlama
+                </button>
+                <button class="dept-filter-btn" data-dept="sales">
+                    <i class="fas fa-chart-line mr-2"></i>Satış
+                </button>
+                <button class="dept-filter-btn" data-dept="operations">
+                    <i class="fas fa-cogs mr-2"></i>Operasyon
+                </button>
+            </div>
+
+            <!-- Job Listings -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {{range .OpenPositions}}
+                <div class="job-card bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 p-6" data-dept="{{.Department}}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">{{.Title}}</h3>
+                            <div class="flex items-center text-gray-600 text-sm space-x-4">
+                                <span><i class="fas fa-building mr-1"></i>{{.Department}}</span>
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>{{.Location}}</span>
+                                <span><i class="fas fa-clock mr-1"></i>{{.Type}}</span>
+                            </div>
+                        </div>
+                        <span class="bg-{{.LevelColor}}-100 text-{{.LevelColor}}-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {{.Level}}
+                        </span>
+                    </div>
+                    
+                    <p class="text-gray-600 mb-4">{{.Description}}</p>
+                    
+                    <div class="mb-4">
+                        <h4 class="font-semibold mb-2">Aranan Özellikler:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            {{range .Skills}}
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm">{{.}}</span>
+                            {{end}}
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            <i class="fas fa-calendar mr-1"></i>
+                            {{.PostedDate | formatDate}}
+                        </div>
+                        <button onclick="applyForJob('{{.ID}}')" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition">
+                            Başvur
+                        </button>
+                    </div>
+                </div>
+                {{else}}
+                <div class="col-span-2 text-center py-12">
+                    <i class="fas fa-briefcase text-gray-400 text-6xl mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-700 mb-2">Şu anda açık pozisyon bulunmuyor</h3>
+                    <p class="text-gray-500 mb-6">Yeni pozisyonlar hakkında bilgi almak için CV'nizi bırakabilirsiniz.</p>
+                    <button onclick="openSpontaneousApplication()" class="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition">
+                        Özgeçmişimi Bırak
+                    </button>
+                </div>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- Application Process -->
+        <div class="bg-purple-50 rounded-lg p-8 mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Başvuru Süreci</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">1</div>
+                    <h4 class="font-bold mb-2">Başvuru</h4>
+                    <p class="text-sm text-gray-600">Online form üzerinden CV ve motivasyon mektubunuzu gönderin</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">2</div>
+                    <h4 class="font-bold mb-2">İnceleme</h4>
+                    <p class="text-sm text-gray-600">HR ekibimiz başvurunuzu detaylı olarak inceler (3-5 iş günü)</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">3</div>
+                    <h4 class="font-bold mb-2">Görüşme</h4>
+                    <p class="text-sm text-gray-600">Teknik ve kültür uyumu görüşmeleri (online/yüz yüze)</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">4</div>
+                    <h4 class="font-bold mb-2">Karar</h4>
+                    <p class="text-sm text-gray-600">Sonuç bildirimi ve işe başlama sürecinin planlanması</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact HR -->
+        <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+            <h3 class="text-2xl font-bold mb-4">Sorularınız mı var?</h3>
+            <p class="text-gray-600 mb-6">İnsan Kaynakları ekibimiz size yardımcı olmaya hazır!</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="mailto:hr@kolajmarket.com" class="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition">
+                    <i class="fas fa-envelope mr-2"></i>hr@kolajmarket.com
+                </a>
+                <a href="tel:+902121234567" class="border-2 border-purple-600 text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-600 hover:text-white transition">
+                    <i class="fas fa-phone mr-2"></i>+90 212 123 45 67
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Application Modal -->
+<div id="applicationModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold">Pozisyona Başvur</h3>
+                    <button onclick="closeApplicationModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <form id="applicationForm" enctype="multipart/form-data">
+                    <input type="hidden" id="jobId" name="job_id">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Ad *</label>
+                            <input type="text" name="first_name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Soyad *</label>
+                            <input type="text" name="last_name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">E-posta *</label>
+                            <input type="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefon *</label>
+                            <input type="tel" name="phone" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">LinkedIn Profili</label>
+                        <input type="url" name="linkedin" placeholder="https://linkedin.com/in/..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">CV (PDF) *</label>
+                        <input type="file" name="cv" accept=".pdf" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Motivasyon Mektubu</label>
+                        <textarea name="cover_letter" rows="4" placeholder="Neden bu pozisyon için uygun olduğunuzu kısaca açıklayın..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                    </div>
+                    
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" onclick="closeApplicationModal()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+                            İptal
+                        </button>
+                        <button type="submit" class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                            Başvuruyu Gönder
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{template "layout/footer" .}}
+{{end}}
+
+{{define "page_css"}}
+<style>
+.dept-filter-btn {
+    @apply px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300;
+}
+
+.dept-filter-btn.active {
+    @apply bg-purple-600 text-white;
+}
+
+.job-card {
+    transition: all 0.3s ease;
+}
+
+.job-card:hover {
+    transform: translateY(-5px);
+}
+
+.job-card.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .text-5xl {
+        font-size: 2.5rem;
+    }
+    
+    .py-20 {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+    }
+    
+    .dept-filter-btn {
+        @apply text-sm px-3 py-2;
+    }
+}
+</style>
+{{end}}
+
+{{define "page_js"}}
+<script>
+// Department Filter
+document.querySelectorAll('.dept-filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const dept = this.dataset.dept;
+        
+        // Update active button
+        document.querySelectorAll('.dept-filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Show/hide job cards
+        document.querySelectorAll('.job-card').forEach(card => {
+            if (dept === 'all' || card.dataset.dept === dept) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+    });
+});
+
+// Apply for job
+function applyForJob(jobId) {
+    document.getElementById('jobId').value = jobId;
+    document.getElementById('applicationModal').classList.remove('hidden');
+}
+
+// Open spontaneous application
+function openSpontaneousApplication() {
+    document.getElementById('jobId').value = 'spontaneous';
+    document.getElementById('applicationModal').classList.remove('hidden');
+}
+
+// Close application modal
+function closeApplicationModal() {
+    document.getElementById('applicationModal').classList.add('hidden');
+    document.getElementById('applicationForm').reset();
+}
+
+// Handle application form submission
+document.getElementById('applicationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    // Show loading state
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Gönderiliyor...';
+    submitBtn.disabled = true;
+    
+    fetch('/api/careers/apply', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Başvurunuz başarıyla alındı! En kısa sürede size dönüş yapacağız.');
+            closeApplicationModal();
+        } else {
+            alert('Başvuru gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+        }
+    })
+    .catch(error => {
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    })
+    .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
+
+// Animation on scroll
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+        }
+    });
+}, observerOptions);
+
+// Observe job cards for animation
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.job-card').forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        card.style.transitionDelay = `${index * 0.1}s`;
+        
+        observer.observe(card);
+    });
+});
+</script>
+{{end}}
