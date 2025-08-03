@@ -1,0 +1,324 @@
+{{define "marketplace/auction-detail"}}
+{{template "layout/header" .}}
+
+<div class="auction-detail-page">
+    <!-- Breadcrumb -->
+    <div class="bg-gray-50 py-4">
+        <div class="container mx-auto px-4">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="/" class="text-gray-700 hover:text-blue-600">Ana Sayfa</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                            <a href="/auctions" class="text-gray-700 hover:text-blue-600">Müzayedeler</a>
+                        </div>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                            <span class="text-gray-500">{{.Auction.Title}}</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column - Images and Details -->
+            <div class="lg:col-span-2">
+                <!-- Image Gallery -->
+                <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                    <div class="main-image mb-4">
+                        <img id="mainAuctionImage" src="{{index .Auction.Images 0 | default "/static/images/no-image.jpg"}}" 
+                             alt="{{.Auction.Title}}" class="w-full h-96 object-cover">
+                    </div>
+                    
+                    {{if gt (len .Auction.Images) 1}}
+                    <div class="thumbnail-images flex space-x-2 overflow-x-auto p-4">
+                        {{range $index, $image := .Auction.Images}}
+                        <img src="{{$image}}" alt="{{$.Auction.Title}} - {{$index}}" 
+                             class="w-20 h-20 object-cover rounded cursor-pointer border-2 border-transparent hover:border-blue-500 thumbnail"
+                             onclick="changeMainImage('{{$image}}')">
+                        {{end}}
+                    </div>
+                    {{end}}
+                </div>
+
+                <!-- Auction Details -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h2 class="text-2xl font-bold mb-4">Açıklama</h2>
+                    <div class="prose max-w-none">
+                        {{.Auction.Description | safeHTML}}
+                    </div>
+                    
+                    <!-- Auction Specifications -->
+                    {{if .Auction.Specifications}}
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold mb-3">Özellikler</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {{range $key, $value := .Auction.Specifications}}
+                            <div class="flex justify-between py-2 border-b border-gray-200">
+                                <span class="font-medium text-gray-700">{{$key}}:</span>
+                                <span class="text-gray-600">{{$value}}</span>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+
+                <!-- Bid History -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold mb-4">Teklif Geçmişi</h2>
+                    
+                    {{if .BidHistory}}
+                    <div class="space-y-3">
+                        {{range .BidHistory}}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
+                                    {{substr .BidderName 0 1}}
+                                </div>
+                                <div>
+                                    <div class="font-medium">{{.BidderName | maskEmail}}</div>
+                                    <div class="text-sm text-gray-500">{{.CreatedAt.Format "02.01.2006 15:04"}}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-lg text-green-600">₺{{printf "%.2f" .Amount}}</div>
+                                {{if .IsWinning}}
+                                <div class="text-xs text-green-600">En Yüksek Teklif</div>
+                                {{end}}
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{else}}
+                    <div class="text-center py-8">
+                        <i class="fas fa-gavel text-4xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">Henüz teklif verilmemiş</p>
+                        <p class="text-sm text-gray-400">İlk teklifi sen ver!</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+
+            <!-- Right Column - Bidding Panel -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-4">
+                    <!-- Status Badge -->
+                    <div class="mb-4">
+                        {{if eq .Auction.Status "active"}}
+                        <span class="inline-block bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-play mr-1"></i>Aktif Müzayede
+                        </span>
+                        {{else if eq .Auction.Status "ending"}}
+                        <span class="inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-clock mr-1"></i>Yakında Bitiyor
+                        </span>
+                        {{else if eq .Auction.Status "ended"}}
+                        <span class="inline-block bg-gray-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-stop mr-1"></i>Müzayede Bitti
+                        </span>
+                        {{end}}
+                    </div>
+
+                    <!-- Title -->
+                    <h1 class="text-2xl font-bold mb-4">{{.Auction.Title}}</h1>
+
+                    <!-- Category -->
+                    <div class="mb-4">
+                        <span class="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                            {{.Auction.Category.Name}}
+                        </span>
+                    </div>
+
+                    <!-- Current Bid -->
+                    <div class="mb-6">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <div class="text-sm text-gray-600 mb-1">Mevcut En Yüksek Teklif</div>
+                            <div class="text-3xl font-bold text-green-600">₺{{printf "%.2f" .Auction.CurrentBid}}</div>
+                            <div class="text-sm text-gray-500 mt-1">
+                                Başlangıç: ₺{{printf "%.2f" .Auction.StartingBid}} | {{.Auction.BidCount}} teklif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Remaining -->
+                    <div class="mb-6">
+                        {{if eq .Auction.Status "active"}}
+                        <div class="text-center p-4 bg-red-50 rounded-lg">
+                            <div class="text-sm text-gray-600 mb-2">Kalan Süre</div>
+                            <div class="countdown font-bold text-xl text-red-600" data-end-time="{{.Auction.EndTime.Format "2006-01-02T15:04:05Z07:00"}}">
+                                <div class="grid grid-cols-4 gap-2 text-center">
+                                    <div>
+                                        <div class="days text-2xl">0</div>
+                                        <div class="text-xs">Gün</div>
+                                    </div>
+                                    <div>
+                                        <div class="hours text-2xl">0</div>
+                                        <div class="text-xs">Saat</div>
+                                    </div>
+                                    <div>
+                                        <div class="minutes text-2xl">0</div>
+                                        <div class="text-xs">Dakika</div>
+                                    </div>
+                                    <div>
+                                        <div class="seconds text-2xl">0</div>
+                                        <div class="text-xs">Saniye</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{else if eq .Auction.Status "ended"}}
+                        <div class="text-center p-4 bg-gray-100 rounded-lg">
+                            <div class="text-lg font-semibold text-gray-700 mb-2">Müzayede Sona Erdi</div>
+                            <div class="text-sm text-gray-500">{{.Auction.EndTime.Format "02.01.2006 15:04"}}</div>
+                            {{if .Auction.WinnerBid}}
+                            <div class="mt-3 p-3 bg-green-100 rounded">
+                                <div class="font-bold text-green-700">Kazanan Teklif: ₺{{printf "%.2f" .Auction.WinnerBid}}</div>
+                            </div>
+                            {{end}}
+                        </div>
+                        {{end}}
+                    </div>
+
+                    <!-- Bidding Form -->
+                    {{if eq .Auction.Status "active"}}
+                    <div class="mb-6">
+                        <form id="bidForm" class="space-y-4">
+                            <input type="hidden" name="auction_id" value="{{.Auction.ID}}">
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Teklif Miktarı (₺)</label>
+                                <input type="number" 
+                                       name="bid_amount" 
+                                       id="bidAmount"
+                                       min="{{add .Auction.CurrentBid 1}}"
+                                       step="0.01"
+                                       placeholder="{{add .Auction.CurrentBid 1}}"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       required>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    Minimum: ₺{{printf "%.2f" (add .Auction.CurrentBid 1)}}
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Bid Buttons -->
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" class="quick-bid px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg" 
+                                        data-amount="{{add .Auction.CurrentBid 10}}">
+                                    +₺10
+                                </button>
+                                <button type="button" class="quick-bid px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg" 
+                                        data-amount="{{add .Auction.CurrentBid 50}}">
+                                    +₺50
+                                </button>
+                                <button type="button" class="quick-bid px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg" 
+                                        data-amount="{{add .Auction.CurrentBid 100}}">
+                                    +₺100
+                                </button>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+                                <i class="fas fa-gavel mr-2"></i>Teklif Ver
+                            </button>
+                        </form>
+                    </div>
+                    {{end}}
+
+                    <!-- Seller Info -->
+                    {{if .Auction.Seller}}
+                    <div class="border-t pt-6">
+                        <h3 class="font-semibold mb-3">Satıcı Bilgileri</h3>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                                {{if .Auction.Seller.Avatar}}
+                                <img src="{{.Auction.Seller.Avatar}}" alt="{{.Auction.Seller.Name}}" class="w-12 h-12 rounded-full">
+                                {{else}}
+                                <i class="fas fa-user text-gray-600"></i>
+                                {{end}}
+                            </div>
+                            <div>
+                                <div class="font-medium">{{.Auction.Seller.Name}}</div>
+                                <div class="text-sm text-gray-500">
+                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                    {{.Auction.Seller.Rating | printf "%.1f"}} ({{.Auction.Seller.ReviewCount}} değerlendirme)
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/vendor/{{.Auction.Seller.ID}}" class="block w-full text-center mt-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                            Satıcı Profilini Görüntüle
+                        </a>
+                    </div>
+                    {{end}}
+
+                    <!-- Action Buttons -->
+                    <div class="border-t pt-6 space-y-3">
+                        <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors watchlist-btn"
+                                data-auction-id="{{.Auction.ID}}">
+                            <i class="fas fa-eye mr-2"></i>Takip Listesine Ekle
+                        </button>
+                        
+                        <button class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium transition-colors share-btn">
+                            <i class="fas fa-share mr-2"></i>Paylaş
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Modal -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Müzayedeyi Paylaş</h3>
+                <button id="closeShareModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3">
+                <button class="w-full flex items-center justify-center py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        onclick="shareToFacebook()">
+                    <i class="fab fa-facebook-f mr-2"></i>Facebook'ta Paylaş
+                </button>
+                
+                <button class="w-full flex items-center justify-center py-3 px-4 bg-blue-400 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                        onclick="shareToTwitter()">
+                    <i class="fab fa-twitter mr-2"></i>Twitter'da Paylaş
+                </button>
+                
+                <button class="w-full flex items-center justify-center py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        onclick="shareToWhatsApp()">
+                    <i class="fab fa-whatsapp mr-2"></i>WhatsApp'ta Paylaş
+                </button>
+                
+                <div class="border-t pt-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Link Kopyala</label>
+                    <div class="flex">
+                        <input type="text" value="{{.CurrentURL}}" readonly 
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg bg-gray-50">
+                        <button onclick="copyToClipboard()" 
+                                class="px-4 py-2 bg-gray-600 text-white rounded-r-lg hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/auction-detail.js"></script>
+
+{{template "layout/footer" .}}
+{{end}}
