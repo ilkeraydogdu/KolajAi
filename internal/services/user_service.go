@@ -532,7 +532,8 @@ func (s *UserService) isValidEmail(email string) bool {
 }
 
 func (s *UserService) hashPassword(password string) (string, error) {
-	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// Use stronger bcrypt cost for production security (12 instead of default 10)
+	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		return "", err
 	}

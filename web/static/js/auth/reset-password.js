@@ -27,7 +27,7 @@
    * Modülü başlat
    */
   function init() {
-    console.log("Reset password module initialized");
+    window.logger && window.logger.debug("Reset password module initialized");
     
     // DOM elementlerini seç
     resetPasswordForm = $('#resetPasswordForm');
@@ -41,7 +41,7 @@
     
     // E-posta parametresini logla
     const email = $('input[name="email"]').val();
-    console.log("Email parameter:", email);
+    window.logger && window.logger.debug("Email parameter:", email);
     
     // URL'deki parametreleri temizle
     if (window.history.replaceState) {
@@ -121,7 +121,7 @@
    * @param {object} response - Sunucu yanıtı
    */
   function handleVerificationSuccess(response) {
-    console.log("Verification successful:", response);
+    window.logger && window.logger.debug("Verification successful:", response);
     verificationInProgress = false;
     
     if (response.success) {
@@ -169,7 +169,7 @@
    */
   function handleFormSubmit(e) {
     e.preventDefault();
-    console.log("Form submit event triggered");
+    window.logger && window.logger.debug("Form submit event triggered");
     
     // Geçici şifre doğrulanmadıysa engelle
     if (!tempPasswordVerified) {
@@ -205,7 +205,7 @@
       return false;
     }
     
-    console.log("Şifre değiştirme işlemi başlatılıyor...");
+    window.logger && window.logger.debug("Şifre değiştirme işlemi başlatılıyor...");
     
     // Butonun durumunu güncelle
     const submitButton = $('#submitButtonSection button');
@@ -251,7 +251,7 @@
    * @param {object} response - Sunucu yanıtı
    */
   function handleResetSuccess(response) {
-    console.log("Şifre değiştirme başarılı:", response);
+    window.logger && window.logger.debug("Şifre değiştirme başarılı:", response);
     
     // Butonun durumunu geri al
     const submitButton = $('#submitButtonSection button');

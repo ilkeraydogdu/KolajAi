@@ -66,7 +66,7 @@ func (s *AuthService) RegisterUser(userData map[string]string) (int64, error) {
 
 	// Generate a random password
 	randomPassword := s.GenerateRandomPassword(10)
-	log.Printf("Generated random password for user %s: %s", email, randomPassword)
+	log.Printf("Generated random password for user %s", email)
 
 	// Hash the password
 	hashedPassword, err := s.CreateUserPassword(randomPassword)
@@ -133,7 +133,7 @@ func (s *AuthService) LoginUser(email, password string) (*models.User, error) {
 
 	// Şifre doğrulama
 	log.Printf("DEBUG - LoginUser: Comparing passwords for user: %s", email)
-	log.Printf("DEBUG - LoginUser: Password from database length: %d", len(user.Password))
+	log.Printf("DEBUG - LoginUser: Password verification started")
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
@@ -154,7 +154,8 @@ func (s *AuthService) LoginUser(email, password string) (*models.User, error) {
 // CreateUserPassword creates a hashed password for a user
 func (s *AuthService) CreateUserPassword(password string) (string, error) {
 	// Şifreyi hashle
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// Use stronger bcrypt cost for production security (12 instead of default 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
 		return "", core.NewAuthError("Şifre hash'leme hatası", err)
@@ -162,8 +163,8 @@ func (s *AuthService) CreateUserPassword(password string) (string, error) {
 
 	// Hash'lenmiş şifreyi string'e dönüştür
 	hashedPasswordStr := string(hashedPassword)
-	log.Printf("DEBUG - CreateUserPassword: Hash'lenmiş şifre: %s", hashedPasswordStr)
-	log.Printf("DEBUG - CreateUserPassword: Hash'lenmiş şifre bcrypt formatında mı: %v",
+	log.Printf("DEBUG - CreateUserPassword: Şifre başarıyla hash'lendi")
+	log.Printf("DEBUG - CreateUserPassword: Hash bcrypt formatında: %v",
 		strings.HasPrefix(hashedPasswordStr, "$2a$") ||
 			strings.HasPrefix(hashedPasswordStr, "$2b$") ||
 			strings.HasPrefix(hashedPasswordStr, "$2y$"))
@@ -214,7 +215,7 @@ func (s *AuthService) ForgotPassword(email string) error {
 
 	// Generate temporary password
 	tempPassword := s.GenerateRandomPassword(10)
-	log.Printf("Generated temporary password for user %s: %s", email, tempPassword)
+	log.Printf("Generated temporary password for user %s", email)
 
 	// Hash the password
 	hashedPassword, err := s.CreateUserPassword(tempPassword)

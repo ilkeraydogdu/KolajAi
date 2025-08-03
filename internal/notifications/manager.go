@@ -20,17 +20,17 @@ type NotificationManager struct {
 
 // NotificationConfig holds notification configuration
 type NotificationConfig struct {
-	DefaultChannel    string                         `json:"default_channel"`
-	RetryAttempts     int                            `json:"retry_attempts"`
-	RetryDelay        time.Duration                  `json:"retry_delay"`
-	BatchSize         int                            `json:"batch_size"`
-	QueueSize         int                            `json:"queue_size"`
-	Workers           int                            `json:"workers"`
-	EnableRateLimiting bool                          `json:"enable_rate_limiting"`
-	RateLimits        map[string]RateLimit           `json:"rate_limits"`
-	Templates         map[string]NotificationTemplate `json:"templates"`
-	Channels          map[string]ChannelConfig       `json:"channels"`
-	UserPreferences   UserPreferenceConfig           `json:"user_preferences"`
+	DefaultChannel     string                          `json:"default_channel"`
+	RetryAttempts      int                             `json:"retry_attempts"`
+	RetryDelay         time.Duration                   `json:"retry_delay"`
+	BatchSize          int                             `json:"batch_size"`
+	QueueSize          int                             `json:"queue_size"`
+	Workers            int                             `json:"workers"`
+	EnableRateLimiting bool                            `json:"enable_rate_limiting"`
+	RateLimits         map[string]RateLimit            `json:"rate_limits"`
+	Templates          map[string]NotificationTemplate `json:"templates"`
+	Channels           map[string]ChannelConfig        `json:"channels"`
+	UserPreferences    UserPreferenceConfig            `json:"user_preferences"`
 }
 
 // RateLimit defines rate limiting configuration
@@ -61,57 +61,57 @@ type RetryPolicy struct {
 
 // UserPreferenceConfig holds user preference settings
 type UserPreferenceConfig struct {
-	AllowOptOut       bool     `json:"allow_opt_out"`
-	DefaultChannels   []string `json:"default_channels"`
-	RequiredTypes     []string `json:"required_types"`
-	OptOutTypes       []string `json:"opt_out_types"`
+	AllowOptOut     bool     `json:"allow_opt_out"`
+	DefaultChannels []string `json:"default_channels"`
+	RequiredTypes   []string `json:"required_types"`
+	OptOutTypes     []string `json:"opt_out_types"`
 }
 
 // Notification represents a notification
 type Notification struct {
-	ID            string                 `json:"id"`
-	Type          NotificationType       `json:"type"`
-	Category      string                 `json:"category"`
-	Priority      NotificationPriority   `json:"priority"`
-	Recipients    []Recipient            `json:"recipients"`
-	Subject       string                 `json:"subject"`
-	Content       string                 `json:"content"`
-	Data          map[string]interface{} `json:"data"`
-	Channels      []string               `json:"channels"`
-	ScheduledAt   *time.Time             `json:"scheduled_at,omitempty"`
-	ExpiresAt     *time.Time             `json:"expires_at,omitempty"`
-	Template      string                 `json:"template,omitempty"`
-	Language      string                 `json:"language"`
-	Tags          []string               `json:"tags"`
-	Metadata      map[string]interface{} `json:"metadata"`
-	Status        NotificationStatus     `json:"status"`
-	CreatedAt     time.Time              `json:"created_at"`
-	UpdatedAt     time.Time              `json:"updated_at"`
-	SentAt        *time.Time             `json:"sent_at,omitempty"`
-	DeliveredAt   *time.Time             `json:"delivered_at,omitempty"`
-	ReadAt        *time.Time             `json:"read_at,omitempty"`
-	ClickedAt     *time.Time             `json:"clicked_at,omitempty"`
-	Attempts      int                    `json:"attempts"`
-	LastError     string                 `json:"last_error,omitempty"`
-	TrackingID    string                 `json:"tracking_id"`
-	ParentID      string                 `json:"parent_id,omitempty"`
-	ThreadID      string                 `json:"thread_id,omitempty"`
+	ID          string                 `json:"id"`
+	Type        NotificationType       `json:"type"`
+	Category    string                 `json:"category"`
+	Priority    NotificationPriority   `json:"priority"`
+	Recipients  []Recipient            `json:"recipients"`
+	Subject     string                 `json:"subject"`
+	Content     string                 `json:"content"`
+	Data        map[string]interface{} `json:"data"`
+	Channels    []string               `json:"channels"`
+	ScheduledAt *time.Time             `json:"scheduled_at,omitempty"`
+	ExpiresAt   *time.Time             `json:"expires_at,omitempty"`
+	Template    string                 `json:"template,omitempty"`
+	Language    string                 `json:"language"`
+	Tags        []string               `json:"tags"`
+	Metadata    map[string]interface{} `json:"metadata"`
+	Status      NotificationStatus     `json:"status"`
+	CreatedAt   time.Time              `json:"created_at"`
+	UpdatedAt   time.Time              `json:"updated_at"`
+	SentAt      *time.Time             `json:"sent_at,omitempty"`
+	DeliveredAt *time.Time             `json:"delivered_at,omitempty"`
+	ReadAt      *time.Time             `json:"read_at,omitempty"`
+	ClickedAt   *time.Time             `json:"clicked_at,omitempty"`
+	Attempts    int                    `json:"attempts"`
+	LastError   string                 `json:"last_error,omitempty"`
+	TrackingID  string                 `json:"tracking_id"`
+	ParentID    string                 `json:"parent_id,omitempty"`
+	ThreadID    string                 `json:"thread_id,omitempty"`
 }
 
 // NotificationType represents different notification types
 type NotificationType string
 
 const (
-	NotificationTypeInfo       NotificationType = "info"
-	NotificationTypeWarning    NotificationType = "warning"
-	NotificationTypeError      NotificationType = "error"
-	NotificationTypeSuccess    NotificationType = "success"
-	NotificationTypeMarketing  NotificationType = "marketing"
+	NotificationTypeInfo          NotificationType = "info"
+	NotificationTypeWarning       NotificationType = "warning"
+	NotificationTypeError         NotificationType = "error"
+	NotificationTypeSuccess       NotificationType = "success"
+	NotificationTypeMarketing     NotificationType = "marketing"
 	NotificationTypeTransactional NotificationType = "transactional"
-	NotificationTypeSystem     NotificationType = "system"
-	NotificationTypeReminder   NotificationType = "reminder"
-	NotificationTypeUpdate     NotificationType = "update"
-	NotificationTypePromotion  NotificationType = "promotion"
+	NotificationTypeSystem        NotificationType = "system"
+	NotificationTypeReminder      NotificationType = "reminder"
+	NotificationTypeUpdate        NotificationType = "update"
+	NotificationTypePromotion     NotificationType = "promotion"
 )
 
 // NotificationPriority represents notification priority levels
@@ -143,14 +143,14 @@ const (
 
 // Recipient represents a notification recipient
 type Recipient struct {
-	ID           string            `json:"id"`
-	Type         RecipientType     `json:"type"`
-	Address      string            `json:"address"`
-	Name         string            `json:"name"`
-	Language     string            `json:"language"`
-	Timezone     string            `json:"timezone"`
-	Preferences  map[string]bool   `json:"preferences"`
-	Metadata     map[string]interface{} `json:"metadata"`
+	ID          string                 `json:"id"`
+	Type        RecipientType          `json:"type"`
+	Address     string                 `json:"address"`
+	Name        string                 `json:"name"`
+	Language    string                 `json:"language"`
+	Timezone    string                 `json:"timezone"`
+	Preferences map[string]bool        `json:"preferences"`
+	Metadata    map[string]interface{} `json:"metadata"`
 }
 
 // RecipientType represents recipient types
@@ -225,19 +225,19 @@ type NotificationQueue interface {
 
 // NotificationStats represents notification statistics
 type NotificationStats struct {
-	TotalSent       int                              `json:"total_sent"`
-	TotalDelivered  int                              `json:"total_delivered"`
-	TotalRead       int                              `json:"total_read"`
-	TotalClicked    int                              `json:"total_clicked"`
-	TotalFailed     int                              `json:"total_failed"`
-	ByType          map[NotificationType]int         `json:"by_type"`
-	ByChannel       map[string]int                   `json:"by_channel"`
-	ByPriority      map[NotificationPriority]int     `json:"by_priority"`
-	DeliveryRate    float64                          `json:"delivery_rate"`
-	ReadRate        float64                          `json:"read_rate"`
-	ClickRate       float64                          `json:"click_rate"`
-	AvgDeliveryTime time.Duration                    `json:"avg_delivery_time"`
-	TrendData       []NotificationTrendPoint         `json:"trend_data"`
+	TotalSent       int                          `json:"total_sent"`
+	TotalDelivered  int                          `json:"total_delivered"`
+	TotalRead       int                          `json:"total_read"`
+	TotalClicked    int                          `json:"total_clicked"`
+	TotalFailed     int                          `json:"total_failed"`
+	ByType          map[NotificationType]int     `json:"by_type"`
+	ByChannel       map[string]int               `json:"by_channel"`
+	ByPriority      map[NotificationPriority]int `json:"by_priority"`
+	DeliveryRate    float64                      `json:"delivery_rate"`
+	ReadRate        float64                      `json:"read_rate"`
+	ClickRate       float64                      `json:"click_rate"`
+	AvgDeliveryTime time.Duration                `json:"avg_delivery_time"`
+	TrendData       []NotificationTrendPoint     `json:"trend_data"`
 }
 
 // NotificationTrendPoint represents a point in trend data
@@ -252,16 +252,16 @@ type NotificationTrendPoint struct {
 
 // UserPreference represents user notification preferences
 type UserPreference struct {
-	UserID      string                     `json:"user_id"`
-	Channels    map[string]bool            `json:"channels"`
-	Types       map[NotificationType]bool  `json:"types"`
-	Categories  map[string]bool            `json:"categories"`
-	Frequency   string                     `json:"frequency"`
-	QuietHours  QuietHours                 `json:"quiet_hours"`
-	Language    string                     `json:"language"`
-	Timezone    string                     `json:"timezone"`
-	OptedOut    bool                       `json:"opted_out"`
-	UpdatedAt   time.Time                  `json:"updated_at"`
+	UserID     string                    `json:"user_id"`
+	Channels   map[string]bool           `json:"channels"`
+	Types      map[NotificationType]bool `json:"types"`
+	Categories map[string]bool           `json:"categories"`
+	Frequency  string                    `json:"frequency"`
+	QuietHours QuietHours                `json:"quiet_hours"`
+	Language   string                    `json:"language"`
+	Timezone   string                    `json:"timezone"`
+	OptedOut   bool                      `json:"opted_out"`
+	UpdatedAt  time.Time                 `json:"updated_at"`
 }
 
 // QuietHours represents quiet hours configuration
@@ -537,7 +537,7 @@ func (nm *NotificationManager) GetUserNotifications(userID string, limit, offset
 // MarkAsRead marks a notification as read
 func (nm *NotificationManager) MarkAsRead(notificationID, userID string) error {
 	now := time.Now()
-	
+
 	// Update notification
 	query := `UPDATE notifications SET read_at = ?, status = 'read', updated_at = ? WHERE id = ?`
 	_, err := nm.db.Exec(query, now, now, notificationID)
@@ -554,7 +554,7 @@ func (nm *NotificationManager) MarkAsRead(notificationID, userID string) error {
 // MarkAsClicked marks a notification as clicked
 func (nm *NotificationManager) MarkAsClicked(notificationID, userID string, metadata map[string]interface{}) error {
 	now := time.Now()
-	
+
 	// Update notification
 	query := `UPDATE notifications SET clicked_at = ?, status = 'clicked', updated_at = ? WHERE id = ?`
 	_, err := nm.db.Exec(query, now, now, notificationID)
@@ -577,7 +577,7 @@ func (nm *NotificationManager) GetUserPreferences(userID string) (*UserPreferenc
 	`
 
 	row := nm.db.QueryRow(query, userID)
-	
+
 	var pref UserPreference
 	var channelsJSON, typesJSON, categoriesJSON, quietHoursJSON string
 
@@ -806,7 +806,7 @@ func (nm *NotificationManager) sendNotificationNow(ctx context.Context, notifica
 	notification.Status = StatusSent
 	notification.SentAt = &time.Time{}
 	*notification.SentAt = time.Now()
-	
+
 	return nm.updateNotificationStatus(notification.ID, StatusSent)
 }
 
@@ -836,16 +836,16 @@ func (nm *NotificationManager) trackEvent(notificationID, eventType, userID stri
 
 func (nm *NotificationManager) getDefaultUserPreferences(userID string) *UserPreference {
 	return &UserPreference{
-		UserID:      userID,
-		Channels:    map[string]bool{"email": true, "push": true},
-		Types:       make(map[NotificationType]bool),
-		Categories:  make(map[string]bool),
-		Frequency:   "immediate",
-		QuietHours:  QuietHours{Enabled: false},
-		Language:    "tr",
-		Timezone:    "Europe/Istanbul",
-		OptedOut:    false,
-		UpdatedAt:   time.Now(),
+		UserID:     userID,
+		Channels:   map[string]bool{"email": true, "push": true},
+		Types:      make(map[NotificationType]bool),
+		Categories: make(map[string]bool),
+		Frequency:  "immediate",
+		QuietHours: QuietHours{Enabled: false},
+		Language:   "tr",
+		Timezone:   "Europe/Istanbul",
+		OptedOut:   false,
+		UpdatedAt:  time.Now(),
 	}
 }
 

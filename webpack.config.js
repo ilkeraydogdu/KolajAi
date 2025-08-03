@@ -2,7 +2,7 @@ const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+// CleanWebpackPlugin is built-in to Webpack 5, no need to import
 const CompressionPlugin = require('compression-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const WorkboxPlugin = require('workbox-webpack-plugin');
@@ -15,6 +15,11 @@ module.exports = {
   entry: {
     main: './web/static/js/main.js',
     auth: './web/static/js/auth.js',
+    utils: './web/static/js/utils.js',
+    services: './web/static/js/services.js',
+    eventHandlers: './web/static/js/event-handlers.js',
+    eventManager: './web/static/js/event-manager.js',
+    logger: './web/static/js/logger.js',
     vendor: ['lodash', 'axios', 'chart.js']
   },
   
@@ -128,8 +133,8 @@ module.exports = {
     ]
   },
 
-  plugins: [
-    new CleanWebpackPlugin(),
+      plugins: [
+      // Clean output directory is handled by output.clean option
     
     new MiniCssExtractPlugin({
       filename: isProduction ? 'css/[name].[contenthash:8].css' : 'css/[name].css',

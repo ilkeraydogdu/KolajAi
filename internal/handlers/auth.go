@@ -304,7 +304,7 @@ func (h *Handler) VerifyTempPassword(w http.ResponseWriter, r *http.Request) {
 
 	// Basit doğrulama - production'da daha güçlü bir sistem olmalı
 	// Şimdilik sadece başarılı response döndürelim
-	AuthLogger.Printf("VerifyTempPassword - Email: %s, TempPassword: %s", req.Email, req.TempPassword)
+	AuthLogger.Printf("VerifyTempPassword - Email: %s", req.Email)
 	
 	// Basit kontrol: temp password boş değilse geçerli kabul et
 	if req.TempPassword != "" && req.Email != "" {

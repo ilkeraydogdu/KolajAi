@@ -2,9 +2,10 @@ package retry
 
 import (
 	"context"
+	"crypto/rand"
 	"fmt"
 	"math"
-	"math/rand"
+	"math/big"
 	"time"
 )
 
@@ -181,8 +182,19 @@ func (rm *RetryManager) calculateDelay(attempt int) time.Duration {
 	
 	// Apply jitter if enabled
 	if rm.config.JitterEnabled {
-		jitter := rand.Float64() * 0.3 * delay // 0-30% jitter
-		delay = delay + jitter
+		// Use cryptographically secure random for jitter
+		maxJitterNanos := int64(0.3 * delay) // delay is already in nanoseconds as float64
+		if maxJitterNanos > 0 {
+			maxJitter := big.NewInt(maxJitterNanos)
+			jitterBig, err := rand.Int(rand.Reader, maxJitter)
+			if err != nil {
+				// Fallback to no jitter if crypto/rand fails
+				// Keep original delay unchanged
+			} else {
+				jitterNanos := jitterBig.Int64()
+				delay = delay + float64(jitterNanos)
+			}
+		}
 	}
 	
 	return time.Duration(delay)

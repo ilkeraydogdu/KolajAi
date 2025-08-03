@@ -15,13 +15,37 @@ import { tr } from 'date-fns/locale';
 
 class KolajAIApp {
   constructor() {
-    // Services will be initialized when available
-    // this.apiService = new ApiService();
-    // this.authService = new AuthService();
-    // this.cartService = new CartService();
-    // this.notificationService = new NotificationService();
-    
+    // Initialize services
+    this.initializeServices();
     this.init();
+  }
+
+  initializeServices() {
+    // Check if services are available globally first
+    if (window.app && window.app.apiService) {
+      this.apiService = window.app.apiService;
+      this.authService = window.app.authService;
+      this.cartService = window.app.cartService;
+      this.notificationService = window.app.notificationService;
+    } else {
+      // Fallback: create basic service stubs
+      console.warn('Services not found globally, creating stubs');
+      this.apiService = {
+        get: () => Promise.reject(new Error('API service not initialized')),
+        post: () => Promise.reject(new Error('API service not initialized'))
+      };
+      this.authService = {
+        getCurrentUser: () => Promise.reject(new Error('Auth service not initialized')),
+        isLoggedIn: () => false
+      };
+      this.cartService = {
+        getItemCount: () => 0,
+        getTotal: () => 0
+      };
+      this.notificationService = {
+        getUnreadCount: () => 0
+      };
+    }
   }
 
   async init() {
@@ -46,7 +70,7 @@ class KolajAIApp {
       
       // Only log in development
       if (process.env.NODE_ENV === 'development') {
-        console.log('KolajAI App initialized successfully');
+        window.logger && window.logger.debug('KolajAI App initialized successfully');
       }
       
     } catch (error) {
@@ -104,7 +128,7 @@ class KolajAIApp {
           const response = await window.app.authService.getCurrentUser();
           this.user = response.data;
         } catch (error) {
-          console.log('User not authenticated');
+          window.logger && window.logger.debug('User not authenticated');
         }
       },
       
@@ -359,7 +383,7 @@ class KolajAIApp {
       window.addEventListener('load', async () => {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js');
-          console.log('SW registered: ', registration);
+          window.logger && window.logger.debug('SW registered: ', registration);
           
           // Handle updates
           registration.addEventListener('updatefound', () => {
@@ -372,7 +396,7 @@ class KolajAIApp {
             });
           });
         } catch (error) {
-          console.log('SW registration failed: ', error);
+          window.logger && window.logger.debug('SW registration failed: ', error);
         }
       });
     }
@@ -425,17 +449,32 @@ class KolajAIApp {
     // Show user-friendly error message
     const errorDiv = document.createElement('div');
     errorDiv.className = 'fixed inset-0 bg-red-50 flex items-center justify-center z-50';
-    errorDiv.innerHTML = `
-      <div class="text-center p-8">
-        <div class="text-red-600 text-6xl mb-4">⚠️</div>
-        <h1 class="text-2xl font-bold text-red-800 mb-2">Uygulama Başlatılamadı</h1>
-        <p class="text-red-600 mb-4">Bir hata oluştu. Lütfen sayfayı yenileyin.</p>
-        <button onclick="window.location.reload()" 
-                class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
-          Sayfayı Yenile
-        </button>
-      </div>
-    `;
+    // Create safe error structure to prevent XSS
+    const containerDiv = document.createElement('div');
+    containerDiv.className = 'text-center p-8';
+    
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'text-red-600 text-6xl mb-4';
+    iconDiv.textContent = '⚠️';
+    
+    const titleH1 = document.createElement('h1');
+    titleH1.className = 'text-2xl font-bold text-red-800 mb-2';
+    titleH1.textContent = 'Uygulama Başlatılamadı';
+    
+    const messageP = document.createElement('p');
+    messageP.className = 'text-red-600 mb-4';
+    messageP.textContent = 'Bir hata oluştu. Lütfen sayfayı yenileyin.';
+    
+    const reloadButton = document.createElement('button');
+    reloadButton.className = 'bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700';
+    reloadButton.textContent = 'Sayfayı Yenile';
+    reloadButton.addEventListener('click', () => window.location.reload());
+    
+    containerDiv.appendChild(iconDiv);
+    containerDiv.appendChild(titleH1);
+    containerDiv.appendChild(messageP);
+    containerDiv.appendChild(reloadButton);
+    errorDiv.appendChild(containerDiv);
     document.body.appendChild(errorDiv);
   }
 
@@ -517,7 +556,7 @@ class KolajAIApp {
     if (this.deferredPrompt) {
       this.deferredPrompt.prompt();
       const { outcome } = await this.deferredPrompt.userChoice;
-      console.log(`User response to the install prompt: ${outcome}`);
+      window.logger && window.logger.debug(`User response to the install prompt: ${outcome}`);
       this.deferredPrompt = null;
     }
   }

@@ -83,7 +83,7 @@ func (m *Manager) RegisterIntegration(integration *Integration, provider Integra
 		return fmt.Errorf("integration %s already registered", integration.ID)
 	}
 
-	// Initialize the provider
+	// Initialize the provider with timeout
 	ctx, cancel := context.WithTimeout(context.Background(), m.config.DefaultTimeout)
 	defer cancel()
 

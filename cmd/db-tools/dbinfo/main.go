@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"regexp"
 
 	"kolajAi/internal/database"
 )
@@ -138,10 +139,24 @@ func getTableStructure(db *sql.DB, table string) ([]ColumnInfo, error) {
 	return columns, nil
 }
 
+// isValidTableName validates table name to prevent SQL injection
+func isValidTableName(tableName string) bool {
+	// Allow only alphanumeric characters, underscores, and hyphens
+	// Table names should start with a letter or underscore
+	validTableName := regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_-]*$`)
+	return validTableName.MatchString(tableName) && len(tableName) <= 64
+}
+
 // getRowCount tablodaki satır sayısını döndürür
 func getRowCount(db *sql.DB, table string) (int, error) {
 	var count int
-	err := db.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM %s", table)).Scan(&count)
+	// Use parameterized query to prevent SQL injection
+	// Note: Table names cannot be parameterized, so we validate the table name first
+	if !isValidTableName(table) {
+		return 0, fmt.Errorf("invalid table name: %s", table)
+	}
+	query := fmt.Sprintf("SELECT COUNT(*) FROM `%s`", table)
+	err := db.QueryRow(query).Scan(&count)
 	if err != nil {
 		return 0, err
 	}

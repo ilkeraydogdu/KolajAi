@@ -56,8 +56,9 @@ func (r *UserRepository) RegisterUser(name, email, password, phone string) (int6
 	}
 
 	// Şifreyi hash'le
-	log.Printf("INFO - RegisterUser: Şifre hash'leme başlıyor. Şifre uzunluğu: %d", len(password))
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	log.Printf("INFO - RegisterUser: Şifre hash'leme başlıyor")
+	// Use stronger bcrypt cost for production security (12 instead of default 10)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
 	if err != nil {
 		log.Printf("ERROR - RegisterUser: Şifre hash'leme hatası: %v", err)
 		return 0, core.NewDatabaseError("error hashing password", err)
@@ -65,8 +66,8 @@ func (r *UserRepository) RegisterUser(name, email, password, phone string) (int6
 
 	// Hash'lenmiş şifreyi string'e dönüştür
 	hashedPasswordStr := string(hashedPassword)
-	log.Printf("DEBUG - RegisterUser: Hash'lenmiş şifre: %s", hashedPasswordStr)
-	log.Printf("DEBUG - RegisterUser: Hash'lenmiş şifre bcrypt formatında mı: %v",
+	log.Printf("DEBUG - RegisterUser: Şifre başarıyla hash'lendi")
+	log.Printf("DEBUG - RegisterUser: Hash bcrypt formatında: %v",
 		strings.HasPrefix(hashedPasswordStr, "$2a$") ||
 			strings.HasPrefix(hashedPasswordStr, "$2b$") ||
 			strings.HasPrefix(hashedPasswordStr, "$2y$"))
@@ -97,8 +98,8 @@ func (r *UserRepository) RegisterUser(name, email, password, phone string) (int6
 	}
 
 	// Şifrenin doğru kaydedilip kaydedilmediğini kontrol et
-	log.Printf("DEBUG - RegisterUser: Veritabanına kaydedilen şifre: %s", createdUser.Password)
-	log.Printf("DEBUG - RegisterUser: Kaydedilen şifre bcrypt formatında mı: %v",
+	log.Printf("DEBUG - RegisterUser: Şifre veritabanına başarıyla kaydedildi")
+	log.Printf("DEBUG - RegisterUser: Kaydedilen şifre bcrypt formatında: %v",
 		strings.HasPrefix(createdUser.Password, "$2a$") ||
 			strings.HasPrefix(createdUser.Password, "$2b$") ||
 			strings.HasPrefix(createdUser.Password, "$2y$"))
@@ -129,8 +130,8 @@ func (r *UserRepository) VerifyTempPassword(email, tempPassword string) (bool, e
 
 	// Şifre karşılaştırma detaylı debug
 	log.Printf("DEBUG - VerifyTempPassword: Şifre karşılaştırma başlıyor")
-	log.Printf("DEBUG - VerifyTempPassword: Girilen şifre: %s", tempPassword)
-	log.Printf("DEBUG - VerifyTempPassword: Veritabanındaki hash: %s", user.Password)
+	log.Printf("DEBUG - VerifyTempPassword: Şifre doğrulama işlemi başlatıldı")
+	log.Printf("DEBUG - VerifyTempPassword: Veritabanından hash alındı")
 
 	// Veritabanındaki şifre hash'i boş veya geçersiz mi kontrol et
 	if user.Password == "" {
@@ -149,7 +150,7 @@ func (r *UserRepository) VerifyTempPassword(email, tempPassword string) (bool, e
 			return false, nil
 		}
 
-		log.Printf("DEBUG - VerifyTempPassword: Tekrar sorgulanan kullanıcının şifresi: %s", freshUser.Password)
+		log.Printf("DEBUG - VerifyTempPassword: Kullanıcı tekrar sorgulandı")
 
 		// Şifre hala boş mu kontrol et
 		if freshUser.Password == "" {
@@ -211,7 +212,8 @@ func (r *UserRepository) ResetUserPassword(email, newPassword string) error {
 	} else {
 		// Yeni şifreyi hashle
 		log.Printf("INFO - ResetUserPassword: Şifre hash'leme başlıyor. Şifre uzunluğu: %d", len(newPassword))
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+		// Use stronger bcrypt cost for production security (12 instead of default 10)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
 		if err != nil {
 			log.Printf("ERROR - ResetUserPassword: Şifre hash'leme hatası: %v", err)
 			return core.NewDatabaseError("error hashing password", err)
@@ -219,11 +221,11 @@ func (r *UserRepository) ResetUserPassword(email, newPassword string) error {
 
 		// Hash'lenmiş şifreyi string'e dönüştür
 		hashedPasswordStr = string(hashedPassword)
-		log.Printf("DEBUG - ResetUserPassword: Hash'lenmiş şifre: %s", hashedPasswordStr)
-		log.Printf("DEBUG - ResetUserPassword: Hash'lenmiş şifre bcrypt formatında mı: %v",
-			strings.HasPrefix(hashedPasswordStr, "$2a$") ||
-				strings.HasPrefix(hashedPasswordStr, "$2b$") ||
-				strings.HasPrefix(hashedPasswordStr, "$2y$"))
+			log.Printf("DEBUG - ResetUserPassword: Şifre başarıyla hash'lendi")
+	log.Printf("DEBUG - ResetUserPassword: Hash bcrypt formatında: %v",
+		strings.HasPrefix(hashedPasswordStr, "$2a$") ||
+			strings.HasPrefix(hashedPasswordStr, "$2b$") ||
+			strings.HasPrefix(hashedPasswordStr, "$2y$"))
 	}
 
 	// Doğrudan SQL sorgusu ile şifre güncelleme ve hesabı aktifleştirme
@@ -264,8 +266,8 @@ func (r *UserRepository) ResetUserPassword(email, newPassword string) error {
 	}
 
 	// Şifrenin doğru kaydedilip kaydedilmediğini kontrol et
-	log.Printf("DEBUG - ResetUserPassword: Veritabanına kaydedilen şifre: %s", updatedUser.Password)
-	log.Printf("DEBUG - ResetUserPassword: Kaydedilen şifre bcrypt formatında mı: %v",
+	log.Printf("DEBUG - ResetUserPassword: Şifre veritabanına kaydedildi")
+	log.Printf("DEBUG - ResetUserPassword: Kaydedilen şifre bcrypt formatında: %v",
 		strings.HasPrefix(updatedUser.Password, "$2a$") ||
 			strings.HasPrefix(updatedUser.Password, "$2b$") ||
 			strings.HasPrefix(updatedUser.Password, "$2y$"))
@@ -274,8 +276,8 @@ func (r *UserRepository) ResetUserPassword(email, newPassword string) error {
 	// Şifreleri karşılaştır
 	if updatedUser.Password != hashedPasswordStr {
 		log.Printf("WARN - ResetUserPassword: Kaydedilen şifre beklenen şifre ile eşleşmiyor")
-		log.Printf("DEBUG - ResetUserPassword: Beklenen şifre: %s", hashedPasswordStr)
-		log.Printf("DEBUG - ResetUserPassword: Kaydedilen şifre: %s", updatedUser.Password)
+		log.Printf("DEBUG - ResetUserPassword: Şifre karşılaştırma hatası")
+		log.Printf("DEBUG - ResetUserPassword: Hash değerleri eşleşmiyor")
 	}
 
 	// Şifre doğrulama testi yap
@@ -308,7 +310,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 	}
 
 	// Şifre boş mu kontrol et ve log çıktısı ver
-	log.Printf("DEBUG - GetUserByEmail: Kullanıcı bulundu: %s, Şifre uzunluğu: %d", email, len(user.Password))
+	log.Printf("DEBUG - GetUserByEmail: Kullanıcı bulundu: %s", email)
 	if user.Password == "" {
 		log.Printf("WARN - GetUserByEmail: Kullanıcının şifresi boş: %s", email)
 
@@ -325,7 +327,7 @@ func (r *UserRepository) GetUserByEmail(email string) (*models.User, error) {
 		}
 
 		if password != "" {
-			log.Printf("INFO - GetUserByEmail: Doğrudan sorgu ile şifre alındı, uzunluk: %d", len(password))
+			log.Printf("INFO - GetUserByEmail: Doğrudan sorgu ile şifre alındı")
 			user.Password = password
 		}
 	}
@@ -415,7 +417,7 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 		return nil, core.NewDatabaseError("error finding user by email", err)
 	}
 
-	log.Printf("DEBUG - FindByEmail: Kullanıcı bulundu: %s, Şifre uzunluğu: %d", email, len(user.Password))
+	log.Printf("DEBUG - FindByEmail: Kullanıcı bulundu: %s", email)
 
 	// Şifre boş mu kontrol et
 	if user.Password == "" {
@@ -434,7 +436,7 @@ func (r *UserRepository) FindByEmail(email string) (*models.User, error) {
 		}
 
 		if password != "" {
-			log.Printf("INFO - FindByEmail: Doğrudan sorgu ile şifre alındı, uzunluk: %d", len(password))
+			log.Printf("INFO - FindByEmail: Doğrudan sorgu ile şifre alındı")
 			user.Password = password
 		}
 	}

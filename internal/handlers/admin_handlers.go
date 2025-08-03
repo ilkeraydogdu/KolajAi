@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"kolajAi/internal/models"
@@ -1261,12 +1262,33 @@ func (h *AdminHandler) createProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Use product service to create product
-	// For now, return success response
+	// Create product using database
+	query := `
+		INSERT INTO products (name, description, price, category_id, status, created_at, updated_at)
+		VALUES (?, ?, ?, ?, 'draft', NOW(), NOW())
+	`
+	
+	result, err := h.DB.Exec(query, product.Name, product.Description, product.Price, product.CategoryID)
+	if err != nil {
+		h.HandleError(w, r, err, "Ürün oluşturulamadı")
+		return
+	}
+	
+	productID, err := result.LastInsertId()
+	if err != nil {
+		h.HandleError(w, r, err, "Ürün ID alınamadı")
+		return
+	}
+	
+	product.ID = int(productID)
+	product.Status = "draft"
+	product.CreatedAt = time.Now()
+	product.UpdatedAt = time.Now()
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
-		"message": "Ürün oluşturuldu (demo)",
+		"message": "Ürün başarıyla oluşturuldu",
 		"product": product,
 	})
 }
@@ -1309,12 +1331,42 @@ func (h *AdminHandler) updateProduct(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// TODO: Use product service to update product
-	// For now, return success response
+	// Update product in database
+	setParts := make([]string, 0)
+	args := make([]interface{}, 0)
+	
+	for field, value := range updates {
+		setParts = append(setParts, fmt.Sprintf("%s = ?", field))
+		args = append(args, value)
+	}
+	
+	if len(setParts) == 0 {
+		h.HandleError(w, r, fmt.Errorf("no updates provided"), "Güncellenecek alan bulunamadı")
+		return
+	}
+	
+	// Add updated_at
+	setParts = append(setParts, "updated_at = NOW()")
+	args = append(args, productID)
+	
+	query := fmt.Sprintf("UPDATE products SET %s WHERE id = ?", strings.Join(setParts, ", "))
+	
+	result, err := h.DB.Exec(query, args...)
+	if err != nil {
+		h.HandleError(w, r, err, "Ürün güncellenemedi")
+		return
+	}
+	
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		h.HandleError(w, r, fmt.Errorf("product not found"), "Ürün bulunamadı")
+		return
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success":    true,
-		"message":    "Ürün güncellendi (demo)",
+		"message":    "Ürün başarıyla güncellendi",
 		"product_id": productID,
 		"updates":    updates,
 	})
@@ -1338,12 +1390,25 @@ func (h *AdminHandler) deleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Use product service to delete product
-	// For now, return success response
+	// Soft delete product (set status to deleted instead of hard delete)
+	query := "UPDATE products SET status = 'deleted', updated_at = NOW() WHERE id = ?"
+	
+	result, err := h.DB.Exec(query, productID)
+	if err != nil {
+		h.HandleError(w, r, err, "Ürün silinemedi")
+		return
+	}
+	
+	rowsAffected, _ := result.RowsAffected()
+	if rowsAffected == 0 {
+		h.HandleError(w, r, fmt.Errorf("product not found"), "Ürün bulunamadı")
+		return
+	}
+	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success":    true,
-		"message":    "Ürün silindi (demo)",
+		"message":    "Ürün başarıyla silindi",
 		"product_id": productID,
 	})
 }

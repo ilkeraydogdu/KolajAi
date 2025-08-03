@@ -69,7 +69,10 @@ const AuthHelpers = {
   
   // AJAX isteği gönderme fonksiyonu
   sendAjaxRequest: function(url, method, data, successCallback, errorCallback) {
-    console.log("Sending AJAX request to:", url, "with data:", data);
+    // Use logger instead of console.log
+  if (window.logger) {
+    window.logger.ajax("Sending AJAX request to:", { url, data });
+  }
     
     $.ajax({
       url: url,
@@ -79,16 +82,18 @@ const AuthHelpers = {
         'X-Requested-With': 'XMLHttpRequest',
         'Accept': 'application/json'
       },
-      crossDomain: true,
+      crossDomain: false, // Restrict to same origin for security
       xhrFields: {
-        withCredentials: false
+        withCredentials: true // Include credentials for proper authentication
       },
-      success: function(response) {
-        console.log("AJAX response:", response);
-        if (successCallback) {
-          successCallback(response);
-        }
-      },
+              success: function(response) {
+          if (window.logger) {
+            window.logger.ajax("AJAX response:", response);
+          }
+          if (successCallback) {
+            successCallback(response);
+          }
+        },
       error: function(xhr, status, error) {
         console.error("AJAX hatası:", {
           status: xhr.status,
@@ -117,7 +122,7 @@ const ResetPassword = {
   verificationInProgress: false,
   
   init: function() {
-    console.log("Reset password page loaded");
+    window.logger && window.logger.debug("Reset password page loaded");
     
     // DOM elementlerini seç
     this.tempPasswordInput = $('#inputTempPassword');
@@ -129,7 +134,7 @@ const ResetPassword = {
     
     // E-posta parametresini logla
     const email = $('input[name="email"]').val();
-    console.log("Email parameter:", email);
+    window.logger && window.logger.debug("Email parameter:", email);
     
     // URL'deki parametreleri temizle
     if (window.history.replaceState) {
@@ -171,7 +176,7 @@ const ResetPassword = {
     // Form gönderimi
     this.resetPasswordForm.on('submit', function(e) {
       e.preventDefault(); // Form gönderimini engelle
-      console.log("Form submit event triggered");
+      window.logger && window.logger.debug("Form submit event triggered");
       
       if (!self.tempPasswordVerified) {
         console.error("Geçici şifre doğrulanmadı, form gönderimi engellendi");
@@ -200,8 +205,8 @@ const ResetPassword = {
         return false;
       }
       
-      console.log("Şifre değiştirme işlemi başlatılıyor...");
-      console.log("Form verileri:", {
+      window.logger && window.logger.debug("Şifre değiştirme işlemi başlatılıyor...");
+      window.logger && window.logger.debug("Form verileri:", {
         email: email,
         password: password,
         password_confirm: confirmPassword
@@ -234,7 +239,7 @@ const ResetPassword = {
           xhr.setRequestHeader('Access-Control-Allow-Headers', 'Content-Type, X-Requested-With');
         },
         success: function(response) {
-          console.log("Şifre değiştirme başarılı:", response);
+          window.logger && window.logger.debug("Şifre değiştirme başarılı:", response);
           // Başarılı mesajı göster
           AuthHelpers.showNotification('success', 'Başarılı', 'Şifreniz başarıyla değiştirildi');
           // Login sayfasına yönlendir
@@ -265,7 +270,7 @@ const ResetPassword = {
     
     this.verificationInProgress = true;
     
-    console.log("Temp password changed, length:", tempPassword.length);
+    window.logger && window.logger.debug("Temp password changed, length:", tempPassword.length);
     
     // Doğrulama için AJAX isteği
     AuthHelpers.sendAjaxRequest(
@@ -278,7 +283,7 @@ const ResetPassword = {
       function(response) {
         self.verificationInProgress = false;
         
-        console.log("AJAX başarılı:", response);
+        window.logger && window.logger.debug("AJAX başarılı:", response);
         if (response.success) {
           self.tempPasswordVerified = true;
           self.tempPasswordInput.removeClass('is-invalid').addClass('is-valid');
@@ -320,7 +325,7 @@ const ResetPassword = {
 // Login sayfası işlevleri
 const Login = {
   init: function() {
-    console.log("Login page loaded");
+    window.logger && window.logger.debug("Login page loaded");
     this.setupEventListeners();
     
     // URL parametrelerinden mesaj göster
@@ -336,7 +341,7 @@ const Login = {
     
     // Form gönderimi
     $('#loginForm').on('submit', function(e) {
-      console.log("Login form submit");
+      window.logger && window.logger.debug("Login form submit");
       
       // Form doğrulama
       const email = $('#inputEmailAddress').val();
@@ -379,7 +384,7 @@ const Register = {
   },
   
   init: function() {
-    console.log("Register page loaded");
+    window.logger && window.logger.debug("Register page loaded");
     this.setupEventListeners();
     
     // CAPTCHA oluştur (başlangıçta gizli)
@@ -441,7 +446,7 @@ const Register = {
       const answer = parseInt(answerVal);
       const expected = parseInt(expectedVal);
       
-      console.log("Captcha kontrolü:", { answer, expected, isValid: answer === expected });
+      window.logger && window.logger.debug("Captcha kontrolü:", { answer, expected, isValid: answer === expected });
       
       // Sayısal karşılaştırma yap
       const isValid = !isNaN(answer) && !isNaN(expected) && answer === expected;
@@ -455,7 +460,7 @@ const Register = {
     
     // Form gönderimi
     $('#registerForm').on('submit', function(e) {
-      console.log("Register form submit");
+      window.logger && window.logger.debug("Register form submit");
       
       // Form doğrulama - tüm alanları kontrol et
       if (!self.checkAllFields(true)) {
@@ -475,7 +480,7 @@ const Register = {
         
         // Eğer daha önce doğrulanmış bir değer varsa ve bu değer beklenen değerle eşleşiyorsa
         if (!isNaN(validatedAnswer) && !isNaN(captchaExpected) && validatedAnswer === captchaExpected) {
-          console.log("Form gönderilirken captcha kontrolü: Önceden doğrulanmış değer kullanılıyor", { 
+          window.logger && window.logger.debug("Form gönderilirken captcha kontrolü: Önceden doğrulanmış değer kullanılıyor", { 
             validatedAnswer, 
             captchaExpected
           });
@@ -485,7 +490,7 @@ const Register = {
         // Önceden doğrulanmış değer yoksa veya eşleşmiyorsa, mevcut değeri kontrol et
         const captchaAnswer = parseInt(captchaAnswerInput.val().trim());
         
-        console.log("Form gönderilirken captcha kontrolü:", { 
+        window.logger && window.logger.debug("Form gönderilirken captcha kontrolü:", { 
           captchaAnswer, 
           captchaExpected, 
           validatedAnswer,
@@ -590,21 +595,21 @@ const Register = {
     // Önceden doğrulanmış değeri temizle
     $(answerElement).removeData('validatedAnswer');
     
-    console.log("Yeni captcha oluşturuldu:", { question, result });
+    window.logger && window.logger.debug("Yeni captcha oluşturuldu:", { question, result });
   }
 };
 
 // Forgot Password sayfası işlevleri
 const ForgotPassword = {
   init: function() {
-    console.log("Forgot password page loaded");
+    window.logger && window.logger.debug("Forgot password page loaded");
     this.setupEventListeners();
   },
   
   setupEventListeners: function() {
     // Form gönderimi
     $('#forgotPasswordForm').on('submit', function(e) {
-      console.log("Forgot password form submit");
+      window.logger && window.logger.debug("Forgot password form submit");
       
       // Form doğrulama
       const email = $('#inputEmailAddress').val();
