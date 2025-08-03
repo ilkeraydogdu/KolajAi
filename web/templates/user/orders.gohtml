@@ -1,344 +1,302 @@
 {{define "user/orders"}}
-{{template "layout/dashboard" .}}
+{{template "layout/header" .}}
 
-{{define "content"}}
 <div class="user-orders-page">
     <!-- Page Header -->
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div>
-            <h4 class="mb-0">Siparişlerim</h4>
-            <p class="mb-0 text-muted">Tüm siparişlerinizi buradan takip edebilirsiniz</p>
-        </div>
-        <div>
-            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
-                <i class="material-icons-outlined me-2">filter_list</i>Filtrele
-            </button>
-        </div>
-    </div>
-
-    <!-- Order Statistics -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-1">{{.OrderStats.Total}}</h3>
-                    <p class="mb-0">Toplam Sipariş</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-1">{{.OrderStats.Completed}}</h3>
-                    <p class="mb-0">Tamamlanan</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-1">{{.OrderStats.Pending}}</h3>
-                    <p class="mb-0">Bekleyen</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card bg-info text-white">
-                <div class="card-body text-center">
-                    <h3 class="mb-1">₺{{.OrderStats.TotalAmount}}</h3>
-                    <p class="mb-0">Toplam Tutar</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Orders List -->
-    <div class="card">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Sipariş Listesi</h6>
-            <div class="d-flex align-items-center">
-                <select class="form-select form-select-sm me-2" id="statusFilter">
-                    <option value="">Tüm Durumlar</option>
-                    <option value="pending">Bekleyen</option>
-                    <option value="processing">İşleniyor</option>
-                    <option value="shipped">Kargoda</option>
-                    <option value="delivered">Teslim Edildi</option>
-                    <option value="cancelled">İptal Edildi</option>
-                </select>
-                <select class="form-select form-select-sm" id="sortOrder">
-                    <option value="newest">En Yeni</option>
-                    <option value="oldest">En Eski</option>
-                    <option value="amount_high">Tutar (Yüksek)</option>
-                    <option value="amount_low">Tutar (Düşük)</option>
-                </select>
-            </div>
-        </div>
-        <div class="card-body p-0">
-            {{if .Orders}}
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Sipariş No</th>
-                            <th>Tarih</th>
-                            <th>Ürünler</th>
-                            <th>Durum</th>
-                            <th>Tutar</th>
-                            <th>İşlemler</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{range .Orders}}
-                        <tr>
-                            <td>
-                                <strong>#{{.OrderNumber}}</strong>
-                                {{if .TrackingNumber}}
-                                <br><small class="text-muted">Kargo: {{.TrackingNumber}}</small>
-                                {{end}}
-                            </td>
-                            <td>
-                                <div>{{.CreatedAt | formatDate}}</div>
-                                <small class="text-muted">{{.CreatedAt | formatTime}}</small>
-                            </td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <div class="order-items">
-                                        {{range $index, $item := .Items}}
-                                        {{if lt $index 3}}
-                                        <img src="{{index $item.Product.Images 0}}" alt="{{$item.Product.Name}}" 
-                                             class="rounded me-1" width="30" height="30">
-                                        {{end}}
-                                        {{end}}
-                                        {{if gt (len .Items) 3}}
-                                        <span class="badge bg-secondary">+{{sub (len .Items) 3}}</span>
-                                        {{end}}
-                                    </div>
-                                    <div class="ms-2">
-                                        <small class="text-muted">{{len .Items}} ürün</small>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="badge bg-{{.StatusColor}}">{{.StatusText}}</span>
-                                {{if .EstimatedDelivery}}
-                                <br><small class="text-muted">Tahmini: {{.EstimatedDelivery | formatDate}}</small>
-                                {{end}}
-                            </td>
-                            <td>
-                                <strong>₺{{.TotalAmount}}</strong>
-                                {{if .PaymentMethod}}
-                                <br><small class="text-muted">{{.PaymentMethod}}</small>
-                                {{end}}
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
-                                    <button class="btn btn-outline-primary" onclick="viewOrder('{{.ID}}')">
-                                        <i class="material-icons-outlined">visibility</i>
-                                    </button>
-                                    {{if eq .Status "delivered"}}
-                                    <button class="btn btn-outline-success" onclick="reviewOrder('{{.ID}}')">
-                                        <i class="material-icons-outlined">rate_review</i>
-                                    </button>
-                                    {{end}}
-                                    {{if in .Status "pending" "processing"}}
-                                    <button class="btn btn-outline-danger" onclick="cancelOrder('{{.ID}}')">
-                                        <i class="material-icons-outlined">cancel</i>
-                                    </button>
-                                    {{end}}
-                                    {{if .TrackingNumber}}
-                                    <button class="btn btn-outline-info" onclick="trackOrder('{{.TrackingNumber}}')">
-                                        <i class="material-icons-outlined">local_shipping</i>
-                                    </button>
-                                    {{end}}
-                                </div>
-                            </td>
-                        </tr>
-                        {{end}}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            {{if .Pagination}}
-            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+    <div class="bg-white shadow-sm border-b">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
                 <div>
-                    <small class="text-muted">
-                        {{.Pagination.From}}-{{.Pagination.To}} / {{.Pagination.Total}} sipariş gösteriliyor
-                    </small>
+                    <h1 class="text-2xl font-bold text-gray-900">Siparişlerim</h1>
+                    <p class="text-gray-600">Geçmiş siparişlerinizi görüntüleyin ve takip edin</p>
                 </div>
-                <nav>
-                    <ul class="pagination pagination-sm mb-0">
-                        {{if .Pagination.HasPrev}}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{.Pagination.PrevPage}}">Önceki</a>
-                        </li>
-                        {{end}}
+                <div class="flex items-center space-x-4">
+                    <button onclick="exportOrders()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-download mr-2"></i>Dışa Aktar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Order Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-shopping-bag text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-500">Toplam Sipariş</div>
+                        <div class="text-2xl font-bold text-gray-900">{{.OrderStats.TotalOrders}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-500">Tamamlanan</div>
+                        <div class="text-2xl font-bold text-gray-900">{{.OrderStats.CompletedOrders}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-orange-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-500">Bekleyen</div>
+                        <div class="text-2xl font-bold text-gray-900">{{.OrderStats.PendingOrders}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-lira-sign text-purple-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <div class="text-sm font-medium text-gray-500">Toplam Harcama</div>
+                        <div class="text-2xl font-bold text-gray-900">₺{{printf "%.2f" .OrderStats.TotalAmount}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Status Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                    <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Tüm Durumlar</option>
+                        <option value="pending" {{if eq .Status "pending"}}selected{{end}}>Bekliyor</option>
+                        <option value="confirmed" {{if eq .Status "confirmed"}}selected{{end}}>Onaylandı</option>
+                        <option value="processing" {{if eq .Status "processing"}}selected{{end}}>İşleniyor</option>
+                        <option value="shipped" {{if eq .Status "shipped"}}selected{{end}}>Kargoda</option>
+                        <option value="delivered" {{if eq .Status "delivered"}}selected{{end}}>Teslim Edildi</option>
+                        <option value="cancelled" {{if eq .Status "cancelled"}}selected{{end}}>İptal Edildi</option>
+                        <option value="refunded" {{if eq .Status "refunded"}}selected{{end}}>İade Edildi</option>
+                    </select>
+                </div>
+                
+                <!-- Date Range Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tarih Aralığı</label>
+                    <select id="dateRangeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Tüm Zamanlar</option>
+                        <option value="last_7_days" {{if eq .DateRange "last_7_days"}}selected{{end}}>Son 7 Gün</option>
+                        <option value="last_30_days" {{if eq .DateRange "last_30_days"}}selected{{end}}>Son 30 Gün</option>
+                        <option value="last_3_months" {{if eq .DateRange "last_3_months"}}selected{{end}}>Son 3 Ay</option>
+                        <option value="last_year" {{if eq .DateRange "last_year"}}selected{{end}}>Son 1 Yıl</option>
+                    </select>
+                </div>
+                
+                <!-- Apply Filters Button -->
+                <div class="flex items-end">
+                    <button onclick="applyFilters()" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-filter mr-2"></i>Filtrele
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders List -->
+        <div class="space-y-6">
+            {{range .Orders}}
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <!-- Order Header -->
+                <div class="bg-gray-50 px-6 py-4 border-b">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-4">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Sipariş #{{.OrderNumber}}</div>
+                                <div class="text-sm text-gray-500">{{.CreatedAt.Format "02.01.2006 15:04"}}</div>
+                            </div>
+                            <div>
+                                {{if eq .Status "pending"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <i class="fas fa-clock mr-1"></i>Bekliyor
+                                </span>
+                                {{else if eq .Status "confirmed"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <i class="fas fa-check mr-1"></i>Onaylandı
+                                </span>
+                                {{else if eq .Status "processing"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                    <i class="fas fa-cog mr-1"></i>İşleniyor
+                                </span>
+                                {{else if eq .Status "shipped"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    <i class="fas fa-truck mr-1"></i>Kargoda
+                                </span>
+                                {{else if eq .Status "delivered"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check-circle mr-1"></i>Teslim Edildi
+                                </span>
+                                {{else if eq .Status "cancelled"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <i class="fas fa-times mr-1"></i>İptal Edildi
+                                </span>
+                                {{else if eq .Status "refunded"}}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    <i class="fas fa-undo mr-1"></i>İade Edildi
+                                </span>
+                                {{end}}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-gray-900">₺{{printf "%.2f" .Total}}</div>
+                                <div class="text-sm text-gray-500">{{len .Items}} ürün</div>
+                            </div>
+                            <button onclick="toggleOrderDetails({{.ID}})" class="text-blue-600 hover:text-blue-700">
+                                <i class="fas fa-chevron-down transform transition-transform" id="chevron-{{.ID}}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Items (Initially Hidden) -->
+                <div id="order-details-{{.ID}}" class="hidden">
+                    <div class="px-6 py-4">
+                        <div class="space-y-4">
+                            {{range .Items}}
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
+                                    <img src="{{.Product.Image | default "/static/images/no-image.jpg"}}" 
+                                         alt="{{.Product.Name}}" class="w-16 h-16 object-cover rounded">
+                                </div>
+                                <div class="flex-1">
+                                    <div class="font-medium text-gray-900">{{.Product.Name}}</div>
+                                    <div class="text-sm text-gray-500">SKU: {{.Product.SKU}}</div>
+                                    <div class="text-sm text-gray-500">Adet: {{.Quantity}}</div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="font-medium text-gray-900">₺{{printf "%.2f" .Price}}</div>
+                                    <div class="text-sm text-gray-500">Toplam: ₺{{printf "%.2f" (mul .Price .Quantity)}}</div>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
                         
-                        {{range .Pagination.Pages}}
-                        <li class="page-item {{if .IsCurrent}}active{{end}}">
-                            <a class="page-link" href="?page={{.Number}}">{{.Number}}</a>
-                        </li>
-                        {{end}}
-                        
-                        {{if .Pagination.HasNext}}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{.Pagination.NextPage}}">Sonraki</a>
-                        </li>
-                        {{end}}
-                    </ul>
-                </nav>
+                        <!-- Order Summary -->
+                        <div class="mt-6 pt-6 border-t">
+                            <div class="flex justify-between items-center">
+                                <div class="space-y-2">
+                                    {{if .TrackingNumber}}
+                                    <div class="text-sm text-gray-600">
+                                        <strong>Kargo Takip No:</strong> {{.TrackingNumber}}
+                                        <a href="#" onclick="trackOrder('{{.TrackingNumber}}')" class="text-blue-600 hover:text-blue-700 ml-2">
+                                            <i class="fas fa-external-link-alt"></i> Takip Et
+                                        </a>
+                                    </div>
+                                    {{end}}
+                                    
+                                    {{if .ShippingAddress}}
+                                    <div class="text-sm text-gray-600">
+                                        <strong>Teslimat Adresi:</strong> {{.ShippingAddress.City}}, {{.ShippingAddress.State}}
+                                    </div>
+                                    {{end}}
+                                    
+                                    <div class="text-sm text-gray-600">
+                                        <strong>Ödeme Yöntemi:</strong> {{.PaymentMethod | default "Kredi Kartı"}}
+                                    </div>
+                                </div>
+                                
+                                <div class="space-x-2">
+                                    {{if eq .Status "delivered"}}
+                                    <button onclick="reviewOrder({{.ID}})" class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        <i class="fas fa-star mr-1"></i>Değerlendir
+                                    </button>
+                                    {{end}}
+                                    
+                                    {{if or (eq .Status "pending") (eq .Status "confirmed")}}
+                                    <button onclick="cancelOrder({{.ID}})" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        <i class="fas fa-times mr-1"></i>İptal Et
+                                    </button>
+                                    {{end}}
+                                    
+                                    <button onclick="reorderItems({{.ID}})" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        <i class="fas fa-redo mr-1"></i>Tekrar Sipariş Ver
+                                    </button>
+                                    
+                                    <button onclick="downloadInvoice({{.ID}})" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                        <i class="fas fa-download mr-1"></i>Fatura
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             {{end}}
-            {{else}}
-            <div class="text-center py-5">
-                <i class="material-icons-outlined text-muted" style="font-size: 4rem;">shopping_bag</i>
-                <h5 class="mt-3">Henüz sipariş vermediniz</h5>
-                <p class="text-muted">İlk siparişinizi vermek için alışverişe başlayın!</p>
-                <a href="/products" class="btn btn-primary">
-                    <i class="material-icons-outlined me-2">shopping_cart</i>Alışverişe Başla
+        </div>
+        
+        <!-- Empty State -->
+        {{if not .Orders}}
+        <div class="text-center py-16">
+            <div class="mb-4">
+                <i class="fas fa-shopping-bag text-6xl text-gray-300"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 mb-2">Henüz sipariş bulunmuyor</h3>
+            <p class="text-gray-500 mb-6">İlk siparişinizi vermek için alışverişe başlayın!</p>
+            <a href="/products" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                Alışverişe Başla
+            </a>
+        </div>
+        {{end}}
+        
+        <!-- Pagination -->
+        {{if gt .TotalPages 1}}
+        <div class="flex justify-center mt-8">
+            <nav class="flex items-center space-x-2">
+                {{if gt .CurrentPage 1}}
+                <a href="?page={{sub .CurrentPage 1}}&status={{.Status}}&date_range={{.DateRange}}" 
+                   class="px-3 py-2 text-gray-600 hover:text-blue-600 border border-gray-300 rounded-lg hover:border-blue-300">
+                    <i class="fas fa-chevron-left"></i>
                 </a>
-            </div>
-            {{end}}
+                {{end}}
+                
+                {{range $page := iterate .TotalPages}}
+                {{if eq $page $.CurrentPage}}
+                <span class="px-3 py-2 bg-blue-600 text-white border border-blue-600 rounded-lg">{{$page}}</span>
+                {{else}}
+                <a href="?page={{$page}}&status={{$.Status}}&date_range={{$.DateRange}}" 
+                   class="px-3 py-2 text-gray-600 hover:text-blue-600 border border-gray-300 rounded-lg hover:border-blue-300">{{$page}}</a>
+                {{end}}
+                {{end}}
+                
+                {{if lt .CurrentPage .TotalPages}}
+                <a href="?page={{add .CurrentPage 1}}&status={{.Status}}&date_range={{.DateRange}}" 
+                   class="px-3 py-2 text-gray-600 hover:text-blue-600 border border-gray-300 rounded-lg hover:border-blue-300">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {{end}}
+            </nav>
         </div>
+        {{end}}
     </div>
 </div>
 
-<!-- Order Detail Modal -->
-<div class="modal fade" id="orderDetailModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Sipariş Detayları</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="orderDetailContent">
-                <!-- Content will be loaded dynamically -->
-            </div>
-        </div>
-    </div>
-</div>
+<script src="/static/js/user-orders.js"></script>
 
-<!-- Filter Modal -->
-<div class="modal fade" id="filterModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Sipariş Filtrele</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="filterForm">
-                    <div class="mb-3">
-                        <label class="form-label">Tarih Aralığı</label>
-                        <div class="row">
-                            <div class="col-6">
-                                <input type="date" class="form-control" name="date_from" placeholder="Başlangıç">
-                            </div>
-                            <div class="col-6">
-                                <input type="date" class="form-control" name="date_to" placeholder="Bitiş">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Sipariş Durumu</label>
-                        <select class="form-select" name="status">
-                            <option value="">Tümü</option>
-                            <option value="pending">Bekleyen</option>
-                            <option value="processing">İşleniyor</option>
-                            <option value="shipped">Kargoda</option>
-                            <option value="delivered">Teslim Edildi</option>
-                            <option value="cancelled">İptal Edildi</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Tutar Aralığı</label>
-                        <div class="row">
-                            <div class="col-6">
-                                <input type="number" class="form-control" name="amount_min" placeholder="Min. tutar">
-                            </div>
-                            <div class="col-6">
-                                <input type="number" class="form-control" name="amount_max" placeholder="Max. tutar">
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
-                <button type="button" class="btn btn-primary" onclick="applyFilter()">Filtrele</button>
-            </div>
-        </div>
-    </div>
-</div>
-{{end}}
-
-{{define "page_js"}}
-<script>
-function viewOrder(orderId) {
-    // Load order details
-    fetch('/user/orders/' + orderId)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('orderDetailContent').innerHTML = html;
-            new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
-        });
-}
-
-function cancelOrder(orderId) {
-    if (confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?')) {
-        fetch('/user/orders/' + orderId + '/cancel', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            } else {
-                alert('Sipariş iptal edilemedi: ' + data.message);
-            }
-        });
-    }
-}
-
-function reviewOrder(orderId) {
-    window.location.href = '/user/orders/' + orderId + '/review';
-}
-
-function trackOrder(trackingNumber) {
-    window.open('/track/' + trackingNumber, '_blank');
-}
-
-function applyFilter() {
-    const form = document.getElementById('filterForm');
-    const formData = new FormData(form);
-    const params = new URLSearchParams();
-    
-    for (let [key, value] of formData.entries()) {
-        if (value) params.append(key, value);
-    }
-    
-    window.location.href = '/user/orders?' + params.toString();
-}
-
-// Status and sort filters
-document.getElementById('statusFilter').addEventListener('change', function() {
-    const params = new URLSearchParams(window.location.search);
-    if (this.value) {
-        params.set('status', this.value);
-    } else {
-        params.delete('status');
-    }
-    window.location.href = '/user/orders?' + params.toString();
-});
-
-document.getElementById('sortOrder').addEventListener('change', function() {
-    const params = new URLSearchParams(window.location.search);
-    params.set('sort', this.value);
-    window.location.href = '/user/orders?' + params.toString();
-});
-</script>
-{{end}}
+{{template "layout/footer" .}}
 {{end}}

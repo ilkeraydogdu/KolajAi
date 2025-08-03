@@ -1,0 +1,970 @@
+/**
+ * Vendor Panel Styles
+ */
+
+/* Vendor Layout */
+.vendor-layout {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+}
+
+.vendor-sidebar {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    min-height: 100vh;
+}
+
+.vendor-sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin: 4px 12px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.vendor-sidebar .nav-link:hover,
+.vendor-sidebar .nav-link.active {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateX(4px);
+}
+
+.vendor-sidebar .nav-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.125rem;
+}
+
+.vendor-brand {
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.vendor-brand-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.vendor-brand-name {
+    color: white;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.vendor-brand-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.875rem;
+    margin: 4px 0 0;
+}
+
+/* Vendor Header */
+.vendor-header {
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.vendor-header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.vendor-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.vendor-breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vendor-breadcrumb-item.active {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.vendor-header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.vendor-notification-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: none;
+    background: #f8fafc;
+    color: #64748b;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.vendor-notification-btn:hover {
+    background: #e2e8f0;
+    color: #374151;
+}
+
+.vendor-notification-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 18px;
+    height: 18px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vendor-profile-dropdown {
+    position: relative;
+}
+
+.vendor-profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.vendor-profile-btn:hover {
+    background: #f8fafc;
+}
+
+.vendor-profile-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #059669;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.vendor-profile-info {
+    text-align: left;
+}
+
+.vendor-profile-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.vendor-profile-role {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin: 0;
+}
+
+/* Vendor Cards */
+.vendor-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.vendor-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.vendor-card-header {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: between;
+}
+
+.vendor-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    flex: 1;
+}
+
+.vendor-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.vendor-card-body {
+    padding: 24px;
+}
+
+.vendor-card-footer {
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Vendor Statistics */
+.vendor-stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #059669;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.vendor-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, rgba(4, 120, 87, 0.05) 100%);
+    border-radius: 50%;
+    transform: translate(30px, -30px);
+}
+
+.vendor-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.vendor-stat-card.stat-revenue {
+    border-left-color: #059669;
+}
+
+.vendor-stat-card.stat-orders {
+    border-left-color: #3b82f6;
+}
+
+.vendor-stat-card.stat-products {
+    border-left-color: #f59e0b;
+}
+
+.vendor-stat-card.stat-customers {
+    border-left-color: #8b5cf6;
+}
+
+.vendor-stat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.vendor-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.vendor-stat-card.stat-revenue .vendor-stat-icon {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+}
+
+.vendor-stat-card.stat-orders .vendor-stat-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.vendor-stat-card.stat-products .vendor-stat-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.vendor-stat-card.stat-customers .vendor-stat-icon {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.vendor-stat-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.vendor-stat-trend.positive {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+}
+
+.vendor-stat-trend.negative {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.vendor-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
+    position: relative;
+    z-index: 1;
+}
+
+.vendor-stat-label {
+    color: #64748b;
+    font-size: 0.875rem;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+/* Vendor Product Management */
+.vendor-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.vendor-product-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.vendor-product-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.vendor-product-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    background: #f8fafc;
+}
+
+.vendor-product-content {
+    padding: 16px;
+}
+
+.vendor-product-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.vendor-product-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1e293b;
+    line-height: 1.4;
+    margin: 0;
+    flex: 1;
+}
+
+.vendor-product-status {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.vendor-product-status.active {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+}
+
+.vendor-product-status.inactive {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.vendor-product-status.draft {
+    background: rgba(100, 116, 139, 0.1);
+    color: #475569;
+}
+
+.vendor-product-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.vendor-product-meta-item {
+    text-align: center;
+}
+
+.vendor-product-meta-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.vendor-product-meta-label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vendor-product-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.vendor-product-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.vendor-product-btn-primary {
+    background: #059669;
+    color: white;
+}
+
+.vendor-product-btn-primary:hover {
+    background: #047857;
+}
+
+.vendor-product-btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.vendor-product-btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+/* Vendor Order Management */
+.vendor-order-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.vendor-order-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.vendor-order-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.vendor-order-number {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.vendor-order-date {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.vendor-order-status {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vendor-order-status.pending {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.vendor-order-status.processing {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.vendor-order-status.shipped {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+}
+
+.vendor-order-status.delivered {
+    background: rgba(5, 150, 105, 0.1);
+    color: #059669;
+}
+
+.vendor-order-status.cancelled {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.vendor-order-items {
+    margin-bottom: 16px;
+}
+
+.vendor-order-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f8fafc;
+}
+
+.vendor-order-item:last-child {
+    border-bottom: none;
+}
+
+.vendor-order-item-image {
+    width: 48px;
+    height: 48px;
+    border-radius: 6px;
+    object-fit: cover;
+    background: #f8fafc;
+}
+
+.vendor-order-item-details {
+    flex: 1;
+}
+
+.vendor-order-item-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.vendor-order-item-meta {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.vendor-order-item-price {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #059669;
+    text-align: right;
+}
+
+.vendor-order-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.vendor-order-total {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.vendor-order-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.vendor-order-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.vendor-order-btn-primary {
+    background: #059669;
+    color: white;
+}
+
+.vendor-order-btn-primary:hover {
+    background: #047857;
+}
+
+.vendor-order-btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.vendor-order-btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+/* Vendor Analytics */
+.vendor-analytics-chart {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.vendor-analytics-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.vendor-analytics-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.vendor-analytics-period {
+    display: flex;
+    gap: 8px;
+}
+
+.vendor-analytics-period-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.vendor-analytics-period-btn.active,
+.vendor-analytics-period-btn:hover {
+    background: #059669;
+    border-color: #059669;
+    color: white;
+}
+
+.vendor-analytics-chart-container {
+    height: 300px;
+    position: relative;
+}
+
+/* Vendor Forms */
+.vendor-form {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+}
+
+.vendor-form-section {
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.vendor-form-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.vendor-form-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 16px;
+}
+
+.vendor-form-group {
+    margin-bottom: 20px;
+}
+
+.vendor-form-group-inline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.vendor-form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.vendor-form-label.required::after {
+    content: '*';
+    color: #ef4444;
+    margin-left: 4px;
+}
+
+.vendor-form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.vendor-form-control:focus {
+    outline: none;
+    border-color: #059669;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+.vendor-form-control.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.vendor-form-error {
+    font-size: 0.75rem;
+    color: #ef4444;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.vendor-form-help {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.vendor-form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.vendor-btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.vendor-btn-primary {
+    background: #059669;
+    color: white;
+}
+
+.vendor-btn-primary:hover {
+    background: #047857;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}
+
+.vendor-btn-secondary {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+.vendor-btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.vendor-btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.vendor-btn-danger:hover {
+    background: #dc2626;
+}
+
+/* Vendor Responsive */
+@media (max-width: 768px) {
+    .vendor-sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        position: fixed;
+        z-index: 1000;
+        width: 280px;
+    }
+    
+    .vendor-sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .vendor-header {
+        padding: 12px 16px;
+    }
+    
+    .vendor-header-left,
+    .vendor-header-right {
+        gap: 12px;
+    }
+    
+    .vendor-card-body {
+        padding: 16px;
+    }
+    
+    .vendor-stat-card {
+        padding: 16px;
+    }
+    
+    .vendor-product-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .vendor-form {
+        padding: 16px;
+    }
+    
+    .vendor-form-group-inline {
+        grid-template-columns: 1fr;
+    }
+    
+    .vendor-form-actions {
+        flex-direction: column;
+    }
+    
+    .vendor-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .vendor-order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .vendor-order-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .vendor-order-actions {
+        width: 100%;
+    }
+    
+    .vendor-order-btn {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+/* Vendor Dark Mode */
+@media (prefers-color-scheme: dark) {
+    .vendor-layout {
+        background: #0f172a;
+    }
+    
+    .vendor-card,
+    .vendor-stat-card,
+    .vendor-product-card,
+    .vendor-order-card,
+    .vendor-analytics-chart,
+    .vendor-form {
+        background: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+    }
+    
+    .vendor-header {
+        background: #1e293b;
+        border-color: #334155;
+    }
+    
+    .vendor-form-control {
+        background: #334155;
+        border-color: #475569;
+        color: #e2e8f0;
+    }
+    
+    .vendor-form-control:focus {
+        border-color: #059669;
+    }
+}

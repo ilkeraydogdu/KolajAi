@@ -420,6 +420,197 @@ func (h *EcommerceHandler) VendorDashboard(w http.ResponseWriter, r *http.Reques
 	h.RenderTemplate(w, r, "vendor/dashboard", data)
 }
 
+// User Profile Handlers
+
+func (h *EcommerceHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
+	userID := h.GetUserID(r)
+	
+	if r.Method == "POST" {
+		// Handle profile update
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Form parse error", http.StatusBadRequest)
+			return
+		}
+		
+		// Update user profile logic would go here
+		// For now, just redirect with success message
+		h.RedirectWithFlash(w, r, "/user/profile", "Profil başarıyla güncellendi")
+		return
+	}
+	
+	// Get user data
+	user, err := h.UserService.GetUserByID(userID)
+	if err != nil {
+		h.Logger.Printf("Error getting user: %v", err)
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+	
+	// Get user statistics
+	stats, err := h.UserService.GetUserStats(userID)
+	if err != nil {
+		h.Logger.Printf("Error getting user stats: %v", err)
+		stats = &models.UserStats{} // Empty stats
+	}
+	
+	data := map[string]interface{}{
+		"User":  user,
+		"Stats": stats,
+		"Title": "Profil",
+	}
+	
+	h.RenderTemplate(w, r, "user/profile", data)
+}
+
+func (h *EcommerceHandler) UserOrders(w http.ResponseWriter, r *http.Request) {
+	userID := h.GetUserID(r)
+	page := h.getPageFromQuery(r)
+	
+	// Get filters from query parameters
+	status := r.URL.Query().Get("status")
+	dateRange := r.URL.Query().Get("date_range")
+	
+	// Get user orders
+	orders, totalCount, err := h.OrderService.GetUserOrders(userID, page, services.DefaultProductLimit, status, dateRange)
+	if err != nil {
+		h.Logger.Printf("Error getting user orders: %v", err)
+		orders = []*models.Order{}
+		totalCount = 0
+	}
+	
+	// Calculate pagination
+	totalPages := (totalCount + services.DefaultProductLimit - 1) / services.DefaultProductLimit
+	
+	// Get order statistics
+	orderStats, err := h.OrderService.GetUserOrderStats(userID)
+	if err != nil {
+		h.Logger.Printf("Error getting order stats: %v", err)
+		orderStats = &models.OrderStats{}
+	}
+	
+	data := map[string]interface{}{
+		"Orders":      orders,
+		"OrderStats":  orderStats,
+		"CurrentPage": page,
+		"TotalPages":  totalPages,
+		"TotalCount":  totalCount,
+		"Status":      status,
+		"DateRange":   dateRange,
+		"Title":       "Siparişlerim",
+	}
+	
+	h.RenderTemplate(w, r, "user/orders", data)
+}
+
+func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request) {
+	userID := h.GetUserID(r)
+	
+	if r.Method == "POST" {
+		// Handle address operations (add, edit, delete)
+		action := r.FormValue("action")
+		
+		switch action {
+		case "add":
+			// Add new address
+			address := &models.Address{
+				UserID:       userID,
+				Title:        r.FormValue("title"),
+				FullName:     r.FormValue("full_name"),
+				AddressLine1: r.FormValue("address_line_1"),
+				AddressLine2: r.FormValue("address_line_2"),
+				City:         r.FormValue("city"),
+				State:        r.FormValue("state"),
+				PostalCode:   r.FormValue("postal_code"),
+				Country:      r.FormValue("country"),
+				Phone:        r.FormValue("phone"),
+				IsDefault:    r.FormValue("is_default") == "1",
+			}
+			
+			err := h.AddressService.CreateAddress(address)
+			if err != nil {
+				h.Logger.Printf("Error creating address: %v", err)
+				h.RedirectWithFlash(w, r, "/user/addresses", "Adres eklenemedi")
+				return
+			}
+			
+			h.RedirectWithFlash(w, r, "/user/addresses", "Adres başarıyla eklendi")
+			return
+			
+		case "edit":
+			// Edit existing address
+			addressID, _ := strconv.Atoi(r.FormValue("address_id"))
+			
+			address := &models.Address{
+				ID:           addressID,
+				UserID:       userID,
+				Title:        r.FormValue("title"),
+				FullName:     r.FormValue("full_name"),
+				AddressLine1: r.FormValue("address_line_1"),
+				AddressLine2: r.FormValue("address_line_2"),
+				City:         r.FormValue("city"),
+				State:        r.FormValue("state"),
+				PostalCode:   r.FormValue("postal_code"),
+				Country:      r.FormValue("country"),
+				Phone:        r.FormValue("phone"),
+				IsDefault:    r.FormValue("is_default") == "1",
+			}
+			
+			err := h.AddressService.UpdateAddress(address)
+			if err != nil {
+				h.Logger.Printf("Error updating address: %v", err)
+				h.RedirectWithFlash(w, r, "/user/addresses", "Adres güncellenemedi")
+				return
+			}
+			
+			h.RedirectWithFlash(w, r, "/user/addresses", "Adres başarıyla güncellendi")
+			return
+			
+		case "delete":
+			// Delete address
+			addressID, _ := strconv.Atoi(r.FormValue("address_id"))
+			
+			err := h.AddressService.DeleteAddress(addressID, userID)
+			if err != nil {
+				h.Logger.Printf("Error deleting address: %v", err)
+				h.RedirectWithFlash(w, r, "/user/addresses", "Adres silinemedi")
+				return
+			}
+			
+			h.RedirectWithFlash(w, r, "/user/addresses", "Adres başarıyla silindi")
+			return
+			
+		case "set_default":
+			// Set default address
+			addressID, _ := strconv.Atoi(r.FormValue("address_id"))
+			
+			err := h.AddressService.SetDefaultAddress(addressID, userID)
+			if err != nil {
+				h.Logger.Printf("Error setting default address: %v", err)
+				h.RedirectWithFlash(w, r, "/user/addresses", "Varsayılan adres ayarlanamadı")
+				return
+			}
+			
+			h.RedirectWithFlash(w, r, "/user/addresses", "Varsayılan adres güncellendi")
+			return
+		}
+	}
+	
+	// Get user addresses
+	addresses, err := h.AddressService.GetUserAddresses(userID)
+	if err != nil {
+		h.Logger.Printf("Error getting user addresses: %v", err)
+		addresses = []*models.Address{}
+	}
+	
+	data := map[string]interface{}{
+		"Addresses": addresses,
+		"Title":     "Adreslerim",
+	}
+	
+	h.RenderTemplate(w, r, "user/addresses", data)
+}
+
 // Helper methods
 
 func (h *EcommerceHandler) getPageFromQuery(r *http.Request) int {

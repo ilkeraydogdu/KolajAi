@@ -524,6 +524,31 @@ func main() {
 	// Satıcı rotaları
 	appRouter.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
 
+	// User profile rotaları (auth gerektirir)
+	appRouter.HandleFunc("/user/profile", func(w http.ResponseWriter, r *http.Request) {
+		if !h.IsAuthenticated(r) {
+			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
+			return
+		}
+		ecommerceHandler.UserProfile(w, r)
+	})
+	
+	appRouter.HandleFunc("/user/orders", func(w http.ResponseWriter, r *http.Request) {
+		if !h.IsAuthenticated(r) {
+			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
+			return
+		}
+		ecommerceHandler.UserOrders(w, r)
+	})
+	
+	appRouter.HandleFunc("/user/addresses", func(w http.ResponseWriter, r *http.Request) {
+		if !h.IsAuthenticated(r) {
+			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
+			return
+		}
+		ecommerceHandler.UserAddresses(w, r)
+	})
+
 	// Auth API rotaları
 	appRouter.HandleFunc("/api/verify-temp-password", h.VerifyTempPassword)
 	
