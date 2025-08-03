@@ -1,0 +1,445 @@
+{{define "admin/vendors"}}
+{{template "layout/admin" .}}
+
+{{define "admin_content"}}
+<div class="admin-vendors-page">
+    <!-- Page Header -->
+    <div class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-breadcrumb">
+                <div class="admin-breadcrumb-item">
+                    <i class="fas fa-store mr-2"></i>Satıcılar
+                </div>
+            </div>
+        </div>
+        <div class="admin-header-right">
+            <button onclick="exportVendors()" class="admin-btn admin-btn-secondary mr-2">
+                <i class="fas fa-download mr-2"></i>Dışa Aktar
+            </button>
+            <button onclick="showAddVendorModal()" class="admin-btn admin-btn-primary">
+                <i class="fas fa-plus mr-2"></i>Yeni Satıcı
+            </button>
+        </div>
+    </div>
+
+    <div class="p-6 space-y-6">
+        <!-- Vendor Statistics -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="stat-card stat-revenue">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+5.2%
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.TotalVendors}}</div>
+                <div class="stat-label">Toplam Satıcı</div>
+            </div>
+            <div class="stat-card stat-orders">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+12.1%
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.ActiveVendors}}</div>
+                <div class="stat-label">Aktif Satıcı</div>
+            </div>
+            <div class="stat-card stat-products">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-trend warning">
+                        <i class="fas fa-arrow-up"></i>+3
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.PendingVendors}}</div>
+                <div class="stat-label">Onay Bekleyen</div>
+            </div>
+            <div class="stat-card stat-customers">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+18.5%
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.TotalRevenue | currency}}</div>
+                <div class="stat-label">Toplam Ciro</div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="admin-card">
+            <div class="admin-card-body">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Arama</label>
+                        <div class="relative">
+                            <input type="text" id="searchInput" placeholder="Satıcı adı, e-posta..." 
+                                   class="admin-form-control pl-10">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Durum</label>
+                        <select id="statusFilter" class="admin-form-control">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Pasif</option>
+                            <option value="pending">Onay Bekleyen</option>
+                            <option value="suspended">Askıya Alınmış</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
+                        <select id="categoryFilter" class="admin-form-control">
+                            <option value="">Tüm Kategoriler</option>
+                            {{range .Categories}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="applyFilters()" class="admin-btn admin-btn-primary w-full">
+                            <i class="fas fa-filter mr-2"></i>Filtrele
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vendors Table -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Satıcı Listesi</h3>
+                <div class="admin-card-actions">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-500">{{.TotalCount}} satıcı</span>
+                        <button onclick="refreshVendors()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th>Satıcı</th>
+                                <th>İletişim</th>
+                                <th>Ürün Sayısı</th>
+                                <th>Toplam Satış</th>
+                                <th>Komisyon</th>
+                                <th>Durum</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .Vendors}}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" class="vendor-checkbox" value="{{.ID}}">
+                                </td>
+                                <td>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                            {{if .Logo}}
+                                            <img src="{{.Logo}}" alt="{{.Name}}" class="w-10 h-10 rounded-full object-cover">
+                                            {{else}}
+                                            <i class="fas fa-store text-green-600"></i>
+                                            {{end}}
+                                        </div>
+                                        <div>
+                                            <div class="font-medium">{{.Name}}</div>
+                                            <div class="text-sm text-gray-500">{{.BusinessName}}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <div class="text-sm">{{.Email}}</div>
+                                        <div class="text-sm text-gray-500">{{.Phone}}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="font-semibold">{{.ProductCount}}</div>
+                                        <div class="text-xs text-gray-500">{{.ActiveProductCount}} aktif</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="font-semibold">{{.TotalSales | currency}}</div>
+                                        <div class="text-xs text-gray-500">{{.OrderCount}} sipariş</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="font-semibold">%{{.CommissionRate}}</div>
+                                        <div class="text-xs text-gray-500">{{.CommissionEarned | currency}}</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="admin-badge admin-badge-{{if eq .Status "active"}}success{{else if eq .Status "pending"}}warning{{else if eq .Status "suspended"}}danger{{else}}secondary{{end}}">
+                                        {{if eq .Status "active"}}Aktif{{else if eq .Status "pending"}}Beklemede{{else if eq .Status "suspended"}}Askıda{{else}}Pasif{{end}}
+                                    </span>
+                                </td>
+                                <td>{{.CreatedAt | date}}</td>
+                                <td>
+                                    <div class="flex space-x-1">
+                                        <button onclick="viewVendor('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-secondary" title="Görüntüle">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button onclick="editVendor('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-primary" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {{if eq .Status "pending"}}
+                                        <button onclick="approveVendor('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-success" title="Onayla">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        {{end}}
+                                        {{if eq .Status "active"}}
+                                        <button onclick="suspendVendor('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-warning" title="Askıya Al">
+                                            <i class="fas fa-pause"></i>
+                                        </button>
+                                        {{else if eq .Status "suspended"}}
+                                        <button onclick="activateVendor('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-success" title="Aktifleştir">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                        {{end}}
+                                        <button onclick="deleteVendor('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-danger" title="Sil">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div id="bulkActions" class="admin-card hidden">
+            <div class="admin-card-body">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm font-medium">
+                            <span id="selectedCount">0</span> satıcı seçildi
+                        </span>
+                        <div class="flex space-x-2">
+                            <button onclick="bulkApprove()" class="admin-btn admin-btn-sm admin-btn-success">
+                                <i class="fas fa-check mr-1"></i>Toplu Onayla
+                            </button>
+                            <button onclick="bulkSuspend()" class="admin-btn admin-btn-sm admin-btn-warning">
+                                <i class="fas fa-pause mr-1"></i>Toplu Askıya Al
+                            </button>
+                            <button onclick="bulkActivate()" class="admin-btn admin-btn-sm admin-btn-success">
+                                <i class="fas fa-play mr-1"></i>Toplu Aktifleştir
+                            </button>
+                            <button onclick="bulkDelete()" class="admin-btn admin-btn-sm admin-btn-danger">
+                                <i class="fas fa-trash mr-1"></i>Toplu Sil
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="clearSelection()" class="admin-btn admin-btn-sm admin-btn-secondary">
+                        <i class="fas fa-times mr-1"></i>Seçimi Temizle
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {{if gt .TotalPages 1}}
+        <div class="admin-pagination">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-500">
+                    {{.StartIndex}}-{{.EndIndex}} arası, toplam {{.TotalCount}} kayıt
+                </div>
+                <div class="flex space-x-1">
+                    {{if gt .CurrentPage 1}}
+                    <a href="?page={{.PrevPage}}" class="admin-pagination-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    {{end}}
+                    
+                    {{range .PageNumbers}}
+                    <a href="?page={{.}}" class="admin-pagination-btn {{if eq . $.CurrentPage}}active{{end}}">
+                        {{.}}
+                    </a>
+                    {{end}}
+                    
+                    {{if lt .CurrentPage .TotalPages}}
+                    <a href="?page={{.NextPage}}" class="admin-pagination-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- Add/Edit Vendor Modal -->
+<div id="vendorModal" class="admin-modal hidden">
+    <div class="admin-modal-content max-w-2xl">
+        <div class="admin-modal-header">
+            <h3 id="modalTitle" class="admin-modal-title">Yeni Satıcı Ekle</h3>
+            <button onclick="closeVendorModal()" class="admin-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="vendorForm" class="admin-modal-body space-y-6">
+            <input type="hidden" id="vendorId" name="vendor_id">
+            
+            <!-- Basic Information -->
+            <div class="space-y-4">
+                <h4 class="text-lg font-semibold">Temel Bilgiler</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="admin-form-label required">Satıcı Adı</label>
+                        <input type="text" name="name" id="vendorName" class="admin-form-control" required>
+                    </div>
+                    <div>
+                        <label class="admin-form-label">İş Adı</label>
+                        <input type="text" name="business_name" id="businessName" class="admin-form-control">
+                    </div>
+                    <div>
+                        <label class="admin-form-label required">E-posta</label>
+                        <input type="email" name="email" id="vendorEmail" class="admin-form-control" required>
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Telefon</label>
+                        <input type="tel" name="phone" id="vendorPhone" class="admin-form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Details -->
+            <div class="space-y-4">
+                <h4 class="text-lg font-semibold">İş Detayları</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="admin-form-label">Vergi Numarası</label>
+                        <input type="text" name="tax_number" id="taxNumber" class="admin-form-control">
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Komisyon Oranı (%)</label>
+                        <input type="number" name="commission_rate" id="commissionRate" class="admin-form-control" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="admin-form-label">Kategori</label>
+                        <select name="category_id" id="vendorCategory" class="admin-form-control">
+                            <option value="">Kategori Seçin</option>
+                            {{range .Categories}}
+                            <option value="{{.ID}}">{{.Name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address -->
+            <div class="space-y-4">
+                <h4 class="text-lg font-semibold">Adres Bilgileri</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="admin-form-label">Adres</label>
+                        <textarea name="address" id="vendorAddress" class="admin-form-control" rows="2"></textarea>
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Şehir</label>
+                        <input type="text" name="city" id="vendorCity" class="admin-form-control">
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Posta Kodu</label>
+                        <input type="text" name="postal_code" id="postalCode" class="admin-form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="space-y-4">
+                <h4 class="text-lg font-semibold">Ayarlar</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="admin-form-label">Durum</label>
+                        <select name="status" id="vendorStatus" class="admin-form-control">
+                            <option value="pending">Onay Bekleyen</option>
+                            <option value="active">Aktif</option>
+                            <option value="inactive">Pasif</option>
+                            <option value="suspended">Askıya Alınmış</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="admin-form-label">Minimum Sipariş Tutarı</label>
+                        <input type="number" name="min_order_amount" id="minOrderAmount" class="admin-form-control" min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" name="auto_approve_products" id="autoApproveProducts" class="mr-2">
+                        <span class="text-sm">Ürünleri otomatik onayla</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="featured" id="featuredVendor" class="mr-2">
+                        <span class="text-sm">Öne çıkan satıcı</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" name="allow_reviews" id="allowReviews" class="mr-2">
+                        <span class="text-sm">Değerlendirmelere izin ver</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label class="admin-form-label">Açıklama</label>
+                <textarea name="description" id="vendorDescription" class="admin-form-control" rows="3" placeholder="Satıcı hakkında kısa açıklama..."></textarea>
+            </div>
+        </form>
+        <div class="admin-modal-footer">
+            <button onclick="closeVendorModal()" class="admin-btn admin-btn-secondary">İptal</button>
+            <button onclick="saveVendor()" class="admin-btn admin-btn-primary">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<!-- Vendor Details Modal -->
+<div id="vendorDetailsModal" class="admin-modal hidden">
+    <div class="admin-modal-content max-w-4xl">
+        <div class="admin-modal-header">
+            <h3 class="admin-modal-title">Satıcı Detayları</h3>
+            <button onclick="closeVendorDetailsModal()" class="admin-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="vendorDetailsContent" class="admin-modal-body">
+            <!-- Content will be loaded dynamically -->
+        </div>
+        <div class="admin-modal-footer">
+            <button onclick="closeVendorDetailsModal()" class="admin-btn admin-btn-secondary">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/admin-vendors.js"></script>
+
+{{end}}
+{{end}}

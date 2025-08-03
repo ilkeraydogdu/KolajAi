@@ -1,0 +1,491 @@
+{{define "admin/seo"}}
+{{template "layout/admin" .}}
+
+{{define "admin_content"}}
+<div class="admin-seo-page">
+    <!-- Page Header -->
+    <div class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-breadcrumb">
+                <div class="admin-breadcrumb-item">
+                    <i class="fas fa-search mr-2"></i>SEO Yönetimi
+                </div>
+            </div>
+        </div>
+        <div class="admin-header-right">
+            <button onclick="analyzeSEO()" class="admin-btn admin-btn-secondary mr-2">
+                <i class="fas fa-chart-line mr-2"></i>SEO Analizi
+            </button>
+            <button onclick="generateSitemap()" class="admin-btn admin-btn-primary">
+                <i class="fas fa-sitemap mr-2"></i>Sitemap Oluştur
+            </button>
+        </div>
+    </div>
+
+    <div class="p-6 space-y-6">
+        <!-- SEO Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="stat-card stat-revenue">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-trend {{if gt .SEOStats.OverallScore 80}}positive{{else if gt .SEOStats.OverallScore 60}}warning{{else}}negative{{end}}">
+                        {{.SEOStats.OverallScore}}/100
+                    </div>
+                </div>
+                <div class="stat-value">{{.SEOStats.OverallScore}}%</div>
+                <div class="stat-label">SEO Skoru</div>
+            </div>
+            <div class="stat-card stat-orders">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+{{.SEOStats.IndexedPagesGrowth}}
+                    </div>
+                </div>
+                <div class="stat-value">{{.SEOStats.IndexedPages}}</div>
+                <div class="stat-label">İndekslenen Sayfa</div>
+            </div>
+            <div class="stat-card stat-products">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div class="stat-trend {{if gt .SEOStats.KeywordRankings 50}}positive{{else}}warning{{end}}">
+                        {{.SEOStats.KeywordRankings}}
+                    </div>
+                </div>
+                <div class="stat-value">{{.SEOStats.TotalKeywords}}</div>
+                <div class="stat-label">Anahtar Kelime</div>
+            </div>
+            <div class="stat-card stat-customers">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+{{.SEOStats.BacklinksGrowth}}
+                    </div>
+                </div>
+                <div class="stat-value">{{.SEOStats.Backlinks}}</div>
+                <div class="stat-label">Backlink</div>
+            </div>
+        </div>
+
+        <!-- SEO Tools -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Meta Tags Management -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Meta Tag Yönetimi</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="showAddMetaModal()" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-plus mr-2"></i>Yeni Meta Tag
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="space-y-3">
+                        {{range .MetaTags}}
+                        <div class="flex items-center justify-between p-3 border rounded-lg">
+                            <div class="flex-1">
+                                <div class="font-medium">{{.Page}}</div>
+                                <div class="text-sm text-gray-600 truncate">{{.Title}}</div>
+                                <div class="text-xs text-gray-500">{{.Description | truncate 100}}</div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <span class="admin-badge admin-badge-{{if .IsOptimized}}success{{else}}warning{{end}}">
+                                    {{if .IsOptimized}}Optimize{{else}}Eksik{{end}}
+                                </span>
+                                <button onclick="editMetaTag('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteMetaTag('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyword Tracking -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Anahtar Kelime Takibi</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="showAddKeywordModal()" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-plus mr-2"></i>Kelime Ekle
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="space-y-3">
+                        {{range .Keywords}}
+                        <div class="flex items-center justify-between p-3 border rounded-lg">
+                            <div class="flex-1">
+                                <div class="font-medium">{{.Keyword}}</div>
+                                <div class="text-sm text-gray-600">{{.URL}}</div>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="text-center">
+                                    <div class="text-lg font-semibold {{if le .CurrentRank 10}}text-green-600{{else if le .CurrentRank 50}}text-yellow-600{{else}}text-red-600{{end}}">
+                                        {{if .CurrentRank}}#{{.CurrentRank}}{{else}}-{{end}}
+                                    </div>
+                                    <div class="text-xs text-gray-500">Sıralama</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-sm {{if gt .RankChange 0}}text-green-600{{else if lt .RankChange 0}}text-red-600{{else}}text-gray-600{{end}}">
+                                        {{if gt .RankChange 0}}+{{.RankChange}}{{else if lt .RankChange 0}}{{.RankChange}}{{else}}-{{end}}
+                                    </div>
+                                    <div class="text-xs text-gray-500">Değişim</div>
+                                </div>
+                                <div class="flex space-x-1">
+                                    <button onclick="editKeyword('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-secondary">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="deleteKeyword('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Analysis -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">SEO Analiz Sonuçları</h3>
+                <div class="admin-card-actions">
+                    <button onclick="refreshSEOAnalysis()" class="admin-btn admin-btn-secondary">
+                        <i class="fas fa-sync mr-2"></i>Yenile
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Technical SEO -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-900">Teknik SEO</h4>
+                        {{range .SEOAnalysis.Technical}}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 {{if eq .Status "pass"}}bg-green-500{{else if eq .Status "warning"}}bg-yellow-500{{else}}bg-red-500{{end}} rounded-full flex items-center justify-center">
+                                    <i class="fas fa-{{if eq .Status "pass"}}check{{else if eq .Status "warning"}}exclamation{{else}}times{{end}} text-white text-xs"></i>
+                                </div>
+                                <span class="text-sm font-medium">{{.Name}}</span>
+                            </div>
+                            <span class="text-xs {{if eq .Status "pass"}}text-green-600{{else if eq .Status "warning"}}text-yellow-600{{else}}text-red-600{{end}}">
+                                {{.Status | upper}}
+                            </span>
+                        </div>
+                        {{end}}
+                    </div>
+
+                    <!-- Content SEO -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-900">İçerik SEO</h4>
+                        {{range .SEOAnalysis.Content}}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 {{if eq .Status "pass"}}bg-green-500{{else if eq .Status "warning"}}bg-yellow-500{{else}}bg-red-500{{end}} rounded-full flex items-center justify-center">
+                                    <i class="fas fa-{{if eq .Status "pass"}}check{{else if eq .Status "warning"}}exclamation{{else}}times{{end}} text-white text-xs"></i>
+                                </div>
+                                <span class="text-sm font-medium">{{.Name}}</span>
+                            </div>
+                            <span class="text-xs {{if eq .Status "pass"}}text-green-600{{else if eq .Status "warning"}}text-yellow-600{{else}}text-red-600{{end}}">
+                                {{.Status | upper}}
+                            </span>
+                        </div>
+                        {{end}}
+                    </div>
+
+                    <!-- Performance SEO -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-900">Performans SEO</h4>
+                        {{range .SEOAnalysis.Performance}}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-4 h-4 {{if eq .Status "pass"}}bg-green-500{{else if eq .Status "warning"}}bg-yellow-500{{else}}bg-red-500{{end}} rounded-full flex items-center justify-center">
+                                    <i class="fas fa-{{if eq .Status "pass"}}check{{else if eq .Status "warning"}}exclamation{{else}}times{{end}} text-white text-xs"></i>
+                                </div>
+                                <span class="text-sm font-medium">{{.Name}}</span>
+                            </div>
+                            <span class="text-xs {{if eq .Status "pass"}}text-green-600{{else if eq .Status "warning"}}text-yellow-600{{else}}text-red-600{{end}}">
+                                {{.Status | upper}}
+                            </span>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sitemap & Robots -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Sitemap Management -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Sitemap Yönetimi</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="generateSitemap()" class="admin-btn admin-btn-primary">
+                            <i class="fas fa-sync mr-2"></i>Yeniden Oluştur
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                            <div class="font-medium">sitemap.xml</div>
+                            <div class="text-sm text-gray-600">{{.Sitemap.TotalURLs}} URL</div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="admin-badge admin-badge-{{if .Sitemap.IsValid}}success{{else}}danger{{end}}">
+                                {{if .Sitemap.IsValid}}Geçerli{{else}}Hatalı{{end}}
+                            </span>
+                            <button onclick="viewSitemap()" class="admin-btn admin-btn-sm admin-btn-secondary">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="downloadSitemap()" class="admin-btn admin-btn-sm admin-btn-primary">
+                                <i class="fas fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600">
+                        <div>Son Güncelleme: {{.Sitemap.LastGenerated}}</div>
+                        <div>Google'a Gönderildi: {{if .Sitemap.SubmittedToGoogle}}Evet{{else}}Hayır{{end}}</div>
+                    </div>
+                    {{if not .Sitemap.SubmittedToGoogle}}
+                    <button onclick="submitToGoogle()" class="admin-btn admin-btn-success w-full">
+                        <i class="fas fa-paper-plane mr-2"></i>Google'a Gönder
+                    </button>
+                    {{end}}
+                </div>
+            </div>
+
+            <!-- Robots.txt Management -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Robots.txt Yönetimi</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="validateRobots()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-check mr-2"></i>Doğrula
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="mb-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium">robots.txt İçeriği</span>
+                            <span class="admin-badge admin-badge-{{if .Robots.IsValid}}success{{else}}danger{{end}}">
+                                {{if .Robots.IsValid}}Geçerli{{else}}Hatalı{{end}}
+                            </span>
+                        </div>
+                        <textarea id="robotsContent" class="admin-form-control font-mono text-sm" rows="8">{{.Robots.Content}}</textarea>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="saveRobots()" class="admin-btn admin-btn-primary flex-1">
+                            <i class="fas fa-save mr-2"></i>Kaydet
+                        </button>
+                        <button onclick="resetRobots()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-undo mr-2"></i>Sıfırla
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Recommendations -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">SEO Önerileri</h3>
+                <div class="admin-card-actions">
+                    <button onclick="generateRecommendations()" class="admin-btn admin-btn-primary">
+                        <i class="fas fa-lightbulb mr-2"></i>Önerileri Yenile
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="space-y-4">
+                    {{range .SEORecommendations}}
+                    <div class="flex items-start space-x-4 p-4 border rounded-lg {{if eq .Priority "high"}}border-red-200 bg-red-50{{else if eq .Priority "medium"}}border-yellow-200 bg-yellow-50{{else}}border-blue-200 bg-blue-50{{end}}">
+                        <div class="w-8 h-8 {{if eq .Priority "high"}}bg-red-500{{else if eq .Priority "medium"}}bg-yellow-500{{else}}bg-blue-500{{end}} rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-{{if eq .Priority "high"}}exclamation{{else if eq .Priority "medium"}}warning{{else}}info{{end}} text-white text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium {{if eq .Priority "high"}}text-red-800{{else if eq .Priority "medium"}}text-yellow-800{{else}}text-blue-800{{end}}">
+                                {{.Title}}
+                            </div>
+                            <div class="text-sm {{if eq .Priority "high"}}text-red-600{{else if eq .Priority "medium"}}text-yellow-600{{else}}text-blue-600{{end}} mt-1">
+                                {{.Description}}
+                            </div>
+                            {{if .ActionURL}}
+                            <div class="mt-2">
+                                <a href="{{.ActionURL}}" class="text-sm {{if eq .Priority "high"}}text-red-700{{else if eq .Priority "medium"}}text-yellow-700{{else}}text-blue-700{{end}} hover:underline">
+                                    {{.ActionText}} →
+                                </a>
+                            </div>
+                            {{end}}
+                        </div>
+                        <div class="flex space-x-2">
+                            <span class="admin-badge admin-badge-{{if eq .Priority "high"}}danger{{else if eq .Priority "medium"}}warning{{else}}info{{end}}">
+                                {{.Priority | upper}}
+                            </span>
+                            <button onclick="dismissRecommendation('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-secondary">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+        <!-- SEO Reports -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">SEO Raporları</h3>
+                <div class="admin-card-actions">
+                    <button onclick="generateSEOReport()" class="admin-btn admin-btn-primary">
+                        <i class="fas fa-file-pdf mr-2"></i>Rapor Oluştur
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{range .SEOReports}}
+                    <div class="flex items-center justify-between p-3 border rounded-lg">
+                        <div>
+                            <div class="font-medium">{{.Name}}</div>
+                            <div class="text-sm text-gray-600">{{.GeneratedAt}}</div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <span class="admin-badge admin-badge-{{if eq .Status "completed"}}success{{else if eq .Status "processing"}}warning{{else}}danger{{end}}">
+                                {{.Status}}
+                            </span>
+                            {{if eq .Status "completed"}}
+                            <button onclick="downloadReport('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-primary">
+                                <i class="fas fa-download"></i>
+                            </button>
+                            {{end}}
+                            <button onclick="deleteReport('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Meta Tag Modal -->
+<div id="metaTagModal" class="admin-modal hidden">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <h3 id="metaModalTitle" class="admin-modal-title">Meta Tag Ekle</h3>
+            <button onclick="closeMetaTagModal()" class="admin-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="metaTagForm" class="admin-modal-body space-y-4">
+            <input type="hidden" id="metaTagId" name="meta_tag_id">
+            <div>
+                <label class="admin-form-label required">Sayfa</label>
+                <select name="page" id="metaPage" class="admin-form-control" required>
+                    <option value="">Sayfa Seçin</option>
+                    <option value="home">Ana Sayfa</option>
+                    <option value="products">Ürünler</option>
+                    <option value="categories">Kategoriler</option>
+                    <option value="about">Hakkımızda</option>
+                    <option value="contact">İletişim</option>
+                    <option value="custom">Özel URL</option>
+                </select>
+            </div>
+            <div id="customURLField" class="hidden">
+                <label class="admin-form-label">Özel URL</label>
+                <input type="text" name="custom_url" id="customURL" class="admin-form-control" placeholder="/ozel-sayfa">
+            </div>
+            <div>
+                <label class="admin-form-label required">Başlık</label>
+                <input type="text" name="title" id="metaTitle" class="admin-form-control" required maxlength="60">
+                <div class="text-xs text-gray-500 mt-1">Karakter sayısı: <span id="titleCount">0</span>/60</div>
+            </div>
+            <div>
+                <label class="admin-form-label required">Açıklama</label>
+                <textarea name="description" id="metaDescription" class="admin-form-control" rows="3" required maxlength="160"></textarea>
+                <div class="text-xs text-gray-500 mt-1">Karakter sayısı: <span id="descriptionCount">0</span>/160</div>
+            </div>
+            <div>
+                <label class="admin-form-label">Anahtar Kelimeler</label>
+                <input type="text" name="keywords" id="metaKeywords" class="admin-form-control" placeholder="kelime1, kelime2, kelime3">
+            </div>
+            <div>
+                <label class="admin-form-label">OG:Image</label>
+                <input type="url" name="og_image" id="ogImage" class="admin-form-control" placeholder="https://example.com/image.jpg">
+            </div>
+        </form>
+        <div class="admin-modal-footer">
+            <button onclick="closeMetaTagModal()" class="admin-btn admin-btn-secondary">İptal</button>
+            <button onclick="saveMetaTag()" class="admin-btn admin-btn-primary">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<!-- Keyword Modal -->
+<div id="keywordModal" class="admin-modal hidden">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <h3 id="keywordModalTitle" class="admin-modal-title">Anahtar Kelime Ekle</h3>
+            <button onclick="closeKeywordModal()" class="admin-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="keywordForm" class="admin-modal-body space-y-4">
+            <input type="hidden" id="keywordId" name="keyword_id">
+            <div>
+                <label class="admin-form-label required">Anahtar Kelime</label>
+                <input type="text" name="keyword" id="keywordText" class="admin-form-control" required>
+            </div>
+            <div>
+                <label class="admin-form-label required">Hedef URL</label>
+                <input type="url" name="url" id="keywordURL" class="admin-form-control" required>
+            </div>
+            <div>
+                <label class="admin-form-label">Mevcut Sıralama</label>
+                <input type="number" name="current_rank" id="currentRank" class="admin-form-control" min="1" max="100">
+            </div>
+            <div>
+                <label class="admin-form-label">Hedef Sıralama</label>
+                <input type="number" name="target_rank" id="targetRank" class="admin-form-control" min="1" max="10" value="1">
+            </div>
+            <div>
+                <label class="admin-form-label">Kategori</label>
+                <select name="category" id="keywordCategory" class="admin-form-control">
+                    <option value="primary">Birincil</option>
+                    <option value="secondary">İkincil</option>
+                    <option value="brand">Marka</option>
+                    <option value="local">Yerel</option>
+                </select>
+            </div>
+        </form>
+        <div class="admin-modal-footer">
+            <button onclick="closeKeywordModal()" class="admin-btn admin-btn-secondary">İptal</button>
+            <button onclick="saveKeyword()" class="admin-btn admin-btn-primary">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/admin-seo.js"></script>
+
+{{end}}
+{{end}}

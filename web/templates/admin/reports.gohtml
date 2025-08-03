@@ -1,0 +1,419 @@
+{{define "admin/reports"}}
+{{template "layout/admin" .}}
+
+{{define "admin_content"}}
+<div class="admin-reports-page">
+    <!-- Page Header -->
+    <div class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-breadcrumb">
+                <div class="admin-breadcrumb-item">
+                    <i class="fas fa-chart-bar mr-2"></i>Raporlar
+                </div>
+            </div>
+        </div>
+        <div class="admin-header-right">
+            <button onclick="exportAllReports()" class="admin-btn admin-btn-primary">
+                <i class="fas fa-download mr-2"></i>Tüm Raporları Dışa Aktar
+            </button>
+        </div>
+    </div>
+
+    <div class="p-6 space-y-6">
+        <!-- Report Filters -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Rapor Filtreleri</h3>
+            </div>
+            <div class="admin-card-body">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tarih Aralığı</label>
+                        <select id="dateRange" class="admin-form-control">
+                            <option value="today">Bugün</option>
+                            <option value="yesterday">Dün</option>
+                            <option value="last7days" selected>Son 7 Gün</option>
+                            <option value="last30days">Son 30 Gün</option>
+                            <option value="thismonth">Bu Ay</option>
+                            <option value="lastmonth">Geçen Ay</option>
+                            <option value="thisyear">Bu Yıl</option>
+                            <option value="custom">Özel Tarih</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rapor Türü</label>
+                        <select id="reportType" class="admin-form-control">
+                            <option value="all">Tüm Raporlar</option>
+                            <option value="sales">Satış Raporları</option>
+                            <option value="products">Ürün Raporları</option>
+                            <option value="customers">Müşteri Raporları</option>
+                            <option value="vendors">Satıcı Raporları</option>
+                            <option value="inventory">Envanter Raporları</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Format</label>
+                        <select id="exportFormat" class="admin-form-control">
+                            <option value="pdf">PDF</option>
+                            <option value="excel">Excel</option>
+                            <option value="csv">CSV</option>
+                            <option value="json">JSON</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button onclick="generateReports()" class="admin-btn admin-btn-primary w-full">
+                            <i class="fas fa-sync mr-2"></i>Raporları Güncelle
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="stat-card stat-revenue">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+12.5%
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.TotalRevenue | currency}}</div>
+                <div class="stat-label">Toplam Gelir</div>
+            </div>
+            <div class="stat-card stat-orders">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+8.3%
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.TotalOrders}}</div>
+                <div class="stat-label">Toplam Sipariş</div>
+            </div>
+            <div class="stat-card stat-products">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-trend negative">
+                        <i class="fas fa-arrow-down"></i>-2.1%
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.TotalProducts}}</div>
+                <div class="stat-label">Aktif Ürün</div>
+            </div>
+            <div class="stat-card stat-customers">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-trend positive">
+                        <i class="fas fa-arrow-up"></i>+15.7%
+                    </div>
+                </div>
+                <div class="stat-value">{{.Stats.TotalCustomers}}</div>
+                <div class="stat-label">Müşteri Sayısı</div>
+            </div>
+        </div>
+
+        <!-- Reports Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Sales Report -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Satış Raporu</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="generateSalesReport()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <button onclick="exportReport('sales')" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="chart-container">
+                        <canvas id="salesChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="mt-4 space-y-2">
+                        {{range .Reports.Sales}}
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">{{.Date}}</span>
+                            <span class="font-semibold">{{.Amount | currency}}</span>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Products Report -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">En Çok Satan Ürünler</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="generateProductsReport()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <button onclick="exportReport('products')" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="space-y-3">
+                        {{range .Reports.TopProducts}}
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <img src="{{.Image}}" alt="{{.Name}}" class="w-10 h-10 rounded-lg object-cover">
+                                <div>
+                                    <div class="font-medium text-sm">{{.Name}}</div>
+                                    <div class="text-xs text-gray-500">{{.Category}}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-semibold">{{.SoldCount}} adet</div>
+                                <div class="text-sm text-gray-500">{{.Revenue | currency}}</div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Analytics -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Müşteri Analizi</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="generateCustomerReport()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <button onclick="exportReport('customers')" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="chart-container">
+                        <canvas id="customerChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mt-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600">{{.Reports.NewCustomers}}</div>
+                            <div class="text-sm text-gray-500">Yeni Müşteri</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600">{{.Reports.ReturningCustomers}}</div>
+                            <div class="text-sm text-gray-500">Geri Dönen</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendor Performance -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Satıcı Performansı</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="generateVendorReport()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                        <button onclick="exportReport('vendors')" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="space-y-3">
+                        {{range .Reports.TopVendors}}
+                        <div class="flex items-center justify-between p-3 border rounded-lg">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-store text-green-600"></i>
+                                </div>
+                                <div>
+                                    <div class="font-medium">{{.Name}}</div>
+                                    <div class="text-sm text-gray-500">{{.ProductCount}} ürün</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-semibold">{{.Revenue | currency}}</div>
+                                <div class="text-sm text-gray-500">{{.OrderCount}} sipariş</div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Reports Table -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Detaylı Raporlar</h3>
+                <div class="admin-card-actions">
+                    <button onclick="refreshDetailedReports()" class="admin-btn admin-btn-secondary">
+                        <i class="fas fa-sync mr-2"></i>Yenile
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="admin-table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Rapor Adı</th>
+                                <th>Tür</th>
+                                <th>Son Güncelleme</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .DetailedReports}}
+                            <tr>
+                                <td>
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-file-alt text-gray-400"></i>
+                                        <span class="font-medium">{{.Name}}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="admin-badge admin-badge-{{.TypeColor}}">{{.Type}}</span>
+                                </td>
+                                <td>{{.UpdatedAt | timeAgo}}</td>
+                                <td>
+                                    <span class="admin-badge admin-badge-{{if eq .Status "ready"}}success{{else if eq .Status "processing"}}warning{{else}}danger{{end}}">
+                                        {{.Status}}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="flex space-x-2">
+                                        <button onclick="viewReport('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-secondary">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button onclick="downloadReport('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-primary">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button onclick="scheduleReport('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-secondary">
+                                            <i class="fas fa-clock"></i>
+                                        </button>
+                                        <button onclick="deleteReport('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheduled Reports -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Zamanlanmış Raporlar</h3>
+                <div class="admin-card-actions">
+                    <button onclick="showScheduleModal()" class="admin-btn admin-btn-primary">
+                        <i class="fas fa-plus mr-2"></i>Yeni Zamanlama
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="space-y-3">
+                    {{range .ScheduledReports}}
+                    <div class="flex items-center justify-between p-4 border rounded-lg">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-clock text-blue-600"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">{{.Name}}</div>
+                                <div class="text-sm text-gray-500">{{.Schedule}} - {{.Recipients}}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="admin-badge admin-badge-{{if .Active}}success{{else}}secondary{{end}}">
+                                {{if .Active}}Aktif{{else}}Pasif{{end}}
+                            </span>
+                            <button onclick="editSchedule('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-secondary">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="toggleSchedule('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-{{if .Active}}warning{{else}}success{{end}}">
+                                <i class="fas fa-{{if .Active}}pause{{else}}play{{end}}"></i>
+                            </button>
+                            <button onclick="deleteSchedule('{{.ID}}')" class="admin-btn admin-btn-sm admin-btn-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Modal -->
+<div id="scheduleModal" class="admin-modal hidden">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <h3 class="admin-modal-title">Rapor Zamanlaması</h3>
+            <button onclick="closeScheduleModal()" class="admin-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="scheduleForm" class="admin-modal-body space-y-4">
+            <div>
+                <label class="admin-form-label">Rapor Türü</label>
+                <select name="report_type" class="admin-form-control" required>
+                    <option value="">Seçiniz</option>
+                    <option value="sales">Satış Raporu</option>
+                    <option value="products">Ürün Raporu</option>
+                    <option value="customers">Müşteri Raporu</option>
+                    <option value="vendors">Satıcı Raporu</option>
+                    <option value="inventory">Envanter Raporu</option>
+                </select>
+            </div>
+            <div>
+                <label class="admin-form-label">Zamanlama</label>
+                <select name="schedule" class="admin-form-control" required>
+                    <option value="">Seçiniz</option>
+                    <option value="daily">Günlük</option>
+                    <option value="weekly">Haftalık</option>
+                    <option value="monthly">Aylık</option>
+                    <option value="quarterly">3 Aylık</option>
+                </select>
+            </div>
+            <div>
+                <label class="admin-form-label">E-posta Adresleri</label>
+                <textarea name="recipients" class="admin-form-control" rows="3" placeholder="admin@example.com, manager@example.com" required></textarea>
+            </div>
+            <div>
+                <label class="admin-form-label">Format</label>
+                <select name="format" class="admin-form-control" required>
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                </select>
+            </div>
+        </form>
+        <div class="admin-modal-footer">
+            <button onclick="closeScheduleModal()" class="admin-btn admin-btn-secondary">İptal</button>
+            <button onclick="saveSchedule()" class="admin-btn admin-btn-primary">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/admin-reports.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{end}}
+{{end}}
