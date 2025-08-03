@@ -41,7 +41,7 @@ class FormValidator {
     
     // Form gönderimini kontrol et
     form.addEventListener('submit', (e) => {
-      let isValid = this.validateForm(form);
+      const isValid = this.validateForm(form);
       if (!isValid) {
         e.preventDefault();
       }
@@ -103,21 +103,23 @@ class FormValidator {
     // Özel doğrulama kuralları
     else if (field.dataset.validate) {
       switch (field.dataset.validate) {
-        case 'email':
+        case 'email': {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!emailRegex.test(field.value)) {
             isValid = false;
             errorMessage = field.dataset.errorEmail || 'Geçerli bir e-posta adresi giriniz';
           }
           break;
+        }
           
-        case 'phone':
+        case 'phone': {
           const phoneRegex = /^0[0-9 ]{10,14}$/;
           if (!phoneRegex.test(field.value)) {
             isValid = false;
             errorMessage = field.dataset.errorPhone || 'Telefon numarası 0 ile başlamalıdır';
           }
           break;
+        }
       }
     }
     
