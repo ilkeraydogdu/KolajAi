@@ -67,36 +67,43 @@
 
                 <!-- Price -->
                 <div class="price-section mb-6">
-                    {{if .Product.DiscountPrice}}
+                    {{if .Product.HasDiscount}}
                     <div class="flex items-center space-x-3">
-                        <span class="text-3xl font-bold text-red-600">₺{{.Product.DiscountPrice}}</span>
-                        <span class="text-xl text-gray-500 line-through">₺{{.Product.Price}}</span>
+                        <span class="text-3xl font-bold text-red-600">₺{{printf "%.2f" .Product.Price}}</span>
+                        <span class="text-xl text-gray-500 line-through">₺{{printf "%.2f" .Product.ComparePrice}}</span>
                         <span class="bg-red-100 text-red-800 text-sm px-2 py-1 rounded">
                             %{{.Product.DiscountPercentage}} İndirim
                         </span>
                     </div>
                     {{else}}
-                    <span class="text-3xl font-bold text-gray-900">₺{{.Product.Price}}</span>
+                    <span class="text-3xl font-bold text-gray-900">₺{{printf "%.2f" .Product.Price}}</span>
                     {{end}}
                 </div>
 
-                <!-- Seller Info -->
-                <div class="seller-info bg-gray-50 p-4 rounded-lg mb-6">
+                <!-- Vendor Info -->
+                {{if .Vendor}}
+                <div class="vendor-info bg-gray-50 p-4 rounded-lg mb-6">
                     <div class="flex items-center">
-                        <img src="{{.Product.Seller.Avatar}}" alt="{{.Product.Seller.Name}}" 
+                        {{if .Vendor.Logo}}
+                        <img src="{{.Vendor.Logo}}" alt="{{.Vendor.Name | html}}" 
                              class="w-12 h-12 rounded-full mr-3">
+                        {{else}}
+                        <div class="w-12 h-12 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                            <i class="fas fa-store text-gray-600"></i>
+                        </div>
+                        {{end}}
                         <div>
-                            <h3 class="font-semibold">{{.Product.Seller.Name}}</h3>
+                            <h3 class="font-semibold">{{.Vendor.Name | html}}</h3>
                             <div class="flex items-center text-sm text-gray-600">
-                                <span class="mr-2">{{.Product.Seller.Rating}}/5</span>
-                                <span>({{.Product.Seller.ReviewCount}} değerlendirme)</span>
+                                <span class="mr-2">Satıcı</span>
                             </div>
                         </div>
-                        <a href="/seller/{{.Product.Seller.ID}}" class="ml-auto text-blue-600 hover:text-blue-800">
+                        <a href="/vendor/{{.Vendor.ID}}" class="ml-auto text-blue-600 hover:text-blue-800">
                             Satıcıyı Görüntüle
                         </a>
                     </div>
                 </div>
+                {{end}}
 
                 <!-- Stock Status -->
                 <div class="stock-status mb-6">

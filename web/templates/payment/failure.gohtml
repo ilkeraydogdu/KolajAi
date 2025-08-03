@@ -1,0 +1,352 @@
+{{define "payment/failure"}}
+{{template "layout/header" .}}
+
+<div class="payment-failure-page">
+    <div class="container mx-auto px-4 py-16">
+        <div class="max-w-2xl mx-auto">
+            <!-- Failure Icon and Message -->
+            <div class="text-center mb-8">
+                <div class="w-24 h-24 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-times-circle text-4xl text-red-500"></i>
+                </div>
+                
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">Ödeme Başarısız</h1>
+                <p class="text-lg text-gray-600 mb-6">
+                    Maalesef ödemeniz işlenirken bir hata oluştu. Lütfen tekrar deneyin.
+                </p>
+            </div>
+
+            <!-- Error Details -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-lg font-medium text-red-800 mb-2">Hata Detayları</h3>
+                        
+                        {{if .ErrorMessage}}
+                        <p class="text-red-700 mb-4">{{.ErrorMessage}}</p>
+                        {{end}}
+                        
+                        <div class="text-sm text-red-600 space-y-1">
+                            {{if .TransactionId}}
+                            <div><strong>İşlem ID:</strong> {{.TransactionId}}</div>
+                            {{end}}
+                            
+                            {{if .OrderId}}
+                            <div><strong>Sipariş No:</strong> {{.OrderId}}</div>
+                            {{end}}
+                            
+                            {{if .Amount}}
+                            <div><strong>Tutar:</strong> ₺{{printf "%.2f" .Amount}}</div>
+                            {{end}}
+                            
+                            <div><strong>Tarih:</strong> {{.FailureTime.Format "02.01.2006 15:04:05"}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Failure Reasons -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-4">
+                    <i class="fas fa-lightbulb mr-2"></i>
+                    Olası Nedenler ve Çözümler
+                </h3>
+                
+                <div class="space-y-4 text-sm text-yellow-700">
+                    <div class="flex items-start">
+                        <i class="fas fa-credit-card text-yellow-500 mt-1 mr-3"></i>
+                        <div>
+                            <strong>Kart Bilgileri:</strong> Kart numarası, son kullanma tarihi veya CVV kodunuzun doğru olduğundan emin olun.
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <i class="fas fa-money-bill-wave text-yellow-500 mt-1 mr-3"></i>
+                        <div>
+                            <strong>Yetersiz Bakiye:</strong> Kartınızda yeterli bakiye bulunduğundan emin olun.
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <i class="fas fa-ban text-yellow-500 mt-1 mr-3"></i>
+                        <div>
+                            <strong>Kart Limiti:</strong> Günlük veya aylık harcama limitinizi aşmamış olduğunuzdan emin olun.
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <i class="fas fa-shield-alt text-yellow-500 mt-1 mr-3"></i>
+                        <div>
+                            <strong>3D Secure:</strong> Bankanızın güvenlik kontrollerini tamamladığınızdan emin olun.
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <i class="fas fa-globe text-yellow-500 mt-1 mr-3"></i>
+                        <div>
+                            <strong>İnternet Bağlantısı:</strong> Stabil bir internet bağlantısı ile tekrar deneyin.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary (if available) -->
+            {{if .Order}}
+            <div class="bg-white border border-gray-200 rounded-lg p-6 mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Sipariş Özeti</h3>
+                
+                <div class="space-y-3">
+                    {{range .Order.Items}}
+                    <div class="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <img src="{{.Product.Image | default "/static/images/no-image.jpg"}}" 
+                                 alt="{{.Product.Name}}" class="w-12 h-12 object-cover rounded mr-3">
+                            <div>
+                                <div class="font-medium text-gray-900">{{.Product.Name}}</div>
+                                <div class="text-sm text-gray-500">Adet: {{.Quantity}}</div>
+                            </div>
+                        </div>
+                        <div class="font-medium text-gray-900">
+                            ₺{{printf "%.2f" (mul .Price .Quantity)}}
+                        </div>
+                    </div>
+                    {{end}}
+                    
+                    <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                        <span class="text-lg font-semibold text-gray-900">Toplam:</span>
+                        <span class="text-lg font-bold text-gray-900">₺{{printf "%.2f" .Order.Total}}</span>
+                    </div>
+                </div>
+            </div>
+            {{end}}
+
+            <!-- Action Buttons -->
+            <div class="space-y-4">
+                <!-- Primary Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {{if .OrderId}}
+                    <a href="/payment/checkout?order_id={{.OrderId}}" 
+                       class="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-redo mr-2"></i>
+                        Ödemeyi Tekrar Dene
+                    </a>
+                    {{else}}
+                    <a href="/cart" 
+                       class="flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-shopping-cart mr-2"></i>
+                        Sepete Dön
+                    </a>
+                    {{end}}
+                    
+                    <button onclick="contactSupport()" 
+                            class="flex items-center justify-center px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                        <i class="fas fa-headset mr-2"></i>
+                        Destek Al
+                    </button>
+                </div>
+                
+                <!-- Secondary Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="/payment/methods" 
+                       class="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-credit-card mr-2"></i>
+                        Ödeme Yöntemleri
+                    </a>
+                    
+                    <a href="/user/orders" 
+                       class="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-list mr-2"></i>
+                        Siparişlerim
+                    </a>
+                    
+                    <a href="/products" 
+                       class="flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-shopping-bag mr-2"></i>
+                        Alışverişe Devam
+                    </a>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <div class="text-center">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Yardıma mı ihtiyacınız var?</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-phone text-blue-600"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 mb-2">Telefon Desteği</h4>
+                            <p class="text-sm text-gray-600 mb-2">7/24 canlı destek</p>
+                            <a href="tel:+908501234567" class="text-blue-600 hover:text-blue-700 font-medium">
+                                0850 123 45 67
+                            </a>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-comments text-green-600"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 mb-2">Canlı Chat</h4>
+                            <p class="text-sm text-gray-600 mb-2">Anında yardım alın</p>
+                            <button onclick="openLiveChat()" class="text-green-600 hover:text-green-700 font-medium">
+                                Chat Başlat
+                            </button>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-12 h-12 mx-auto mb-3 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-envelope text-purple-600"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-900 mb-2">E-posta Desteği</h4>
+                            <p class="text-sm text-gray-600 mb-2">24 saat içinde yanıt</p>
+                            <a href="mailto:destek@kolajAI.com" class="text-purple-600 hover:text-purple-700 font-medium">
+                                destek@kolajAI.com
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Support Modal -->
+<div id="supportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Destek Talebi</h3>
+                <button id="closeSupportModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="supportForm" class="space-y-4">
+                <input type="hidden" name="transaction_id" value="{{.TransactionId}}">
+                <input type="hidden" name="order_id" value="{{.OrderId}}">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Konu</label>
+                    <select name="subject" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                        <option value="">Konu seçin</option>
+                        <option value="payment_failed">Ödeme Başarısız</option>
+                        <option value="card_problem">Kart Sorunu</option>
+                        <option value="technical_issue">Teknik Sorun</option>
+                        <option value="refund_request">İade Talebi</option>
+                        <option value="other">Diğer</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Mesajınız</label>
+                    <textarea name="message" rows="4" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Sorununuzu detaylı olarak açıklayın..." required></textarea>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="button" id="cancelSupport" 
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Gönder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Support functions
+function contactSupport() {
+    document.getElementById('supportModal').classList.remove('hidden');
+}
+
+function openLiveChat() {
+    // Implement live chat integration
+    if (window.Intercom) {
+        window.Intercom('show');
+    } else if (window.tidioChatApi) {
+        window.tidioChatApi.open();
+    } else {
+        // Fallback to support modal
+        contactSupport();
+    }
+}
+
+// Modal event listeners
+document.getElementById('closeSupportModal').addEventListener('click', function() {
+    document.getElementById('supportModal').classList.add('hidden');
+});
+
+document.getElementById('cancelSupport').addEventListener('click', function() {
+    document.getElementById('supportModal').classList.add('hidden');
+});
+
+// Support form submission
+document.getElementById('supportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/api/support/ticket', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Destek talebiniz başarıyla gönderildi. En kısa sürede size dönüş yapacağız.');
+            document.getElementById('supportModal').classList.add('hidden');
+        } else {
+            alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+    });
+});
+
+// Auto-refresh payment status (if order exists)
+{{if .OrderId}}
+let refreshCount = 0;
+const maxRefresh = 3;
+
+function checkPaymentStatus() {
+    if (refreshCount >= maxRefresh) return;
+    
+    refreshCount++;
+    
+    fetch('/api/payment/status/{{.OrderId}}')
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'completed') {
+            window.location.href = '/payment/success?order_id={{.OrderId}}';
+        } else if (refreshCount < maxRefresh) {
+            setTimeout(checkPaymentStatus, 10000); // Check again in 10 seconds
+        }
+    })
+    .catch(error => {
+        console.error('Payment status check failed:', error);
+    });
+}
+
+// Start checking after 5 seconds
+setTimeout(checkPaymentStatus, 5000);
+{{end}}
+</script>
+
+{{template "layout/footer" .}}
+{{end}}

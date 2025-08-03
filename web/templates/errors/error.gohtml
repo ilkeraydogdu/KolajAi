@@ -1,0 +1,421 @@
+{{define "errors/error"}}
+{{template "layout/header" .}}
+
+<div class="error-page">
+    <div class="container mx-auto px-4 py-16">
+        <div class="max-w-2xl mx-auto text-center">
+            <!-- Error Icon -->
+            <div class="mb-8">
+                {{if eq .ErrorCode "404"}}
+                <div class="w-32 h-32 mx-auto mb-6 bg-blue-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-search text-6xl text-blue-500"></i>
+                </div>
+                {{else if eq .ErrorCode "403"}}
+                <div class="w-32 h-32 mx-auto mb-6 bg-red-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-ban text-6xl text-red-500"></i>
+                </div>
+                {{else if eq .ErrorCode "500"}}
+                <div class="w-32 h-32 mx-auto mb-6 bg-orange-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-6xl text-orange-500"></i>
+                </div>
+                {{else}}
+                <div class="w-32 h-32 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-exclamation-circle text-6xl text-gray-500"></i>
+                </div>
+                {{end}}
+            </div>
+
+            <!-- Error Title and Message -->
+            <div class="mb-8">
+                {{if eq .ErrorCode "404"}}
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Sayfa Bulunamadı</h1>
+                <p class="text-xl text-gray-600 mb-6">
+                    Aradığınız sayfa mevcut değil veya taşınmış olabilir.
+                </p>
+                {{else if eq .ErrorCode "403"}}
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Erişim Reddedildi</h1>
+                <p class="text-xl text-gray-600 mb-6">
+                    Bu sayfaya erişim yetkiniz bulunmuyor.
+                </p>
+                {{else if eq .ErrorCode "500"}}
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Sunucu Hatası</h1>
+                <p class="text-xl text-gray-600 mb-6">
+                    Bir sunucu hatası oluştu. Lütfen daha sonra tekrar deneyin.
+                </p>
+                {{else}}
+                <h1 class="text-4xl font-bold text-gray-900 mb-4">Bir Hata Oluştu</h1>
+                <p class="text-xl text-gray-600 mb-6">
+                    {{if .ErrorMessage}}{{.ErrorMessage}}{{else}}Beklenmeyen bir hata oluştu.{{end}}
+                </p>
+                {{end}}
+            </div>
+
+            <!-- Error Details (if available) -->
+            {{if .ShowDetails}}
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6 mb-8 text-left">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Hata Detayları</h3>
+                
+                <div class="space-y-2 text-sm text-gray-600">
+                    {{if .ErrorCode}}
+                    <div><strong>Hata Kodu:</strong> {{.ErrorCode}}</div>
+                    {{end}}
+                    
+                    {{if .RequestID}}
+                    <div><strong>İstek ID:</strong> {{.RequestID}}</div>
+                    {{end}}
+                    
+                    {{if .Timestamp}}
+                    <div><strong>Zaman:</strong> {{.Timestamp.Format "02.01.2006 15:04:05"}}</div>
+                    {{end}}
+                    
+                    {{if .UserAgent}}
+                    <div><strong>Tarayıcı:</strong> {{.UserAgent}}</div>
+                    {{end}}
+                    
+                    {{if .RequestURL}}
+                    <div><strong>URL:</strong> {{.RequestURL}}</div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+
+            <!-- Suggested Actions -->
+            <div class="mb-8">
+                {{if eq .ErrorCode "404"}}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-blue-900 mb-4">Ne yapabilirsiniz?</h3>
+                    <div class="space-y-3 text-blue-800">
+                        <div class="flex items-start">
+                            <i class="fas fa-search text-blue-600 mt-1 mr-3"></i>
+                            <div>URL'yi kontrol edin ve doğru yazdığınızdan emin olun</div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-home text-blue-600 mt-1 mr-3"></i>
+                            <div>Ana sayfaya giderek aradığınızı bulabilirsiniz</div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-sitemap text-blue-600 mt-1 mr-3"></i>
+                            <div>Site haritasını kullanarak sayfalara göz atabilirsiniz</div>
+                        </div>
+                    </div>
+                </div>
+                {{else if eq .ErrorCode "403"}}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-red-900 mb-4">Ne yapabilirsiniz?</h3>
+                    <div class="space-y-3 text-red-800">
+                        <div class="flex items-start">
+                            <i class="fas fa-sign-in-alt text-red-600 mt-1 mr-3"></i>
+                            <div>Giriş yaparak tekrar deneyin</div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-user-shield text-red-600 mt-1 mr-3"></i>
+                            <div>Gerekli yetkilere sahip olduğunuzdan emin olun</div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-headset text-red-600 mt-1 mr-3"></i>
+                            <div>Destek ekibi ile iletişime geçin</div>
+                        </div>
+                    </div>
+                </div>
+                {{else if eq .ErrorCode "500"}}
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-orange-900 mb-4">Ne yapabilirsiniz?</h3>
+                    <div class="space-y-3 text-orange-800">
+                        <div class="flex items-start">
+                            <i class="fas fa-redo text-orange-600 mt-1 mr-3"></i>
+                            <div>Sayfayı yenileyerek tekrar deneyin</div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-clock text-orange-600 mt-1 mr-3"></i>
+                            <div>Birkaç dakika bekleyip tekrar deneyin</div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-bug text-orange-600 mt-1 mr-3"></i>
+                            <div>Sorun devam ederse destek ekibine bildirin</div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="space-y-4">
+                <!-- Primary Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/" 
+                       class="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        <i class="fas fa-home mr-2"></i>
+                        Ana Sayfaya Dön
+                    </a>
+                    
+                    <button onclick="goBack()" 
+                            class="inline-flex items-center justify-center px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Geri Git
+                    </button>
+                </div>
+                
+                <!-- Secondary Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    {{if eq .ErrorCode "404"}}
+                    <a href="/products" 
+                       class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-shopping-bag mr-2"></i>
+                        Ürünleri İncele
+                    </a>
+                    
+                    <a href="/search" 
+                       class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-search mr-2"></i>
+                        Arama Yap
+                    </a>
+                    {{else if eq .ErrorCode "403"}}
+                    <a href="/login" 
+                       class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Giriş Yap
+                    </a>
+                    {{end}}
+                    
+                    <button onclick="reportError()" 
+                            class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-flag mr-2"></i>
+                        Hatayı Bildir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Help Section -->
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Yardıma mı ihtiyacınız var?</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-headset text-blue-600"></i>
+                        </div>
+                        <h4 class="font-medium text-gray-900 mb-2">Canlı Destek</h4>
+                        <p class="text-sm text-gray-600 mb-3">7/24 canlı destek hizmeti</p>
+                        <button onclick="openLiveChat()" class="text-blue-600 hover:text-blue-700 font-medium">
+                            Chat Başlat
+                        </button>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-question-circle text-green-600"></i>
+                        </div>
+                        <h4 class="font-medium text-gray-900 mb-2">Sık Sorulan Sorular</h4>
+                        <p class="text-sm text-gray-600 mb-3">Yaygın soruların cevapları</p>
+                        <a href="/faq" class="text-green-600 hover:text-green-700 font-medium">
+                            SSS'ye Git
+                        </a>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-12 h-12 mx-auto mb-3 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-envelope text-purple-600"></i>
+                        </div>
+                        <h4 class="font-medium text-gray-900 mb-2">E-posta Desteği</h4>
+                        <p class="text-sm text-gray-600 mb-3">24 saat içinde yanıt</p>
+                        <a href="mailto:destek@kolajAI.com" class="text-purple-600 hover:text-purple-700 font-medium">
+                            E-posta Gönder
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Popular Pages -->
+            {{if eq .ErrorCode "404"}}
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6">Popüler Sayfalar</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <a href="/products" class="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                        <div class="text-center">
+                            <i class="fas fa-shopping-bag text-2xl text-blue-600 mb-2"></i>
+                            <div class="font-medium text-gray-900">Ürünler</div>
+                        </div>
+                    </a>
+                    
+                    <a href="/categories" class="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                        <div class="text-center">
+                            <i class="fas fa-th-large text-2xl text-blue-600 mb-2"></i>
+                            <div class="font-medium text-gray-900">Kategoriler</div>
+                        </div>
+                    </a>
+                    
+                    <a href="/auctions" class="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                        <div class="text-center">
+                            <i class="fas fa-gavel text-2xl text-blue-600 mb-2"></i>
+                            <div class="font-medium text-gray-900">Müzayedeler</div>
+                        </div>
+                    </a>
+                    
+                    <a href="/about" class="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors">
+                        <div class="text-center">
+                            <i class="fas fa-info-circle text-2xl text-blue-600 mb-2"></i>
+                            <div class="font-medium text-gray-900">Hakkımızda</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+
+<!-- Error Report Modal -->
+<div id="errorReportModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Hata Bildirimi</h3>
+                <button id="closeErrorReportModal" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="errorReportForm" class="space-y-4">
+                <input type="hidden" name="error_code" value="{{.ErrorCode}}">
+                <input type="hidden" name="request_url" value="{{.RequestURL}}">
+                <input type="hidden" name="request_id" value="{{.RequestID}}">
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ne yapmaya çalışıyordunuz?</label>
+                    <textarea name="description" rows="3" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Hatayı nasıl aldığınızı açıklayın..." required></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">E-posta (isteğe bağlı)</label>
+                    <input type="email" name="email" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="Geri dönüş için e-posta adresiniz">
+                </div>
+                
+                <div class="flex gap-3">
+                    <button type="button" id="cancelErrorReport" 
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        İptal
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        Gönder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Navigation functions
+function goBack() {
+    if (window.history.length > 1) {
+        window.history.back();
+    } else {
+        window.location.href = '/';
+    }
+}
+
+function reportError() {
+    document.getElementById('errorReportModal').classList.remove('hidden');
+}
+
+function openLiveChat() {
+    // Implement live chat integration
+    if (window.Intercom) {
+        window.Intercom('show');
+    } else if (window.tidioChatApi) {
+        window.tidioChatApi.open();
+    } else {
+        // Fallback to email
+        window.location.href = 'mailto:destek@kolajAI.com?subject=Hata Bildirimi - {{.ErrorCode}}';
+    }
+}
+
+// Modal event listeners
+document.getElementById('closeErrorReportModal').addEventListener('click', function() {
+    document.getElementById('errorReportModal').classList.add('hidden');
+});
+
+document.getElementById('cancelErrorReport').addEventListener('click', function() {
+    document.getElementById('errorReportModal').classList.add('hidden');
+});
+
+// Error report form submission
+document.getElementById('errorReportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('/api/error/report', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Hata bildiriminiz alındı. Teşekkür ederiz!');
+            document.getElementById('errorReportModal').classList.add('hidden');
+        } else {
+            alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+        }
+    })
+    .catch(error => {
+        console.error('Error report failed:', error);
+        alert('Bir hata oluştu. Lütfen e-posta ile iletişime geçin.');
+    });
+});
+
+// Auto-reload for 500 errors (after 30 seconds)
+{{if eq .ErrorCode "500"}}
+let reloadTimeout;
+let countdownElement;
+
+function startReloadCountdown() {
+    let seconds = 30;
+    
+    // Create countdown element
+    const countdownDiv = document.createElement('div');
+    countdownDiv.className = 'mt-4 p-3 bg-orange-100 border border-orange-200 rounded-lg';
+    countdownDiv.innerHTML = `
+        <div class="text-sm text-orange-800 text-center">
+            <i class="fas fa-clock mr-2"></i>
+            Sayfa <span id="countdown">${seconds}</span> saniye sonra otomatik olarak yenilenecek.
+            <button onclick="clearTimeout(reloadTimeout)" class="ml-2 text-orange-600 hover:text-orange-700 underline">İptal</button>
+        </div>
+    `;
+    
+    document.querySelector('.error-page .container .max-w-2xl').appendChild(countdownDiv);
+    countdownElement = document.getElementById('countdown');
+    
+    const interval = setInterval(() => {
+        seconds--;
+        if (countdownElement) {
+            countdownElement.textContent = seconds;
+        }
+        
+        if (seconds <= 0) {
+            clearInterval(interval);
+            window.location.reload();
+        }
+    }, 1000);
+    
+    reloadTimeout = setTimeout(() => {
+        window.location.reload();
+    }, 30000);
+}
+
+// Start countdown after 10 seconds
+setTimeout(startReloadCountdown, 10000);
+{{end}}
+</script>
+
+{{template "layout/footer" .}}
+{{end}}

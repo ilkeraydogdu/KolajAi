@@ -25,14 +25,14 @@ CREATE TABLE IF NOT EXISTS products (
     description TEXT,
     short_desc VARCHAR(500),
     sku VARCHAR(100) UNIQUE NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    compare_price DECIMAL(10,2) DEFAULT 0.00,
-    cost_price DECIMAL(10,2) DEFAULT 0.00,
-    wholesale_price DECIMAL(10,2) DEFAULT 0.00,
-    min_wholesale_qty INTEGER DEFAULT 1,
-    stock INTEGER DEFAULT 0,
-    min_stock INTEGER DEFAULT 0,
-    weight DECIMAL(8,2) DEFAULT 0.00,
+    price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+    compare_price DECIMAL(10,2) DEFAULT 0.00 CHECK (compare_price >= 0),
+    cost_price DECIMAL(10,2) DEFAULT 0.00 CHECK (cost_price >= 0),
+    wholesale_price DECIMAL(10,2) DEFAULT 0.00 CHECK (wholesale_price >= 0),
+    min_wholesale_qty INTEGER DEFAULT 1 CHECK (min_wholesale_qty >= 1),
+    stock INTEGER DEFAULT 0 CHECK (stock >= 0),
+    min_stock INTEGER DEFAULT 0 CHECK (min_stock >= 0),
+    weight DECIMAL(8,2) DEFAULT 0.00 CHECK (weight >= 0),
     dimensions VARCHAR(100),
     status VARCHAR(20) DEFAULT 'draft' CHECK (status IN ('draft', 'active', 'inactive', 'out_of_stock')),
     is_digital BOOLEAN DEFAULT FALSE,
@@ -41,10 +41,10 @@ CREATE TABLE IF NOT EXISTS products (
     meta_title VARCHAR(255),
     meta_desc VARCHAR(500),
     tags TEXT,
-    view_count INTEGER DEFAULT 0,
-    sales_count INTEGER DEFAULT 0,
-    rating DECIMAL(3,2) DEFAULT 0.00,
-    review_count INTEGER DEFAULT 0,
+    view_count INTEGER DEFAULT 0 CHECK (view_count >= 0),
+    sales_count INTEGER DEFAULT 0 CHECK (sales_count >= 0),
+    rating DECIMAL(3,2) DEFAULT 0.00 CHECK (rating >= 0 AND rating <= 5),
+    review_count INTEGER DEFAULT 0 CHECK (review_count >= 0),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE,
@@ -56,6 +56,10 @@ CREATE INDEX IF NOT EXISTS idx_product_category ON products(category_id);
 CREATE INDEX IF NOT EXISTS idx_product_status ON products(status);
 CREATE INDEX IF NOT EXISTS idx_product_featured ON products(is_featured);
 CREATE INDEX IF NOT EXISTS idx_product_sku ON products(sku);
+CREATE INDEX IF NOT EXISTS idx_product_price ON products(price);
+CREATE INDEX IF NOT EXISTS idx_product_rating ON products(rating);
+CREATE INDEX IF NOT EXISTS idx_product_created_at ON products(created_at);
+CREATE INDEX IF NOT EXISTS idx_product_name ON products(name);
 
 CREATE TABLE IF NOT EXISTS product_images (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

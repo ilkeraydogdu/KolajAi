@@ -283,6 +283,47 @@ func main() {
 			}
 			return result
 		},
+		"iterate": func(n int) []int {
+			result := make([]int, n)
+			for i := 0; i < n; i++ {
+				result[i] = i
+			}
+			return result
+		},
+		"sub": func(a, b int) int {
+			return a - b
+		},
+		"lt": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal < bVal
+		},
 		"mul": func(a, b interface{}) float64 {
 			var numA, numB float64
 			switch v := a.(type) {
@@ -373,19 +414,8 @@ func main() {
 	// E-ticaret handler'ı oluştur
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
 
-	// Admin handler'ı oluştur - tüm yeni sistemlerle birlikte
-	adminHandler := handlers.NewAdminHandler(
-		h, 
-		productService, 
-		vendorService, 
-		orderService, 
-		auctionService,
-		sessionManager,
-		reportManager,
-		notificationManager,
-		seoManager,
-		errorManager,
-	)
+	// Admin handler'ı oluştur
+	adminHandler := handlers.NewAdminHandler(h)
 
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
@@ -482,6 +512,31 @@ func main() {
 
 	// Satıcı rotaları
 	appRouter.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
+
+	// User profile rotaları (auth gerektirir)
+	appRouter.HandleFunc("/user/profile", func(w http.ResponseWriter, r *http.Request) {
+		if !h.IsAuthenticated(r) {
+			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
+			return
+		}
+		ecommerceHandler.UserProfile(w, r)
+	})
+	
+	appRouter.HandleFunc("/user/orders", func(w http.ResponseWriter, r *http.Request) {
+		if !h.IsAuthenticated(r) {
+			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
+			return
+		}
+		ecommerceHandler.UserOrders(w, r)
+	})
+	
+	appRouter.HandleFunc("/user/addresses", func(w http.ResponseWriter, r *http.Request) {
+		if !h.IsAuthenticated(r) {
+			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
+			return
+		}
+		ecommerceHandler.UserAddresses(w, r)
+	})
 
 	// Auth API rotaları
 	appRouter.HandleFunc("/api/verify-temp-password", h.VerifyTempPassword)
@@ -662,7 +717,7 @@ func main() {
 	appRouter.HandleFunc("/ai/analytics/customer-segments", aiAnalyticsHandler.GetCustomerSegmentsPage)
 	appRouter.HandleFunc("/ai/analytics/pricing-strategy", aiAnalyticsHandler.GetPricingStrategyPage)
 
-	// Admin rotaları - Gelişmiş admin paneli
+	// Admin rotaları
 	appRouter.HandleFunc("/admin/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/admin/" || r.URL.Path == "/admin" {
 			adminHandler.AdminDashboard(w, r)
@@ -671,17 +726,23 @@ func main() {
 		http.NotFound(w, r)
 	})
 	appRouter.HandleFunc("/admin/dashboard", adminHandler.AdminDashboard)
-	appRouter.HandleFunc("/admin/products", adminHandler.AdminProducts)
-	appRouter.HandleFunc("/admin/products/edit/", adminHandler.AdminProductEdit)
-	appRouter.HandleFunc("/admin/vendors", adminHandler.AdminVendors)
-	appRouter.HandleFunc("/admin/vendors/approve", adminHandler.AdminVendorApprove)
 	appRouter.HandleFunc("/admin/users", adminHandler.AdminUsers)
-	appRouter.HandleFunc("/admin/users/", adminHandler.AdminUserDetail)
+	appRouter.HandleFunc("/admin/orders", adminHandler.AdminOrders)
+	appRouter.HandleFunc("/admin/products", adminHandler.AdminProducts)
 	appRouter.HandleFunc("/admin/reports", adminHandler.AdminReports)
+	appRouter.HandleFunc("/admin/vendors", adminHandler.AdminVendors)
+	appRouter.HandleFunc("/admin/system-health", adminHandler.AdminSystemHealth)
 	appRouter.HandleFunc("/admin/seo", adminHandler.AdminSEO)
-	appRouter.HandleFunc("/admin/notifications", adminHandler.AdminNotifications)
-	appRouter.HandleFunc("/admin/system", adminHandler.AdminSystem)
-	appRouter.HandleFunc("/admin/settings", adminHandler.AdminSettings)
+
+	// Admin API rotaları
+	appRouter.HandleFunc("/api/admin/users/stats", adminHandler.APIGetUserStats)
+	appRouter.HandleFunc("/api/admin/users/{id}/status", adminHandler.APIUpdateUserStatus)
+	appRouter.HandleFunc("/api/admin/users/{id}", adminHandler.APIDeleteUser)
+	appRouter.HandleFunc("/api/admin/orders/{id}/status", adminHandler.APIUpdateOrderStatus)
+	appRouter.HandleFunc("/api/admin/orders/{id}", adminHandler.APIDeleteOrder)
+	appRouter.HandleFunc("/api/admin/system/health", adminHandler.APISystemHealthCheck)
+	appRouter.HandleFunc("/api/admin/seo/sitemap", adminHandler.APIGenerateSitemap)
+	appRouter.HandleFunc("/api/admin/seo/analyze", adminHandler.APIAnalyzeSEO)
 
 	// Test rotaları (sadece development ortamında)
 	if cfg.Environment == "development" {

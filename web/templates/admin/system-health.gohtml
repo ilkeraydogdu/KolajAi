@@ -1,0 +1,407 @@
+{{define "admin/system-health"}}
+{{template "layout/admin" .}}
+
+{{define "admin_content"}}
+<div class="admin-system-health-page">
+    <!-- Page Header -->
+    <div class="admin-header">
+        <div class="admin-header-left">
+            <div class="admin-breadcrumb">
+                <div class="admin-breadcrumb-item">
+                    <i class="fas fa-heartbeat mr-2"></i>Sistem Sağlığı
+                </div>
+            </div>
+        </div>
+        <div class="admin-header-right">
+            <button onclick="refreshSystemHealth()" class="admin-btn admin-btn-secondary mr-2">
+                <i class="fas fa-sync mr-2"></i>Yenile
+            </button>
+            <button onclick="runSystemCheck()" class="admin-btn admin-btn-primary">
+                <i class="fas fa-play mr-2"></i>Sistem Kontrolü
+            </button>
+        </div>
+    </div>
+
+    <div class="p-6 space-y-6">
+        <!-- System Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="stat-card {{if eq .SystemHealth.OverallStatus "healthy"}}stat-revenue{{else if eq .SystemHealth.OverallStatus "warning"}}stat-products{{else}}stat-customers{{end}}">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-{{if eq .SystemHealth.OverallStatus "healthy"}}check-circle{{else if eq .SystemHealth.OverallStatus "warning"}}exclamation-triangle{{else}}times-circle{{end}}"></i>
+                    </div>
+                    <div class="stat-trend {{if eq .SystemHealth.OverallStatus "healthy"}}positive{{else if eq .SystemHealth.OverallStatus "warning"}}warning{{else}}negative{{end}}">
+                        {{.SystemHealth.OverallStatus}}
+                    </div>
+                </div>
+                <div class="stat-value">{{.SystemHealth.HealthScore}}%</div>
+                <div class="stat-label">Sistem Sağlığı</div>
+            </div>
+            <div class="stat-card stat-orders">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="stat-trend {{if lt .SystemHealth.ServerLoad 80}}positive{{else if lt .SystemHealth.ServerLoad 90}}warning{{else}}negative{{end}}">
+                        {{.SystemHealth.ServerLoad}}%
+                    </div>
+                </div>
+                <div class="stat-value">{{.SystemHealth.Uptime}}</div>
+                <div class="stat-label">Çalışma Süresi</div>
+            </div>
+            <div class="stat-card stat-products">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="stat-trend {{if eq .SystemHealth.DatabaseStatus "connected"}}positive{{else}}negative{{end}}">
+                        {{.SystemHealth.DatabaseStatus}}
+                    </div>
+                </div>
+                <div class="stat-value">{{.SystemHealth.DatabaseConnections}}</div>
+                <div class="stat-label">DB Bağlantıları</div>
+            </div>
+            <div class="stat-card stat-customers">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <div class="stat-trend {{if lt .SystemHealth.MemoryUsage 80}}positive{{else if lt .SystemHealth.MemoryUsage 90}}warning{{else}}negative{{end}}">
+                        {{.SystemHealth.MemoryUsage}}%
+                    </div>
+                </div>
+                <div class="stat-value">{{.SystemHealth.MemoryUsed}}</div>
+                <div class="stat-label">Bellek Kullanımı</div>
+            </div>
+        </div>
+
+        <!-- System Components -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Server Status -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Sunucu Durumu</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="refreshServerStatus()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if eq .ServerStatus.CPU.Status "healthy"}}green{{else if eq .ServerStatus.CPU.Status "warning"}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">CPU Kullanımı</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">{{.ServerStatus.CPU.Usage}}%</div>
+                            <div class="text-sm text-gray-500">{{.ServerStatus.CPU.Cores}} çekirdek</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if eq .ServerStatus.Memory.Status "healthy"}}green{{else if eq .ServerStatus.Memory.Status "warning"}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">RAM Kullanımı</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">{{.ServerStatus.Memory.Used}} / {{.ServerStatus.Memory.Total}}</div>
+                            <div class="text-sm text-gray-500">{{.ServerStatus.Memory.Usage}}%</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if eq .ServerStatus.Disk.Status "healthy"}}green{{else if eq .ServerStatus.Disk.Status "warning"}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">Disk Kullanımı</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">{{.ServerStatus.Disk.Used}} / {{.ServerStatus.Disk.Total}}</div>
+                            <div class="text-sm text-gray-500">{{.ServerStatus.Disk.Usage}}%</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if eq .ServerStatus.Network.Status "healthy"}}green{{else if eq .ServerStatus.Network.Status "warning"}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">Ağ Trafiği</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">↑{{.ServerStatus.Network.Upload}} ↓{{.ServerStatus.Network.Download}}</div>
+                            <div class="text-sm text-gray-500">MB/s</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Database Status -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Veritabanı Durumu</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="refreshDatabaseStatus()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if eq .DatabaseStatus.Connection.Status "connected"}}green{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">Bağlantı Durumu</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">{{.DatabaseStatus.Connection.Status}}</div>
+                            <div class="text-sm text-gray-500">{{.DatabaseStatus.Connection.ResponseTime}}ms</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if lt .DatabaseStatus.Connections.Active .DatabaseStatus.Connections.Max}}green{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">Aktif Bağlantılar</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">{{.DatabaseStatus.Connections.Active}} / {{.DatabaseStatus.Connections.Max}}</div>
+                            <div class="text-sm text-gray-500">{{.DatabaseStatus.Connections.Idle}} boşta</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if lt .DatabaseStatus.Size.Usage 80}}green{{else if lt .DatabaseStatus.Size.Usage 90}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">Veritabanı Boyutu</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">{{.DatabaseStatus.Size.Used}}</div>
+                            <div class="text-sm text-gray-500">{{.DatabaseStatus.Size.Tables}} tablo</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-3 h-3 bg-{{if lt .DatabaseStatus.Performance.SlowQueries 10}}green{{else if lt .DatabaseStatus.Performance.SlowQueries 50}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                            <span class="font-medium">Performans</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold">{{.DatabaseStatus.Performance.QPS}} QPS</div>
+                            <div class="text-sm text-gray-500">{{.DatabaseStatus.Performance.SlowQueries}} yavaş</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Services Status -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Servis Durumları</h3>
+                <div class="admin-card-actions">
+                    <button onclick="refreshServices()" class="admin-btn admin-btn-secondary">
+                        <i class="fas fa-sync mr-2"></i>Yenile
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {{range .Services}}
+                    <div class="p-4 border rounded-lg {{if eq .Status "running"}}border-green-200 bg-green-50{{else if eq .Status "warning"}}border-yellow-200 bg-yellow-50{{else}}border-red-200 bg-red-50{{end}}">
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-{{if eq .Status "running"}}green{{else if eq .Status "warning"}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                                <span class="font-medium">{{.Name}}</span>
+                            </div>
+                            <span class="text-sm {{if eq .Status "running"}}text-green-600{{else if eq .Status "warning"}}text-yellow-600{{else}}text-red-600{{end}}">
+                                {{.Status}}
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <div>Çalışma Süresi: {{.Uptime}}</div>
+                            <div>CPU: {{.CPU}}% | RAM: {{.Memory}}</div>
+                            {{if .LastRestart}}
+                            <div>Son Yeniden Başlatma: {{.LastRestart}}</div>
+                            {{end}}
+                        </div>
+                        <div class="flex space-x-2 mt-3">
+                            {{if eq .Status "running"}}
+                            <button onclick="restartService('{{.ID}}')" class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200">
+                                Yeniden Başlat
+                            </button>
+                            <button onclick="stopService('{{.ID}}')" class="text-xs px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200">
+                                Durdur
+                            </button>
+                            {{else}}
+                            <button onclick="startService('{{.ID}}')" class="text-xs px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200">
+                                Başlat
+                            </button>
+                            {{end}}
+                            <button onclick="viewServiceLogs('{{.ID}}')" class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                                Loglar
+                            </button>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+        <!-- System Logs -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Sistem Logları</h3>
+                <div class="admin-card-actions">
+                    <select id="logLevel" class="admin-form-control w-32 mr-2">
+                        <option value="">Tüm Seviyeler</option>
+                        <option value="error">Error</option>
+                        <option value="warning">Warning</option>
+                        <option value="info">Info</option>
+                        <option value="debug">Debug</option>
+                    </select>
+                    <button onclick="refreshLogs()" class="admin-btn admin-btn-secondary mr-2">
+                        <i class="fas fa-sync"></i>
+                    </button>
+                    <button onclick="clearLogs()" class="admin-btn admin-btn-danger">
+                        <i class="fas fa-trash mr-2"></i>Temizle
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div id="systemLogs" class="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm h-64 overflow-y-auto">
+                    {{range .SystemLogs}}
+                    <div class="mb-1">
+                        <span class="text-gray-500">[{{.Timestamp}}]</span>
+                        <span class="{{if eq .Level "error"}}text-red-400{{else if eq .Level "warning"}}text-yellow-400{{else if eq .Level "info"}}text-blue-400{{else}}text-gray-400{{end}}">[{{.Level | upper}}]</span>
+                        <span>{{.Message}}</span>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Response Times -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Yanıt Süreleri</h3>
+                    <div class="admin-card-actions">
+                        <select id="timeRange" class="admin-form-control w-32">
+                            <option value="1h">Son 1 Saat</option>
+                            <option value="6h">Son 6 Saat</option>
+                            <option value="24h" selected>Son 24 Saat</option>
+                            <option value="7d">Son 7 Gün</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="chart-container">
+                        <canvas id="responseTimeChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 mt-4">
+                        <div class="text-center">
+                            <div class="text-lg font-semibold text-green-600">{{.Metrics.ResponseTime.Average}}ms</div>
+                            <div class="text-sm text-gray-500">Ortalama</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-semibold text-blue-600">{{.Metrics.ResponseTime.P95}}ms</div>
+                            <div class="text-sm text-gray-500">95. Percentile</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-lg font-semibold text-red-600">{{.Metrics.ResponseTime.Max}}ms</div>
+                            <div class="text-sm text-gray-500">Maksimum</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Rates -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 class="admin-card-title">Hata Oranları</h3>
+                    <div class="admin-card-actions">
+                        <button onclick="refreshErrorRates()" class="admin-btn admin-btn-secondary">
+                            <i class="fas fa-sync"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="admin-card-body">
+                    <div class="chart-container">
+                        <canvas id="errorRateChart" width="400" height="200"></canvas>
+                    </div>
+                    <div class="space-y-2 mt-4">
+                        {{range .Metrics.ErrorRates}}
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 bg-{{if eq .Code "200"}}green{{else if eq .Code "404"}}yellow{{else}}red{{end}}-500 rounded-full"></div>
+                                <span class="text-sm">HTTP {{.Code}}</span>
+                            </div>
+                            <div class="text-right">
+                                <span class="font-semibold">{{.Count}}</span>
+                                <span class="text-sm text-gray-500">({{.Percentage}}%)</span>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Health Check Results -->
+        <div class="admin-card">
+            <div class="admin-card-header">
+                <h3 class="admin-card-title">Sağlık Kontrolleri</h3>
+                <div class="admin-card-actions">
+                    <button onclick="runHealthChecks()" class="admin-btn admin-btn-primary">
+                        <i class="fas fa-play mr-2"></i>Kontrolleri Çalıştır
+                    </button>
+                </div>
+            </div>
+            <div class="admin-card-body">
+                <div class="space-y-3">
+                    {{range .HealthChecks}}
+                    <div class="flex items-center justify-between p-3 border rounded-lg {{if eq .Status "pass"}}border-green-200 bg-green-50{{else if eq .Status "warn"}}border-yellow-200 bg-yellow-50{{else}}border-red-200 bg-red-50{{end}}">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-4 h-4 {{if eq .Status "pass"}}bg-green-500{{else if eq .Status "warn"}}bg-yellow-500{{else}}bg-red-500{{end}} rounded-full flex items-center justify-center">
+                                <i class="fas fa-{{if eq .Status "pass"}}check{{else if eq .Status "warn"}}exclamation{{else}}times{{end}} text-white text-xs"></i>
+                            </div>
+                            <div>
+                                <div class="font-medium">{{.Name}}</div>
+                                <div class="text-sm text-gray-600">{{.Description}}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm {{if eq .Status "pass"}}text-green-600{{else if eq .Status "warn"}}text-yellow-600{{else}}text-red-600{{end}}">
+                                {{.Status | upper}}
+                            </div>
+                            <div class="text-xs text-gray-500">{{.LastCheck}}</div>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Logs Modal -->
+<div id="serviceLogsModal" class="admin-modal hidden">
+    <div class="admin-modal-content max-w-4xl">
+        <div class="admin-modal-header">
+            <h3 id="serviceLogsTitle" class="admin-modal-title">Servis Logları</h3>
+            <button onclick="closeServiceLogsModal()" class="admin-modal-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="admin-modal-body">
+            <div id="serviceLogsContent" class="bg-gray-900 text-green-400 p-4 rounded font-mono text-sm h-96 overflow-y-auto">
+                <!-- Logs will be loaded here -->
+            </div>
+        </div>
+        <div class="admin-modal-footer">
+            <button onclick="downloadServiceLogs()" class="admin-btn admin-btn-secondary mr-2">
+                <i class="fas fa-download mr-2"></i>İndir
+            </button>
+            <button onclick="closeServiceLogsModal()" class="admin-btn admin-btn-primary">Kapat</button>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/admin-system-health.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{end}}
+{{end}}
