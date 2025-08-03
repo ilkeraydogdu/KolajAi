@@ -1,0 +1,344 @@
+{{define "user/orders"}}
+{{template "layout/dashboard" .}}
+
+{{define "content"}}
+<div class="user-orders-page">
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h4 class="mb-0">Siparişlerim</h4>
+            <p class="mb-0 text-muted">Tüm siparişlerinizi buradan takip edebilirsiniz</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
+                <i class="material-icons-outlined me-2">filter_list</i>Filtrele
+            </button>
+        </div>
+    </div>
+
+    <!-- Order Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{.OrderStats.Total}}</h3>
+                    <p class="mb-0">Toplam Sipariş</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{.OrderStats.Completed}}</h3>
+                    <p class="mb-0">Tamamlanan</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">{{.OrderStats.Pending}}</h3>
+                    <p class="mb-0">Bekleyen</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3 class="mb-1">₺{{.OrderStats.TotalAmount}}</h3>
+                    <p class="mb-0">Toplam Tutar</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Sipariş Listesi</h6>
+            <div class="d-flex align-items-center">
+                <select class="form-select form-select-sm me-2" id="statusFilter">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="pending">Bekleyen</option>
+                    <option value="processing">İşleniyor</option>
+                    <option value="shipped">Kargoda</option>
+                    <option value="delivered">Teslim Edildi</option>
+                    <option value="cancelled">İptal Edildi</option>
+                </select>
+                <select class="form-select form-select-sm" id="sortOrder">
+                    <option value="newest">En Yeni</option>
+                    <option value="oldest">En Eski</option>
+                    <option value="amount_high">Tutar (Yüksek)</option>
+                    <option value="amount_low">Tutar (Düşük)</option>
+                </select>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {{if .Orders}}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sipariş No</th>
+                            <th>Tarih</th>
+                            <th>Ürünler</th>
+                            <th>Durum</th>
+                            <th>Tutar</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .Orders}}
+                        <tr>
+                            <td>
+                                <strong>#{{.OrderNumber}}</strong>
+                                {{if .TrackingNumber}}
+                                <br><small class="text-muted">Kargo: {{.TrackingNumber}}</small>
+                                {{end}}
+                            </td>
+                            <td>
+                                <div>{{.CreatedAt | formatDate}}</div>
+                                <small class="text-muted">{{.CreatedAt | formatTime}}</small>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="order-items">
+                                        {{range $index, $item := .Items}}
+                                        {{if lt $index 3}}
+                                        <img src="{{index $item.Product.Images 0}}" alt="{{$item.Product.Name}}" 
+                                             class="rounded me-1" width="30" height="30">
+                                        {{end}}
+                                        {{end}}
+                                        {{if gt (len .Items) 3}}
+                                        <span class="badge bg-secondary">+{{sub (len .Items) 3}}</span>
+                                        {{end}}
+                                    </div>
+                                    <div class="ms-2">
+                                        <small class="text-muted">{{len .Items}} ürün</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{.StatusColor}}">{{.StatusText}}</span>
+                                {{if .EstimatedDelivery}}
+                                <br><small class="text-muted">Tahmini: {{.EstimatedDelivery | formatDate}}</small>
+                                {{end}}
+                            </td>
+                            <td>
+                                <strong>₺{{.TotalAmount}}</strong>
+                                {{if .PaymentMethod}}
+                                <br><small class="text-muted">{{.PaymentMethod}}</small>
+                                {{end}}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-outline-primary" onclick="viewOrder('{{.ID}}')">
+                                        <i class="material-icons-outlined">visibility</i>
+                                    </button>
+                                    {{if eq .Status "delivered"}}
+                                    <button class="btn btn-outline-success" onclick="reviewOrder('{{.ID}}')">
+                                        <i class="material-icons-outlined">rate_review</i>
+                                    </button>
+                                    {{end}}
+                                    {{if in .Status "pending" "processing"}}
+                                    <button class="btn btn-outline-danger" onclick="cancelOrder('{{.ID}}')">
+                                        <i class="material-icons-outlined">cancel</i>
+                                    </button>
+                                    {{end}}
+                                    {{if .TrackingNumber}}
+                                    <button class="btn btn-outline-info" onclick="trackOrder('{{.TrackingNumber}}')">
+                                        <i class="material-icons-outlined">local_shipping</i>
+                                    </button>
+                                    {{end}}
+                                </div>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {{if .Pagination}}
+            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                <div>
+                    <small class="text-muted">
+                        {{.Pagination.From}}-{{.Pagination.To}} / {{.Pagination.Total}} sipariş gösteriliyor
+                    </small>
+                </div>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0">
+                        {{if .Pagination.HasPrev}}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{.Pagination.PrevPage}}">Önceki</a>
+                        </li>
+                        {{end}}
+                        
+                        {{range .Pagination.Pages}}
+                        <li class="page-item {{if .IsCurrent}}active{{end}}">
+                            <a class="page-link" href="?page={{.Number}}">{{.Number}}</a>
+                        </li>
+                        {{end}}
+                        
+                        {{if .Pagination.HasNext}}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{.Pagination.NextPage}}">Sonraki</a>
+                        </li>
+                        {{end}}
+                    </ul>
+                </nav>
+            </div>
+            {{end}}
+            {{else}}
+            <div class="text-center py-5">
+                <i class="material-icons-outlined text-muted" style="font-size: 4rem;">shopping_bag</i>
+                <h5 class="mt-3">Henüz sipariş vermediniz</h5>
+                <p class="text-muted">İlk siparişinizi vermek için alışverişe başlayın!</p>
+                <a href="/products" class="btn btn-primary">
+                    <i class="material-icons-outlined me-2">shopping_cart</i>Alışverişe Başla
+                </a>
+            </div>
+            {{end}}
+        </div>
+    </div>
+</div>
+
+<!-- Order Detail Modal -->
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sipariş Detayları</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="orderDetailContent">
+                <!-- Content will be loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Modal -->
+<div class="modal fade" id="filterModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Sipariş Filtrele</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="filterForm">
+                    <div class="mb-3">
+                        <label class="form-label">Tarih Aralığı</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="date" class="form-control" name="date_from" placeholder="Başlangıç">
+                            </div>
+                            <div class="col-6">
+                                <input type="date" class="form-control" name="date_to" placeholder="Bitiş">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Sipariş Durumu</label>
+                        <select class="form-select" name="status">
+                            <option value="">Tümü</option>
+                            <option value="pending">Bekleyen</option>
+                            <option value="processing">İşleniyor</option>
+                            <option value="shipped">Kargoda</option>
+                            <option value="delivered">Teslim Edildi</option>
+                            <option value="cancelled">İptal Edildi</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tutar Aralığı</label>
+                        <div class="row">
+                            <div class="col-6">
+                                <input type="number" class="form-control" name="amount_min" placeholder="Min. tutar">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" class="form-control" name="amount_max" placeholder="Max. tutar">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="applyFilter()">Filtrele</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "page_js"}}
+<script>
+function viewOrder(orderId) {
+    // Load order details
+    fetch('/user/orders/' + orderId)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('orderDetailContent').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('orderDetailModal')).show();
+        });
+}
+
+function cancelOrder(orderId) {
+    if (confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?')) {
+        fetch('/user/orders/' + orderId + '/cancel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Sipariş iptal edilemedi: ' + data.message);
+            }
+        });
+    }
+}
+
+function reviewOrder(orderId) {
+    window.location.href = '/user/orders/' + orderId + '/review';
+}
+
+function trackOrder(trackingNumber) {
+    window.open('/track/' + trackingNumber, '_blank');
+}
+
+function applyFilter() {
+    const form = document.getElementById('filterForm');
+    const formData = new FormData(form);
+    const params = new URLSearchParams();
+    
+    for (let [key, value] of formData.entries()) {
+        if (value) params.append(key, value);
+    }
+    
+    window.location.href = '/user/orders?' + params.toString();
+}
+
+// Status and sort filters
+document.getElementById('statusFilter').addEventListener('change', function() {
+    const params = new URLSearchParams(window.location.search);
+    if (this.value) {
+        params.set('status', this.value);
+    } else {
+        params.delete('status');
+    }
+    window.location.href = '/user/orders?' + params.toString();
+});
+
+document.getElementById('sortOrder').addEventListener('change', function() {
+    const params = new URLSearchParams(window.location.search);
+    params.set('sort', this.value);
+    window.location.href = '/user/orders?' + params.toString();
+});
+</script>
+{{end}}
+{{end}}

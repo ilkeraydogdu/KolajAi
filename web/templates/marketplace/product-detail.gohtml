@@ -1,0 +1,346 @@
+{{define "marketplace/product-detail"}}
+{{template "layout/header" .}}
+
+<div class="product-detail-page">
+    <!-- Breadcrumb -->
+    <div class="bg-gray-50 py-4">
+        <div class="container mx-auto px-4">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="/" class="text-gray-700 hover:text-blue-600">Ana Sayfa</a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                            <a href="/products?category={{.Product.Category.ID}}" class="text-gray-700 hover:text-blue-600">{{.Product.Category.Name}}</a>
+                        </div>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                            <span class="text-gray-500">{{.Product.Name}}</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Product Images -->
+            <div class="product-images">
+                <div class="main-image mb-4">
+                    <img id="mainImage" src="{{index .Product.Images 0}}" alt="{{.Product.Name}}" 
+                         class="w-full h-96 object-cover rounded-lg shadow-md">
+                </div>
+                <div class="thumbnail-images flex space-x-2 overflow-x-auto">
+                    {{range $index, $image := .Product.Images}}
+                    <img src="{{$image}}" alt="{{$.Product.Name}} - {{$index}}" 
+                         class="w-20 h-20 object-cover rounded cursor-pointer border-2 border-transparent hover:border-blue-500 thumbnail"
+                         onclick="changeMainImage('{{$image}}')">
+                    {{end}}
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info">
+                <div class="mb-4">
+                    <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                        {{.Product.Category.Name}}
+                    </span>
+                </div>
+                
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">{{.Product.Name}}</h1>
+                
+                <!-- Rating -->
+                <div class="flex items-center mb-4">
+                    <div class="flex items-center">
+                        {{range $i := iterate 5}}
+                        <i class="fas fa-star {{if lt $i $.Product.Rating}}text-yellow-400{{else}}text-gray-300{{end}}"></i>
+                        {{end}}
+                    </div>
+                    <span class="ml-2 text-gray-600">({{.Product.ReviewCount}} değerlendirme)</span>
+                </div>
+
+                <!-- Price -->
+                <div class="price-section mb-6">
+                    {{if .Product.DiscountPrice}}
+                    <div class="flex items-center space-x-3">
+                        <span class="text-3xl font-bold text-red-600">₺{{.Product.DiscountPrice}}</span>
+                        <span class="text-xl text-gray-500 line-through">₺{{.Product.Price}}</span>
+                        <span class="bg-red-100 text-red-800 text-sm px-2 py-1 rounded">
+                            %{{.Product.DiscountPercentage}} İndirim
+                        </span>
+                    </div>
+                    {{else}}
+                    <span class="text-3xl font-bold text-gray-900">₺{{.Product.Price}}</span>
+                    {{end}}
+                </div>
+
+                <!-- Seller Info -->
+                <div class="seller-info bg-gray-50 p-4 rounded-lg mb-6">
+                    <div class="flex items-center">
+                        <img src="{{.Product.Seller.Avatar}}" alt="{{.Product.Seller.Name}}" 
+                             class="w-12 h-12 rounded-full mr-3">
+                        <div>
+                            <h3 class="font-semibold">{{.Product.Seller.Name}}</h3>
+                            <div class="flex items-center text-sm text-gray-600">
+                                <span class="mr-2">{{.Product.Seller.Rating}}/5</span>
+                                <span>({{.Product.Seller.ReviewCount}} değerlendirme)</span>
+                            </div>
+                        </div>
+                        <a href="/seller/{{.Product.Seller.ID}}" class="ml-auto text-blue-600 hover:text-blue-800">
+                            Satıcıyı Görüntüle
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stock Status -->
+                <div class="stock-status mb-6">
+                    {{if gt .Product.Stock 0}}
+                    <span class="inline-flex items-center text-green-600">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Stokta var ({{.Product.Stock}} adet)
+                    </span>
+                    {{else}}
+                    <span class="inline-flex items-center text-red-600">
+                        <i class="fas fa-times-circle mr-2"></i>
+                        Stokta yok
+                    </span>
+                    {{end}}
+                </div>
+
+                <!-- Add to Cart Form -->
+                <form class="add-to-cart-form mb-6">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <label class="font-medium">Adet:</label>
+                        <div class="flex items-center border rounded-lg">
+                            <button type="button" onclick="decreaseQuantity()" class="px-3 py-2 hover:bg-gray-100">-</button>
+                            <input type="number" id="quantity" name="quantity" value="1" min="1" max="{{.Product.Stock}}" 
+                                   class="w-16 text-center border-none focus:outline-none">
+                            <button type="button" onclick="increaseQuantity()" class="px-3 py-2 hover:bg-gray-100">+</button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button type="submit" class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition">
+                            <i class="fas fa-shopping-cart mr-2"></i>
+                            Sepete Ekle
+                        </button>
+                        <button type="button" onclick="addToWishlist({{.Product.ID}})" 
+                                class="bg-gray-200 text-gray-800 py-3 px-6 rounded-lg hover:bg-gray-300 transition">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Product Features -->
+                {{if .Product.Features}}
+                <div class="product-features">
+                    <h3 class="text-xl font-semibold mb-4">Özellikler</h3>
+                    <ul class="space-y-2">
+                        {{range .Product.Features}}
+                        <li class="flex items-center">
+                            <i class="fas fa-check text-green-600 mr-2"></i>
+                            <span>{{.}}</span>
+                        </li>
+                        {{end}}
+                    </ul>
+                </div>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- Product Description & Reviews -->
+        <div class="mt-12">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button onclick="showTab('description')" 
+                            class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium">
+                        Açıklama
+                    </button>
+                    <button onclick="showTab('specifications')" 
+                            class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium">
+                        Teknik Özellikler
+                    </button>
+                    <button onclick="showTab('reviews')" 
+                            class="tab-button py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 font-medium">
+                        Değerlendirmeler ({{.Product.ReviewCount}})
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="mt-8">
+                <!-- Description Tab -->
+                <div id="description-tab" class="tab-content">
+                    <div class="prose max-w-none">
+                        {{.Product.Description | html}}
+                    </div>
+                </div>
+
+                <!-- Specifications Tab -->
+                <div id="specifications-tab" class="tab-content hidden">
+                    {{if .Product.Specifications}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{range $key, $value := .Product.Specifications}}
+                        <div class="flex justify-between py-2 border-b border-gray-200">
+                            <span class="font-medium">{{$key}}:</span>
+                            <span>{{$value}}</span>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{else}}
+                    <p class="text-gray-600">Bu ürün için teknik özellik bilgisi bulunmamaktadır.</p>
+                    {{end}}
+                </div>
+
+                <!-- Reviews Tab -->
+                <div id="reviews-tab" class="tab-content hidden">
+                    {{if .Product.Reviews}}
+                    <div class="space-y-6">
+                        {{range .Product.Reviews}}
+                        <div class="border-b border-gray-200 pb-6">
+                            <div class="flex items-start space-x-4">
+                                <img src="{{.User.Avatar}}" alt="{{.User.Name}}" class="w-10 h-10 rounded-full">
+                                <div class="flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h4 class="font-semibold">{{.User.Name}}</h4>
+                                        <span class="text-sm text-gray-500">{{.CreatedAt | formatDate}}</span>
+                                    </div>
+                                    <div class="flex items-center mt-1">
+                                        {{range $i := iterate 5}}
+                                        <i class="fas fa-star {{if lt $i $.Rating}}text-yellow-400{{else}}text-gray-300{{end}} text-sm"></i>
+                                        {{end}}
+                                    </div>
+                                    <p class="mt-2 text-gray-700">{{.Comment}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {{end}}
+                    </div>
+                    {{else}}
+                    <p class="text-gray-600">Bu ürün için henüz değerlendirme bulunmamaktadır.</p>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        {{if .RelatedProducts}}
+        <div class="mt-16">
+            <h2 class="text-2xl font-bold mb-8">Benzer Ürünler</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                {{range .RelatedProducts}}
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden">
+                    <a href="/product/{{.ID}}">
+                        <img src="{{index .Images 0}}" alt="{{.Name}}" class="w-full h-48 object-cover">
+                        <div class="p-4">
+                            <h3 class="font-semibold text-gray-900 mb-2">{{.Name}}</h3>
+                            <div class="flex items-center justify-between">
+                                <span class="text-lg font-bold text-blue-600">₺{{.Price}}</span>
+                                <div class="flex items-center text-sm text-gray-600">
+                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                    <span>{{.Rating}}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+{{template "layout/footer" .}}
+{{end}}
+
+{{define "page_css"}}
+<style>
+.thumbnail.active {
+    border-color: #3B82F6;
+}
+.tab-button.active {
+    border-color: #3B82F6;
+    color: #3B82F6;
+}
+</style>
+{{end}}
+
+{{define "page_js"}}
+<script>
+function changeMainImage(src) {
+    document.getElementById('mainImage').src = src;
+    // Update thumbnail active state
+    document.querySelectorAll('.thumbnail').forEach(thumb => {
+        thumb.classList.remove('active');
+        if (thumb.src === src) {
+            thumb.classList.add('active');
+        }
+    });
+}
+
+function increaseQuantity() {
+    const input = document.getElementById('quantity');
+    const max = parseInt(input.getAttribute('max'));
+    const current = parseInt(input.value);
+    if (current < max) {
+        input.value = current + 1;
+    }
+}
+
+function decreaseQuantity() {
+    const input = document.getElementById('quantity');
+    const current = parseInt(input.value);
+    if (current > 1) {
+        input.value = current - 1;
+    }
+}
+
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+    
+    // Remove active state from all buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.remove('hidden');
+    
+    // Add active state to clicked button
+    event.target.classList.add('active');
+}
+
+function addToWishlist(productId) {
+    // AJAX call to add to wishlist
+    fetch('/api/wishlist/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ product_id: productId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Ürün favorilere eklendi!');
+        }
+    });
+}
+
+// Initialize first tab as active
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('.tab-button').classList.add('active');
+    document.querySelector('.thumbnail').classList.add('active');
+});
+</script>
+{{end}}
