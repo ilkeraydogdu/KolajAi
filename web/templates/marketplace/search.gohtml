@@ -1,0 +1,564 @@
+{{define "marketplace/search"}}
+{{template "layout/header" .}}
+
+<div class="search-results-page">
+    <!-- Search Header -->
+    <div class="bg-light py-4">
+        <div class="container mx-auto px-4">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="search-info">
+                        {{if .Query}}
+                        <h1 class="h4 mb-2">"{{.Query}}" için arama sonuçları</h1>
+                        <p class="text-muted mb-0">
+                            {{.TotalResults}} sonuç bulundu
+                            {{if .SearchTime}}({{.SearchTime}}ms){{end}}
+                        </p>
+                        {{else}}
+                        <h1 class="h4 mb-2">Tüm Ürünler</h1>
+                        <p class="text-muted mb-0">{{.TotalResults}} ürün listeleniyor</p>
+                        {{end}}
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Advanced Search Toggle -->
+                    <div class="text-end">
+                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedSearch">
+                            <i class="fas fa-sliders-h me-2"></i>Gelişmiş Arama
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-4">
+        <!-- Advanced Search Panel -->
+        <div class="collapse {{if .ShowAdvanced}}show{{end}}" id="advancedSearch">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form id="searchForm" method="GET">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Arama Terimi</label>
+                                <input type="text" class="form-control" name="q" value="{{.Query}}" placeholder="Ürün, marka, kategori...">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Kategori</label>
+                                <select class="form-select" name="category">
+                                    <option value="">Tümü</option>
+                                    {{range .Categories}}
+                                    <option value="{{.ID}}" {{if eq .ID $.Filters.Category}}selected{{end}}>{{.Name}}</option>
+                                    {{end}}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Marka</label>
+                                <select class="form-select" name="brand">
+                                    <option value="">Tümü</option>
+                                    {{range .Brands}}
+                                    <option value="{{.ID}}" {{if eq .ID $.Filters.Brand}}selected{{end}}>{{.Name}}</option>
+                                    {{end}}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Min Fiyat</label>
+                                <input type="number" class="form-control" name="min_price" value="{{.Filters.MinPrice}}" placeholder="0">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Max Fiyat</label>
+                                <input type="number" class="form-control" name="max_price" value="{{.Filters.MaxPrice}}" placeholder="∞">
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-2">
+                                <label class="form-label">Değerlendirme</label>
+                                <select class="form-select" name="rating">
+                                    <option value="">Tümü</option>
+                                    <option value="4" {{if eq .Filters.Rating "4"}}selected{{end}}>4+ Yıldız</option>
+                                    <option value="3" {{if eq .Filters.Rating "3"}}selected{{end}}>3+ Yıldız</option>
+                                    <option value="2" {{if eq .Filters.Rating "2"}}selected{{end}}>2+ Yıldız</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Kargo</label>
+                                <select class="form-select" name="shipping">
+                                    <option value="">Tümü</option>
+                                    <option value="free" {{if eq .Filters.Shipping "free"}}selected{{end}}>Ücretsiz</option>
+                                    <option value="fast" {{if eq .Filters.Shipping "fast"}}selected{{end}}>Hızlı</option>
+                                    <option value="same_day" {{if eq .Filters.Shipping "same_day"}}selected{{end}}>Aynı Gün</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" name="in_stock" {{if .Filters.InStock}}checked{{end}}>
+                                    <label class="form-check-label">Stokta Var</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" name="on_sale" {{if .Filters.OnSale}}checked{{end}}>
+                                    <label class="form-check-label">İndirimde</label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-2"></i>Ara
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()">
+                                        <i class="fas fa-times me-2"></i>Temizle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Suggestions -->
+        {{if .Suggestions}}
+        <div class="mb-4">
+            <p class="mb-2">Bunu mu arıyordunuz?</p>
+            <div class="d-flex flex-wrap gap-2">
+                {{range .Suggestions}}
+                <a href="/search?q={{.}}" class="badge bg-light text-dark text-decoration-none">{{.}}</a>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+
+        <!-- Results Header -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <!-- Active Filters -->
+                {{if .ActiveFilters}}
+                <div class="active-filters">
+                    <span class="text-muted me-2">Aktif filtreler:</span>
+                    {{range .ActiveFilters}}
+                    <span class="badge bg-primary me-1">
+                        {{.Label}}
+                        <a href="{{.RemoveURL}}" class="text-white ms-1">×</a>
+                    </span>
+                    {{end}}
+                    <a href="/search?q={{.Query}}" class="btn btn-sm btn-outline-secondary ms-2">Tümünü Temizle</a>
+                </div>
+                {{end}}
+            </div>
+            <div class="col-md-6">
+                <!-- Sort and View Options -->
+                <div class="d-flex justify-content-end align-items-center gap-3">
+                    <div class="d-flex align-items-center">
+                        <label class="form-label me-2 mb-0">Sırala:</label>
+                        <select class="form-select form-select-sm" id="sortSelect" onchange="updateSort()">
+                            <option value="relevance" {{if eq .Sort "relevance"}}selected{{end}}>İlgili</option>
+                            <option value="price_asc" {{if eq .Sort "price_asc"}}selected{{end}}>Fiyat (Düşük)</option>
+                            <option value="price_desc" {{if eq .Sort "price_desc"}}selected{{end}}>Fiyat (Yüksek)</option>
+                            <option value="rating_desc" {{if eq .Sort "rating_desc"}}selected{{end}}>En Beğenilen</option>
+                            <option value="newest" {{if eq .Sort "newest"}}selected{{end}}>En Yeni</option>
+                            <option value="bestseller" {{if eq .Sort "bestseller"}}selected{{end}}>Çok Satan</option>
+                        </select>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-outline-secondary btn-sm {{if eq .View "grid"}}active{{end}}" onclick="setView('grid')">
+                            <i class="fas fa-th"></i>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm {{if eq .View "list"}}active{{end}}" onclick="setView('list')">
+                            <i class="fas fa-list"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        {{if .Products}}
+        <div id="resultsContainer" class="{{if eq .View "list"}}list-view{{end}}">
+            <div class="row" id="productGrid">
+                {{range .Products}}
+                <div class="col-12 {{if ne $.View "list"}}col-md-6 col-lg-4 col-xl-3{{end}} mb-4">
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            <img src="{{index .Images 0}}" class="card-img-top" alt="{{.Name}}" style="height: 200px; object-fit: cover;">
+                            {{if .DiscountPercentage}}
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                                -{{.DiscountPercentage}}%
+                            </span>
+                            {{end}}
+                            {{if .IsNew}}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2">Yeni</span>
+                            {{end}}
+                            <div class="position-absolute top-0 end-0 m-2">
+                                <button class="btn btn-sm btn-light rounded-circle" onclick="toggleWishlist({{.ID}})">
+                                    <i class="fas fa-heart {{if .InWishlist}}text-danger{{else}}text-muted{{end}}"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h6 class="card-title">
+                                <a href="/products/{{.ID}}" class="text-decoration-none text-dark">{{.Name}}</a>
+                            </h6>
+                            <p class="card-text text-muted small">{{.BrandName}}</p>
+                            
+                            <!-- Rating -->
+                            {{if .Rating}}
+                            <div class="mb-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="stars me-2">
+                                        {{range $i := iterate 5}}
+                                        <i class="fas fa-star {{if lt $i $.Rating}}text-warning{{else}}text-muted{{end}}" style="font-size: 12px;"></i>
+                                        {{end}}
+                                    </div>
+                                    <small class="text-muted">({{.ReviewCount}})</small>
+                                </div>
+                            </div>
+                            {{end}}
+                            
+                            <!-- Price -->
+                            <div class="mb-2">
+                                {{if .DiscountPrice}}
+                                <div class="d-flex align-items-center">
+                                    <span class="h6 text-danger mb-0 me-2">{{.DiscountPrice | currency}}</span>
+                                    <small class="text-muted text-decoration-line-through">{{.Price | currency}}</small>
+                                </div>
+                                {{else}}
+                                <span class="h6 mb-0">{{.Price | currency}}</span>
+                                {{end}}
+                            </div>
+                            
+                            <!-- Shipping Info -->
+                            {{if .FreeShipping}}
+                            <small class="text-success mb-2">
+                                <i class="fas fa-truck me-1"></i>Ücretsiz Kargo
+                            </small>
+                            {{end}}
+                            
+                            <!-- Seller -->
+                            <small class="text-muted mb-2">
+                                <i class="fas fa-store me-1"></i>{{.SellerName}}
+                            </small>
+                            
+                            <div class="mt-auto">
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary btn-sm flex-fill" onclick="addToCart({{.ID}})">
+                                        <i class="fas fa-shopping-cart me-1"></i>Sepete Ekle
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="quickView({{.ID}})">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {{if .Pagination}}
+        <nav class="mt-5">
+            <ul class="pagination justify-content-center">
+                {{if .Pagination.HasPrev}}
+                <li class="page-item">
+                    <a class="page-link" href="{{.Pagination.PrevURL}}">Önceki</a>
+                </li>
+                {{end}}
+                
+                {{range .Pagination.Pages}}
+                <li class="page-item {{if .IsCurrent}}active{{end}}">
+                    <a class="page-link" href="{{.URL}}">{{.Number}}</a>
+                </li>
+                {{end}}
+                
+                {{if .Pagination.HasNext}}
+                <li class="page-item">
+                    <a class="page-link" href="{{.Pagination.NextURL}}">Sonraki</a>
+                </li>
+                {{end}}
+            </ul>
+        </nav>
+        {{end}}
+
+        {{else}}
+        <!-- No Results -->
+        <div class="text-center py-5">
+            <i class="fas fa-search text-muted mb-3" style="font-size: 64px;"></i>
+            <h3 class="text-muted mb-3">Aradığınız kriterlere uygun ürün bulunamadı</h3>
+            <p class="text-muted mb-4">Farklı anahtar kelimeler deneyin veya filtreleri değiştirin</p>
+            
+            <!-- Search Suggestions -->
+            <div class="mb-4">
+                <h5>Önerilen aramalar:</h5>
+                <div class="d-flex justify-content-center flex-wrap gap-2">
+                    {{range .PopularSearches}}
+                    <a href="/search?q={{.}}" class="btn btn-outline-primary btn-sm">{{.}}</a>
+                    {{end}}
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="clearFilters()">
+                <i class="fas fa-refresh me-2"></i>Filtreleri Temizle
+            </button>
+        </div>
+        {{end}}
+
+        <!-- Recently Viewed -->
+        {{if .RecentlyViewed}}
+        <div class="mt-5">
+            <h4 class="mb-4">Son Görüntülenen Ürünler</h4>
+            <div class="row">
+                {{range .RecentlyViewed}}
+                <div class="col-6 col-md-3 col-lg-2 mb-3">
+                    <div class="card">
+                        <img src="{{index .Images 0}}" class="card-img-top" alt="{{.Name}}" style="height: 120px; object-fit: cover;">
+                        <div class="card-body p-2">
+                            <h6 class="card-title small mb-1">
+                                <a href="/products/{{.ID}}" class="text-decoration-none">{{.Name | truncate 30}}</a>
+                            </h6>
+                            <small class="text-primary">{{.Price | currency}}</small>
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+{{template "layout/footer" .}}
+{{end}}
+
+{{define "page_css"}}
+<style>
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.list-view .product-card {
+    flex-direction: row;
+    max-width: none;
+}
+
+.list-view .product-card img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+}
+
+.list-view .card-body {
+    flex: 1;
+}
+
+.active-filters .badge {
+    font-size: 0.875em;
+}
+
+.stars i {
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .list-view .product-card {
+        flex-direction: column;
+    }
+    
+    .list-view .product-card img {
+        width: 100%;
+        height: 200px;
+    }
+}
+</style>
+{{end}}
+
+{{define "page_js"}}
+<script>
+// Update sort
+function updateSort() {
+    const sort = document.getElementById('sortSelect').value;
+    const url = new URL(window.location);
+    url.searchParams.set('sort', sort);
+    window.location.href = url.toString();
+}
+
+// Set view
+function setView(view) {
+    const url = new URL(window.location);
+    url.searchParams.set('view', view);
+    window.location.href = url.toString();
+}
+
+// Clear filters
+function clearFilters() {
+    const url = new URL(window.location);
+    const query = url.searchParams.get('q');
+    window.location.href = '/search' + (query ? '?q=' + encodeURIComponent(query) : '');
+}
+
+// Add to cart
+function addToCart(productId) {
+    fetch('/api/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('success', 'Ürün sepete eklendi!');
+            updateCartCount();
+        } else {
+            showNotification('error', 'Ürün sepete eklenirken hata oluştu!');
+        }
+    })
+    .catch(error => {
+        showNotification('error', 'Bir hata oluştu!');
+    });
+}
+
+// Toggle wishlist
+function toggleWishlist(productId) {
+    fetch('/api/wishlist/toggle', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            product_id: productId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const heartIcon = event.target.closest('button').querySelector('i');
+            if (data.added) {
+                heartIcon.classList.remove('text-muted');
+                heartIcon.classList.add('text-danger');
+                showNotification('success', 'Ürün favorilere eklendi!');
+            } else {
+                heartIcon.classList.remove('text-danger');
+                heartIcon.classList.add('text-muted');
+                showNotification('info', 'Ürün favorilerden çıkarıldı!');
+            }
+        }
+    });
+}
+
+// Quick view
+function quickView(productId) {
+    // This would open a modal with product details
+    window.open(`/products/${productId}`, '_blank');
+}
+
+// Update cart count
+function updateCartCount() {
+    fetch('/api/cart/count')
+    .then(response => response.json())
+    .then(data => {
+        const cartCountElement = document.querySelector('.cart-count');
+        if (cartCountElement) {
+            cartCountElement.textContent = data.count;
+        }
+    });
+}
+
+// Show notification
+function showNotification(type, message) {
+    // This would integrate with your notification system
+    alert(message);
+}
+
+// Search suggestions
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+        let timeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                if (this.value.length > 2) {
+                    fetchSearchSuggestions(this.value);
+                }
+            }, 300);
+        });
+    }
+});
+
+function fetchSearchSuggestions(query) {
+    fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.suggestions && data.suggestions.length > 0) {
+            showSearchSuggestions(data.suggestions);
+        }
+    });
+}
+
+function showSearchSuggestions(suggestions) {
+    // This would show a dropdown with suggestions
+    console.log('Suggestions:', suggestions);
+}
+
+// Track search analytics
+if (window.gtag) {
+    gtag('event', 'search', {
+        search_term: '{{.Query}}'
+    });
+}
+
+// Infinite scroll (optional)
+let loading = false;
+let page = {{.Pagination.Current}};
+
+function loadMoreProducts() {
+    if (loading) return;
+    loading = true;
+    
+    const url = new URL(window.location);
+    url.searchParams.set('page', page + 1);
+    
+    fetch(url.toString())
+    .then(response => response.text())
+    .then(html => {
+        // Parse and append new products
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newProducts = doc.querySelectorAll('#productGrid > div');
+        
+        if (newProducts.length > 0) {
+            const productGrid = document.getElementById('productGrid');
+            newProducts.forEach(product => {
+                productGrid.appendChild(product);
+            });
+            page++;
+        }
+        
+        loading = false;
+    })
+    .catch(() => {
+        loading = false;
+    });
+}
+
+// Optional: Implement infinite scroll
+window.addEventListener('scroll', function() {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 1000) {
+        loadMoreProducts();
+    }
+});
+</script>
+{{end}}
