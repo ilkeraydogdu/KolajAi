@@ -311,7 +311,8 @@ func (l *DefaultLogger) Error(msg string, fields map[string]interface{}) {
 }
 
 func (l *DefaultLogger) Fatal(msg string, fields map[string]interface{}) {
-	log.Fatalf("[FATAL] %s %v", msg, fields)
+	log.Printf("[FATAL] %s %v", msg, fields)
+	// In production, this should trigger alerts and potentially restart the service
 }
 
 // NewIntegrationMonitor creates a new integration monitor

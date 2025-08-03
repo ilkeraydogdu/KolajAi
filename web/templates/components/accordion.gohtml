@@ -15,7 +15,7 @@
          aria-labelledby="heading-{{$index}}" 
          data-bs-parent="#{{if $.id}}{{$.id}}{{else}}accordion-{{rand}}{{end}}">
       <div class="accordion-body">
-        {{$item.content | safeHTML}}
+        {{$item.content }}
       </div>
     </div>
   </div>
@@ -40,7 +40,7 @@
          aria-labelledby="flush-heading-{{$index}}" 
          data-bs-parent="#{{if $.id}}{{$.id}}{{else}}accordionFlush-{{rand}}{{end}}">
       <div class="accordion-body">
-        {{$item.content | safeHTML}}
+        {{$item.content }}
       </div>
     </div>
   </div>

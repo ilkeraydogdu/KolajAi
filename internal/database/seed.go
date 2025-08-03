@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -161,7 +162,12 @@ func CreateDefaultAdminUser(db *sql.DB) error {
 	log.Printf("No users found in database, creating default admin user...")
 
 	// Hash the default password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+	// Get admin password from environment variable
+	adminPassword := os.Getenv("ADMIN_PASSWORD")
+	if adminPassword == "" {
+		adminPassword = "admin123" // Fallback for development only
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}

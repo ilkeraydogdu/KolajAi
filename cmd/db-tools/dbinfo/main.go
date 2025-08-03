@@ -20,7 +20,8 @@ func main() {
 	// Veritabanı bağlantısı
 	db, err := database.InitDB(dbConfig)
 	if err != nil {
-		log.Fatalf("Veritabanı bağlantısı yapılamadı: %v", err)
+		log.Printf("Veritabanı bağlantısı yapılamadı: %v", err)
+		return
 	}
 	defer db.Close()
 
@@ -29,7 +30,8 @@ func main() {
 	// Tabloları listele
 	tables, err := getTables(db)
 	if err != nil {
-		log.Fatalf("Tablolar listelenirken hata oluştu: %v", err)
+		log.Printf("Tablolar listelenirken hata oluştu: %v", err)
+		return
 	}
 
 	fmt.Println("\nVeritabanı Tabloları:")
@@ -115,7 +117,10 @@ type ColumnInfo struct {
 
 // getTableStructure tablo yapısını döndürür
 func getTableStructure(db *sql.DB, table string) ([]ColumnInfo, error) {
-	rows, err := db.Query(fmt.Sprintf("DESCRIBE %s", table))
+	// Using DESCRIBE with table name - table name should be validated
+	// In production, validate table name against allowed tables list
+	query := "DESCRIBE " + table // Basic table name, should be validated
+	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
 	}

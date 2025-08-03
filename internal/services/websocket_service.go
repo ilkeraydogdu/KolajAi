@@ -88,9 +88,9 @@ type ConnectionStats struct {
 func NewWebSocketService() *WebSocketService {
 	return &WebSocketService{
 		clients:    make(map[string]*Client),
-		broadcast:  make(chan []byte, 256),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
+			broadcast:  make(chan []byte, 64), // Reduced from 256 to 64
+	register:   make(chan *Client),
+	unregister: make(chan *Client),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
@@ -120,7 +120,7 @@ func (ws *WebSocketService) HandleWebSocket(w http.ResponseWriter, r *http.Reque
 		ID:       ws.generateClientID(),
 		UserID:   userID,
 		Conn:     conn,
-		Send:     make(chan []byte, 256),
+		Send:     make(chan []byte, 64), // Reduced from 256 to 64
 		Hub:      ws,
 		Channels: make(map[string]bool),
 		Metadata: make(map[string]interface{}),

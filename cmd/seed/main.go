@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -18,7 +19,8 @@ func main() {
 	// Veritabanı bağlantısı
 	db, err := database.NewSQLiteConnection("kolajAi.db")
 	if err != nil {
-		log.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
+		log.Printf("Veritabanı bağlantısı kurulamadı: %v", err)
+		return
 	}
 	defer db.Close()
 
@@ -51,7 +53,12 @@ func main() {
 	fmt.Println("Kullanıcılar ekleniyor...")
 
 	// Admin kullanıcı
-	adminPassword, _ := bcrypt.GenerateFromPassword([]byte("admin123"), bcrypt.DefaultCost)
+	defaultAdminPassword := os.Getenv("ADMIN_PASSWORD")
+	if defaultAdminPassword == "" {
+		defaultAdminPassword = "admin123" // Fallback, production'da mutlaka env var kullanılmalı
+		fmt.Println("WARNING: ADMIN_PASSWORD environment variable not set, using default password")
+	}
+	adminPassword, _ := bcrypt.GenerateFromPassword([]byte(defaultAdminPassword), bcrypt.DefaultCost)
 	adminUser := models.User{
 		Name:      "Admin User",
 		Email:     "admin@kolajAi.com",

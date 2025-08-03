@@ -13,6 +13,8 @@ import (
 	"kolajAi/internal/database"
 	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
+	"kolajAi/internal/repository"
+	"kolajAi/internal/email"
 
 	"kolajAi/internal/services"
 	"kolajAi/internal/session"
@@ -29,24 +31,51 @@ import (
 
 )
 
+// Build-time variables (set by ldflags)
+var (
+	Version   = "dev"
+	BuildTime = "unknown"
+	GitCommit = "unknown"
+)
+
 var (
 	MainLogger *log.Logger
 )
 
 func init() {
-	// Ana uygulama için log dosyası oluştur
-	logFile, err := os.OpenFile("main_app_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Println("Ana uygulama log dosyası oluşturulamadı:", err)
+	// Environment'a göre log seviyesini ayarla
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = os.Getenv("GIN_MODE")
+	}
+	
+	if env == "production" || env == "release" {
+		// Production'da sadece stdout'a minimal log
 		MainLogger = log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
 	} else {
-		MainLogger = log.New(logFile, "[MAIN-APP-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		// Development'ta debug log dosyası
+		logFile, err := os.OpenFile("main_app_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println("Ana uygulama log dosyası oluşturulamadı:", err)
+			MainLogger = log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
+		} else {
+			MainLogger = log.New(logFile, "[MAIN-APP-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		}
 	}
 }
 
 
 
 func main() {
+	// Handle health check flag
+	if len(os.Args) > 1 && os.Args[1] == "--health-check" {
+		resp, err := http.Get("http://localhost:8081/health")
+		if err != nil || resp.StatusCode != 200 {
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
 	MainLogger.Println("KolajAI Enterprise uygulaması başlatılıyor...")
 
 	// Konfigürasyon yükle
@@ -167,7 +196,10 @@ func main() {
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
-	authService := services.NewAuthService(nil, nil) // Placeholder - implement properly
+	// UserRepository için MySQLRepository kullanıyoruz
+	userRepo := repository.NewUserRepository(mysqlRepo)
+	emailService := email.NewService() // Email service'i initialize et
+	authService := services.NewAuthService(userRepo, emailService)
 	vendorService := services.NewVendorService(repo)
 	productService := services.NewProductService(repo)
 	orderService := services.NewOrderService(repo)
@@ -318,6 +350,7 @@ func main() {
 	h := &handlers.Handler{
 		Templates:      tmpl,
 		SessionManager: legacySessionManager,
+		DB:             db,
 		TemplateContext: map[string]interface{}{
 			"AppName": "KolajAI Enterprise Marketplace",
 			"Year":    time.Now().Year(),
@@ -370,13 +403,12 @@ func main() {
 	// Router oluştur
 	appRouter := router.NewRouter(middlewareStack)
 
-	// Statik dosyalar
-	appRouter.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
-	
-	// Webpack built assets
+	// Webpack built assets (more specific routes first)
 	appRouter.Handle("/static/css/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
 	appRouter.Handle("/static/js/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
-	appRouter.Handle("/static/images/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
+	
+	// Statik dosyalar (fallback for other static assets)
+	appRouter.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
 	// SEO rotaları
 	appRouter.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
@@ -442,6 +474,9 @@ func main() {
 	// Satıcı rotaları
 	appRouter.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
 
+	// Auth API rotaları
+	appRouter.HandleFunc("/api/verify-temp-password", h.VerifyTempPassword)
+	
 	// API rotaları
 	appRouter.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -452,8 +487,9 @@ func main() {
 			"version": "2.0.0",
 		})
 	})
-	appRouter.HandleFunc("/api/search", ecommerceHandler.APISearchProducts)
-	appRouter.HandleFunc("/api/cart/update", ecommerceHandler.APIUpdateCart)
+	// Legacy API endpoints (deprecated - use /api/v1/ instead)
+	appRouter.HandleFunc("/api/legacy/search", ecommerceHandler.APISearchProducts)
+	appRouter.HandleFunc("/api/legacy/cart/update", ecommerceHandler.APIUpdateCart)
 
 	// AI rotaları
 	appRouter.HandleFunc("/ai/dashboard", aiHandler.GetAIDashboard)

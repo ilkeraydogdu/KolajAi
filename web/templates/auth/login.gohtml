@@ -5,6 +5,7 @@
 {{define "auth_content"}}
 <div class="form-body mt-4">
   <form class="row g-3" method="POST" action="/login" id="loginForm">
+    {{if .CSRFToken}}<input type="hidden" name="csrf_token" value="{{.CSRFToken}}">{{end}}
     <div class="col-12">
       <label for="inputEmailAddress" class="form-label">E-posta</label>
       <input type="email" class="form-control" id="inputEmailAddress" name="email" placeholder="E-posta adresiniz">

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -26,13 +27,24 @@ var (
 )
 
 func init() {
-	// Detaylı log için logger oluştur
-	logFile, err := os.OpenFile("auth_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Println("Log dosyası oluşturulamadı:", err)
-		Logger = log.New(os.Stdout, "[AUTH-DEBUG] ", log.LstdFlags)
+	// Environment'a göre log seviyesini ayarla
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = os.Getenv("GIN_MODE")
+	}
+	
+	if env == "production" || env == "release" {
+		// Production'da sadece stdout'a minimal log
+		Logger = log.New(os.Stdout, "[HANDLER] ", log.LstdFlags)
 	} else {
-		Logger = log.New(logFile, "[AUTH-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		// Development'ta debug log dosyası
+		logFile, err := os.OpenFile("auth_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println("Log dosyası oluşturulamadı:", err)
+			Logger = log.New(os.Stdout, "[AUTH-DEBUG] ", log.LstdFlags)
+		} else {
+			Logger = log.New(logFile, "[AUTH-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		}
 	}
 }
 
@@ -188,6 +200,7 @@ type Handler struct {
 	Templates       *template.Template
 	SessionManager  *SessionManager
 	TemplateContext map[string]interface{}
+	DB              *sql.DB
 }
 
 // WithUser kullanıcı bilgisini context'e ekler

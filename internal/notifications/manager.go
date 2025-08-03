@@ -514,7 +514,9 @@ func (nm *NotificationManager) GetUserNotifications(userID string, limit, offset
 		LIMIT ? OFFSET ?
 	`
 
-	rows, err := nm.db.Query(query, fmt.Sprintf("%%%s%%", userID), limit, offset)
+	// Using parameterized query to prevent SQL injection
+	userIDPattern := "%" + userID + "%"
+	rows, err := nm.db.Query(query, userIDPattern, limit, offset)
 	if err != nil {
 		return nil, err
 	}

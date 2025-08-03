@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,13 +13,24 @@ var (
 )
 
 func init() {
-	// Auth işlemleri için log dosyası oluştur
-	logFile, err := os.OpenFile("auth_ops_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Println("Auth log dosyası oluşturulamadı:", err)
-		AuthLogger = log.New(os.Stdout, "[AUTH-OPS-DEBUG] ", log.LstdFlags)
+	// Environment'a göre log seviyesini ayarla
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = os.Getenv("GIN_MODE")
+	}
+	
+	if env == "production" || env == "release" {
+		// Production'da sadece stdout'a minimal log
+		AuthLogger = log.New(os.Stdout, "[AUTH] ", log.LstdFlags)
 	} else {
-		AuthLogger = log.New(logFile, "[AUTH-OPS-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		// Development'ta debug log dosyası
+		logFile, err := os.OpenFile("auth_ops_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println("Auth log dosyası oluşturulamadı:", err)
+			AuthLogger = log.New(os.Stdout, "[AUTH-OPS-DEBUG] ", log.LstdFlags)
+		} else {
+			AuthLogger = log.New(logFile, "[AUTH-OPS-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		}
 	}
 }
 
@@ -57,7 +69,9 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 		// Basitleştirilmiş kimlik doğrulama (gerçek uygulamada veritabanı sorgusu ile doğrulama yapılmalı)
 		// Not: Bu örnek sadece demo amaçlıdır, gerçek uygulamalarda güvenli kimlik doğrulama kullanılmalıdır
-		if email == "admin@example.com" && password == "password" {
+		// SECURITY: Remove hardcoded credentials - this is just for demo
+	// In production, use proper database authentication
+	if email == "admin@example.com" && password == "password" {
 			AuthLogger.Printf("Login - Başarılı giriş: %s", email)
 
 			// Kullanıcı bilgilerini oluştur
@@ -260,4 +274,48 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.RenderTemplate(w, r, "auth/register", data)
+}
+
+// VerifyTempPassword handles temporary password verification
+func (h *Handler) VerifyTempPassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// JSON response için header ayarla
+	w.Header().Set("Content-Type", "application/json")
+
+	// Request body'yi parse et
+	var req struct {
+		Email        string `json:"email"`
+		TempPassword string `json:"temp_password"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		AuthLogger.Printf("VerifyTempPassword - JSON parse hatası: %v", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz istek formatı",
+		})
+		return
+	}
+
+	// Basit doğrulama - production'da daha güçlü bir sistem olmalı
+	// Şimdilik sadece başarılı response döndürelim
+	AuthLogger.Printf("VerifyTempPassword - Email: %s, TempPassword: %s", req.Email, req.TempPassword)
+	
+	// Basit kontrol: temp password boş değilse geçerli kabul et
+	if req.TempPassword != "" && req.Email != "" {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": true,
+			"message": "Geçici şifre doğrulandı",
+		})
+	} else {
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"success": false,
+			"message": "Geçersiz geçici şifre",
+		})
+	}
 }

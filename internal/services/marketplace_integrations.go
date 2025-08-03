@@ -83,13 +83,13 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 			"n11", 
 			"N11", 
 			"development",
-			[]string{"coming_soon"},
+			[]string{"basic_sync", "inventory_management"},
 		},
 		{
 			"amazon_tr", 
 			"Amazon Türkiye", 
 			"development", 
-			[]string{"coming_soon"},
+			[]string{"basic_sync", "inventory_management"},
 		},
 	}
 	

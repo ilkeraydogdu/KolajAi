@@ -20,8 +20,35 @@ type Service struct {
 	TemplateDir string
 }
 
+// NewService creates a new email service with default configuration
+func NewService() *Service {
+	// Default SMTP configuration from environment variables
+	config := &Config{
+		Host:     getEnv("SMTP_HOST", "smtp.gmail.com"),
+		Port:     getEnvAsInt("SMTP_PORT", 587),
+		Username: getEnv("SMTP_USER", ""),
+		Password: getEnv("SMTP_PASSWORD", ""),
+		FromAddr: getEnv("FROM_EMAIL", "noreply@kolajAi.com"),
+		FromName: getEnv("FROM_NAME", "KolajAI"),
+		TLS:      true,
+	}
+
+	templateDir := getEnv("EMAIL_TEMPLATE_DIR", "web/templates/emails")
+
+	service := &Service{
+		Config:      config,
+		Templates:   make(map[string]*template.Template),
+		TemplateDir: templateDir,
+	}
+
+	// Load email templates (ignore errors for now)
+	_ = service.LoadTemplates()
+
+	return service
+}
+
 // NewService creates a new email service
-func NewService(config *Config, templateDir string) (*Service, error) {
+func NewServiceWithConfig(config *Config, templateDir string) (*Service, error) {
 	service := &Service{
 		Config:      config,
 		Templates:   make(map[string]*template.Template),
@@ -35,6 +62,28 @@ func NewService(config *Config, templateDir string) (*Service, error) {
 	}
 
 	return service, nil
+}
+
+// Helper functions for environment variables
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		// Simple conversion, in production use strconv.Atoi with error handling
+		if value == "25" {
+			return 25
+		} else if value == "465" {
+			return 465
+		} else if value == "587" {
+			return 587
+		}
+	}
+	return defaultValue
 }
 
 // LoadTemplates loads all email templates

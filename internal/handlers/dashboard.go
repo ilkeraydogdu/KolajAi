@@ -11,13 +11,24 @@ var (
 )
 
 func init() {
-	// Dashboard için log dosyası oluştur
-	logFile, err := os.OpenFile("dashboard_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Println("Dashboard log dosyası oluşturulamadı:", err)
-		DashboardLogger = log.New(os.Stdout, "[DASHBOARD-DEBUG] ", log.LstdFlags)
+	// Environment'a göre log seviyesini ayarla
+	env := os.Getenv("APP_ENV")
+	if env == "" {
+		env = os.Getenv("GIN_MODE")
+	}
+	
+	if env == "production" || env == "release" {
+		// Production'da sadece stdout'a minimal log
+		DashboardLogger = log.New(os.Stdout, "[DASHBOARD] ", log.LstdFlags)
 	} else {
-		DashboardLogger = log.New(logFile, "[DASHBOARD-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		// Development'ta debug log dosyası
+		logFile, err := os.OpenFile("dashboard_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		if err != nil {
+			log.Println("Dashboard log dosyası oluşturulamadı:", err)
+			DashboardLogger = log.New(os.Stdout, "[DASHBOARD-DEBUG] ", log.LstdFlags)
+		} else {
+			DashboardLogger = log.New(logFile, "[DASHBOARD-DEBUG] ", log.LstdFlags|log.Lshortfile)
+		}
 	}
 }
 
