@@ -171,7 +171,7 @@ func main() {
 
 	// Notification Manager
 	MainLogger.Println("Bildirim sistemi başlatılıyor...")
-	notificationManager := notifications.NewNotificationManager(db, notifications.NotificationConfig{
+	_ = notifications.NewNotificationManager(db, notifications.NotificationConfig{
 		DefaultChannel:     "email",
 		RetryAttempts:      3,
 		RetryDelay:         5 * time.Minute,
@@ -194,7 +194,7 @@ func main() {
 
 	// Reporting Manager
 	MainLogger.Println("Raporlama sistemi başlatılıyor...")
-	reportManager := reporting.NewReportManager(db)
+	_ = reporting.NewReportManager(db)
 
 	// Test Manager - Commented out as it's not needed in production
 	// MainLogger.Println("Test sistemi başlatılıyor...")
@@ -202,6 +202,7 @@ func main() {
 	// Repository oluştur
 	mysqlRepo := database.NewMySQLRepository(db)
 	repo := database.NewRepositoryWrapper(mysqlRepo)
+	baseRepo := repository.NewBaseRepository(mysqlRepo)
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
@@ -209,6 +210,8 @@ func main() {
 	userRepo := repository.NewUserRepository(mysqlRepo)
 	emailService := email.NewService() // Email service'i initialize et
 	authService := services.NewAuthService(userRepo, emailService)
+	userService := services.NewUserService(baseRepo, db, authService)
+	addressService := services.NewAddressService(repo)
 	vendorService := services.NewVendorService(repo)
 	productService := services.NewProductService(repo)
 	orderService := services.NewOrderService(repo)
@@ -412,7 +415,7 @@ func main() {
 	}
 
 	// E-ticaret handler'ı oluştur
-	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
+	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService, userService, addressService)
 
 	// Admin handler'ı oluştur
 	adminHandler := handlers.NewAdminHandler(h)

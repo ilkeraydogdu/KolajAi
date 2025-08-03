@@ -338,4 +338,14 @@ const (
 	OrderStatusRefunded   = "refunded"
 )
 
+// OrderStats represents order statistics
+type OrderStats struct {
+	TotalOrders     int     `json:"total_orders"`
+	PendingOrders   int     `json:"pending_orders"`
+	ConfirmedOrders int     `json:"confirmed_orders"`
+	DeliveredOrders int     `json:"delivered_orders"`
+	TotalRevenue    float64 `json:"total_revenue"`
+	AverageValue    float64 `json:"average_value"`
+}
+
 // Note: PaymentStatus constants moved to payment.go model

@@ -228,6 +228,32 @@ func (s *OrderService) GetOrderStats() (map[string]interface{}, error) {
 	return stats, nil
 }
 
+// GetUserOrderStats returns order statistics for a specific user
+func (s *OrderService) GetUserOrderStats(userID int) (*models.OrderStats, error) {
+	stats := &models.OrderStats{}
+
+	// This is a placeholder implementation
+	// You would implement actual database queries here
+	stats.TotalOrders = 0
+	stats.PendingOrders = 0
+	stats.ConfirmedOrders = 0
+	stats.DeliveredOrders = 0
+	stats.TotalRevenue = 0.0
+	stats.AverageValue = 0.0
+
+	return stats, nil
+}
+
+// GetUserOrders retrieves orders for a specific user
+func (s *OrderService) GetUserOrders(userID, page, limit int, status, dateRange string) ([]*models.Order, int, error) {
+	// This is a placeholder implementation
+	// You would implement actual database queries here with filtering by status and dateRange
+	orders := []*models.Order{}
+	totalCount := 0
+	
+	return orders, totalCount, nil
+}
+
 // GetVendorOrders retrieves orders for a vendor
 func (s *OrderService) GetVendorOrders(vendorID int, limit, offset int) ([]models.OrderItem, error) {
 	var items []models.OrderItem
