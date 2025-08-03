@@ -38,7 +38,7 @@
    * @param {object} options - Ek ayarlar
    */
   function sendAjaxRequest(url, method, data, successCallback, errorCallback, options = {}) {
-    console.log("Sending AJAX request to:", url, "with data:", data);
+    window.logger && window.logger.debug("Sending AJAX request to:", url, "with data:", data);
     
     // Varsayılan ayarlar
     const defaultOptions = {
@@ -73,7 +73,7 @@
       crossDomain: ajaxOptions.crossDomain,
       xhrFields: ajaxOptions.xhrFields,
       success: function(response) {
-        console.log("AJAX response:", response);
+        window.logger && window.logger.debug("AJAX response:", response);
         if (successCallback) {
           successCallback(response);
         }

@@ -17,6 +17,9 @@ module.exports = {
     auth: './web/static/js/auth.js',
     utils: './web/static/js/utils.js',
     services: './web/static/js/services.js',
+    eventHandlers: './web/static/js/event-handlers.js',
+    eventManager: './web/static/js/event-manager.js',
+    logger: './web/static/js/logger.js',
     vendor: ['lodash', 'axios', 'chart.js']
   },
   

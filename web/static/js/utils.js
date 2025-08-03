@@ -23,14 +23,32 @@ function showToast(message, type = 'info', duration = 5000) {
   toast.setAttribute('aria-live', 'assertive');
   toast.setAttribute('aria-atomic', 'true');
 
-  toast.innerHTML = `
-    <div class="d-flex">
-      <div class="toast-body">
-        ${getToastIcon(type)} ${message}
-      </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-    </div>
-  `;
+  // Create safe DOM structure to prevent XSS
+  const toastContent = document.createElement('div');
+  toastContent.className = 'd-flex';
+  
+  const toastBody = document.createElement('div');
+  toastBody.className = 'toast-body';
+  
+  // Safely add icon (this comes from our function, not user input)
+  const iconSpan = document.createElement('span');
+  iconSpan.innerHTML = getToastIcon(type);
+  toastBody.appendChild(iconSpan);
+  
+  // Safely add message (prevent XSS by using textContent)
+  const messageSpan = document.createElement('span');
+  messageSpan.textContent = ' ' + message;
+  toastBody.appendChild(messageSpan);
+  
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'btn-close btn-close-white me-2 m-auto';
+  closeButton.setAttribute('data-bs-dismiss', 'toast');
+  closeButton.setAttribute('aria-label', 'Close');
+  
+  toastContent.appendChild(toastBody);
+  toastContent.appendChild(closeButton);
+  toast.appendChild(toastContent);
 
   toastContainer.appendChild(toast);
 
@@ -201,20 +219,59 @@ function showModal(title, content, options = {}) {
   const size = options.size || '';
   const sizeClass = size ? `modal-${size}` : '';
 
-  modal.innerHTML = `
-    <div class="modal-dialog ${sizeClass}">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">${title}</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          ${content}
-        </div>
-        ${options.footer ? `<div class="modal-footer">${options.footer}</div>` : ''}
-      </div>
-    </div>
-  `;
+  // Create safe modal structure to prevent XSS
+  const modalDialog = document.createElement('div');
+  modalDialog.className = `modal-dialog ${sizeClass}`;
+  
+  const modalContent = document.createElement('div');
+  modalContent.className = 'modal-content';
+  
+  // Modal header
+  const modalHeader = document.createElement('div');
+  modalHeader.className = 'modal-header';
+  
+  const modalTitle = document.createElement('h5');
+  modalTitle.className = 'modal-title';
+  modalTitle.textContent = title; // Safe text content
+  
+  const closeButton = document.createElement('button');
+  closeButton.type = 'button';
+  closeButton.className = 'btn-close';
+  closeButton.setAttribute('data-bs-dismiss', 'modal');
+  closeButton.setAttribute('aria-label', 'Close');
+  
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(closeButton);
+  
+  // Modal body
+  const modalBody = document.createElement('div');
+  modalBody.className = 'modal-body';
+  
+  // If content is a string, use textContent for safety
+  if (typeof content === 'string') {
+    modalBody.textContent = content;
+  } else {
+    // If content is a DOM element, append it safely
+    modalBody.appendChild(content);
+  }
+  
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  
+  // Modal footer if provided
+  if (options.footer) {
+    const modalFooter = document.createElement('div');
+    modalFooter.className = 'modal-footer';
+    if (typeof options.footer === 'string') {
+      modalFooter.textContent = options.footer;
+    } else {
+      modalFooter.appendChild(options.footer);
+    }
+    modalContent.appendChild(modalFooter);
+  }
+  
+  modalDialog.appendChild(modalContent);
+  modal.appendChild(modalDialog);
 
   document.body.appendChild(modal);
 

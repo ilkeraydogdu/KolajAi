@@ -441,10 +441,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="generated-image-item">
                     <img src="${imageUrl}" class="img-fluid rounded" alt="Generated Image">
                     <div class="mt-2">
-                        <button class="btn btn-sm btn-success" onclick="useGeneratedImage('${imageUrl}')">
+                        <button class="btn btn-sm btn-success" data-action="use-image" data-url="${imageUrl}">
                             <i class="bx bx-check"></i> Kullan
                         </button>
-                        <button class="btn btn-sm btn-primary" onclick="downloadImage('${imageUrl}')">
+                        <button class="btn btn-sm btn-primary" data-action="download-image" data-url="${imageUrl}">
                             <i class="bx bx-download"></i> İndir
                         </button>
                     </div>
@@ -560,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <img src="${template.thumbnail}" class="img-fluid rounded mb-3" alt="Template Preview">
                 <h6>${template.name}</h6>
                 <p>Tür: ${template.type}</p>
-                <button class="btn btn-success" onclick="useTemplate(${template.id})">
+                <button class="btn btn-success" data-action="use-template" data-template-id="${template.id}">
                     <i class="bx bx-check"></i> Şablonu Kullan
                 </button>
             </div>

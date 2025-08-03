@@ -22,7 +22,7 @@
    * Modülü başlat
    */
   function init() {
-    console.log('Login module initialized');
+    window.logger && window.logger.debug('Login module initialized');
     
     // DOM elementlerini seç
     loginForm = $('#loginForm');
@@ -114,7 +114,7 @@
    * @param {object} response - Sunucu yanıtı
    */
   function handleLoginSuccess(response) {
-    console.log('Login successful:', response);
+    window.logger && window.logger.debug('Login successful:', response);
     
     // Butonun durumunu geri al
     if (auth.core) {

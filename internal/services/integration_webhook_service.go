@@ -151,8 +151,8 @@ func (ws *IntegrationWebhookService) HandleWebhook(w http.ResponseWriter, r *htt
 		return
 	}
 	
-	// Process webhook asynchronously
-	go ws.processWebhookAsync(event, handler)
+		// Process webhook asynchronously
+	go ws.processWebhookAsync(r.Context(), event, handler)
 	
 	// Return success response
 	w.WriteHeader(http.StatusOK)
@@ -160,8 +160,11 @@ func (ws *IntegrationWebhookService) HandleWebhook(w http.ResponseWriter, r *htt
 }
 
 // processWebhookAsync processes webhook events asynchronously
-func (ws *IntegrationWebhookService) processWebhookAsync(event *WebhookEvent, handler WebhookHandler) {
-	ctx := context.Background()
+func (ws *IntegrationWebhookService) processWebhookAsync(ctx context.Context, event *WebhookEvent, handler WebhookHandler) {
+	// Use provided context instead of creating new background context
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	
 	for attempt := 0; attempt <= event.MaxRetries; attempt++ {
 		event.RetryCount = attempt
