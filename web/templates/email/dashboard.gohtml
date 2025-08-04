@@ -1,0 +1,423 @@
+{{define "email/dashboard"}}
+{{template "layout/base" .}}
+{{end}}
+
+{{define "content"}}
+    <div class="email-container">
+        <!-- Email Header -->
+        <header class="email-header">
+            <div class="container">
+                <div class="email-nav">
+                    <div class="email-logo">
+                        <h2>📧 E-posta Yönetimi</h2>
+                    </div>
+                    <nav class="email-menu">
+                        <a href="/email/dashboard" class="active">Dashboard</a>
+                        <a href="/email/campaigns">Kampanyalar</a>
+                        <a href="/email/templates">Şablonlar</a>
+                        <a href="/email/settings">Ayarlar</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="email-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="refreshEmailStats()">
+                            <i class="icon-refresh"></i> Yenile
+                        </button>
+                        <button class="btn btn-primary" onclick="showCreateCampaignModal()">
+                            <i class="icon-send"></i> Kampanya Oluştur
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Email Stats -->
+                <div class="stats-row">
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">📧</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.total_sent}}</div>
+                            <div class="stat-label">Toplam Gönderilen</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.delivered}}</div>
+                            <div class="stat-label">Teslim Edilen</div>
+                            <div class="stat-percentage">{{.Stats.delivery_rate}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">👁️</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.opened}}</div>
+                            <div class="stat-label">Açılan</div>
+                            <div class="stat-percentage">{{.Stats.open_rate}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">🖱️</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.clicked}}</div>
+                            <div class="stat-label">Tıklanan</div>
+                            <div class="stat-percentage">{{.Stats.click_rate}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.bounced}}</div>
+                            <div class="stat-label">Geri Dönen</div>
+                            <div class="stat-percentage">{{.Stats.bounce_rate}}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Recent Campaigns -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📊 Son Kampanyalar</h3>
+                            <a href="/email/campaigns" class="view-all">Tümünü Gör</a>
+                        </div>
+                        <div class="card-content">
+                            {{range .Campaigns}}
+                            <div class="campaign-item">
+                                <div class="campaign-icon">
+                                    {{if eq .status "completed"}}✅{{else if eq .status "sending"}}⏳{{else}}📝{{end}}
+                                </div>
+                                <div class="campaign-info">
+                                    <div class="campaign-name">{{.name}}</div>
+                                    <div class="campaign-subject">{{.subject}}</div>
+                                    <div class="campaign-meta">
+                                        <span class="campaign-sent">{{.sent}} gönderildi</span>
+                                        <span class="campaign-opened">{{.opened}} açıldı</span>
+                                        <span class="campaign-time">{{.sent_at.Format "2 Jan 15:04"}}</span>
+                                    </div>
+                                </div>
+                                <div class="campaign-stats">
+                                    <div class="campaign-status status-{{.status}}">{{.status}}</div>
+                                    <div class="campaign-rate">{{.open_rate}}% açılma</div>
+                                </div>
+                            </div>
+                            {{else}}
+                            <div class="no-campaigns">
+                                <p>📭 Henüz kampanya gönderilmedi</p>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Email Performance Chart -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>📈 E-posta Performansı</h3>
+                            <div class="chart-controls">
+                                <select onchange="updateEmailChart(this.value)">
+                                    <option value="week">Son 7 Gün</option>
+                                    <option value="month">Son 30 Gün</option>
+                                    <option value="quarter">Son 3 Ay</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="emailPerformanceChart" width="400" height="200"></canvas>
+                            </div>
+                            <div class="performance-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Ortalama Açılma Oranı</span>
+                                    <span class="metric-value">{{.Stats.open_rate}}%</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Ortalama Tıklama Oranı</span>
+                                    <span class="metric-value">{{.Stats.click_rate}}%</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Teslim Başarısı</span>
+                                    <span class="metric-value">{{.Stats.delivery_rate}}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Templates -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📋 Popüler Şablonlar</h3>
+                            <a href="/email/templates" class="view-all">Tümünü Gör</a>
+                        </div>
+                        <div class="card-content">
+                            {{range .Templates}}
+                            <div class="template-item">
+                                <div class="template-icon">
+                                    {{if eq .type "welcome"}}👋{{else if eq .type "transactional"}}📧{{else if eq .type "promotional"}}🎉{{else}}📄{{end}}
+                                </div>
+                                <div class="template-info">
+                                    <div class="template-name">{{.name}}</div>
+                                    <div class="template-type">{{.type}}</div>
+                                </div>
+                                <div class="template-stats">
+                                    <div class="usage-count">{{.usage_count}} kullanım</div>
+                                    <div class="last-used">{{if .last_used}}{{.last_used.Format "2 Jan"}}{{else}}Hiç{{end}}</div>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Email Health -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🏥 E-posta Sağlığı</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="health-metrics">
+                                <div class="health-item">
+                                    <div class="health-label">Gönderim Sağlığı</div>
+                                    <div class="health-bar">
+                                        <div class="health-progress" style="width: {{.Stats.delivery_rate}}%"></div>
+                                    </div>
+                                    <div class="health-value">{{.Stats.delivery_rate}}%</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">Etkileşim Oranı</div>
+                                    <div class="health-bar">
+                                        <div class="health-progress" style="width: {{.Stats.click_rate}}%"></div>
+                                    </div>
+                                    <div class="health-value">{{.Stats.click_rate}}%</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">Liste Kalitesi</div>
+                                    <div class="health-bar">
+                                        <div class="health-progress" style="width: 85%"></div>
+                                    </div>
+                                    <div class="health-value">85%</div>
+                                </div>
+                                <div class="health-item">
+                                    <div class="health-label">Spam Skoru</div>
+                                    <div class="health-bar">
+                                        <div class="health-progress danger" style="width: 15%"></div>
+                                    </div>
+                                    <div class="health-value">Düşük</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>⚡ Hızlı İşlemler</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="quick-actions">
+                                <button class="action-btn" onclick="showCreateCampaignModal()">
+                                    <div class="action-icon">📧</div>
+                                    <div class="action-text">Kampanya Oluştur</div>
+                                </button>
+                                <button class="action-btn" onclick="createTemplate()">
+                                    <div class="action-icon">📝</div>
+                                    <div class="action-text">Şablon Oluştur</div>
+                                </button>
+                                <button class="action-btn" onclick="viewAnalytics()">
+                                    <div class="action-icon">📊</div>
+                                    <div class="action-text">Analitik Rapor</div>
+                                </button>
+                                <button class="action-btn" onclick="manageSubscribers()">
+                                    <div class="action-icon">👥</div>
+                                    <div class="action-text">Abone Yönetimi</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🕐 Son Aktiviteler</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="activity-feed">
+                                <div class="activity-item">
+                                    <div class="activity-icon">📧</div>
+                                    <div class="activity-text">
+                                        <strong>Yaz İndirimi</strong> kampanyası gönderildi
+                                    </div>
+                                    <div class="activity-time">2 saat önce</div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">📝</div>
+                                    <div class="activity-text">
+                                        <strong>Hoş Geldin</strong> şablonu güncellendi
+                                    </div>
+                                    <div class="activity-time">4 saat önce</div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">👥</div>
+                                    <div class="activity-text">
+                                        <strong>25 yeni abone</strong> eklendi
+                                    </div>
+                                    <div class="activity-time">6 saat önce</div>
+                                </div>
+                                <div class="activity-item">
+                                    <div class="activity-icon">⚙️</div>
+                                    <div class="activity-text">
+                                        <strong>SMTP ayarları</strong> güncellendi
+                                    </div>
+                                    <div class="activity-time">1 gün önce</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Campaign Modal -->
+    <div id="createCampaignModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Yeni Kampanya Oluştur</h3>
+                <button class="modal-close" onclick="closeModal('createCampaignModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createCampaignForm">
+                    <div class="form-group">
+                        <label>Kampanya Adı</label>
+                        <input type="text" name="name" required placeholder="Örn: Yaz İndirimi 2024">
+                    </div>
+                    <div class="form-group">
+                        <label>Konu</label>
+                        <input type="text" name="subject" required placeholder="E-posta konusu">
+                    </div>
+                    <div class="form-group">
+                        <label>Şablon</label>
+                        <select name="template_id">
+                            <option value="">Şablon Seç</option>
+                            {{range .Templates}}
+                            <option value="{{.id}}">{{.name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Alıcı Listesi</label>
+                        <select name="recipients" required>
+                            <option value="all">Tüm Aboneler</option>
+                            <option value="active">Aktif Aboneler</option>
+                            <option value="segment">Belirli Segment</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="schedule"> Zamanla
+                        </label>
+                        <input type="datetime-local" name="scheduled_at" style="display:none;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createCampaignModal')">İptal</button>
+                <button class="btn btn-primary" onclick="createCampaign()">Oluştur</button>
+            </div>
+        </div>
+    </div>
+
+{{end}}
+
+{{define "page_js"}}
+<script>
+        function refreshEmailStats() {
+            location.reload();
+        }
+
+        function showCreateCampaignModal() {
+            document.getElementById('createCampaignModal').style.display = 'block';
+        }
+
+        function createCampaign() {
+            const form = document.getElementById('createCampaignForm');
+            const formData = new FormData(form);
+            
+            const data = {
+                name: formData.get('name'),
+                subject: formData.get('subject'),
+                template_id: formData.get('template_id'),
+                recipients: formData.get('recipients'),
+                scheduled_at: formData.get('schedule') ? formData.get('scheduled_at') : null
+            };
+
+            fetch('/api/email/send-campaign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Kampanya başarıyla oluşturuldu!');
+                    closeModal('createCampaignModal');
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Kampanya oluşturulurken hata oluştu: ' + error);
+            });
+        }
+
+        function createTemplate() {
+            window.location.href = '/email/templates?action=create';
+        }
+
+        function viewAnalytics() {
+            alert('E-posta analitik raporu özelliği yakında eklenecek.');
+        }
+
+        function manageSubscribers() {
+            alert('Abone yönetimi özelliği yakında eklenecek.');
+        }
+
+        function updateEmailChart(period) {
+            console.log('Updating email chart for period:', period);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Show/hide schedule input
+        document.addEventListener('DOMContentLoaded', function() {
+            const scheduleCheckbox = document.querySelector('input[name="schedule"]');
+            const scheduleInput = document.querySelector('input[name="scheduled_at"]');
+            
+            if (scheduleCheckbox) {
+                scheduleCheckbox.addEventListener('change', function() {
+                    scheduleInput.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+</script>
+{{end}}

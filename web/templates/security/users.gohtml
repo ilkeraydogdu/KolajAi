@@ -1,0 +1,282 @@
+{{define "security/users.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="security-container">
+        <header class="security-header">
+            <div class="container">
+                <div class="security-nav">
+                    <div class="security-logo">
+                        <h2>👥 Kullanıcı Güvenliği</h2>
+                    </div>
+                    <nav class="security-menu">
+                        <a href="/security/dashboard">Dashboard</a>
+                        <a href="/security/users" class="active">Kullanıcılar</a>
+                        <a href="/security/threats">Tehditler</a>
+                        <a href="/security/settings">Ayarlar</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <main class="security-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="refreshUsers()">
+                            <i class="icon-refresh"></i> Yenile
+                        </button>
+                        <button class="btn btn-primary" onclick="showAddUserModal()">
+                            <i class="icon-plus"></i> Kullanıcı Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Stats -->
+                <div class="stats-row">
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.total_users}}</div>
+                            <div class="stat-label">Toplam Kullanıcı</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">🟢</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.active_users}}</div>
+                            <div class="stat-label">Aktif Kullanıcı</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">🔒</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.locked_users}}</div>
+                            <div class="stat-label">Kilitli Hesap</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.suspicious_users}}</div>
+                            <div class="stat-label">Şüpheli Aktivite</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>👥 Kullanıcı Listesi</h3>
+                        <div class="card-actions">
+                            <input type="text" placeholder="Kullanıcı ara..." onkeyup="searchUsers(this.value)">
+                            <select onchange="filterUsers(this.value)">
+                                <option value="all">Tüm Durumlar</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Pasif</option>
+                                <option value="locked">Kilitli</option>
+                                <option value="suspended">Askıya Alınmış</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Kullanıcı</th>
+                                        <th>E-posta</th>
+                                        <th>Rol</th>
+                                        <th>Son Giriş</th>
+                                        <th>2FA</th>
+                                        <th>Durum</th>
+                                        <th>Risk Skoru</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {{range .Users}}
+                                    <tr data-user-id="{{.id}}">
+                                        <td>
+                                            <div class="user-info">
+                                                <div class="user-avatar">
+                                                    <img src="{{.avatar}}" alt="{{.name}}" width="32" height="32">
+                                                </div>
+                                                <div class="user-details">
+                                                    <div class="user-name">{{.name}}</div>
+                                                    <div class="user-id">#{{.id}}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{.email}}</td>
+                                        <td>
+                                            <span class="role-badge role-{{.role}}">{{.role}}</span>
+                                        </td>
+                                        <td>
+                                            {{if .last_login}}
+                                                {{.last_login.Format "2 Jan 15:04"}}
+                                            {{else}}
+                                                Hiç giriş yapmamış
+                                            {{end}}
+                                        </td>
+                                        <td>
+                                            {{if .two_factor_enabled}}
+                                                <span class="badge badge-success">✅ Aktif</span>
+                                            {{else}}
+                                                <span class="badge badge-warning">❌ Pasif</span>
+                                            {{end}}
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-{{.status}}">
+                                                {{if eq .status "active"}}🟢 Aktif{{else if eq .status "locked"}}🔒 Kilitli{{else if eq .status "suspended"}}⏸️ Askıda{{else}}⚫ Pasif{{end}}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="risk-score risk-{{.risk_level}}">
+                                                <div class="risk-value">{{.risk_score}}</div>
+                                                <div class="risk-label">{{.risk_level}}</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-sm btn-primary" onclick="viewUser('{{.id}}')">
+                                                    <i class="icon-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-secondary" onclick="editUser('{{.id}}')">
+                                                    <i class="icon-edit"></i>
+                                                </button>
+                                                {{if eq .status "active"}}
+                                                <button class="btn btn-sm btn-warning" onclick="lockUser('{{.id}}')">
+                                                    <i class="icon-lock"></i>
+                                                </button>
+                                                {{else if eq .status "locked"}}
+                                                <button class="btn btn-sm btn-success" onclick="unlockUser('{{.id}}')">
+                                                    <i class="icon-unlock"></i>
+                                                </button>
+                                                {{end}}
+                                                <button class="btn btn-sm btn-info" onclick="resetPassword('{{.id}}')">
+                                                    <i class="icon-key"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-danger" onclick="deleteUser('{{.id}}')">
+                                                    <i class="icon-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {{end}}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/web/static/assets/js/jquery.min.js"></script>
+    <script src="/web/static/assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function refreshUsers() {
+            location.reload();
+        }
+
+        function showAddUserModal() {
+            alert('Kullanıcı ekleme özelliği yakında eklenecek.');
+        }
+
+        function searchUsers(query) {
+            console.log('Searching users:', query);
+        }
+
+        function filterUsers(status) {
+            console.log('Filtering users by status:', status);
+        }
+
+        function viewUser(id) {
+            window.location.href = '/security/users/' + id;
+        }
+
+        function editUser(id) {
+            window.location.href = '/security/users/' + id + '/edit';
+        }
+
+        function lockUser(id) {
+            if (confirm('Bu kullanıcıyı kilitlemek istediğinizden emin misiniz?')) {
+                fetch('/api/security/lock-user/' + id, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Kullanıcı kilitlendi!');
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function unlockUser(id) {
+            if (confirm('Bu kullanıcının kilidini açmak istediğinizden emin misiniz?')) {
+                fetch('/api/security/unlock-user/' + id, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Kullanıcının kilidi açıldı!');
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function resetPassword(id) {
+            if (confirm('Bu kullanıcının şifresini sıfırlamak istediğinizden emin misiniz?')) {
+                fetch('/api/security/reset-password/' + id, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Şifre sıfırlama bağlantısı kullanıcıya gönderildi!');
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function deleteUser(id) {
+            if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                fetch('/api/security/delete-user/' + id, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Kullanıcı silindi!');
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+{{end}}

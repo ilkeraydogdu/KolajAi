@@ -1,0 +1,346 @@
+{{define "analytics/customers.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="analytics-container">
+        <!-- Header -->
+        <header class="analytics-header">
+            <div class="container">
+                <div class="analytics-nav">
+                    <div class="analytics-logo">
+                        <h2>👥 Müşteri Analizi</h2>
+                    </div>
+                    <nav class="analytics-menu">
+                        <a href="/analytics/dashboard">Dashboard</a>
+                        <a href="/analytics/revenue">Gelir Analizi</a>
+                        <a href="/analytics/customers" class="active">Müşteri Analizi</a>
+                        <a href="/analytics/products">Ürün Analizi</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="analytics-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="refreshCustomerData()">
+                            <i class="icon-refresh"></i> Yenile
+                        </button>
+                        <button class="btn btn-primary" onclick="exportCustomerReport()">
+                            <i class="icon-download"></i> Rapor İndir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Customer Overview -->
+                <div class="stats-row">
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Customers.total}}</div>
+                            <div class="stat-label">Toplam Müşteri</div>
+                            <div class="stat-percentage">+{{.Customers.growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">✨</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Customers.new_this_month}}</div>
+                            <div class="stat-label">Bu Ay Yeni</div>
+                            <div class="stat-percentage">+{{.Customers.new_growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">🔄</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Customers.returning}}</div>
+                            <div class="stat-label">Geri Dönen</div>
+                            <div class="stat-percentage">{{.Customers.retention_rate}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-number">₺{{.Customers.avg_ltv}}</div>
+                            <div class="stat-label">Ortalama LTV</div>
+                            <div class="stat-text">Yaşam değeri</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Customer Acquisition -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>📈 Müşteri Kazanımı</h3>
+                            <div class="chart-controls">
+                                <select onchange="updateAcquisitionChart(this.value)">
+                                    <option value="month">Aylık</option>
+                                    <option value="week">Haftalık</option>
+                                    <option value="day">Günlük</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="acquisitionChart" width="400" height="250"></canvas>
+                            </div>
+                            <div class="acquisition-summary">
+                                {{range .CustomerAcquisition}}
+                                <div class="acquisition-item">
+                                    <span class="acquisition-period">{{.period}}</span>
+                                    <span class="acquisition-count">{{.new_customers}} yeni</span>
+                                    <span class="acquisition-cost">₺{{.cost_per_customer}} CAC</span>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Segments -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🎯 Müşteri Segmentleri</h3>
+                        </div>
+                        <div class="card-content">
+                            {{range .CustomerSegments}}
+                            <div class="segment-item">
+                                <div class="segment-info">
+                                    <div class="segment-name">{{.name}}</div>
+                                    <div class="segment-description">{{.description}}</div>
+                                    <div class="segment-stats">
+                                        <span class="segment-count">{{.count}} müşteri</span>
+                                        <span class="segment-revenue">₺{{.avg_revenue}} ort. gelir</span>
+                                    </div>
+                                </div>
+                                <div class="segment-percentage">
+                                    <div class="progress-bar" style="width: {{.percentage}}%"></div>
+                                    <span class="percentage-text">{{.percentage}}%</span>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Customer Lifetime Value -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>💎 Müşteri Yaşam Değeri</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="ltv-summary">
+                                <div class="ltv-item">
+                                    <div class="ltv-label">Ortalama LTV</div>
+                                    <div class="ltv-value">₺{{.LTV.average}}</div>
+                                </div>
+                                <div class="ltv-item">
+                                    <div class="ltv-label">En Yüksek LTV</div>
+                                    <div class="ltv-value">₺{{.LTV.highest}}</div>
+                                </div>
+                                <div class="ltv-item">
+                                    <div class="ltv-label">LTV/CAC Oranı</div>
+                                    <div class="ltv-value">{{.LTV.cac_ratio}}:1</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="ltvChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Customers -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>⭐ En Değerli Müşteriler</h3>
+                        </div>
+                        <div class="card-content">
+                            {{range .TopCustomers}}
+                            <div class="customer-item">
+                                <div class="customer-rank">1</div>
+                                <div class="customer-info">
+                                    <div class="customer-name">{{.name}}</div>
+                                    <div class="customer-email">{{.email}}</div>
+                                    <div class="customer-stats">
+                                        <span class="customer-orders">{{.total_orders}} sipariş</span>
+                                        <span class="customer-since">{{.customer_since}} tarihinden beri</span>
+                                    </div>
+                                </div>
+                                <div class="customer-value">
+                                    <div class="customer-ltv">₺{{.lifetime_value}}</div>
+                                    <div class="customer-status">{{.status}}</div>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Customer Behavior -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🔍 Müşteri Davranışları</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="behavior-metrics">
+                                <div class="behavior-item">
+                                    <div class="behavior-label">Ortalama Sipariş Sıklığı</div>
+                                    <div class="behavior-value">{{.Behavior.avg_order_frequency}} gün</div>
+                                </div>
+                                <div class="behavior-item">
+                                    <div class="behavior-label">Ortalama Sepet Büyüklüğü</div>
+                                    <div class="behavior-value">₺{{.Behavior.avg_cart_size}}</div>
+                                </div>
+                                <div class="behavior-item">
+                                    <div class="behavior-label">Terk Etme Oranı</div>
+                                    <div class="behavior-value">{{.Behavior.abandonment_rate}}%</div>
+                                </div>
+                                <div class="behavior-item">
+                                    <div class="behavior-label">Mobil Kullanım</div>
+                                    <div class="behavior-value">{{.Behavior.mobile_usage}}%</div>
+                                </div>
+                            </div>
+                            <div class="behavior-insights">
+                                <h4>💡 Davranış Öngörüleri</h4>
+                                <ul>
+                                    <li>Müşteriler genellikle hafta sonları daha aktif</li>
+                                    <li>Premium müşteriler %40 daha sık sipariş veriyor</li>
+                                    <li>Mobil kullanıcıları daha küçük siparişler veriyor</li>
+                                    <li>E-posta kampanyaları %15 daha fazla etkileşim sağlıyor</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Retention -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>🔄 Müşteri Tutma</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="retention-summary">
+                                <div class="retention-item">
+                                    <div class="retention-label">1 Aylık Tutma</div>
+                                    <div class="retention-value">{{.Retention.month_1}}%</div>
+                                </div>
+                                <div class="retention-item">
+                                    <div class="retention-label">3 Aylık Tutma</div>
+                                    <div class="retention-value">{{.Retention.month_3}}%</div>
+                                </div>
+                                <div class="retention-item">
+                                    <div class="retention-label">12 Aylık Tutma</div>
+                                    <div class="retention-value">{{.Retention.month_12}}%</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="retentionChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customer Acquisition Channels -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📢 Kazanım Kanalları</h3>
+                        </div>
+                        <div class="card-content">
+                            {{range .AcquisitionChannels}}
+                            <div class="channel-item">
+                                <div class="channel-icon">
+                                    {{if eq .channel "organic"}}🔍{{else if eq .channel "social"}}📱{{else if eq .channel "email"}}📧{{else if eq .channel "paid"}}💰{{else}}🌐{{end}}
+                                </div>
+                                <div class="channel-info">
+                                    <div class="channel-name">{{.name}}</div>
+                                    <div class="channel-stats">
+                                        <span class="channel-customers">{{.customers}} müşteri</span>
+                                        <span class="channel-cost">₺{{.cost_per_customer}} CAC</span>
+                                    </div>
+                                </div>
+                                <div class="channel-performance">
+                                    <div class="channel-percentage">{{.percentage}}%</div>
+                                    <div class="channel-trend">{{if gt .growth 0}}📈{{else if lt .growth 0}}📉{{else}}➡️{{end}}</div>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Customer Satisfaction -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>😊 Müşteri Memnuniyeti</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="satisfaction-overview">
+                                <div class="satisfaction-score">
+                                    <div class="score-value">{{.Satisfaction.nps_score}}</div>
+                                    <div class="score-label">NPS Skoru</div>
+                                </div>
+                                <div class="satisfaction-breakdown">
+                                    <div class="satisfaction-item">
+                                        <span class="satisfaction-type">Destekçiler</span>
+                                        <span class="satisfaction-percentage">{{.Satisfaction.promoters}}%</span>
+                                    </div>
+                                    <div class="satisfaction-item">
+                                        <span class="satisfaction-type">Nötrler</span>
+                                        <span class="satisfaction-percentage">{{.Satisfaction.passives}}%</span>
+                                    </div>
+                                    <div class="satisfaction-item">
+                                        <span class="satisfaction-type">Eleştirmenler</span>
+                                        <span class="satisfaction-percentage">{{.Satisfaction.detractors}}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="satisfaction-actions">
+                                <button class="btn btn-sm btn-primary" onclick="viewFeedback()">Geri Bildirimleri Gör</button>
+                                <button class="btn btn-sm btn-secondary" onclick="sendSurvey()">Anket Gönder</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/web/static/assets/js/jquery.min.js"></script>
+    <script src="/web/static/assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function refreshCustomerData() {
+            location.reload();
+        }
+
+        function exportCustomerReport() {
+            alert('Müşteri raporu indirme özelliği yakında eklenecek.');
+        }
+
+        function updateAcquisitionChart(period) {
+            console.log('Updating acquisition chart for period:', period);
+        }
+
+        function viewFeedback() {
+            alert('Müşteri geri bildirimlerini görüntüleme özelliği yakında eklenecek.');
+        }
+
+        function sendSurvey() {
+            alert('Müşteri anketi gönderme özelliği yakında eklenecek.');
+        }
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Customer analytics charts would be initialized here');
+        });
+    </script>
+</body>
+</html>
+{{end}}

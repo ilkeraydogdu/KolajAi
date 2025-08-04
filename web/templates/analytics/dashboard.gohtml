@@ -1,0 +1,288 @@
+{{define "analytics/dashboard"}}
+{{template "layout/base" .}}
+{{end}}
+
+{{define "content"}}
+    <div class="analytics-container">
+        <!-- Analytics Header -->
+        <header class="analytics-header">
+            <div class="container">
+                <div class="analytics-nav">
+                    <div class="analytics-logo">
+                        <h2>📊 İleri Düzey Analitik</h2>
+                    </div>
+                    <nav class="analytics-menu">
+                        <a href="/analytics/dashboard" class="active">Dashboard</a>
+                        <a href="/analytics/revenue">Gelir Analizi</a>
+                        <a href="/analytics/customers">Müşteri Analizi</a>
+                        <a href="/analytics/products">Ürün Analizi</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="analytics-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="refreshAnalytics()">
+                            <i class="icon-refresh"></i> Yenile
+                        </button>
+                        <button class="btn btn-primary" onclick="exportReport()">
+                            <i class="icon-download"></i> Rapor İndir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Business Metrics -->
+                <div class="stats-row">
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-number">₺{{.Metrics.revenue.total_revenue}}</div>
+                            <div class="stat-label">Toplam Gelir</div>
+                            <div class="stat-percentage">+{{.Metrics.revenue.revenue_growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">🛒</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Metrics.sales.total_orders}}</div>
+                            <div class="stat-label">Toplam Sipariş</div>
+                            <div class="stat-percentage">+{{.Metrics.sales.sales_growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Metrics.customers.total_customers}}</div>
+                            <div class="stat-label">Toplam Müşteri</div>
+                            <div class="stat-percentage">{{.Metrics.customers.retention_rate}}% tutma</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Metrics.products.total_products}}</div>
+                            <div class="stat-label">Toplam Ürün</div>
+                            <div class="stat-text">{{.Metrics.products.best_selling}}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Revenue Trend Chart -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>📈 Gelir Trendi</h3>
+                            <div class="chart-controls">
+                                <select onchange="updateRevenueTrend(this.value)">
+                                    <option value="month">Aylık</option>
+                                    <option value="week">Haftalık</option>
+                                    <option value="day">Günlük</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="revenueTrendChart" width="400" height="200"></canvas>
+                            </div>
+                            <div class="revenue-summary">
+                                {{range .RevenueTrend}}
+                                <div class="revenue-item">
+                                    <span class="revenue-month">{{.month}}</span>
+                                    <span class="revenue-amount">₺{{.revenue}}</span>
+                                    <span class="revenue-orders">{{.orders}} sipariş</span>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Products -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🏆 En İyi Ürünler</h3>
+                            <a href="/analytics/products" class="view-all">Tümünü Gör</a>
+                        </div>
+                        <div class="card-content">
+                            {{range .TopProducts}}
+                            <div class="product-item">
+                                <div class="product-rank">1</div>
+                                <div class="product-info">
+                                    <div class="product-name">{{.name}}</div>
+                                    <div class="product-stats">
+                                        <span class="product-sales">{{.sales}} satış</span>
+                                        <span class="product-revenue">₺{{.revenue}}</span>
+                                    </div>
+                                </div>
+                                <div class="product-trend">📈</div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Customer Segments -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🎯 Müşteri Segmentleri</h3>
+                            <a href="/analytics/customers" class="view-all">Detay</a>
+                        </div>
+                        <div class="card-content">
+                            {{range .CustomerSegments}}
+                            <div class="segment-item">
+                                <div class="segment-info">
+                                    <div class="segment-name">{{.segment}}</div>
+                                    <div class="segment-stats">
+                                        <span class="segment-count">{{.count}} müşteri</span>
+                                        <span class="segment-revenue">₺{{.revenue}}</span>
+                                    </div>
+                                </div>
+                                <div class="segment-percentage">
+                                    <div class="progress-bar" style="width: {{.percentage}}%"></div>
+                                    <span class="percentage-text">{{.percentage}}%</span>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Business Intelligence -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🧠 İş Zekası Önerileri</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="bi-recommendations">
+                                <div class="recommendation-item priority-high">
+                                    <div class="recommendation-icon">🚀</div>
+                                    <div class="recommendation-text">
+                                        <strong>Pazarlama Fırsatı:</strong> Premium müşteri segmentiniz %15 büyüdü. Özel kampanya düşünün.
+                                    </div>
+                                </div>
+                                <div class="recommendation-item priority-medium">
+                                    <div class="recommendation-icon">📊</div>
+                                    <div class="recommendation-text">
+                                        <strong>Stok Optimizasyonu:</strong> En çok satan ürünlerinizin stok seviyelerini artırın.
+                                    </div>
+                                </div>
+                                <div class="recommendation-item priority-low">
+                                    <div class="recommendation-icon">💡</div>
+                                    <div class="recommendation-text">
+                                        <strong>Müşteri Deneyimi:</strong> Düşük performanslı ürünleri gözden geçirin.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Predictive Analytics -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>🔮 Tahminsel Analitik</h3>
+                            <div class="chart-controls">
+                                <select onchange="updateForecast(this.value)">
+                                    <option value="revenue">Gelir Tahmini</option>
+                                    <option value="customers">Müşteri Tahmini</option>
+                                    <option value="sales">Satış Tahmini</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="forecast-summary">
+                                <div class="forecast-item">
+                                    <div class="forecast-label">Gelecek Ay Tahmini</div>
+                                    <div class="forecast-value">₺135,000</div>
+                                    <div class="forecast-confidence">%85 güven</div>
+                                </div>
+                                <div class="forecast-item">
+                                    <div class="forecast-label">Büyüme Oranı</div>
+                                    <div class="forecast-value">+8.2%</div>
+                                    <div class="forecast-confidence">Pozitif trend</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="forecastChart" width="400" height="150"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>⚡ Hızlı İşlemler</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="quick-actions">
+                                <button class="action-btn" onclick="generateCustomReport()">
+                                    <div class="action-icon">📋</div>
+                                    <div class="action-text">Özel Rapor</div>
+                                </button>
+                                <button class="action-btn" onclick="scheduleReport()">
+                                    <div class="action-icon">📅</div>
+                                    <div class="action-text">Rapor Zamanla</div>
+                                </button>
+                                <button class="action-btn" onclick="exportData()">
+                                    <div class="action-icon">💾</div>
+                                    <div class="action-text">Veri İndir</div>
+                                </button>
+                                <button class="action-btn" onclick="shareInsights()">
+                                    <div class="action-icon">📤</div>
+                                    <div class="action-text">Öngörü Paylaş</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+{{end}}
+
+{{define "page_js"}}
+<script>
+        function refreshAnalytics() {
+            location.reload();
+        }
+
+        function exportReport() {
+            alert('Rapor indirme özelliği yakında eklenecek.');
+        }
+
+        function updateRevenueTrend(period) {
+            console.log('Updating revenue trend for period:', period);
+            // Chart update logic would go here
+        }
+
+        function updateForecast(type) {
+            console.log('Updating forecast for type:', type);
+            // Forecast update logic would go here
+        }
+
+        function generateCustomReport() {
+            alert('Özel rapor oluşturma özelliği yakında eklenecek.');
+        }
+
+        function scheduleReport() {
+            alert('Rapor zamanlama özelliği yakında eklenecek.');
+        }
+
+        function exportData() {
+            alert('Veri indirme özelliği yakında eklenecek.');
+        }
+
+        function shareInsights() {
+            alert('Öngörü paylaşma özelliği yakında eklenecek.');
+        }
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Analytics charts would be initialized here');
+        });
+</script>
+{{end}}

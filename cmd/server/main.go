@@ -416,6 +416,26 @@ func main() {
 	// Admin handler'ı oluştur
 	adminHandler := handlers.NewAdminHandler(h, mysqlRepo)
 
+	// Seller handler'ı oluştur
+	sellerHandler := handlers.NewSellerHandler(h, vendorService, productService, orderService)
+
+	// Inventory handler'ı oluştur
+	inventoryService := services.NewInventoryService(repo, productService, orderService)
+	inventoryHandler := handlers.NewInventoryHandler(h, inventoryService, productService)
+
+	// Notification handler'ı oluştur
+	notificationService := services.NewNotificationService(nil, nil, nil)
+	notificationHandler := handlers.NewNotificationHandler(h, notificationService)
+
+	// Security handler'ı oluştur
+	securityHandler := handlers.NewSecurityHandler(h)
+
+	// Analytics handler'ı oluştur
+	analyticsHandler := handlers.NewAnalyticsHandler(h, nil)
+
+	// Email handler'ı oluştur
+	emailHandler := handlers.NewEmailHandler(h, nil)
+
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
 
@@ -441,12 +461,11 @@ func main() {
 	// Router oluştur
 	appRouter := router.NewRouter(middlewareStack)
 
-	// Webpack built assets (more specific routes first)
-	appRouter.Handle("/static/css/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
-	appRouter.Handle("/static/js/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
+	// Statik dosyalar - Sadece /web/static/ altındaki dosyalar serve edilecek
+	appRouter.Handle("/web/static/", http.StripPrefix("/web/static/", http.FileServer(http.Dir("web/static"))))
 	
-	// Statik dosyalar (fallback for other static assets)
-	appRouter.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+	// Webpack build dosyaları için
+	appRouter.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
 	// SEO rotaları
 	appRouter.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
@@ -505,13 +524,20 @@ func main() {
 	appRouter.HandleFunc("/api/categories", ecommerceHandler.GetCategories)
 	appRouter.HandleFunc("/health", ecommerceHandler.HealthCheck)
 
-	// User profile rotaları (auth gerektirir) - simplified placeholders
+	// User profile rotaları (auth gerektirir)
 	appRouter.HandleFunc("/user/profile", func(w http.ResponseWriter, r *http.Request) {
 		if !h.IsAuthenticated(r) {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		w.Write([]byte("User Profile - Coming Soon"))
+		data := map[string]interface{}{
+			"Title": "Profil",
+			"User": map[string]interface{}{
+				"name":  "Test Kullanıcı",
+				"email": "test@example.com",
+			},
+		}
+		h.RenderTemplate(w, r, "user/profile.gohtml", data)
 	})
 	
 	appRouter.HandleFunc("/user/orders", func(w http.ResponseWriter, r *http.Request) {
@@ -519,7 +545,18 @@ func main() {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		w.Write([]byte("User Orders - Coming Soon"))
+		data := map[string]interface{}{
+			"Title": "Siparişlerim",
+			"Orders": []map[string]interface{}{
+				{
+					"id":     1,
+					"status": "completed",
+					"total":  99.99,
+					"date":   "2025-01-01",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "user/orders.gohtml", data)
 	})
 	
 	appRouter.HandleFunc("/user/addresses", func(w http.ResponseWriter, r *http.Request) {
@@ -527,7 +564,18 @@ func main() {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		w.Write([]byte("User Addresses - Coming Soon"))
+		data := map[string]interface{}{
+			"Title": "Adreslerim",
+			"Addresses": []map[string]interface{}{
+				{
+					"id":    1,
+					"title": "Ev",
+					"address": "Test Mahallesi, Test Sokak No:1",
+					"city":  "İstanbul",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "user/addresses.gohtml", data)
 	})
 
 	// Auth API rotaları
@@ -688,8 +736,71 @@ func main() {
 	appRouter.HandleFunc("/ai/editor", func(w http.ResponseWriter, r *http.Request) {
 		h.RenderTemplate(w, r, "ai/ai_editor.html", nil)
 	})
+	// Marketplace rotaları
+	appRouter.HandleFunc("/marketplace", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Marketplace",
+			"Products": []map[string]interface{}{
+				{
+					"id":    1,
+					"name":  "Test Ürün",
+					"price": 99.99,
+					"image": "/web/static/assets/images/products/test.jpg",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/index.gohtml", data)
+	})
+	
+	appRouter.HandleFunc("/marketplace/products", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Ürünler",
+			"Products": []map[string]interface{}{
+				{
+					"id":    1,
+					"name":  "Test Ürün",
+					"price": 99.99,
+					"category": "Elektronik",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/products.gohtml", data)
+	})
+	
+	appRouter.HandleFunc("/marketplace/categories", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Kategoriler",
+			"Categories": []map[string]interface{}{
+				{
+					"id":   1,
+					"name": "Elektronik",
+					"count": 150,
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/categories.gohtml", data)
+	})
+	
+	appRouter.HandleFunc("/marketplace/cart", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Sepetim",
+			"CartItems": []map[string]interface{}{
+				{
+					"id":       1,
+					"product":  "Test Ürün",
+					"quantity": 2,
+					"price":    99.99,
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/cart.gohtml", data)
+	})
+	
 	appRouter.HandleFunc("/marketplace/integrations", func(w http.ResponseWriter, r *http.Request) {
-		h.RenderTemplate(w, r, "marketplace/integrations.html", nil)
+		data := map[string]interface{}{
+			"Title": "Entegrasyonlar",
+		}
+		h.RenderTemplate(w, r, "marketplace/integrations.html", data)
 	})
 	appRouter.HandleFunc("/api/ai/vision/search", aiVisionHandler.SearchImages)
 	appRouter.HandleFunc("/api/ai/vision/analysis", aiVisionHandler.GetImageAnalysis)
@@ -742,6 +853,77 @@ func main() {
 	appRouter.Handle("/api/admin/system/health", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APISystemHealthCheck)))
 	appRouter.Handle("/api/admin/seo/sitemap", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIGenerateSitemap)))
 	appRouter.Handle("/api/admin/seo/analyze", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIAnalyzeSEO)))
+
+	// Seller rotaları - Authentication middleware ile korumalı
+	appRouter.HandleFunc("/seller/dashboard", sellerHandler.Dashboard)
+	appRouter.HandleFunc("/seller/products", sellerHandler.Products)
+	appRouter.HandleFunc("/seller/orders", sellerHandler.Orders)
+
+	// Seller API rotaları
+	appRouter.HandleFunc("/api/seller/products", sellerHandler.APIGetProducts)
+	appRouter.HandleFunc("/api/seller/orders", sellerHandler.APIGetOrders)
+	appRouter.HandleFunc("/api/seller/product/status", sellerHandler.APIUpdateProductStatus)
+	appRouter.HandleFunc("/api/seller/order/status", sellerHandler.APIUpdateOrderStatus)
+
+	// Inventory rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/inventory/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.Dashboard)))
+	appRouter.Handle("/inventory/stock-levels", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.StockLevels)))
+	appRouter.Handle("/inventory/alerts", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.Alerts)))
+
+	// Inventory API rotaları
+	appRouter.Handle("/api/inventory/stock-levels", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIGetStockLevels)))
+	appRouter.Handle("/api/inventory/update-stock", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIUpdateStock)))
+	appRouter.Handle("/api/inventory/alerts", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIGetAlerts)))
+	appRouter.Handle("/api/inventory/dismiss-alert", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIDismissAlert)))
+
+	// Notification rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/notifications/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.Dashboard)))
+	appRouter.Handle("/notifications/templates", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.Templates)))
+	appRouter.Handle("/notifications/campaigns", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.Campaigns)))
+
+	// Notification API rotaları
+	appRouter.Handle("/api/notifications/send", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APISendNotification)))
+	appRouter.Handle("/api/notifications/stats", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIGetNotificationStats)))
+	appRouter.Handle("/api/notifications/templates", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APICreateTemplate)))
+	appRouter.Handle("/api/notifications/templates/update", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIUpdateTemplate)))
+	appRouter.Handle("/api/notifications/templates/delete", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIDeleteTemplate)))
+
+	// Security rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/security/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Dashboard)))
+	appRouter.Handle("/security/users", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Users)))
+	appRouter.Handle("/security/threats", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Threats)))
+	appRouter.Handle("/security/settings", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Settings)))
+
+	// Security API rotaları
+	appRouter.Handle("/api/security/stats", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIGetSecurityStats)))
+	appRouter.Handle("/api/security/block-ip", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIBlockIP)))
+	appRouter.Handle("/api/security/unblock-ip", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIUnblockIP)))
+	appRouter.Handle("/api/security/enable-2fa", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIEnable2FA)))
+	appRouter.Handle("/api/security/settings", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIUpdateSecuritySettings)))
+	appRouter.Handle("/api/security/threat-details", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIGetThreatDetails)))
+
+	// Analytics rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/analytics/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Dashboard)))
+	appRouter.Handle("/analytics/revenue", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Revenue)))
+	appRouter.Handle("/analytics/customers", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Customers)))
+	appRouter.Handle("/analytics/products", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Products)))
+
+	// Analytics API rotaları
+	appRouter.Handle("/api/analytics/metrics", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetBusinessMetrics)))
+	appRouter.Handle("/api/analytics/forecast", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetRevenueForecast)))
+	appRouter.Handle("/api/analytics/segments", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetCustomerSegments)))
+	appRouter.Handle("/api/analytics/insights", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetProductInsights)))
+
+	// Email rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/email/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Dashboard)))
+	appRouter.Handle("/email/campaigns", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Campaigns)))
+	appRouter.Handle("/email/templates", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Templates)))
+	appRouter.Handle("/email/settings", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Settings)))
+
+	// Email API rotaları
+	appRouter.Handle("/api/email/send-campaign", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.APISendCampaign)))
+	appRouter.Handle("/api/email/stats", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.APIGetEmailStats)))
+	appRouter.Handle("/api/email/create-template", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.APICreateTemplate)))
 
 	// Test rotaları (sadece development ortamında)
 	if cfg.Environment == "development" {

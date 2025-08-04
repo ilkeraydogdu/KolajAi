@@ -46,5 +46,21 @@
 
 {{define "page_js"}}
 <!-- Sayfa özel JS -->
-<script src="/static/js/auth/login.js"></script>
+<script>
+$(document).ready(function() {
+    $('#loginForm').on('submit', function(e) {
+        var email = $('#inputEmailAddress').val();
+        var password = $('#inputChoosePassword').val();
+        
+        if (!email || !password) {
+            e.preventDefault();
+            alert('Lütfen tüm alanları doldurun');
+            return false;
+        }
+        
+        // Form validation passed
+        return true;
+    });
+});
+</script>
 {{end}} 

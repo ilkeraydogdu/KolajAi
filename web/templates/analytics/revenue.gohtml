@@ -1,0 +1,276 @@
+{{define "analytics/revenue"}}
+{{template "layout/base" .}}
+{{end}}
+
+{{define "content"}}
+    <div class="analytics-container">
+        <!-- Header -->
+        <header class="analytics-header">
+            <div class="container">
+                <div class="analytics-nav">
+                    <div class="analytics-logo">
+                        <h2>💰 Gelir Analizi</h2>
+                    </div>
+                    <nav class="analytics-menu">
+                        <a href="/analytics/dashboard">Dashboard</a>
+                        <a href="/analytics/revenue" class="active">Gelir Analizi</a>
+                        <a href="/analytics/customers">Müşteri Analizi</a>
+                        <a href="/analytics/products">Ürün Analizi</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="analytics-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <select class="form-select" onchange="changePeriod(this.value)">
+                            <option value="month">Bu Ay</option>
+                            <option value="quarter">Bu Çeyrek</option>
+                            <option value="year">Bu Yıl</option>
+                            <option value="custom">Özel Tarih</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="exportRevenueReport()">
+                            <i class="icon-download"></i> Rapor İndir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Revenue Overview -->
+                <div class="stats-row">
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-number">₺{{.Revenue.total}}</div>
+                            <div class="stat-label">Toplam Gelir</div>
+                            <div class="stat-percentage">+{{.Revenue.growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-info">
+                            <div class="stat-number">₺{{.Revenue.average_order}}</div>
+                            <div class="stat-label">Ortalama Sipariş</div>
+                            <div class="stat-percentage">+{{.Revenue.aov_growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">🛒</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Revenue.total_orders}}</div>
+                            <div class="stat-label">Toplam Sipariş</div>
+                            <div class="stat-percentage">+{{.Revenue.order_growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <div class="stat-number">₺{{.Revenue.monthly_recurring}}</div>
+                            <div class="stat-label">Aylık Tekrarlayan</div>
+                            <div class="stat-text">MRR</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Grid -->
+                <div class="dashboard-grid">
+                    <!-- Revenue Trend Chart -->
+                    <div class="dashboard-card chart-card full-width">
+                        <div class="card-header">
+                            <h3>📈 Gelir Trendi</h3>
+                            <div class="chart-controls">
+                                <button class="btn btn-sm" onclick="changeChartType('line')">Çizgi</button>
+                                <button class="btn btn-sm" onclick="changeChartType('bar')">Bar</button>
+                                <button class="btn btn-sm" onclick="changeChartType('area')">Alan</button>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="revenueTrendChart" width="800" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue by Category -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>📊 Kategoriye Göre Gelir</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="categoryRevenueChart" width="400" height="300"></canvas>
+                            </div>
+                            <div class="category-list">
+                                {{range .RevenueByCategory}}
+                                <div class="category-item">
+                                    <div class="category-color" style="background-color: {{.color}}"></div>
+                                    <div class="category-name">{{.category}}</div>
+                                    <div class="category-revenue">₺{{.revenue}}</div>
+                                    <div class="category-percentage">{{.percentage}}%</div>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Forecast -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>🔮 Gelir Tahmini</h3>
+                            <div class="chart-controls">
+                                <select onchange="updateForecast(this.value)">
+                                    <option value="3">3 Ay</option>
+                                    <option value="6">6 Ay</option>
+                                    <option value="12">12 Ay</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="forecast-summary">
+                                <div class="forecast-item">
+                                    <div class="forecast-label">Gelecek Ay</div>
+                                    <div class="forecast-value">₺{{.Forecast.next_month}}</div>
+                                    <div class="forecast-confidence">%{{.Forecast.confidence}} güven</div>
+                                </div>
+                                <div class="forecast-item">
+                                    <div class="forecast-label">Çeyrek Sonu</div>
+                                    <div class="forecast-value">₺{{.Forecast.quarter_end}}</div>
+                                    <div class="forecast-trend">{{.Forecast.trend}}</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="forecastChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Revenue Sources -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🏆 En Yüksek Gelir Kaynakları</h3>
+                        </div>
+                        <div class="card-content">
+                            {{range .TopRevenueSources}}
+                            <div class="source-item">
+                                <div class="source-rank">1</div>
+                                <div class="source-info">
+                                    <div class="source-name">{{.name}}</div>
+                                    <div class="source-type">{{.type}}</div>
+                                </div>
+                                <div class="source-revenue">
+                                    <div class="revenue-amount">₺{{.revenue}}</div>
+                                    <div class="revenue-percentage">{{.percentage}}%</div>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Revenue Metrics -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📊 Gelir Metrikleri</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <div class="metric-label">Gross Revenue</div>
+                                    <div class="metric-value">₺{{.Metrics.gross_revenue}}</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Net Revenue</div>
+                                    <div class="metric-value">₺{{.Metrics.net_revenue}}</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Revenue per User</div>
+                                    <div class="metric-value">₺{{.Metrics.revenue_per_user}}</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Customer LTV</div>
+                                    <div class="metric-value">₺{{.Metrics.customer_ltv}}</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Churn Rate</div>
+                                    <div class="metric-value">{{.Metrics.churn_rate}}%</div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-label">Growth Rate</div>
+                                    <div class="metric-value">+{{.Metrics.growth_rate}}%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Insights -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>💡 Gelir Öngörüleri</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="insights-list">
+                                <div class="insight-item priority-high">
+                                    <div class="insight-icon">🚀</div>
+                                    <div class="insight-text">
+                                        <strong>Büyüme Fırsatı:</strong> Premium ürünler %25 daha yüksek gelir sağlıyor. Bu kategoride yatırım artırılabilir.
+                                    </div>
+                                </div>
+                                <div class="insight-item priority-medium">
+                                    <div class="insight-icon">📊</div>
+                                    <div class="insight-text">
+                                        <strong>Sezonsal Trend:</strong> Yaz aylarında %15 artış bekleniyor. Stok ve pazarlama planlaması yapın.
+                                    </div>
+                                </div>
+                                <div class="insight-item priority-low">
+                                    <div class="insight-icon">⚠️</div>
+                                    <div class="insight-text">
+                                        <strong>Risk Analizi:</strong> Elektronik kategorisinde gelir düşüşü gözlemleniyor. İnceleme gerekli.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+{{end}}
+
+{{define "page_js"}}
+<script>
+        function changePeriod(period) {
+            console.log('Changing period to:', period);
+            if (period === 'custom') {
+                // Show date picker modal
+                alert('Özel tarih seçimi özelliği yakında eklenecek.');
+            } else {
+                // Reload with new period
+                window.location.href = '/analytics/revenue?period=' + period;
+            }
+        }
+
+        function exportRevenueReport() {
+            alert('Gelir raporu indirme özelliği yakında eklenecek.');
+        }
+
+        function changeChartType(type) {
+            console.log('Changing chart type to:', type);
+            // Chart type change logic would go here
+        }
+
+        function updateForecast(months) {
+            console.log('Updating forecast for', months, 'months');
+            // Forecast update logic would go here
+        }
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Revenue analytics charts would be initialized here');
+            // Chart.js initialization would go here
+        });
+</script>
+{{end}}
