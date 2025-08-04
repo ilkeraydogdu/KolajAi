@@ -1,0 +1,431 @@
+{{define "email/campaigns.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <header class="email-header">
+            <div class="container">
+                <div class="email-nav">
+                    <div class="email-logo">
+                        <h2>📧 E-posta Kampanyaları</h2>
+                    </div>
+                    <nav class="email-menu">
+                        <a href="/email/dashboard">Dashboard</a>
+                        <a href="/email/campaigns" class="active">Kampanyalar</a>
+                        <a href="/email/templates">Şablonlar</a>
+                        <a href="/email/settings">Ayarlar</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="email-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="refreshCampaigns()">
+                            <i class="icon-refresh"></i> Yenile
+                        </button>
+                        <button class="btn btn-primary" onclick="showCreateCampaignModal()">
+                            <i class="icon-plus"></i> Yeni Kampanya
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Campaign Filters -->
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <label>Durum:</label>
+                        <select onchange="filterCampaigns('status', this.value)">
+                            <option value="all">Tümü</option>
+                            <option value="draft">Taslak</option>
+                            <option value="scheduled">Zamanlanmış</option>
+                            <option value="sending">Gönderiliyor</option>
+                            <option value="completed">Tamamlandı</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Tarih:</label>
+                        <select onchange="filterCampaigns('date', this.value)">
+                            <option value="all">Tüm Zamanlar</option>
+                            <option value="today">Bugün</option>
+                            <option value="week">Bu Hafta</option>
+                            <option value="month">Bu Ay</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Arama:</label>
+                        <input type="text" placeholder="Kampanya ara..." onkeyup="searchCampaigns(this.value)">
+                    </div>
+                </div>
+
+                <!-- Campaigns List -->
+                <div class="campaigns-list">
+                    {{range .Campaigns}}
+                    <div class="campaign-card" data-status="{{.status}}">
+                        <div class="campaign-header">
+                            <div class="campaign-info">
+                                <div class="campaign-name">{{.name}}</div>
+                                <div class="campaign-subject">{{.subject}}</div>
+                                <div class="campaign-meta">
+                                    <span class="campaign-date">{{.created_at.Format "2 Jan 2006 15:04"}}</span>
+                                    <span class="campaign-type">{{.type}}</span>
+                                </div>
+                            </div>
+                            <div class="campaign-status">
+                                <span class="status-badge status-{{.status}}">
+                                    {{if eq .status "draft"}}📝 Taslak{{else if eq .status "scheduled"}}⏰ Zamanlanmış{{else if eq .status "sending"}}⏳ Gönderiliyor{{else if eq .status "completed"}}✅ Tamamlandı{{else}}❌ İptal{{end}}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="campaign-stats">
+                            <div class="stat-item">
+                                <div class="stat-label">Gönderilen</div>
+                                <div class="stat-value">{{.sent_count}}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Açılan</div>
+                                <div class="stat-value">{{.opened_count}} ({{.open_rate}}%)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Tıklanan</div>
+                                <div class="stat-value">{{.clicked_count}} ({{.click_rate}}%)</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Geri Dönen</div>
+                                <div class="stat-value">{{.bounced_count}} ({{.bounce_rate}}%)</div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-actions">
+                            <button class="btn btn-sm btn-primary" onclick="viewCampaign('{{.id}}')">
+                                <i class="icon-eye"></i> Görüntüle
+                            </button>
+                            {{if eq .status "draft"}}
+                            <button class="btn btn-sm btn-secondary" onclick="editCampaign('{{.id}}')">
+                                <i class="icon-edit"></i> Düzenle
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="sendCampaign('{{.id}}')">
+                                <i class="icon-send"></i> Gönder
+                            </button>
+                            {{else if eq .status "completed"}}
+                            <button class="btn btn-sm btn-info" onclick="duplicateCampaign('{{.id}}')">
+                                <i class="icon-copy"></i> Kopyala
+                            </button>
+                            <button class="btn btn-sm btn-secondary" onclick="downloadReport('{{.id}}')">
+                                <i class="icon-download"></i> Rapor
+                            </button>
+                            {{else if eq .status "scheduled"}}
+                            <button class="btn btn-sm btn-warning" onclick="cancelSchedule('{{.id}}')">
+                                <i class="icon-stop"></i> İptal Et
+                            </button>
+                            {{end}}
+                            <button class="btn btn-sm btn-danger" onclick="deleteCampaign('{{.id}}')">
+                                <i class="icon-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {{else}}
+                    <div class="no-campaigns">
+                        <div class="no-campaigns-icon">📭</div>
+                        <h3>Henüz kampanya yok</h3>
+                        <p>İlk e-posta kampanyanızı oluşturun ve müşterilerinizle iletişime başlayın.</p>
+                        <button class="btn btn-primary" onclick="showCreateCampaignModal()">
+                            <i class="icon-plus"></i> İlk Kampanyayı Oluştur
+                        </button>
+                    </div>
+                    {{end}}
+                </div>
+
+                <!-- Pagination -->
+                {{if gt .TotalPages 1}}
+                <div class="pagination-wrapper">
+                    <nav>
+                        <ul class="pagination">
+                            {{if gt .CurrentPage 1}}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{sub .CurrentPage 1}}">Önceki</a>
+                            </li>
+                            {{end}}
+                            
+                            {{range $page := .Pages}}
+                            <li class="page-item {{if eq $page $.CurrentPage}}active{{end}}">
+                                <a class="page-link" href="?page={{$page}}">{{$page}}</a>
+                            </li>
+                            {{end}}
+                            
+                            {{if lt .CurrentPage .TotalPages}}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{add .CurrentPage 1}}">Sonraki</a>
+                            </li>
+                            {{end}}
+                        </ul>
+                    </nav>
+                </div>
+                {{end}}
+            </div>
+        </main>
+    </div>
+
+    <!-- Create Campaign Modal -->
+    <div id="createCampaignModal" class="modal">
+        <div class="modal-content modal-lg">
+            <div class="modal-header">
+                <h3>Yeni Kampanya Oluştur</h3>
+                <button class="modal-close" onclick="closeModal('createCampaignModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createCampaignForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kampanya Adı *</label>
+                            <input type="text" name="name" required placeholder="Örn: Yaz İndirimi 2024">
+                        </div>
+                        <div class="form-group">
+                            <label>Kampanya Türü</label>
+                            <select name="type">
+                                <option value="promotional">Promosyonel</option>
+                                <option value="newsletter">Haber Bülteni</option>
+                                <option value="welcome">Hoş Geldin</option>
+                                <option value="transactional">İşlemsel</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta Konusu *</label>
+                        <input type="text" name="subject" required placeholder="Müşterilerinizi cezbedecek bir konu">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Gönderen Adı</label>
+                            <input type="text" name="from_name" placeholder="KolajAI Mağaza">
+                        </div>
+                        <div class="form-group">
+                            <label>Gönderen E-posta</label>
+                            <input type="email" name="from_email" placeholder="noreply@kolajai.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Şablon</label>
+                        <select name="template_id">
+                            <option value="">Şablon Seç</option>
+                            {{range .Templates}}
+                            <option value="{{.id}}">{{.name}}</option>
+                            {{end}}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Alıcı Listesi *</label>
+                        <select name="recipients" required>
+                            <option value="">Liste Seç</option>
+                            <option value="all">Tüm Aboneler ({{.SubscriberCounts.all}})</option>
+                            <option value="active">Aktif Aboneler ({{.SubscriberCounts.active}})</option>
+                            <option value="premium">Premium Müşteriler ({{.SubscriberCounts.premium}})</option>
+                            <option value="new">Yeni Aboneler ({{.SubscriberCounts.new}})</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="schedule"> Zamanla Gönder
+                        </label>
+                        <input type="datetime-local" name="scheduled_at" style="display:none;">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="track_opens" checked> Açılmaları Takip Et
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="track_clicks" checked> Tıklamaları Takip Et
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('createCampaignModal')">İptal</button>
+                <button class="btn btn-primary" onclick="createCampaign()">Kampanya Oluştur</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/web/static/assets/js/jquery.min.js"></script>
+    <script src="/web/static/assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function refreshCampaigns() {
+            location.reload();
+        }
+
+        function showCreateCampaignModal() {
+            document.getElementById('createCampaignModal').style.display = 'block';
+        }
+
+        function filterCampaigns(type, value) {
+            console.log('Filtering campaigns by', type, ':', value);
+            // Filter logic would go here
+        }
+
+        function searchCampaigns(query) {
+            console.log('Searching campaigns:', query);
+            // Search logic would go here
+        }
+
+        function viewCampaign(id) {
+            window.location.href = '/email/campaigns/' + id;
+        }
+
+        function editCampaign(id) {
+            window.location.href = '/email/campaigns/' + id + '/edit';
+        }
+
+        function sendCampaign(id) {
+            if (confirm('Bu kampanyayı şimdi göndermek istediğinizden emin misiniz?')) {
+                fetch('/api/email/send-campaign/' + id, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Kampanya gönderilmeye başlandı!');
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function duplicateCampaign(id) {
+            fetch('/api/email/duplicate-campaign/' + id, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Kampanya kopyalandı!');
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            });
+        }
+
+        function downloadReport(id) {
+            window.open('/api/email/campaign-report/' + id, '_blank');
+        }
+
+        function cancelSchedule(id) {
+            if (confirm('Zamanlanan kampanyayı iptal etmek istediğinizden emin misiniz?')) {
+                fetch('/api/email/cancel-schedule/' + id, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Kampanya zamanlaması iptal edildi!');
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function deleteCampaign(id) {
+            if (confirm('Bu kampanyayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                fetch('/api/email/delete-campaign/' + id, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Kampanya silindi!');
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function createCampaign() {
+            const form = document.getElementById('createCampaignForm');
+            const formData = new FormData(form);
+            
+            const data = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                subject: formData.get('subject'),
+                from_name: formData.get('from_name'),
+                from_email: formData.get('from_email'),
+                template_id: formData.get('template_id'),
+                recipients: formData.get('recipients'),
+                scheduled_at: formData.get('schedule') ? formData.get('scheduled_at') : null,
+                track_opens: formData.get('track_opens') ? true : false,
+                track_clicks: formData.get('track_clicks') ? true : false
+            };
+
+            fetch('/api/email/create-campaign', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Kampanya başarıyla oluşturuldu!');
+                    closeModal('createCampaignModal');
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Kampanya oluşturulurken hata oluştu: ' + error);
+            });
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Show/hide schedule input
+        document.addEventListener('DOMContentLoaded', function() {
+            const scheduleCheckbox = document.querySelector('input[name="schedule"]');
+            const scheduleInput = document.querySelector('input[name="scheduled_at"]');
+            
+            if (scheduleCheckbox) {
+                scheduleCheckbox.addEventListener('change', function() {
+                    scheduleInput.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+{{end}}

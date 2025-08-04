@@ -1,0 +1,381 @@
+{{define "analytics/products.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="analytics-container">
+        <!-- Header -->
+        <header class="analytics-header">
+            <div class="container">
+                <div class="analytics-nav">
+                    <div class="analytics-logo">
+                        <h2>📦 Ürün Analizi</h2>
+                    </div>
+                    <nav class="analytics-menu">
+                        <a href="/analytics/dashboard">Dashboard</a>
+                        <a href="/analytics/revenue">Gelir Analizi</a>
+                        <a href="/analytics/customers">Müşteri Analizi</a>
+                        <a href="/analytics/products" class="active">Ürün Analizi</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="analytics-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <select class="form-select" onchange="filterByCategory(this.value)">
+                            <option value="all">Tüm Kategoriler</option>
+                            <option value="electronics">Elektronik</option>
+                            <option value="fashion">Moda</option>
+                            <option value="home">Ev & Yaşam</option>
+                            <option value="books">Kitap</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="exportProductReport()">
+                            <i class="icon-download"></i> Rapor İndir
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Overview -->
+                <div class="stats-row">
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Products.total}}</div>
+                            <div class="stat-label">Toplam Ürün</div>
+                            <div class="stat-percentage">+{{.Products.growth}}%</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Products.best_sellers}}</div>
+                            <div class="stat-label">En Çok Satan</div>
+                            <div class="stat-text">Ürün sayısı</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">📉</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Products.low_stock}}</div>
+                            <div class="stat-label">Düşük Stok</div>
+                            <div class="stat-text">Dikkat gerekli</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-number">₺{{.Products.avg_price}}</div>
+                            <div class="stat-label">Ortalama Fiyat</div>
+                            <div class="stat-percentage">+{{.Products.price_growth}}%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Top Selling Products -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🏆 En Çok Satan Ürünler</h3>
+                            <div class="card-actions">
+                                <select onchange="updateTopProducts(this.value)">
+                                    <option value="sales">Satış Adedi</option>
+                                    <option value="revenue">Gelir</option>
+                                    <option value="profit">Kar</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            {{range .TopProducts}}
+                            <div class="product-item">
+                                <div class="product-rank">{{add @index 1}}</div>
+                                <div class="product-image">
+                                    <img src="{{.image}}" alt="{{.name}}" width="40" height="40">
+                                </div>
+                                <div class="product-info">
+                                    <div class="product-name">{{.name}}</div>
+                                    <div class="product-category">{{.category}}</div>
+                                    <div class="product-stats">
+                                        <span class="product-sales">{{.sales_count}} satış</span>
+                                        <span class="product-revenue">₺{{.revenue}}</span>
+                                    </div>
+                                </div>
+                                <div class="product-performance">
+                                    <div class="performance-score">{{.performance_score}}%</div>
+                                    <div class="performance-trend">{{if gt .trend 0}}📈{{else if lt .trend 0}}📉{{else}}➡️{{end}}</div>
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Product Performance Chart -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>📊 Ürün Performansı</h3>
+                            <div class="chart-controls">
+                                <select onchange="updatePerformanceChart(this.value)">
+                                    <option value="month">Aylık</option>
+                                    <option value="week">Haftalık</option>
+                                    <option value="day">Günlük</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="productPerformanceChart" width="400" height="250"></canvas>
+                            </div>
+                            <div class="performance-summary">
+                                <div class="summary-item">
+                                    <span class="summary-label">En İyi Performans</span>
+                                    <span class="summary-value">{{.Performance.best_product}}</span>
+                                </div>
+                                <div class="summary-item">
+                                    <span class="summary-label">Ortalama Dönüşüm</span>
+                                    <span class="summary-value">{{.Performance.avg_conversion}}%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category Analysis -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>🏷️ Kategori Analizi</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="categoryChart" width="400" height="300"></canvas>
+                            </div>
+                            <div class="category-breakdown">
+                                {{range .CategoryAnalysis}}
+                                <div class="category-item">
+                                    <div class="category-color" style="background-color: {{.color}}"></div>
+                                    <div class="category-info">
+                                        <div class="category-name">{{.name}}</div>
+                                        <div class="category-stats">
+                                            <span class="category-products">{{.product_count}} ürün</span>
+                                            <span class="category-revenue">₺{{.revenue}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="category-percentage">{{.percentage}}%</div>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Lifecycle -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🔄 Ürün Yaşam Döngüsü</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="lifecycle-stages">
+                                {{range .ProductLifecycle}}
+                                <div class="lifecycle-stage">
+                                    <div class="stage-icon">
+                                        {{if eq .stage "introduction"}}🚀{{else if eq .stage "growth"}}📈{{else if eq .stage "maturity"}}🏆{{else if eq .stage "decline"}}📉{{end}}
+                                    </div>
+                                    <div class="stage-info">
+                                        <div class="stage-name">{{.name}}</div>
+                                        <div class="stage-count">{{.product_count}} ürün</div>
+                                    </div>
+                                    <div class="stage-percentage">{{.percentage}}%</div>
+                                </div>
+                                {{end}}
+                            </div>
+                            <div class="lifecycle-insights">
+                                <h4>💡 Yaşam Döngüsü Öngörüleri</h4>
+                                <ul>
+                                    <li>{{.LifecycleInsights.introduction_count}} ürün tanıtım aşamasında</li>
+                                    <li>{{.LifecycleInsights.growth_count}} ürün büyüme aşamasında</li>
+                                    <li>{{.LifecycleInsights.decline_count}} ürün düşüş aşamasında - yenileme gerekli</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Analysis -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📦 Stok Analizi</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="inventory-overview">
+                                <div class="inventory-item">
+                                    <div class="inventory-label">Toplam Stok Değeri</div>
+                                    <div class="inventory-value">₺{{.Inventory.total_value}}</div>
+                                </div>
+                                <div class="inventory-item">
+                                    <div class="inventory-label">Ortalama Stok Devir Hızı</div>
+                                    <div class="inventory-value">{{.Inventory.turnover_rate}} gün</div>
+                                </div>
+                                <div class="inventory-item">
+                                    <div class="inventory-label">Düşük Stoklu Ürünler</div>
+                                    <div class="inventory-value">{{.Inventory.low_stock_count}}</div>
+                                </div>
+                            </div>
+                            <div class="inventory-alerts">
+                                <h4>⚠️ Stok Uyarıları</h4>
+                                {{range .InventoryAlerts}}
+                                <div class="alert-item priority-{{.priority}}">
+                                    <div class="alert-product">{{.product_name}}</div>
+                                    <div class="alert-message">{{.message}}</div>
+                                    <div class="alert-action">
+                                        <button class="btn btn-sm btn-primary" onclick="reorderProduct('{{.product_id}}')">Sipariş Ver</button>
+                                    </div>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Analysis -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>💰 Fiyat Analizi</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="price-summary">
+                                <div class="price-item">
+                                    <div class="price-label">En Düşük Fiyat</div>
+                                    <div class="price-value">₺{{.PriceAnalysis.min_price}}</div>
+                                </div>
+                                <div class="price-item">
+                                    <div class="price-label">En Yüksek Fiyat</div>
+                                    <div class="price-value">₺{{.PriceAnalysis.max_price}}</div>
+                                </div>
+                                <div class="price-item">
+                                    <div class="price-label">Ortalama Fiyat</div>
+                                    <div class="price-value">₺{{.PriceAnalysis.avg_price}}</div>
+                                </div>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="priceDistributionChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Reviews & Ratings -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>⭐ Değerlendirmeler</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="rating-overview">
+                                <div class="overall-rating">
+                                    <div class="rating-score">{{.Reviews.overall_rating}}</div>
+                                    <div class="rating-stars">
+                                        {{range $i := .Reviews.star_display}}⭐{{end}}
+                                    </div>
+                                    <div class="rating-count">{{.Reviews.total_reviews}} değerlendirme</div>
+                                </div>
+                                <div class="rating-breakdown">
+                                    {{range .Reviews.rating_breakdown}}
+                                    <div class="rating-item">
+                                        <span class="rating-stars">{{.stars}} ⭐</span>
+                                        <div class="rating-bar">
+                                            <div class="rating-progress" style="width: {{.percentage}}%"></div>
+                                        </div>
+                                        <span class="rating-count">{{.count}}</span>
+                                    </div>
+                                    {{end}}
+                                </div>
+                            </div>
+                            <div class="top-rated-products">
+                                <h4>🏆 En Yüksek Puanlı Ürünler</h4>
+                                {{range .TopRatedProducts}}
+                                <div class="rated-product">
+                                    <div class="product-name">{{.name}}</div>
+                                    <div class="product-rating">{{.rating}} ⭐ ({{.review_count}} değerlendirme)</div>
+                                </div>
+                                {{end}}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Product Recommendations -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🤖 AI Önerileri</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="recommendations">
+                                <div class="recommendation-item priority-high">
+                                    <div class="recommendation-icon">🚀</div>
+                                    <div class="recommendation-text">
+                                        <strong>Fırsatlar:</strong> "Elektronik" kategorisinde %25 fiyat artışı yapılabilir. Talep yüksek.
+                                    </div>
+                                </div>
+                                <div class="recommendation-item priority-medium">
+                                    <div class="recommendation-icon">📦</div>
+                                    <div class="recommendation-text">
+                                        <strong>Stok Yönetimi:</strong> 15 ürünün stoğu kritik seviyede. Acil sipariş verin.
+                                    </div>
+                                </div>
+                                <div class="recommendation-item priority-low">
+                                    <div class="recommendation-icon">💡</div>
+                                    <div class="recommendation-text">
+                                        <strong>Yeni Ürün:</strong> "Akıllı Ev" kategorisinde boşluk var. Yeni ürün eklemeyi düşünün.
+                                    </div>
+                                </div>
+                                <div class="recommendation-item priority-medium">
+                                    <div class="recommendation-icon">🔄</div>
+                                    <div class="recommendation-text">
+                                        <strong>Çapraz Satış:</strong> "Telefon Aksesuarları" ile "Cep Telefonu" birlikte satılma oranı %85.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/web/static/assets/js/jquery.min.js"></script>
+    <script src="/web/static/assets/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function filterByCategory(category) {
+            console.log('Filtering by category:', category);
+            window.location.href = '/analytics/products?category=' + category;
+        }
+
+        function exportProductReport() {
+            alert('Ürün raporu indirme özelliği yakında eklenecek.');
+        }
+
+        function updateTopProducts(sortBy) {
+            console.log('Updating top products sorted by:', sortBy);
+        }
+
+        function updatePerformanceChart(period) {
+            console.log('Updating performance chart for period:', period);
+        }
+
+        function reorderProduct(productId) {
+            alert('Ürün sipariş verme özelliği yakında eklenecek. Ürün ID: ' + productId);
+        }
+
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Product analytics charts would be initialized here');
+        });
+    </script>
+</body>
+</html>
+{{end}}
