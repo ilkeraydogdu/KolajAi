@@ -416,6 +416,9 @@ func main() {
 	// Admin handler'ı oluştur
 	adminHandler := handlers.NewAdminHandler(h, mysqlRepo)
 
+	// Seller handler'ı oluştur
+	sellerHandler := handlers.NewSellerHandler(h, vendorService, productService, orderService)
+
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
 
@@ -505,13 +508,20 @@ func main() {
 	appRouter.HandleFunc("/api/categories", ecommerceHandler.GetCategories)
 	appRouter.HandleFunc("/health", ecommerceHandler.HealthCheck)
 
-	// User profile rotaları (auth gerektirir) - simplified placeholders
+	// User profile rotaları (auth gerektirir)
 	appRouter.HandleFunc("/user/profile", func(w http.ResponseWriter, r *http.Request) {
 		if !h.IsAuthenticated(r) {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		w.Write([]byte("User Profile - Coming Soon"))
+		data := map[string]interface{}{
+			"Title": "Profil",
+			"User": map[string]interface{}{
+				"name":  "Test Kullanıcı",
+				"email": "test@example.com",
+			},
+		}
+		h.RenderTemplate(w, r, "user/profile.gohtml", data)
 	})
 	
 	appRouter.HandleFunc("/user/orders", func(w http.ResponseWriter, r *http.Request) {
@@ -519,7 +529,18 @@ func main() {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		w.Write([]byte("User Orders - Coming Soon"))
+		data := map[string]interface{}{
+			"Title": "Siparişlerim",
+			"Orders": []map[string]interface{}{
+				{
+					"id":     1,
+					"status": "completed",
+					"total":  99.99,
+					"date":   "2025-01-01",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "user/orders.gohtml", data)
 	})
 	
 	appRouter.HandleFunc("/user/addresses", func(w http.ResponseWriter, r *http.Request) {
@@ -527,7 +548,18 @@ func main() {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		w.Write([]byte("User Addresses - Coming Soon"))
+		data := map[string]interface{}{
+			"Title": "Adreslerim",
+			"Addresses": []map[string]interface{}{
+				{
+					"id":    1,
+					"title": "Ev",
+					"address": "Test Mahallesi, Test Sokak No:1",
+					"city":  "İstanbul",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "user/addresses.gohtml", data)
 	})
 
 	// Auth API rotaları
@@ -688,8 +720,71 @@ func main() {
 	appRouter.HandleFunc("/ai/editor", func(w http.ResponseWriter, r *http.Request) {
 		h.RenderTemplate(w, r, "ai/ai_editor.html", nil)
 	})
+	// Marketplace rotaları
+	appRouter.HandleFunc("/marketplace", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Marketplace",
+			"Products": []map[string]interface{}{
+				{
+					"id":    1,
+					"name":  "Test Ürün",
+					"price": 99.99,
+					"image": "/web/static/assets/images/products/test.jpg",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/index.gohtml", data)
+	})
+	
+	appRouter.HandleFunc("/marketplace/products", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Ürünler",
+			"Products": []map[string]interface{}{
+				{
+					"id":    1,
+					"name":  "Test Ürün",
+					"price": 99.99,
+					"category": "Elektronik",
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/products.gohtml", data)
+	})
+	
+	appRouter.HandleFunc("/marketplace/categories", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Kategoriler",
+			"Categories": []map[string]interface{}{
+				{
+					"id":   1,
+					"name": "Elektronik",
+					"count": 150,
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/categories.gohtml", data)
+	})
+	
+	appRouter.HandleFunc("/marketplace/cart", func(w http.ResponseWriter, r *http.Request) {
+		data := map[string]interface{}{
+			"Title": "Sepetim",
+			"CartItems": []map[string]interface{}{
+				{
+					"id":       1,
+					"product":  "Test Ürün",
+					"quantity": 2,
+					"price":    99.99,
+				},
+			},
+		}
+		h.RenderTemplate(w, r, "marketplace/cart.gohtml", data)
+	})
+	
 	appRouter.HandleFunc("/marketplace/integrations", func(w http.ResponseWriter, r *http.Request) {
-		h.RenderTemplate(w, r, "marketplace/integrations.html", nil)
+		data := map[string]interface{}{
+			"Title": "Entegrasyonlar",
+		}
+		h.RenderTemplate(w, r, "marketplace/integrations.html", data)
 	})
 	appRouter.HandleFunc("/api/ai/vision/search", aiVisionHandler.SearchImages)
 	appRouter.HandleFunc("/api/ai/vision/analysis", aiVisionHandler.GetImageAnalysis)
@@ -742,6 +837,17 @@ func main() {
 	appRouter.Handle("/api/admin/system/health", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APISystemHealthCheck)))
 	appRouter.Handle("/api/admin/seo/sitemap", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIGenerateSitemap)))
 	appRouter.Handle("/api/admin/seo/analyze", middlewareStack.AdminMiddleware(http.HandlerFunc(adminHandler.APIAnalyzeSEO)))
+
+	// Seller rotaları - Authentication middleware ile korumalı
+	appRouter.HandleFunc("/seller/dashboard", sellerHandler.Dashboard)
+	appRouter.HandleFunc("/seller/products", sellerHandler.Products)
+	appRouter.HandleFunc("/seller/orders", sellerHandler.Orders)
+
+	// Seller API rotaları
+	appRouter.HandleFunc("/api/seller/products", sellerHandler.APIGetProducts)
+	appRouter.HandleFunc("/api/seller/orders", sellerHandler.APIGetOrders)
+	appRouter.HandleFunc("/api/seller/product/status", sellerHandler.APIUpdateProductStatus)
+	appRouter.HandleFunc("/api/seller/order/status", sellerHandler.APIUpdateOrderStatus)
 
 	// Test rotaları (sadece development ortamında)
 	if cfg.Environment == "development" {

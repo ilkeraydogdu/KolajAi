@@ -1,0 +1,340 @@
+{{define "seller/orders.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="seller-container">
+        <!-- Seller Header -->
+        <header class="seller-header">
+            <div class="container">
+                <div class="seller-nav">
+                    <div class="seller-logo">
+                        <h2>Satıcı Paneli</h2>
+                    </div>
+                    <nav class="seller-menu">
+                        <a href="/seller/dashboard">Dashboard</a>
+                        <a href="/seller/products">Ürünlerim</a>
+                        <a href="/seller/orders" class="active">Siparişlerim</a>
+                        <a href="/logout">Çıkış</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="seller-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="exportOrders()">
+                            <i class="icon-download"></i> Dışa Aktar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Orders Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{len .Orders}}</div>
+                            <div class="stat-label">Toplam Sipariş</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info">
+                            <div class="stat-number">
+                                {{$pendingCount := 0}}
+                                {{range .Orders}}
+                                    {{if eq .status "pending"}}{{$pendingCount = add $pendingCount 1}}{{end}}
+                                {{end}}
+                                {{$pendingCount}}
+                            </div>
+                            <div class="stat-label">Bekleyen</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚚</div>
+                        <div class="stat-info">
+                            <div class="stat-number">
+                                {{$shippedCount := 0}}
+                                {{range .Orders}}
+                                    {{if eq .status "shipped"}}{{$shippedCount = add $shippedCount 1}}{{end}}
+                                {{end}}
+                                {{$shippedCount}}
+                            </div>
+                            <div class="stat-label">Kargoda</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-number">
+                                {{$completedCount := 0}}
+                                {{range .Orders}}
+                                    {{if eq .status "completed"}}{{$completedCount = add $completedCount 1}}{{end}}
+                                {{end}}
+                                {{$completedCount}}
+                            </div>
+                            <div class="stat-label">Tamamlanan</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Table -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Sipariş Listesi</h3>
+                        <div class="table-filters">
+                            <input type="text" placeholder="Sipariş ara..." class="search-input">
+                            <select class="filter-select" onchange="filterOrders(this.value)">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="pending">Bekleyen</option>
+                                <option value="shipped">Kargoda</option>
+                                <option value="completed">Tamamlanan</option>
+                                <option value="cancelled">İptal Edildi</option>
+                            </select>
+                            <input type="date" class="date-filter" onchange="filterByDate(this.value)">
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Sipariş ID</th>
+                                    <th>Müşteri</th>
+                                    <th>Ürün</th>
+                                    <th>Adet</th>
+                                    <th>Tutar</th>
+                                    <th>Durum</th>
+                                    <th>Tarih</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .Orders}}
+                                <tr data-status="{{.status}}">
+                                    <td>
+                                        <strong>#{{.id}}</strong>
+                                    </td>
+                                    <td>
+                                        <div class="customer-info">
+                                            <div class="customer-name">{{.customer}}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="product-info">
+                                            <div class="product-name">{{.product}}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="quantity">{{.quantity}} adet</span>
+                                    </td>
+                                    <td>
+                                        <span class="amount">₺{{.amount}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="status status-{{.status}}">
+                                            {{if eq .status "pending"}}Bekleyen
+                                            {{else if eq .status "shipped"}}Kargoda
+                                            {{else if eq .status "completed"}}Tamamlandı
+                                            {{else if eq .status "cancelled"}}İptal Edildi
+                                            {{else}}{{.status}}{{end}}
+                                        </span>
+                                    </td>
+                                    <td>{{.created_at.Format "02.01.2006 15:04"}}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-sm btn-primary" onclick="viewOrderDetails({{.id}})">
+                                                <i class="icon-eye"></i> Detay
+                                            </button>
+                                            {{if eq .status "pending"}}
+                                            <button class="btn btn-sm btn-success" onclick="updateOrderStatus({{.id}}, 'shipped')">
+                                                <i class="icon-truck"></i> Kargola
+                                            </button>
+                                            {{else if eq .status "shipped"}}
+                                            <button class="btn btn-sm btn-info" onclick="updateOrderStatus({{.id}}, 'completed')">
+                                                <i class="icon-check"></i> Tamamla
+                                            </button>
+                                            {{end}}
+                                            <button class="btn btn-sm btn-secondary" onclick="printOrder({{.id}})">
+                                                <i class="icon-print"></i> Yazdır
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="8" class="no-data">
+                                        <div class="empty-state">
+                                            <div class="empty-icon">📋</div>
+                                            <h3>Henüz sipariş yok</h3>
+                                            <p>Siparişleriniz burada görünecek.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Toplam {{len .Orders}} sipariş gösteriliyor
+                    </div>
+                    <div class="pagination">
+                        <button class="btn btn-sm" disabled>« Önceki</button>
+                        <button class="btn btn-sm btn-primary">1</button>
+                        <button class="btn btn-sm" disabled>Sonraki »</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Sipariş Detayları</h3>
+                <button class="modal-close" onclick="closeModal('orderDetailsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetailsContent">
+                    <!-- Order details will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('orderDetailsModal')">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dist/js/main.js"></script>
+    <script>
+        function viewOrderDetails(orderId) {
+            // Mock order details - in real implementation, fetch from server
+            const orderDetails = `
+                <div class="order-details">
+                    <div class="detail-section">
+                        <h4>Sipariş Bilgileri</h4>
+                        <p><strong>Sipariş ID:</strong> #${orderId}</p>
+                        <p><strong>Sipariş Tarihi:</strong> ${new Date().toLocaleDateString('tr-TR')}</p>
+                        <p><strong>Durum:</strong> <span class="status status-pending">Bekleyen</span></p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Müşteri Bilgileri</h4>
+                        <p><strong>Ad Soyad:</strong> Test Müşteri</p>
+                        <p><strong>E-posta:</strong> test@example.com</p>
+                        <p><strong>Telefon:</strong> +90 555 123 4567</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Teslimat Adresi</h4>
+                        <p>Test Mahallesi, Test Sokak No:1<br>
+                        İstanbul, Türkiye 34000</p>
+                    </div>
+                    <div class="detail-section">
+                        <h4>Ürün Bilgileri</h4>
+                        <table class="detail-table">
+                            <tr>
+                                <td>Test Ürün</td>
+                                <td>1 adet</td>
+                                <td>₺99.99</td>
+                            </tr>
+                            <tr class="total-row">
+                                <td colspan="2"><strong>Toplam</strong></td>
+                                <td><strong>₺99.99</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('orderDetailsContent').innerHTML = orderDetails;
+            document.getElementById('orderDetailsModal').style.display = 'block';
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const statusText = {
+                'shipped': 'kargoya verilecek',
+                'completed': 'tamamlanacak',
+                'cancelled': 'iptal edilecek'
+            };
+
+            if (confirm(`Sipariş #${orderId} ${statusText[newStatus]}. Emin misiniz?`)) {
+                fetch('/api/seller/order/status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `order_id=${orderId}&status=${newStatus}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Bir hata oluştu. Lütfen tekrar deneyin.');
+                });
+            }
+        }
+
+        function printOrder(orderId) {
+            // Mock print functionality
+            alert(`Sipariş #${orderId} yazdırma özelliği yakında eklenecek.`);
+        }
+
+        function exportOrders() {
+            // Mock export functionality
+            alert('Sipariş dışa aktarma özelliği yakında eklenecek.');
+        }
+
+        function filterOrders(status) {
+            const rows = document.querySelectorAll('tbody tr[data-status]');
+            rows.forEach(row => {
+                if (status === '' || row.dataset.status === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function filterByDate(date) {
+            // Mock date filtering
+            console.log('Filtering by date:', date);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+{{end}}

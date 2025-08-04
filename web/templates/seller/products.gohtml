@@ -1,0 +1,268 @@
+{{define "seller/products.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="seller-container">
+        <!-- Seller Header -->
+        <header class="seller-header">
+            <div class="container">
+                <div class="seller-nav">
+                    <div class="seller-logo">
+                        <h2>Satıcı Paneli</h2>
+                    </div>
+                    <nav class="seller-menu">
+                        <a href="/seller/dashboard">Dashboard</a>
+                        <a href="/seller/products" class="active">Ürünlerim</a>
+                        <a href="/seller/orders">Siparişlerim</a>
+                        <a href="/logout">Çıkış</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="seller-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-primary" onclick="showAddProductModal()">
+                            <i class="icon-plus"></i> Yeni Ürün Ekle
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Products Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{len .Products}}</div>
+                            <div class="stat-label">Toplam Ürün</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{len .Products}}</div>
+                            <div class="stat-label">Aktif Ürün</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⏳</div>
+                        <div class="stat-info">
+                            <div class="stat-number">0</div>
+                            <div class="stat-label">Bekleyen</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Vendor.Rating}}</div>
+                            <div class="stat-label">Ortalama Puan</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Table -->
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>Ürün Listesi</h3>
+                        <div class="table-filters">
+                            <input type="text" placeholder="Ürün ara..." class="search-input">
+                            <select class="filter-select">
+                                <option value="">Tüm Durumlar</option>
+                                <option value="active">Aktif</option>
+                                <option value="inactive">Pasif</option>
+                                <option value="pending">Bekleyen</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Ürün Adı</th>
+                                    <th>Fiyat</th>
+                                    <th>Stok</th>
+                                    <th>Durum</th>
+                                    <th>Oluşturma Tarihi</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .Products}}
+                                <tr>
+                                    <td>#{{.id}}</td>
+                                    <td>
+                                        <div class="product-info">
+                                            <div class="product-name">{{.name}}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="price">₺{{.price}}</span>
+                                    </td>
+                                    <td>
+                                        <span class="stock {{if lt .stock 10}}low-stock{{end}}">
+                                            {{.stock}} adet
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="status status-{{.status}}">
+                                            {{if eq .status "active"}}Aktif{{else if eq .status "inactive"}}Pasif{{else}}Bekleyen{{end}}
+                                        </span>
+                                    </td>
+                                    <td>{{.created_at.Format "02.01.2006 15:04"}}</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-sm btn-secondary" onclick="editProduct({{.id}})">
+                                                <i class="icon-edit"></i> Düzenle
+                                            </button>
+                                            <button class="btn btn-sm btn-warning" onclick="toggleProductStatus({{.id}})">
+                                                <i class="icon-toggle"></i> Durum
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteProduct({{.id}})">
+                                                <i class="icon-delete"></i> Sil
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="7" class="no-data">
+                                        <div class="empty-state">
+                                            <div class="empty-icon">📦</div>
+                                            <h3>Henüz ürün eklenmemiş</h3>
+                                            <p>İlk ürününüzü eklemek için "Yeni Ürün Ekle" butonuna tıklayın.</p>
+                                            <button class="btn btn-primary" onclick="showAddProductModal()">
+                                                Ürün Ekle
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Toplam {{len .Products}} ürün gösteriliyor
+                    </div>
+                    <div class="pagination">
+                        <button class="btn btn-sm" disabled>« Önceki</button>
+                        <button class="btn btn-sm btn-primary">1</button>
+                        <button class="btn btn-sm" disabled>Sonraki »</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Yeni Ürün Ekle</h3>
+                <button class="modal-close" onclick="closeModal('addProductModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addProductForm">
+                    <div class="form-group">
+                        <label for="productName">Ürün Adı</label>
+                        <input type="text" id="productName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productPrice">Fiyat (₺)</label>
+                        <input type="number" id="productPrice" name="price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productStock">Stok Adedi</label>
+                        <input type="number" id="productStock" name="stock" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="productDescription">Açıklama</label>
+                        <textarea id="productDescription" name="description" rows="4"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addProductModal')">İptal</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dist/js/main.js"></script>
+    <script>
+        function showAddProductModal() {
+            document.getElementById('addProductModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function editProduct(productId) {
+            alert('Ürün düzenleme özelliği yakında eklenecek. Ürün ID: ' + productId);
+        }
+
+        function toggleProductStatus(productId) {
+            if (confirm('Ürün durumunu değiştirmek istediğinizden emin misiniz?')) {
+                fetch('/api/seller/product/status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'product_id=' + productId + '&status=inactive'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm('Bu ürünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+                alert('Ürün silme özelliği yakında eklenecek. Ürün ID: ' + productId);
+            }
+        }
+
+        function saveProduct() {
+            const form = document.getElementById('addProductForm');
+            const formData = new FormData(form);
+            
+            // Mock save - in real implementation, send to server
+            alert('Ürün ekleme özelliği yakında eklenecek.');
+            closeModal('addProductModal');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+{{end}}
