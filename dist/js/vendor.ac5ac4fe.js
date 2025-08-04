@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkkolajAI_frontend=self.webpackChunkkolajAI_frontend||[]).push([[502],{},function(n){var e=function(e){return n(n.s=e)};n.O(0,[96],function(){return e(705),e(110),e(106),e(213),e(543)});n.O()}]);
