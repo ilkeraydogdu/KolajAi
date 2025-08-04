@@ -427,6 +427,15 @@ func main() {
 	notificationService := services.NewNotificationService(nil, nil, nil)
 	notificationHandler := handlers.NewNotificationHandler(h, notificationService)
 
+	// Security handler'ı oluştur
+	securityHandler := handlers.NewSecurityHandler(h)
+
+	// Analytics handler'ı oluştur
+	analyticsHandler := handlers.NewAnalyticsHandler(h, nil)
+
+	// Email handler'ı oluştur
+	emailHandler := handlers.NewEmailHandler(h, nil)
+
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
 
@@ -879,6 +888,43 @@ func main() {
 	appRouter.Handle("/api/notifications/templates", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APICreateTemplate)))
 	appRouter.Handle("/api/notifications/templates/update", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIUpdateTemplate)))
 	appRouter.Handle("/api/notifications/templates/delete", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIDeleteTemplate)))
+
+	// Security rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/security/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Dashboard)))
+	appRouter.Handle("/security/users", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Users)))
+	appRouter.Handle("/security/threats", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Threats)))
+	appRouter.Handle("/security/settings", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.Settings)))
+
+	// Security API rotaları
+	appRouter.Handle("/api/security/stats", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIGetSecurityStats)))
+	appRouter.Handle("/api/security/block-ip", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIBlockIP)))
+	appRouter.Handle("/api/security/unblock-ip", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIUnblockIP)))
+	appRouter.Handle("/api/security/enable-2fa", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIEnable2FA)))
+	appRouter.Handle("/api/security/settings", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIUpdateSecuritySettings)))
+	appRouter.Handle("/api/security/threat-details", middlewareStack.AdminMiddleware(http.HandlerFunc(securityHandler.APIGetThreatDetails)))
+
+	// Analytics rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/analytics/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Dashboard)))
+	appRouter.Handle("/analytics/revenue", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Revenue)))
+	appRouter.Handle("/analytics/customers", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Customers)))
+	appRouter.Handle("/analytics/products", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.Products)))
+
+	// Analytics API rotaları
+	appRouter.Handle("/api/analytics/metrics", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetBusinessMetrics)))
+	appRouter.Handle("/api/analytics/forecast", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetRevenueForecast)))
+	appRouter.Handle("/api/analytics/segments", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetCustomerSegments)))
+	appRouter.Handle("/api/analytics/insights", middlewareStack.AdminMiddleware(http.HandlerFunc(analyticsHandler.APIGetProductInsights)))
+
+	// Email rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/email/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Dashboard)))
+	appRouter.Handle("/email/campaigns", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Campaigns)))
+	appRouter.Handle("/email/templates", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Templates)))
+	appRouter.Handle("/email/settings", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.Settings)))
+
+	// Email API rotaları
+	appRouter.Handle("/api/email/send-campaign", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.APISendCampaign)))
+	appRouter.Handle("/api/email/stats", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.APIGetEmailStats)))
+	appRouter.Handle("/api/email/create-template", middlewareStack.AdminMiddleware(http.HandlerFunc(emailHandler.APICreateTemplate)))
 
 	// Test rotaları (sadece development ortamında)
 	if cfg.Environment == "development" {

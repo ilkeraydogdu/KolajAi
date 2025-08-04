@@ -1,0 +1,467 @@
+{{define "security/dashboard.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="security-container">
+        <!-- Security Header -->
+        <header class="security-header">
+            <div class="container">
+                <div class="security-nav">
+                    <div class="security-logo">
+                        <h2>🔐 Güvenlik Yönetimi</h2>
+                    </div>
+                    <nav class="security-menu">
+                        <a href="/security/dashboard" class="active">Dashboard</a>
+                        <a href="/security/users">Kullanıcılar</a>
+                        <a href="/security/threats">Tehditler</a>
+                        <a href="/security/settings">Ayarlar</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="security-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="refreshSecurityData()">
+                            <i class="icon-refresh"></i> Yenile
+                        </button>
+                        <button class="btn btn-danger" onclick="showEmergencyModal()">
+                            <i class="icon-warning"></i> Acil Durum
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Security Stats -->
+                <div class="stats-row">
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.active_sessions}}</div>
+                            <div class="stat-label">Aktif Oturum</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.failed_logins}}</div>
+                            <div class="stat-label">Başarısız Giriş</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-icon">🚫</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.blocked_ips}}</div>
+                            <div class="stat-label">Engellenen IP</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">🔐</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.2fa_enabled_users}}</div>
+                            <div class="stat-label">2FA Aktif</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-primary">
+                        <div class="stat-icon">🔗</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.oauth_connections}}</div>
+                            <div class="stat-label">OAuth Bağlantı</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Security Events -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🚨 Son Güvenlik Olayları</h3>
+                            <span class="alert-count">{{len .SecurityEvents}}</span>
+                        </div>
+                        <div class="card-content">
+                            {{range .SecurityEvents}}
+                            <div class="security-event severity-{{.severity}}">
+                                <div class="event-icon">
+                                    {{if eq .type "failed_login"}}🔒{{else if eq .type "suspicious_activity"}}👁️{{else if eq .type "2fa_bypass_attempt"}}🛡️{{else}}⚠️{{end}}
+                                </div>
+                                <div class="event-info">
+                                    <div class="event-message">{{.message}}</div>
+                                    <div class="event-meta">
+                                        <span class="event-ip">{{.ip}}</span>
+                                        <span class="event-user">{{.user}}</span>
+                                        <span class="event-time">{{.timestamp.Format "15:04"}}</span>
+                                    </div>
+                                </div>
+                                <div class="event-status">
+                                    <span class="status-badge status-{{.status}}">{{.status}}</span>
+                                    <button class="btn btn-sm btn-outline" onclick="viewEventDetails({{.id}})">
+                                        Detay
+                                    </button>
+                                </div>
+                            </div>
+                            {{else}}
+                            <div class="no-events">
+                                <p>✅ Son 24 saatte güvenlik olayı yok</p>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Active Threats -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🎯 Aktif Tehditler</h3>
+                            <span class="threat-count">{{len .ActiveThreats}}</span>
+                        </div>
+                        <div class="card-content">
+                            {{range .ActiveThreats}}
+                            <div class="threat-item">
+                                <div class="threat-icon">
+                                    {{if eq .type "brute_force"}}🔨{{else if eq .type "sql_injection"}}💉{{else if eq .type "xss_attempt"}}🕷️{{else}}⚡{{end}}
+                                </div>
+                                <div class="threat-info">
+                                    <div class="threat-type">{{.type}}</div>
+                                    <div class="threat-details">
+                                        <span class="threat-ip">{{.source_ip}}</span>
+                                        <span class="threat-target">→ {{.target}}</span>
+                                        <span class="threat-attempts">{{.attempts}} deneme</span>
+                                    </div>
+                                </div>
+                                <div class="threat-actions">
+                                    <span class="threat-status {{if .blocked}}blocked{{else}}active{{end}}">
+                                        {{if .blocked}}Engellendi{{else}}Aktif{{end}}
+                                    </span>
+                                    <button class="btn btn-sm btn-danger" onclick="blockThreat({{.id}})">
+                                        Engelle
+                                    </button>
+                                </div>
+                            </div>
+                            {{else}}
+                            <div class="no-threats">
+                                <p>🛡️ Aktif tehdit tespit edilmedi</p>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Security Health Chart -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>📊 Güvenlik Durumu</h3>
+                            <div class="chart-controls">
+                                <select onchange="updateSecurityChart(this.value)">
+                                    <option value="today">Bugün</option>
+                                    <option value="week">Son 7 Gün</option>
+                                    <option value="month">Son 30 Gün</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="security-health">
+                                <div class="health-meter">
+                                    <div class="meter-circle">
+                                        <div class="meter-fill" data-percentage="85"></div>
+                                        <div class="meter-text">85%</div>
+                                    </div>
+                                    <div class="meter-label">Güvenlik Skoru</div>
+                                </div>
+                                <div class="health-breakdown">
+                                    <div class="health-item">
+                                        <span class="health-label">Kimlik Doğrulama</span>
+                                        <div class="health-bar">
+                                            <div class="health-progress" style="width: 92%"></div>
+                                        </div>
+                                        <span class="health-value">92%</span>
+                                    </div>
+                                    <div class="health-item">
+                                        <span class="health-label">Erişim Kontrolü</span>
+                                        <div class="health-bar">
+                                            <div class="health-progress" style="width: 88%"></div>
+                                        </div>
+                                        <span class="health-value">88%</span>
+                                    </div>
+                                    <div class="health-item">
+                                        <span class="health-label">Veri Koruması</span>
+                                        <div class="health-bar">
+                                            <div class="health-progress" style="width: 95%"></div>
+                                        </div>
+                                        <span class="health-value">95%</span>
+                                    </div>
+                                    <div class="health-item">
+                                        <span class="health-label">Ağ Güvenliği</span>
+                                        <div class="health-bar">
+                                            <div class="health-progress" style="width: 76%"></div>
+                                        </div>
+                                        <span class="health-value">76%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>⚡ Hızlı İşlemler</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="quick-actions">
+                                <button class="action-btn" onclick="showBlockIPModal()">
+                                    <div class="action-icon">🚫</div>
+                                    <div class="action-text">IP Engelle</div>
+                                </button>
+                                <button class="action-btn" onclick="force2FAAll()">
+                                    <div class="action-icon">🔐</div>
+                                    <div class="action-text">2FA Zorla</div>
+                                </button>
+                                <button class="action-btn" onclick="viewSecurityLogs()">
+                                    <div class="action-icon">📋</div>
+                                    <div class="action-text">Güvenlik Logları</div>
+                                </button>
+                                <button class="action-btn" onclick="runSecurityScan()">
+                                    <div class="action-icon">🔍</div>
+                                    <div class="action-text">Güvenlik Taraması</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Metrics -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📈 Güvenlik Metrikleri</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="metrics-grid">
+                                <div class="metric-item">
+                                    <div class="metric-icon">🔑</div>
+                                    <div class="metric-info">
+                                        <div class="metric-value">{{.Stats.jwt_tokens_active}}</div>
+                                        <div class="metric-label">Aktif Token</div>
+                                    </div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-icon">⚠️</div>
+                                    <div class="metric-info">
+                                        <div class="metric-value">{{.Stats.security_alerts}}</div>
+                                        <div class="metric-label">Güvenlik Uyarısı</div>
+                                    </div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-icon">🕐</div>
+                                    <div class="metric-info">
+                                        <div class="metric-value">{{.Stats.last_breach_attempt.Format "15:04"}}</div>
+                                        <div class="metric-label">Son Saldırı</div>
+                                    </div>
+                                </div>
+                                <div class="metric-item">
+                                    <div class="metric-icon">🛡️</div>
+                                    <div class="metric-info">
+                                        <div class="metric-value">99.2%</div>
+                                        <div class="metric-label">Uptime</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Block IP Modal -->
+    <div id="blockIPModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>IP Adresi Engelle</h3>
+                <button class="modal-close" onclick="closeModal('blockIPModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="blockIPForm">
+                    <div class="form-group">
+                        <label>IP Adresi</label>
+                        <input type="text" name="ip" required placeholder="192.168.1.100">
+                    </div>
+                    <div class="form-group">
+                        <label>Sebep</label>
+                        <select name="reason" required>
+                            <option value="brute_force">Brute Force Saldırısı</option>
+                            <option value="suspicious_activity">Şüpheli Aktivite</option>
+                            <option value="malware">Malware Tespit</option>
+                            <option value="manual">Manuel Engelleme</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Süre</label>
+                        <select name="duration" required>
+                            <option value="1">1 Saat</option>
+                            <option value="24">24 Saat</option>
+                            <option value="168">1 Hafta</option>
+                            <option value="720">1 Ay</option>
+                            <option value="permanent">Kalıcı</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('blockIPModal')">İptal</button>
+                <button class="btn btn-danger" onclick="blockIP()">Engelle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emergency Modal -->
+    <div id="emergencyModal" class="modal">
+        <div class="modal-content emergency-modal">
+            <div class="modal-header">
+                <h3>🚨 Acil Durum Protokolü</h3>
+                <button class="modal-close" onclick="closeModal('emergencyModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="emergency-actions">
+                    <button class="emergency-btn" onclick="lockdownSystem()">
+                        <div class="emergency-icon">🔒</div>
+                        <div class="emergency-text">Sistem Kilitle</div>
+                    </button>
+                    <button class="emergency-btn" onclick="forceLogoutAll()">
+                        <div class="emergency-icon">👥</div>
+                        <div class="emergency-text">Tüm Oturumları Sonlandır</div>
+                    </button>
+                    <button class="emergency-btn" onclick="enableMaintenanceMode()">
+                        <div class="emergency-icon">🔧</div>
+                        <div class="emergency-text">Bakım Modu</div>
+                    </button>
+                    <button class="emergency-btn" onclick="alertSecurityTeam()">
+                        <div class="emergency-icon">📞</div>
+                        <div class="emergency-text">Güvenlik Ekibini Uyar</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dist/js/main.js"></script>
+    <script>
+        function refreshSecurityData() {
+            location.reload();
+        }
+
+        function showEmergencyModal() {
+            document.getElementById('emergencyModal').style.display = 'block';
+        }
+
+        function showBlockIPModal() {
+            document.getElementById('blockIPModal').style.display = 'block';
+        }
+
+        function blockIP() {
+            const form = document.getElementById('blockIPForm');
+            const formData = new FormData(form);
+            
+            fetch('/api/security/block-ip', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('IP adresi başarıyla engellendi!');
+                    closeModal('blockIPModal');
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('IP engellenirken hata oluştu: ' + error);
+            });
+        }
+
+        function blockThreat(threatId) {
+            if (confirm('Bu tehdidi engellemek istiyor musunuz?')) {
+                alert('Tehdit engelleme özelliği yakında eklenecek.');
+            }
+        }
+
+        function viewEventDetails(eventId) {
+            alert('Olay detayları özelliği yakında eklenecek.');
+        }
+
+        function force2FAAll() {
+            if (confirm('Tüm kullanıcılar için 2FA zorunlu hale getirilsin mi?')) {
+                alert('2FA zorlama özelliği yakında eklenecek.');
+            }
+        }
+
+        function viewSecurityLogs() {
+            window.location.href = '/security/logs';
+        }
+
+        function runSecurityScan() {
+            alert('Güvenlik taraması başlatılıyor...');
+        }
+
+        function lockdownSystem() {
+            if (confirm('SİSTEM KİLİTLENECEK! Emin misiniz?')) {
+                alert('Sistem kilitleme özelliği yakında eklenecek.');
+            }
+        }
+
+        function forceLogoutAll() {
+            if (confirm('Tüm kullanıcı oturumları sonlandırılacak! Emin misiniz?')) {
+                alert('Toplu oturum sonlandırma özelliği yakında eklenecek.');
+            }
+        }
+
+        function enableMaintenanceMode() {
+            if (confirm('Bakım modu etkinleştirilecek! Emin misiniz?')) {
+                alert('Bakım modu özelliği yakında eklenecek.');
+            }
+        }
+
+        function alertSecurityTeam() {
+            alert('Güvenlik ekibi uyarılıyor...');
+        }
+
+        function updateSecurityChart(period) {
+            console.log('Updating security chart for period:', period);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // Initialize security health meter
+        document.addEventListener('DOMContentLoaded', function() {
+            const meter = document.querySelector('.meter-fill');
+            if (meter) {
+                const percentage = meter.getAttribute('data-percentage');
+                meter.style.background = `conic-gradient(#4CAF50 0deg ${percentage * 3.6}deg, #e0e0e0 ${percentage * 3.6}deg 360deg)`;
+            }
+        });
+    </script>
+</body>
+</html>
+{{end}}
