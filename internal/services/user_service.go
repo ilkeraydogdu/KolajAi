@@ -590,6 +590,11 @@ func (s *UserService) getCustomerByUserID(userID int) (*models.Customer, error) 
 	return &customer, nil
 }
 
+// GetUserStats returns public user statistics
+func (s *UserService) GetUserStats(userID int) (*UserStats, error) {
+	return s.getUserStats(userID)
+}
+
 func (s *UserService) getUserStats(userID int) (*UserStats, error) {
 	// Get user creation date
 	user, err := s.GetUserByID(userID)

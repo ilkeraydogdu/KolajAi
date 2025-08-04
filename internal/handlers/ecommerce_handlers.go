@@ -18,16 +18,20 @@ type EcommerceHandler struct {
 	productService *services.ProductService
 	orderService   *services.OrderService
 	auctionService *services.AuctionService
+	userService    *services.UserService
+	addressService *services.AddressService
 }
 
 // NewEcommerceHandler creates a new e-commerce handler
-func NewEcommerceHandler(h *Handler, vendorService *services.VendorService, productService *services.ProductService, orderService *services.OrderService, auctionService *services.AuctionService) *EcommerceHandler {
+func NewEcommerceHandler(h *Handler, vendorService *services.VendorService, productService *services.ProductService, orderService *services.OrderService, auctionService *services.AuctionService, userService *services.UserService, addressService *services.AddressService) *EcommerceHandler {
 	return &EcommerceHandler{
 		Handler:        h,
 		vendorService:  vendorService,
 		productService: productService,
 		orderService:   orderService,
 		auctionService: auctionService,
+		userService:    userService,
+		addressService: addressService,
 	}
 }
 
@@ -440,18 +444,18 @@ func (h *EcommerceHandler) UserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	// Get user data
-	user, err := h.UserService.GetUserByID(userID)
+	user, err := h.userService.GetUserByID(userID)
 	if err != nil {
-		h.Logger.Printf("Error getting user: %v", err)
+		h.SessionManager.Logger.Printf("Error getting user: %v", err)
 		http.Error(w, "User not found", http.StatusNotFound)
 		return
 	}
 	
 	// Get user statistics
-	stats, err := h.UserService.GetUserStats(userID)
+	stats, err := h.userService.GetUserStats(userID)
 	if err != nil {
-		h.Logger.Printf("Error getting user stats: %v", err)
-		stats = &models.UserStats{} // Empty stats
+		h.SessionManager.Logger.Printf("Error getting user stats: %v", err)
+		stats = &services.UserStats{} // Empty stats
 	}
 	
 	data := map[string]interface{}{
@@ -472,9 +476,9 @@ func (h *EcommerceHandler) UserOrders(w http.ResponseWriter, r *http.Request) {
 	dateRange := r.URL.Query().Get("date_range")
 	
 	// Get user orders
-	orders, totalCount, err := h.OrderService.GetUserOrders(userID, page, services.DefaultProductLimit, status, dateRange)
+	orders, totalCount, err := h.orderService.GetUserOrders(userID, page, services.DefaultProductLimit, status, dateRange)
 	if err != nil {
-		h.Logger.Printf("Error getting user orders: %v", err)
+		h.SessionManager.Logger.Printf("Error getting user orders: %v", err)
 		orders = []*models.Order{}
 		totalCount = 0
 	}
@@ -483,9 +487,9 @@ func (h *EcommerceHandler) UserOrders(w http.ResponseWriter, r *http.Request) {
 	totalPages := (totalCount + services.DefaultProductLimit - 1) / services.DefaultProductLimit
 	
 	// Get order statistics
-	orderStats, err := h.OrderService.GetUserOrderStats(userID)
+	orderStats, err := h.orderService.GetUserOrderStats(userID)
 	if err != nil {
-		h.Logger.Printf("Error getting order stats: %v", err)
+		h.SessionManager.Logger.Printf("Error getting order stats: %v", err)
 		orderStats = &models.OrderStats{}
 	}
 	
@@ -513,10 +517,19 @@ func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request)
 		switch action {
 		case "add":
 			// Add new address
+			fullName := r.FormValue("full_name")
+			names := strings.SplitN(fullName, " ", 2)
+			firstName := names[0]
+			lastName := ""
+			if len(names) > 1 {
+				lastName = names[1]
+			}
+			
 			address := &models.Address{
-				UserID:       userID,
+				CustomerID:   uint(userID),
 				Title:        r.FormValue("title"),
-				FullName:     r.FormValue("full_name"),
+				FirstName:    firstName,
+				LastName:     lastName,
 				AddressLine1: r.FormValue("address_line_1"),
 				AddressLine2: r.FormValue("address_line_2"),
 				City:         r.FormValue("city"),
@@ -527,9 +540,9 @@ func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request)
 				IsDefault:    r.FormValue("is_default") == "1",
 			}
 			
-			err := h.AddressService.CreateAddress(address)
-			if err != nil {
-				h.Logger.Printf("Error creating address: %v", err)
+				err := h.addressService.CreateAddress(address)
+	if err != nil {
+		h.SessionManager.Logger.Printf("Error creating address: %v", err)
 				h.RedirectWithFlash(w, r, "/user/addresses", "Adres eklenemedi")
 				return
 			}
@@ -541,11 +554,20 @@ func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request)
 			// Edit existing address
 			addressID, _ := strconv.Atoi(r.FormValue("address_id"))
 			
+			fullName := r.FormValue("full_name")
+			names := strings.SplitN(fullName, " ", 2)
+			firstName := names[0]
+			lastName := ""
+			if len(names) > 1 {
+				lastName = names[1]
+			}
+			
 			address := &models.Address{
-				ID:           addressID,
-				UserID:       userID,
+				ID:           uint(addressID),
+				CustomerID:   uint(userID),
 				Title:        r.FormValue("title"),
-				FullName:     r.FormValue("full_name"),
+				FirstName:    firstName,
+				LastName:     lastName,
 				AddressLine1: r.FormValue("address_line_1"),
 				AddressLine2: r.FormValue("address_line_2"),
 				City:         r.FormValue("city"),
@@ -556,9 +578,9 @@ func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request)
 				IsDefault:    r.FormValue("is_default") == "1",
 			}
 			
-			err := h.AddressService.UpdateAddress(address)
-			if err != nil {
-				h.Logger.Printf("Error updating address: %v", err)
+				err := h.addressService.UpdateAddress(address)
+	if err != nil {
+		h.SessionManager.Logger.Printf("Error updating address: %v", err)
 				h.RedirectWithFlash(w, r, "/user/addresses", "Adres güncellenemedi")
 				return
 			}
@@ -570,9 +592,9 @@ func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request)
 			// Delete address
 			addressID, _ := strconv.Atoi(r.FormValue("address_id"))
 			
-			err := h.AddressService.DeleteAddress(addressID, userID)
-			if err != nil {
-				h.Logger.Printf("Error deleting address: %v", err)
+				err := h.addressService.DeleteAddress(addressID, userID)
+	if err != nil {
+		h.SessionManager.Logger.Printf("Error deleting address: %v", err)
 				h.RedirectWithFlash(w, r, "/user/addresses", "Adres silinemedi")
 				return
 			}
@@ -584,9 +606,9 @@ func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request)
 			// Set default address
 			addressID, _ := strconv.Atoi(r.FormValue("address_id"))
 			
-			err := h.AddressService.SetDefaultAddress(addressID, userID)
-			if err != nil {
-				h.Logger.Printf("Error setting default address: %v", err)
+				err := h.addressService.SetDefaultAddress(addressID, userID)
+	if err != nil {
+		h.SessionManager.Logger.Printf("Error setting default address: %v", err)
 				h.RedirectWithFlash(w, r, "/user/addresses", "Varsayılan adres ayarlanamadı")
 				return
 			}
@@ -597,10 +619,10 @@ func (h *EcommerceHandler) UserAddresses(w http.ResponseWriter, r *http.Request)
 	}
 	
 	// Get user addresses
-	addresses, err := h.AddressService.GetUserAddresses(userID)
+	addresses, err := h.addressService.GetUserAddresses(userID)
 	if err != nil {
-		h.Logger.Printf("Error getting user addresses: %v", err)
-		addresses = []*models.Address{}
+		h.SessionManager.Logger.Printf("Error getting user addresses: %v", err)
+		addresses = []models.Address{}
 	}
 	
 	data := map[string]interface{}{
