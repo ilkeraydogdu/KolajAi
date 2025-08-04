@@ -34,20 +34,22 @@ func (r *AdminRepository) GetDashboardStats() (map[string]interface{}, error) {
 	stats["TotalUsers"] = totalUsers
 
 	// Active users (logged in within last 30 days)
-	activeUsers, err := r.db.QueryRow(`
+	var activeUsers int
+	err = r.db.QueryRow(`
 		SELECT COUNT(*) FROM users 
 		WHERE is_active = 1 AND updated_at > DATE_SUB(NOW(), INTERVAL 30 DAY)
-	`).Scan()
+	`).Scan(&activeUsers)
 	if err != nil {
 		activeUsers = 0
 	}
 	stats["ActiveUsers"] = activeUsers
 
 	// New users today
-	newUsersToday, err := r.db.QueryRow(`
+	var newUsersToday int
+	err = r.db.QueryRow(`
 		SELECT COUNT(*) FROM users 
 		WHERE DATE(created_at) = CURDATE()
-	`).Scan()
+	`).Scan(&newUsersToday)
 	if err != nil {
 		newUsersToday = 0
 	}
@@ -486,7 +488,7 @@ func (r *AdminRepository) GetSystemHealth() (map[string]interface{}, error) {
 	health := make(map[string]interface{})
 
 	// Database connection test
-	err := r.db.Ping()
+	err := database.DB.Ping()
 	if err != nil {
 		health["DatabaseStatus"] = "disconnected"
 		health["OverallStatus"] = "unhealthy"

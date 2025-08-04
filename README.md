@@ -1,90 +1,27 @@
 # KolajAI Enterprise Marketplace
 
-## Overview
+A modern, AI-powered e-commerce marketplace platform built with Go and MySQL.
 
-KolajAI Enterprise Marketplace is an advanced, AI-powered e-commerce platform built with Go. This enterprise-level application includes real marketplace integrations with production-ready API implementations for major Turkish e-commerce platforms like Trendyol and Hepsiburada.
+## Features
 
-## Enterprise Features
+- **MySQL Database**: Production-ready MySQL database integration
+- **Redis Caching**: High-performance caching layer
+- **Modern Frontend**: Built with TailwindCSS and Alpine.js
+- **AI Integration**: Support for various AI services (OpenAI, Anthropic, etc.)
+- **Marketplace Integration**: Connect with major Turkish marketplaces
+- **Secure Authentication**: JWT-based authentication with 2FA support
+- **RESTful API**: Comprehensive REST API
+- **Docker Support**: Full Docker containerization
 
-### 🔐 Advanced Security System
-- **Multi-layer Security**: IP whitelisting/blacklisting, rate limiting, input validation
-- **Vulnerability Scanning**: Real-time threat detection for SQL injection, XSS, CSRF
-- **Security Headers**: Comprehensive HTTP security headers
-- **Two-Factor Authentication**: Optional 2FA support
-- **Audit Logging**: Complete security event logging and monitoring
-
-### 🚀 Performance Optimization
-- **Advanced Caching**: Multi-store cache system (Memory, Redis, Database)
-- **Compression**: Automatic gzip compression for responses
-- **Cache Invalidation**: Tag-based and TTL-based cache management
-- **Load Balancing Ready**: Designed for horizontal scaling
-
-### 📊 Dynamic Reporting System
-- **Configurable Reports**: Custom report generation with filters and grouping
-- **User Behavior Analysis**: Detailed user activity and purchasing pattern analysis
-- **Real-time Analytics**: Live dashboard with performance metrics
-- **Export Capabilities**: Multiple format support (JSON, CSV, PDF)
-
-### 🔧 Session & Cookie Management
-- **Database-backed Sessions**: Persistent session storage
-- **Session Analytics**: User activity tracking and device information
-- **Secure Cookies**: HttpOnly, Secure, SameSite configuration
-- **Session Cleanup**: Automatic cleanup of expired sessions
-
-### 🌐 SEO & Multi-language Support
-- **Dynamic Sitemap**: Auto-generated XML sitemaps
-- **Multi-language Content**: Full internationalization support
-- **Meta Tag Management**: Dynamic meta tags and structured data
-- **Search Engine Optimization**: Built-in SEO tools and analytics
-
-### 📢 Notification System
-- **Multi-channel Notifications**: Email, SMS, push notifications
-- **Template System**: Customizable notification templates
-- **Scheduling**: Delayed and recurring notifications
-- **User Preferences**: Opt-out and quiet hours management
-
-### 🧪 Advanced Testing Framework
-- **Multiple Test Types**: Unit, integration, API, UI, performance, security tests
-- **Code Coverage**: Detailed coverage reporting
-- **Parallel Execution**: Concurrent test running
-- **Test Reporting**: Comprehensive test result analysis
-
-### ❌ Error Management
-- **Centralized Error Handling**: Structured error logging and management
-- **Error Grouping**: Similar error aggregation
-- **Notification Rules**: Configurable error alerting
-- **Stack Trace Analysis**: Detailed error context and debugging information
-
-### 🎛️ Advanced Admin Panel
-- **Real-time Dashboard**: Live statistics and metrics
-- **User Management**: Detailed user profiles and behavior analysis
-- **Content Management**: Product, vendor, and order management
-- **System Health**: Server monitoring and performance tracking
-- **Configuration Management**: Dynamic system settings
-
-## Technical Architecture
-
-### Core Technologies
-- **Backend**: Go 1.23+
-- **Database**: SQLite (with MySQL support)
-- **Caching**: In-memory with Redis support
-- **Templates**: Go HTML templates
-- **Security**: Custom security middleware stack
-
-### Advanced Systems
-- **Middleware Stack**: Layered security, caching, and logging
-- **Router System**: Advanced routing with group support
-- **Configuration Management**: YAML-based configuration
-- **Dependency Injection**: Service-oriented architecture
-
-## Installation & Setup
+## Quick Start
 
 ### Prerequisites
-- Go 1.23 or higher
-- SQLite3 (or MySQL for production)
-- Optional: Redis for advanced caching
 
-### Quick Start
+- Docker and Docker Compose
+- Go 1.23+ (for development)
+- Node.js 18+ (for frontend development)
+
+### Installation
 
 1. **Clone the repository**
    ```bash
@@ -92,239 +29,77 @@ KolajAI Enterprise Marketplace is an advanced, AI-powered e-commerce platform bu
    cd kolajAi
    ```
 
-2. **Install dependencies**
+2. **Set up environment variables**
    ```bash
-   go mod download
+   cp .env.example .env
+   # Edit .env with your configuration
    ```
 
-3. **Configure the application**
+3. **Start with Docker**
    ```bash
-   cp config.yaml.example config.yaml
-   # Edit config.yaml with your settings
-   ```
-
-4. **Run database migrations**
-   ```bash
-   go run cmd/server/main.go
-   ```
-
-5. **Start the server**
-   ```bash
-   go run cmd/server/main.go
+   docker-compose up -d
    ```
 
 The application will be available at `http://localhost:8081`
 
+### Development Setup
+
+1. **Install Go dependencies**
+   ```bash
+   go mod download
+   ```
+
+2. **Install Node.js dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Build frontend assets**
+   ```bash
+   npm run build
+   ```
+
+4. **Run the application**
+   ```bash
+   go run cmd/server/main.go
+   ```
+
 ## Configuration
 
-The application uses a YAML configuration file (`config.yaml`) with the following sections:
+The application uses environment variables for configuration. Key variables include:
 
-- **Server**: Port, host, timeouts
-- **Database**: Connection settings
-- **Security**: Encryption keys, authentication settings
-- **Cache**: Cache configuration and limits
-- **Email**: SMTP settings for notifications
-- **SEO**: Site metadata and search engine settings
-- **Logging**: Log levels and output configuration
+- `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`: MySQL connection
+- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`: Redis connection
+- `JWT_SECRET`: JWT signing secret
+- `ENCRYPTION_KEY`: Data encryption key
+- `SMTP_*`: Email configuration
 
-## API Endpoints
+See `.env.example` for all available options.
 
-### Public Endpoints
-- `GET /` - Homepage/Marketplace
-- `GET /products` - Product listings
-- `GET /product/{id}` - Product details
-- `POST /login` - User authentication
-- `POST /register` - User registration
+## Database
 
-### Protected Endpoints
-- `GET /dashboard` - User dashboard
-- `GET /cart` - Shopping cart
-- `POST /add-to-cart` - Add items to cart
-- `GET /vendor/dashboard` - Vendor management
+The application uses MySQL with automatic migrations. The database schema is created automatically on first run.
 
-### Admin Endpoints
-- `GET /admin/dashboard` - Admin dashboard
-- `GET /admin/users` - User management
-- `GET /admin/products` - Product management
-- `GET /admin/reports` - Reporting system
-- `GET /admin/seo` - SEO management
-- `GET /admin/system` - System health
+## API Documentation
 
-### API Endpoints
-- `GET /api/search` - Product search
-- `POST /api/cart/update` - Cart updates
-- `GET /api/ai/recommendations` - AI recommendations
-- `GET /health` - Health check
-- `GET /metrics` - Application metrics
+The API follows RESTful conventions. Key endpoints:
 
-## Security Features
+- `/api/auth/*` - Authentication
+- `/api/users/*` - User management
+- `/api/products/*` - Product management
+- `/api/orders/*` - Order management
+- `/health` - Health check
 
-### Authentication & Authorization
-- Session-based authentication
-- Role-based access control (Admin, Vendor, User)
-- CSRF protection
-- XSS prevention
+## Docker Services
 
-### Data Protection
-- Input validation and sanitization
-- SQL injection prevention
-- Secure password hashing
-- Data encryption at rest
-
-### Network Security
-- Rate limiting
-- IP-based access control
-- HTTPS enforcement
-- Security headers
-
-## Performance Features
-
-### Caching Strategy
-- Page-level caching for static content
-- Database query result caching
-- Session data caching
-- Asset caching with versioning
-
-### Optimization
-- Gzip compression
-- Minified assets
-- Database connection pooling
-- Efficient query optimization
-
-## Monitoring & Analytics
-
-### System Monitoring
-- Real-time performance metrics
-- Error tracking and alerting
-- Resource usage monitoring
-- Health check endpoints
-
-### Business Analytics
-- User behavior tracking
-- Sales analytics
-- Product performance metrics
-- Custom report generation
-
-## Development
-
-### Project Structure
-```
-kolajAi/
-├── cmd/                    # Application entry points
-│   ├── server/            # Main server application
-│   ├── seed/              # Database seeding tools
-│   └── db-tools/          # Database utilities
-├── internal/              # Private application code
-│   ├── cache/             # Caching system
-│   ├── config/            # Configuration management
-│   ├── database/          # Database layer
-│   ├── errors/            # Error management
-│   ├── handlers/          # HTTP handlers
-│   ├── middleware/        # HTTP middleware
-│   ├── models/            # Data models
-│   ├── notifications/     # Notification system
-│   ├── reporting/         # Reporting system
-│   ├── router/            # Routing system
-│   ├── security/          # Security management
-│   ├── seo/               # SEO management
-│   ├── services/          # Business logic
-│   ├── session/           # Session management
-│   └── testing/           # Testing framework
-├── web/                   # Web assets
-│   ├── static/            # Static files
-│   └── templates/         # HTML templates
-├── config.yaml            # Configuration file
-└── go.mod                 # Go modules
-```
-
-### Testing
-
-Run the comprehensive test suite:
-
-```bash
-# Run all tests
-go test ./...
-
-# Run tests with coverage
-go test -cover ./...
-
-# Run specific test types
-go test -tags=integration ./...
-go test -tags=security ./...
-```
-
-### Building for Production
-
-```bash
-# Build the application
-go build -o kolajAi cmd/server/main.go
-
-# Build with optimizations
-go build -ldflags="-s -w" -o kolajAi cmd/server/main.go
-```
-
-## Deployment
-
-### Docker Deployment
-```dockerfile
-FROM golang:1.23-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go build -o kolajAi cmd/server/main.go
-
-FROM alpine:latest
-RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=builder /app/kolajAi .
-COPY --from=builder /app/web ./web
-COPY --from=builder /app/config.yaml .
-CMD ["./kolajAi"]
-```
-
-### Environment Variables
-Key environment variables for production:
-- `APP_ENV=production`
-- `DB_DRIVER=mysql`
-- `DB_HOST=your-db-host`
-- `ENCRYPTION_KEY=your-32-byte-key`
-- `JWT_SECRET=your-jwt-secret`
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Implement your changes with tests
-4. Submit a pull request
+- **app**: Main application (port 8081)
+- **mysql**: MySQL database (port 3306)
+- **redis**: Redis cache (port 6379)
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see LICENSE file for details.
 
 ## Support
 
-For support and questions:
-- Create an issue on GitHub
-- Check the documentation
-- Review the configuration examples
-
-## Changelog
-
-### Version 2.0.0 (Enterprise)
-- ✅ Advanced security system with threat detection
-- ✅ Performance optimization with multi-layer caching
-- ✅ Dynamic reporting and analytics system
-- ✅ Advanced session and cookie management
-- ✅ SEO and multi-language support
-- ✅ Centralized notification system
-- ✅ Comprehensive testing framework
-- ✅ Advanced error management
-- ✅ Enterprise-grade admin panel
-- ✅ Configuration management system
-- ✅ Middleware and routing system
-
-### Version 1.0.0 (Basic)
-- Basic e-commerce functionality
-- User authentication
-- Product management
-- Order processing
-- AI features
+For support and questions, please contact the development team.

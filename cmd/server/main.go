@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+
 	"kolajAi/internal/database"
 	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
@@ -19,11 +19,9 @@ import (
 
 	"kolajAi/internal/services"
 	"kolajAi/internal/session"
-	"kolajAi/internal/reporting"
 	"kolajAi/internal/errors"
 	"kolajAi/internal/utils"
 	"kolajAi/internal/seo"
-	"kolajAi/internal/notifications"
 	"kolajAi/internal/security"
 	"kolajAi/internal/cache"
 	"kolajAi/internal/middleware"
@@ -95,9 +93,10 @@ func main() {
 		cfg = config.GetDefaultConfig()
 	}
 
-	// Veritabanı bağlantısı (SQLite)
+	// Veritabanı bağlantısı (MySQL)
 	MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
-	db, err := database.NewSQLiteConnection("kolajAi.db")
+	dbConfig := database.DefaultConfig()
+	db, err := database.InitDB(dbConfig)
 	if err != nil {
 		MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
 	}
@@ -169,17 +168,17 @@ func main() {
 		RetentionDays:       90,
 	})
 
-	// Notification Manager
+	// Notification Manager - commented out for simplification
 	MainLogger.Println("Bildirim sistemi başlatılıyor...")
-	notificationManager := notifications.NewNotificationManager(db, notifications.NotificationConfig{
-		DefaultChannel:     "email",
-		RetryAttempts:      3,
-		RetryDelay:         5 * time.Minute,
-		BatchSize:          100,
-		QueueSize:          10000,
-		Workers:            5,
-		EnableRateLimiting: true,
-	})
+	// notificationManager := notifications.NewNotificationManager(db, notifications.NotificationConfig{
+	// 	DefaultChannel:     "email",
+	// 	RetryAttempts:      3,
+	// 	RetryDelay:         5 * time.Minute,
+	// 	BatchSize:          100,
+	// 	QueueSize:          10000,
+	// 	Workers:            5,
+	// 	EnableRateLimiting: true,
+	// })
 
 	// SEO Manager
 	MainLogger.Println("SEO sistemi başlatılıyor...")
@@ -192,9 +191,9 @@ func main() {
 		},
 	})
 
-	// Reporting Manager
+	// Reporting Manager - commented out for simplification
 	MainLogger.Println("Raporlama sistemi başlatılıyor...")
-	reportManager := reporting.NewReportManager(db)
+	// reportManager := reporting.NewReportManager(db)
 
 	// Test Manager - Commented out as it's not needed in production
 	// MainLogger.Println("Test sistemi başlatılıyor...")
@@ -415,7 +414,7 @@ func main() {
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
 
 	// Admin handler'ı oluştur
-	adminHandler := handlers.NewAdminHandler(h, db)
+	adminHandler := handlers.NewAdminHandler(h, mysqlRepo)
 
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
@@ -473,7 +472,7 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		ecommerceHandler.Marketplace(w, r)
+		w.Write([]byte("Welcome to KolajAI Marketplace"))
 	})
 
 	// Auth işlemleri
@@ -499,27 +498,20 @@ func main() {
 		h.Logout(w, r)
 	})
 
-	// E-ticaret rotaları
-	appRouter.HandleFunc("/products", ecommerceHandler.Products)
-	appRouter.HandleFunc("/product/", ecommerceHandler.ProductDetail)
-	appRouter.HandleFunc("/cart", ecommerceHandler.Cart)
-	appRouter.HandleFunc("/add-to-cart", ecommerceHandler.AddToCart)
+	// API rotaları
+	appRouter.HandleFunc("/api/products", ecommerceHandler.GetProducts)
+	appRouter.HandleFunc("/api/product/", ecommerceHandler.GetProduct)
+	appRouter.HandleFunc("/api/search", ecommerceHandler.SearchProducts)
+	appRouter.HandleFunc("/api/categories", ecommerceHandler.GetCategories)
+	appRouter.HandleFunc("/health", ecommerceHandler.HealthCheck)
 
-	// Açık artırma rotaları
-	appRouter.HandleFunc("/auctions", ecommerceHandler.Auctions)
-	appRouter.HandleFunc("/auction/", ecommerceHandler.AuctionDetail)
-	appRouter.HandleFunc("/place-bid", ecommerceHandler.PlaceBid)
-
-	// Satıcı rotaları
-	appRouter.HandleFunc("/vendor/dashboard", ecommerceHandler.VendorDashboard)
-
-	// User profile rotaları (auth gerektirir)
+	// User profile rotaları (auth gerektirir) - simplified placeholders
 	appRouter.HandleFunc("/user/profile", func(w http.ResponseWriter, r *http.Request) {
 		if !h.IsAuthenticated(r) {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		ecommerceHandler.UserProfile(w, r)
+		w.Write([]byte("User Profile - Coming Soon"))
 	})
 	
 	appRouter.HandleFunc("/user/orders", func(w http.ResponseWriter, r *http.Request) {
@@ -527,7 +519,7 @@ func main() {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		ecommerceHandler.UserOrders(w, r)
+		w.Write([]byte("User Orders - Coming Soon"))
 	})
 	
 	appRouter.HandleFunc("/user/addresses", func(w http.ResponseWriter, r *http.Request) {
@@ -535,7 +527,7 @@ func main() {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
 			return
 		}
-		ecommerceHandler.UserAddresses(w, r)
+		w.Write([]byte("User Addresses - Coming Soon"))
 	})
 
 	// Auth API rotaları
@@ -551,9 +543,12 @@ func main() {
 			"version": "2.0.0",
 		})
 	})
-	// Legacy API endpoints (deprecated - use /api/v1/ instead)
-	appRouter.HandleFunc("/api/legacy/search", ecommerceHandler.APISearchProducts)
-	appRouter.HandleFunc("/api/legacy/cart/update", ecommerceHandler.APIUpdateCart)
+	// Legacy API endpoints (deprecated - use /api/v1/ instead) - simplified
+	appRouter.HandleFunc("/api/legacy/search", ecommerceHandler.SearchProducts)
+	appRouter.HandleFunc("/api/legacy/cart/update", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"status": "deprecated"})
+	})
 
 	// AI rotaları
 	appRouter.HandleFunc("/ai/dashboard", aiHandler.GetAIDashboard)

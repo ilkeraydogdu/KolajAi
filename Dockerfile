@@ -24,7 +24,7 @@ RUN npm run build
 FROM golang:1.23-alpine AS go-builder
 
 # Install build dependencies
-RUN apk add --no-cache git ca-certificates tzdata gcc musl-dev sqlite-dev
+RUN apk add --no-cache git ca-certificates tzdata gcc musl-dev
 
 WORKDIR /app
 
@@ -47,14 +47,14 @@ RUN CGO_ENABLED=1 GOOS=linux go build \
     -o main ./cmd/server
 
 # Stage 3: Production Image
-FROM alpine:3.18
+FROM alpine:3.18 AS production
 
 # Install runtime dependencies
 RUN apk add --no-cache \
     ca-certificates \
     tzdata \
-    sqlite \
     curl \
+    mysql-client \
     && rm -rf /var/cache/apk/*
 
 # Create non-root user
@@ -72,18 +72,18 @@ COPY --from=go-builder /app/main .
 
 # Copy static files and templates
 COPY --from=go-builder /app/web ./web
-COPY --from=go-builder /app/configs ./configs
+COPY --from=go-builder /app/config.yaml ./
 
 # Create necessary directories
-RUN mkdir -p /app/data /app/logs /app/uploads /app/temp && \
+RUN mkdir -p /app/logs /app/uploads /app/temp && \
     chown -R kolajai:kolajai /app
 
 # Switch to non-root user
 USER kolajai
 
-# Health check (using built-in HTTP client)
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD ./main --health-check || exit 1
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8081/health || exit 1
 
 # Expose port
 EXPOSE 8081
@@ -91,7 +91,6 @@ EXPOSE 8081
 # Set environment variables
 ENV GIN_MODE=release
 ENV PORT=8081
-ENV DB_PATH=/app/data/kolajAi.db
 ENV UPLOAD_PATH=/app/uploads
 ENV LOG_PATH=/app/logs
 
@@ -101,7 +100,7 @@ CMD ["./main"]
 # Labels for metadata
 LABEL maintainer="KolajAI Team <team@kolaj.ai>"
 LABEL version="1.0.0"
-LABEL description="KolajAI Enterprise Marketplace"
+LABEL description="KolajAI Enterprise Marketplace - MySQL Edition"
 LABEL org.opencontainers.image.source="https://github.com/kolajAI/marketplace"
 LABEL org.opencontainers.image.documentation="https://docs.kolaj.ai"
 LABEL org.opencontainers.image.licenses="MIT"

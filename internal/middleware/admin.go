@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"kolajAi/internal/session"
 	"kolajAi/internal/errors"
 )
 
@@ -19,14 +18,14 @@ func (ms *MiddlewareStack) AdminMiddleware(next http.Handler) http.Handler {
 		}
 
 		// Check if user exists in session
-		userValue, exists := sessionData.Values["user"]
+		userValue, exists := sessionData.Data["user"]
 		if !exists {
 			http.Redirect(w, r, "/login?redirect="+r.URL.Path, http.StatusSeeOther)
 			return
 		}
 
 		// Check admin status
-		isAdminValue, adminExists := sessionData.Values["is_admin"]
+		isAdminValue, adminExists := sessionData.Data["is_admin"]
 		if !adminExists {
 			ms.ErrorManager.HandleHTTPError(w, r, errors.NewApplicationError(
 				errors.FORBIDDEN,

@@ -120,7 +120,7 @@ func (s *AIAnalyticsService) analyzeCategoryTrend(category models.Category) (*Ma
 
 	categoryProducts := make([]models.Product, 0)
 	for _, product := range allProducts {
-		if product.CategoryID == category.ID {
+		if product.CategoryID == int(category.ID) {
 			categoryProducts = append(categoryProducts, product)
 		}
 	}
