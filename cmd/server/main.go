@@ -419,6 +419,14 @@ func main() {
 	// Seller handler'ı oluştur
 	sellerHandler := handlers.NewSellerHandler(h, vendorService, productService, orderService)
 
+	// Inventory handler'ı oluştur
+	inventoryService := services.NewInventoryService(repo, productService, orderService)
+	inventoryHandler := handlers.NewInventoryHandler(h, inventoryService, productService)
+
+	// Notification handler'ı oluştur
+	notificationService := services.NewNotificationService(nil, nil, nil)
+	notificationHandler := handlers.NewNotificationHandler(h, notificationService)
+
 	// AI handler'ı oluştur
 	aiHandler := handlers.NewAIHandler(h, aiService)
 
@@ -848,6 +856,29 @@ func main() {
 	appRouter.HandleFunc("/api/seller/orders", sellerHandler.APIGetOrders)
 	appRouter.HandleFunc("/api/seller/product/status", sellerHandler.APIUpdateProductStatus)
 	appRouter.HandleFunc("/api/seller/order/status", sellerHandler.APIUpdateOrderStatus)
+
+	// Inventory rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/inventory/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.Dashboard)))
+	appRouter.Handle("/inventory/stock-levels", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.StockLevels)))
+	appRouter.Handle("/inventory/alerts", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.Alerts)))
+
+	// Inventory API rotaları
+	appRouter.Handle("/api/inventory/stock-levels", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIGetStockLevels)))
+	appRouter.Handle("/api/inventory/update-stock", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIUpdateStock)))
+	appRouter.Handle("/api/inventory/alerts", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIGetAlerts)))
+	appRouter.Handle("/api/inventory/dismiss-alert", middlewareStack.AdminMiddleware(http.HandlerFunc(inventoryHandler.APIDismissAlert)))
+
+	// Notification rotaları - Admin middleware ile korumalı
+	appRouter.Handle("/notifications/dashboard", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.Dashboard)))
+	appRouter.Handle("/notifications/templates", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.Templates)))
+	appRouter.Handle("/notifications/campaigns", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.Campaigns)))
+
+	// Notification API rotaları
+	appRouter.Handle("/api/notifications/send", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APISendNotification)))
+	appRouter.Handle("/api/notifications/stats", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIGetNotificationStats)))
+	appRouter.Handle("/api/notifications/templates", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APICreateTemplate)))
+	appRouter.Handle("/api/notifications/templates/update", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIUpdateTemplate)))
+	appRouter.Handle("/api/notifications/templates/delete", middlewareStack.AdminMiddleware(http.HandlerFunc(notificationHandler.APIDeleteTemplate)))
 
 	// Test rotaları (sadece development ortamında)
 	if cfg.Environment == "development" {

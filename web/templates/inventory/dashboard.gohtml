@@ -1,0 +1,299 @@
+{{define "inventory/dashboard.gohtml"}}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - KolajAI</title>
+    <link rel="stylesheet" href="/web/static/sass/main.css">
+    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
+</head>
+<body>
+    <div class="inventory-container">
+        <!-- Inventory Header -->
+        <header class="inventory-header">
+            <div class="container">
+                <div class="inventory-nav">
+                    <div class="inventory-logo">
+                        <h2>📦 Envanter Yönetimi</h2>
+                    </div>
+                    <nav class="inventory-menu">
+                        <a href="/inventory/dashboard" class="active">Dashboard</a>
+                        <a href="/inventory/stock-levels">Stok Seviyeleri</a>
+                        <a href="/inventory/alerts">Uyarılar</a>
+                        <a href="/admin/dashboard">Admin Panel</a>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="inventory-main">
+            <div class="container">
+                <div class="page-header">
+                    <h1>{{.Title}}</h1>
+                    <div class="page-actions">
+                        <button class="btn btn-secondary" onclick="refreshData()">
+                            <i class="icon-refresh"></i> Yenile
+                        </button>
+                        <button class="btn btn-primary" onclick="exportInventory()">
+                            <i class="icon-download"></i> Rapor Al
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inventory Stats -->
+                <div class="stats-row">
+                    <div class="stat-card stat-revenue">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.total_products}}</div>
+                            <div class="stat-label">Toplam Ürün</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.low_stock_items}}</div>
+                            <div class="stat-label">Düşük Stok</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-icon">❌</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.out_of_stock}}</div>
+                            <div class="stat-label">Stokta Yok</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-icon">📈</div>
+                        <div class="stat-info">
+                            <div class="stat-number">{{.Stats.overstock_items}}</div>
+                            <div class="stat-label">Fazla Stok</div>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-success">
+                        <div class="stat-icon">💰</div>
+                        <div class="stat-info">
+                            <div class="stat-number">₺{{.Stats.total_value}}</div>
+                            <div class="stat-label">Toplam Değer</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content Grid -->
+                <div class="dashboard-grid">
+                    <!-- Low Stock Alerts -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🚨 Düşük Stok Uyarıları</h3>
+                            <span class="alert-count">{{len .LowStockAlerts}}</span>
+                        </div>
+                        <div class="card-content">
+                            {{range .LowStockAlerts}}
+                            <div class="alert-item urgency-{{.urgency}}">
+                                <div class="alert-info">
+                                    <div class="product-name">{{.product_name}}</div>
+                                    <div class="stock-info">
+                                        Mevcut: {{.current_stock}} | Min: {{.min_stock}}
+                                    </div>
+                                </div>
+                                <div class="alert-actions">
+                                    <button class="btn btn-sm btn-primary" onclick="reorderProduct({{.product_id}})">
+                                        Sipariş Ver
+                                    </button>
+                                </div>
+                            </div>
+                            {{else}}
+                            <div class="no-alerts">
+                                <p>✅ Tüm ürünler yeterli stok seviyesinde</p>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Recent Stock Movements -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📊 Son Stok Hareketleri</h3>
+                            <a href="/inventory/movements" class="view-all">Tümünü Gör</a>
+                        </div>
+                        <div class="card-content">
+                            {{range .RecentMovements}}
+                            <div class="movement-item">
+                                <div class="movement-icon {{if gt .quantity 0}}movement-in{{else}}movement-out{{end}}">
+                                    {{if gt .quantity 0}}📈{{else}}📉{{end}}
+                                </div>
+                                <div class="movement-info">
+                                    <div class="product-name">{{.product_name}}</div>
+                                    <div class="movement-details">
+                                        {{if gt .quantity 0}}+{{.quantity}}{{else}}{{.quantity}}{{end}} adet
+                                        <span class="movement-type">({{.type}})</span>
+                                    </div>
+                                </div>
+                                <div class="movement-time">
+                                    {{.timestamp.Format "15:04"}}
+                                </div>
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>⚡ Hızlı İşlemler</h3>
+                        </div>
+                        <div class="card-content">
+                            <div class="quick-actions">
+                                <button class="action-btn" onclick="showBulkUpdateModal()">
+                                    <div class="action-icon">📝</div>
+                                    <div class="action-text">Toplu Stok Güncelle</div>
+                                </button>
+                                <button class="action-btn" onclick="generateReorderReport()">
+                                    <div class="action-icon">📋</div>
+                                    <div class="action-text">Sipariş Raporu</div>
+                                </button>
+                                <button class="action-btn" onclick="showStockCountModal()">
+                                    <div class="action-icon">🔢</div>
+                                    <div class="action-text">Stok Sayımı</div>
+                                </button>
+                                <button class="action-btn" onclick="viewStockHistory()">
+                                    <div class="action-icon">📈</div>
+                                    <div class="action-text">Stok Geçmişi</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Inventory Chart -->
+                    <div class="dashboard-card chart-card">
+                        <div class="card-header">
+                            <h3>📊 Stok Durumu Dağılımı</h3>
+                            <div class="chart-controls">
+                                <select onchange="updateChart(this.value)">
+                                    <option value="category">Kategoriye Göre</option>
+                                    <option value="status">Duruma Göre</option>
+                                    <option value="value">Değere Göre</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="chart-container">
+                                <canvas id="inventoryChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bulk Update Modal -->
+    <div id="bulkUpdateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Toplu Stok Güncelleme</h3>
+                <button class="modal-close" onclick="closeModal('bulkUpdateModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="bulkUpdateForm">
+                    <div class="form-group">
+                        <label>Güncelleme Türü</label>
+                        <select name="update_type" required>
+                            <option value="add">Stok Ekle</option>
+                            <option value="subtract">Stok Azalt</option>
+                            <option value="set">Stok Belirle</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Miktar</label>
+                        <input type="number" name="quantity" required min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Ürün Seçimi</label>
+                        <select name="product_selection" required>
+                            <option value="all">Tüm Ürünler</option>
+                            <option value="category">Kategoriye Göre</option>
+                            <option value="low_stock">Düşük Stok</option>
+                            <option value="selected">Seçili Ürünler</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('bulkUpdateModal')">İptal</button>
+                <button class="btn btn-primary" onclick="processBulkUpdate()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/dist/js/main.js"></script>
+    <script>
+        function refreshData() {
+            location.reload();
+        }
+
+        function exportInventory() {
+            alert('Envanter raporu dışa aktarma özelliği yakında eklenecek.');
+        }
+
+        function reorderProduct(productId) {
+            if (confirm(`Ürün #${productId} için sipariş oluşturulsun mu?`)) {
+                alert('Sipariş oluşturma özelliği yakında eklenecek.');
+            }
+        }
+
+        function showBulkUpdateModal() {
+            document.getElementById('bulkUpdateModal').style.display = 'block';
+        }
+
+        function processBulkUpdate() {
+            const form = document.getElementById('bulkUpdateForm');
+            const formData = new FormData(form);
+            
+            // Mock bulk update
+            alert('Toplu stok güncelleme özelliği yakında eklenecek.');
+            closeModal('bulkUpdateModal');
+        }
+
+        function generateReorderReport() {
+            alert('Sipariş raporu oluşturma özelliği yakında eklenecek.');
+        }
+
+        function showStockCountModal() {
+            alert('Stok sayımı özelliği yakında eklenecek.');
+        }
+
+        function viewStockHistory() {
+            window.location.href = '/inventory/history';
+        }
+
+        function updateChart(type) {
+            console.log('Updating chart with type:', type);
+            // Chart update logic would go here
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        // Initialize chart when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mock chart initialization
+            console.log('Inventory chart would be initialized here');
+        });
+    </script>
+</body>
+</html>
+{{end}}
