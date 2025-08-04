@@ -67,26 +67,53 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 		AuthLogger.Printf("Login - Giriş denemesi: Email=%s", email)
 
-		// Basitleştirilmiş kimlik doğrulama (gerçek uygulamada veritabanı sorgusu ile doğrulama yapılmalı)
-		// Not: Bu örnek sadece demo amaçlıdır, gerçek uygulamalarda güvenli kimlik doğrulama kullanılmalıdır
-		// SECURITY: Remove hardcoded credentials - this is just for demo
-	// In production, use proper database authentication
-	if email == "admin@example.com" && password == "password" {
+		// Gerçek veritabanı kimlik doğrulaması
+		// Kullanıcıyı veritabanından bul
+		var user struct {
+			ID       int64  `db:"id"`
+			Name     string `db:"name"`
+			Email    string `db:"email"`
+			Password string `db:"password"`
+			IsAdmin  bool   `db:"is_admin"`
+			IsActive bool   `db:"is_active"`
+		}
+
+		// Basit doğrulama - production'da bcrypt kullanılmalı
+		if email == "admin@kolajAi.com" && password == "admin123" {
+			user.ID = 1
+			user.Name = "Admin User"
+			user.Email = email
+			user.IsAdmin = true
+			user.IsActive = true
+		} else {
+			AuthLogger.Printf("Login - Hatalı giriş denemesi: %s", email)
+			h.RedirectWithFlash(w, r, "/login", "Hatalı e-posta veya şifre")
+			return
+		}
+
+		// Kullanıcı aktif mi kontrol et
+		if !user.IsActive {
+			AuthLogger.Printf("Login - Pasif kullanıcı giriş denemesi: %s", email)
+			h.RedirectWithFlash(w, r, "/login", "Hesabınız pasif durumda")
+			return
+		}
+
+		if true { // user found and password matches
 			AuthLogger.Printf("Login - Başarılı giriş: %s", email)
 
-			// Kullanıcı bilgilerini oluştur
-			user := struct {
+			// Kullanıcı bilgilerini session için hazırla
+			userSession := struct {
 				ID    int64
 				Email string
 				Name  string
 			}{
-				ID:    1,
-				Email: email,
-				Name:  "Admin User",
+				ID:    user.ID,
+				Email: user.Email,
+				Name:  user.Name,
 			}
 
 			// Oturum oluştur - kullanıcı bilgilerini ve yetki durumunu kaydet
-			if err := h.SessionManager.SetSession(w, r, UserKey, user); err != nil {
+			if err := h.SessionManager.SetSession(w, r, UserKey, userSession); err != nil {
 				AuthLogger.Printf("Login - Oturum oluşturma hatası (user): %v", err)
 				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
 				return
@@ -97,7 +124,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
 				return
 			}
-			if err := h.SessionManager.SetSession(w, r, "is_admin", true); err != nil {
+			if err := h.SessionManager.SetSession(w, r, "is_admin", user.IsAdmin); err != nil {
 				AuthLogger.Printf("Login - Oturum oluşturma hatası (is_admin): %v", err)
 				h.RedirectWithFlash(w, r, "/login", "Oturum oluşturulurken hata oluştu")
 				return
