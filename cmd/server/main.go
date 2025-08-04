@@ -461,12 +461,11 @@ func main() {
 	// Router oluştur
 	appRouter := router.NewRouter(middlewareStack)
 
-	// Webpack built assets (more specific routes first)
-	appRouter.Handle("/static/css/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
-	appRouter.Handle("/static/js/", http.StripPrefix("/static/", http.FileServer(http.Dir("dist"))))
+	// Statik dosyalar - Sadece /web/static/ altındaki dosyalar serve edilecek
+	appRouter.Handle("/web/static/", http.StripPrefix("/web/static/", http.FileServer(http.Dir("web/static"))))
 	
-	// Statik dosyalar (fallback for other static assets)
-	appRouter.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
+	// Webpack build dosyaları için
+	appRouter.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
 	// SEO rotaları
 	appRouter.HandleFunc("/sitemap.xml", func(w http.ResponseWriter, r *http.Request) {
