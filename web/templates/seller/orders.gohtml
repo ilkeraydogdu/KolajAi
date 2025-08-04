@@ -1,15 +1,8 @@
-{{define "seller/orders.gohtml"}}
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{.Title}} - KolajAI</title>
-    <link rel="stylesheet" href="/web/static/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/web/static/sass/main.css">
-    <link rel="stylesheet" href="/web/static/sass/dark-theme.css">
-</head>
-<body>
+{{define "seller/orders"}}
+{{template "layout/base" .}}
+{{end}}
+
+{{define "content"}}
     <div class="seller-container">
         <!-- Seller Header -->
         <header class="seller-header">
@@ -222,9 +215,10 @@
         </div>
     </div>
 
-    <script src="/web/static/assets/js/jquery.min.js"></script>
-    <script src="/web/static/assets/js/bootstrap.bundle.min.js"></script>
-    <script>
+{{end}}
+
+{{define "page_js"}}
+<script>
         function viewOrderDetails(orderId) {
             // Mock order details - in real implementation, fetch from server
             const orderDetails = `
@@ -336,7 +330,5 @@
                 }
             }
         }
-    </script>
-</body>
-</html>
+</script>
 {{end}}
