@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+
 	"golang.org/x/crypto/bcrypt"
 	"kolajAi/internal/database"
 	"kolajAi/internal/models"

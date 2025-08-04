@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"kolajAi/internal/config"
 	"log"
-	"os"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	_ "github.com/mattn/go-sqlite3"
 )
 
 var DB *sql.DB
@@ -37,12 +35,12 @@ func DefaultConfig() *Config {
 	dbConfig := &Config{
 		Host:         "localhost",
 		Port:         3306,
-		User:         "root",
+		User:         "kolajai",
 		Password:     "",
-		DatabaseName: "kolajdb",
-		MaxOpenConns: 10,
-		MaxIdleConns: 5,
-		MaxLifetime:  time.Minute * 3,
+		DatabaseName: "kolajai",
+		MaxOpenConns: 25,
+		MaxIdleConns: 10,
+		MaxLifetime:  time.Minute * 5,
 	}
 
 	// Yapılandırma dosyasından ayarları al
@@ -70,13 +68,13 @@ func DefaultConfig() *Config {
 
 // BuildConnectionString builds a MySQL connection string from config
 func (c *Config) BuildConnectionString() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local",
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci",
 		c.User, c.Password, c.Host, c.Port, c.DatabaseName)
 }
 
 // BuildRootConnectionString builds a MySQL connection string without database name
 func (c *Config) BuildRootConnectionString() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%d)/?parseTime=true&loc=Local",
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/?parseTime=true&loc=Local&charset=utf8mb4&collation=utf8mb4_unicode_ci",
 		c.User, c.Password, c.Host, c.Port)
 }
 
@@ -96,28 +94,7 @@ func NewConnection(connectionString string) (*sql.DB, error) {
 		return nil, fmt.Errorf("error connecting to the database: %w", err)
 	}
 
-	log.Println("Successfully connected to database")
-	return db, nil
-}
-
-// NewSQLiteConnection creates a new SQLite database connection
-func NewSQLiteConnection(dbPath string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		return nil, fmt.Errorf("error opening SQLite database: %w", err)
-	}
-
-	// Enable foreign keys for SQLite
-	_, err = db.Exec("PRAGMA foreign_keys = ON")
-	if err != nil {
-		return nil, fmt.Errorf("error enabling foreign keys: %w", err)
-	}
-
-	if err = db.Ping(); err != nil {
-		return nil, fmt.Errorf("error connecting to the SQLite database: %w", err)
-	}
-
-	log.Println("Successfully connected to SQLite database")
+	log.Println("Successfully connected to MySQL database")
 	return db, nil
 }
 
@@ -144,7 +121,7 @@ func InitDB(config *Config) (*sql.DB, error) {
 		return nil, fmt.Errorf("error connecting to the database: %w", err)
 	}
 
-	log.Println("Successfully connected to database")
+	log.Println("Successfully connected to MySQL database")
 	DB = db
 	return db, nil
 }
@@ -170,9 +147,9 @@ func createDatabaseIfNotExists(config *Config) error {
 	if !dbExists {
 		log.Printf("Database '%s' does not exist, creating it...", config.DatabaseName)
 		// Using safe database creation with quoted identifier
-	// Database name should be validated to prevent injection
-	createDBQuery := fmt.Sprintf("CREATE DATABASE `%s`", config.DatabaseName)
-	_, err = rootConn.Exec(createDBQuery)
+		// Database name should be validated to prevent injection
+		createDBQuery := fmt.Sprintf("CREATE DATABASE `%s` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci", config.DatabaseName)
+		_, err = rootConn.Exec(createDBQuery)
 		if err != nil {
 			return fmt.Errorf("failed to create database: %w", err)
 		}
@@ -207,10 +184,4 @@ func SetupDatabase(db *sql.DB) error {
 	}
 
 	return nil
-}
-
-// DatabaseExists checks if a database file exists
-func DatabaseExists(dbPath string) bool {
-	_, err := os.Stat(dbPath)
-	return err == nil
 }

@@ -1,4 +1,4 @@
-environment: development
+environment: production
 
 server:
   port: 8081
@@ -10,12 +10,12 @@ server:
   max_header_bytes: 1048576
 
 database:
-  driver: "sqlite3"
-  host: "localhost"
-  port: 3306
-  name: "kolajAi.db"
-  user: ""
-  password: ""
+  driver: "mysql"
+  host: "${DB_HOST:-localhost}"
+  port: ${DB_PORT:-3306}
+  name: "${DB_NAME:-kolajai}"
+  user: "${DB_USER:-kolajai}"
+  password: "${DB_PASSWORD}"
   max_open_conns: 25
   max_idle_conns: 25
   conn_max_lifetime: 5
@@ -49,10 +49,10 @@ security:
     notify_before: "72h" # 3 days
 
 cache:
-  driver: "memory"
-  host: "localhost"
-  port: 6379
-  password: ""
+  driver: "redis"
+  host: "${REDIS_HOST:-localhost}"
+  port: ${REDIS_PORT:-6379}
+  password: "${REDIS_PASSWORD}"
   db: 0
   default_ttl: "30m"
   max_memory_usage: 1073741824
