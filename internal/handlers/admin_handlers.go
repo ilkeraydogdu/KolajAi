@@ -12,6 +12,7 @@ import (
 	"kolajAi/internal/repository"
 	"kolajAi/internal/models"
 	"kolajAi/internal/database"
+	"kolajAi/internal/middleware"
 )
 
 // AdminHandler handles admin-related requests
@@ -1036,6 +1037,171 @@ func (h *AdminHandler) APIExportUsers(w http.ResponseWriter, r *http.Request) {
 			"total":      len(users),
 			"exportedAt": time.Now().Format(time.RFC3339),
 		},
+	})
+}
+
+// UpdateUserStatus handles user status update (ban/unban/activate/deactivate)
+func (h *AdminHandler) UpdateUserStatus(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get admin user ID from session
+	adminID := h.GetUserIDFromSession(r)
+	if adminID == 0 {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Parse request
+	var req struct {
+		UserID int64  `json:"user_id"`
+		Action string `json:"action"` // ban, unban, activate, deactivate
+		Reason string `json:"reason"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Get current user state for audit log
+	currentUser, err := h.AdminRepo.GetUserByID(req.UserID)
+	if err != nil {
+		log.Printf("Error getting user: %v", err)
+		http.Error(w, "User not found", http.StatusNotFound)
+		return
+	}
+
+	// Perform action
+	var actionType string
+	var newStatus interface{}
+	
+	switch req.Action {
+	case "ban":
+		err = h.AdminRepo.BanUser(req.UserID, req.Reason)
+		actionType = models.ActionUserBan
+		newStatus = map[string]interface{}{"is_active": false, "ban_reason": req.Reason}
+	case "unban":
+		err = h.AdminRepo.UnbanUser(req.UserID)
+		actionType = models.ActionUserUnban
+		newStatus = map[string]interface{}{"is_active": true, "ban_reason": nil}
+	case "activate":
+		err = h.AdminRepo.ActivateUser(req.UserID)
+		actionType = models.ActionUserActivate
+		newStatus = map[string]interface{}{"is_active": true}
+	case "deactivate":
+		err = h.AdminRepo.DeactivateUser(req.UserID)
+		actionType = models.ActionUserDeactivate
+		newStatus = map[string]interface{}{"is_active": false}
+	default:
+		http.Error(w, "Invalid action", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		log.Printf("Error updating user status: %v", err)
+		
+		// Log failed action
+		middleware.LogAdminAction(adminID, actionType, "user", &req.UserID, currentUser, nil, r)
+		
+		http.Error(w, "Failed to update user status", http.StatusInternalServerError)
+		return
+	}
+
+	// Log successful action
+	middleware.LogAdminAction(adminID, actionType, "user", &req.UserID, currentUser, newStatus, r)
+
+	// Send success response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": fmt.Sprintf("User %s successfully", req.Action),
+	})
+}
+
+// BulkUserAction handles bulk user operations
+func (h *AdminHandler) BulkUserAction(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	adminID := h.GetUserIDFromSession(r)
+	if adminID == 0 {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req struct {
+		UserIDs []int64 `json:"user_ids"`
+		Action  string  `json:"action"`
+		Reason  string  `json:"reason"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Validate request
+	if len(req.UserIDs) == 0 {
+		http.Error(w, "No users selected", http.StatusBadRequest)
+		return
+	}
+
+	if len(req.UserIDs) > 100 {
+		http.Error(w, "Too many users selected (max 100)", http.StatusBadRequest)
+		return
+	}
+
+	// Process each user
+	successCount := 0
+	failedCount := 0
+	
+	for _, userID := range req.UserIDs {
+		var err error
+		var actionType string
+		
+		switch req.Action {
+		case "ban":
+			err = h.AdminRepo.BanUser(userID, req.Reason)
+			actionType = models.ActionUserBan
+		case "unban":
+			err = h.AdminRepo.UnbanUser(userID)
+			actionType = models.ActionUserUnban
+		case "activate":
+			err = h.AdminRepo.ActivateUser(userID)
+			actionType = models.ActionUserActivate
+		case "deactivate":
+			err = h.AdminRepo.DeactivateUser(userID)
+			actionType = models.ActionUserDeactivate
+		case "delete":
+			err = h.AdminRepo.DeleteUser(userID)
+			actionType = models.ActionUserDelete
+		default:
+			err = fmt.Errorf("invalid action: %s", req.Action)
+		}
+
+		if err != nil {
+			log.Printf("Error processing user %d: %v", userID, err)
+			failedCount++
+		} else {
+			successCount++
+			// Log each successful action
+			middleware.LogAdminAction(adminID, actionType, "user", &userID, nil, nil, r)
+		}
+	}
+
+	// Send response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success":       successCount > 0,
+		"successCount":  successCount,
+		"failedCount":   failedCount,
+		"totalSelected": len(req.UserIDs),
+		"message":       fmt.Sprintf("Processed %d users successfully, %d failed", successCount, failedCount),
 	})
 }
 

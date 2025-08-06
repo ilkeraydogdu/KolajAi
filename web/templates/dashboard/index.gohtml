@@ -3,197 +3,541 @@
 {{end}}
 
 {{define "content"}}
-<div class="row">
+<!-- Welcome Alert for First Time Users -->
+{{if .ShowWelcome}}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+  <div class="d-flex align-items-center">
+    <div class="widget-icon-2 bg-light-success text-success me-3">
+      <i class="material-icons-outlined">celebration</i>
+    </div>
+    <div>
+      <h5 class="mb-1">Hoş Geldiniz, {{.UserName}}!</h5>
+      <p class="mb-0">KolajAI platformuna hoş geldiniz. Başlamak için aşağıdaki hızlı işlemlerden birini seçebilirsiniz.</p>
+    </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{{end}}
+
+<!-- Stats Cards Row -->
+<div class="row mb-4">
+  {{if .IsAdmin}}
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card rounded-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon bg-primary text-white me-3">
+            <i class="material-icons-outlined">people</i>
+          </div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1">{{.Stats.TotalUsers}}</h4>
+            <p class="mb-0 text-muted">Toplam Kullanıcı</p>
+          </div>
+        </div>
+        <div class="mt-2">
+          <small class="text-success">
+            <i class="material-icons-outlined">trending_up</i>
+            +{{.Stats.NewUsersToday}} bugün
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card rounded-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon bg-success text-white me-3">
+            <i class="material-icons-outlined">shopping_cart</i>
+          </div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1">{{.Stats.TotalOrders}}</h4>
+            <p class="mb-0 text-muted">Toplam Sipariş</p>
+          </div>
+        </div>
+        <div class="mt-2">
+          <small class="text-info">
+            {{.Stats.OrdersToday}} bugün
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card rounded-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon bg-warning text-white me-3">
+            <i class="material-icons-outlined">inventory</i>
+          </div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1">{{.Stats.TotalProducts}}</h4>
+            <p class="mb-0 text-muted">Toplam Ürün</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-sm-6 col-lg-3">
+    <div class="card rounded-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center">
+          <div class="widget-icon bg-info text-white me-3">
+            <i class="material-icons-outlined">attach_money</i>
+          </div>
+          <div class="flex-grow-1">
+            <h4 class="mb-1">₺{{printf "%.2f" .Stats.TotalRevenue}}</h4>
+            <p class="mb-0 text-muted">Toplam Gelir</p>
+          </div>
+        </div>
+        <div class="mt-2">
+          <small class="text-success">
+            ₺{{printf "%.2f" .Stats.RevenueToday}} bugün
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{end}}
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
   <div class="col-12">
-    <div class="card rounded-4">
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-3">
-          <div class="widget-icon-2 bg-light-success text-success">
-            <i class="material-icons-outlined">person</i>
-          </div>
-          <div class="flex-grow-1">
-            <h5 class="mb-0">Hoş Geldiniz, {{.UserName}}!</h5>
-            <p class="mb-0">KolajAI Dashboard'a hoş geldiniz. Buradan tüm işlemlerinizi yönetebilirsiniz.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-3 g-3 mb-3">
-  <div class="col">
-    <div class="card rounded-4">
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-3">
-          <div class="widget-icon-2 bg-light-primary text-primary">
-            <i class="material-icons-outlined">dashboard</i>
-          </div>
-          <div class="flex-grow-1">
-            <h5 class="mb-0">{{.PageTitle}}</h5>
-            <p class="mb-0">Genel bakış ve istatistikler</p>
-          </div>
-          <div class="dropdown">
-            <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle" data-bs-toggle="dropdown">
-              <span class="material-icons-outlined fs-5">more_vert</span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="javascript:;">Detaylar</a></li>
-              <li><a class="dropdown-item" href="javascript:;">Yenile</a></li>
-            </ul>
-          </div>
-        </div>
-        <div id="chart1"></div>
-      </div>
-    </div>
-  </div>
-  <div class="col">
-    <div class="card rounded-4">
-      <div class="card-body">
-        <div class="d-flex align-items-center gap-3">
-          <div class="widget-icon-2 bg-light-danger text-danger">
-            <i class="material-icons-outlined">notifications</i>
-          </div>
-          <div class="flex-grow-1">
-            <h5 class="mb-0">Bildirimler</h5>
-            <p class="mb-0">Son bildirimler ve duyurular</p>
-          </div>
-          <div class="dropdown">
-            <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle" data-bs-toggle="dropdown">
-              <span class="material-icons-outlined fs-5">more_vert</span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="javascript:;">Tümünü Gör</a></li>
-              <li><a class="dropdown-item" href="javascript:;">Tümünü Okundu İşaretle</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="mt-3">
-          <div class="alert border-0 bg-light-info alert-dismissible fade show py-2">
-            <div class="d-flex align-items-center">
-              <div class="fs-5 text-info"><i class="material-icons-outlined">info</i></div>
-              <div class="ms-3">
-                <div class="text-info">Henüz bildirim bulunmuyor</div>
+    <h6 class="mb-3">Hızlı İşlemler</h6>
+    <div class="row g-3">
+      {{range .QuickActions}}
+      <div class="col-6 col-md-4 col-lg-3">
+        <a href="{{.URL}}" class="text-decoration-none">
+          <div class="card rounded-4 border-0 shadow-sm quick-action-card">
+            <div class="card-body text-center py-4">
+              <div class="widget-icon-2 bg-light-{{.Color}} text-{{.Color}} mb-3 mx-auto">
+                <i class="material-icons-outlined">{{.Icon}}</i>
               </div>
+              <h6 class="mb-1">{{.Title}}</h6>
+              <p class="mb-0 text-muted small">{{.Description}}</p>
+              {{if .Badge}}
+              <span class="badge bg-danger position-absolute top-0 end-0 m-2">{{.Badge}}</span>
+              {{end}}
             </div>
+          </div>
+        </a>
+      </div>
+      {{end}}
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Notifications Widget -->
+  <div class="col-12 col-lg-6 mb-4">
+    <div class="card rounded-4">
+      <div class="card-header bg-transparent border-0">
+        <div class="d-flex align-items-center">
+          <h6 class="mb-0">Bildirimler</h6>
+          <div class="ms-auto">
+            <a href="/notifications" class="btn btn-sm btn-light">Tümünü Gör</a>
           </div>
         </div>
       </div>
+      <div class="card-body">
+        {{if .Notifications}}
+        <div class="notification-list">
+          {{range .Notifications}}
+          <div class="notification-item d-flex align-items-start mb-3 pb-3 border-bottom" data-id="{{.ID}}">
+            <div class="notification-icon me-3">
+              {{if eq .Type "info"}}
+              <div class="widget-icon-2 bg-light-info text-info">
+                <i class="material-icons-outlined">info</i>
+              </div>
+              {{else if eq .Type "warning"}}
+              <div class="widget-icon-2 bg-light-warning text-warning">
+                <i class="material-icons-outlined">warning</i>
+              </div>
+              {{else if eq .Type "success"}}
+              <div class="widget-icon-2 bg-light-success text-success">
+                <i class="material-icons-outlined">check_circle</i>
+              </div>
+              {{else}}
+              <div class="widget-icon-2 bg-light-danger text-danger">
+                <i class="material-icons-outlined">error</i>
+              </div>
+              {{end}}
+            </div>
+            <div class="flex-grow-1">
+              <h6 class="mb-1 {{if not .IsRead}}fw-bold{{end}}">{{.Title}}</h6>
+              <p class="mb-1 text-muted small">{{.Message}}</p>
+              <small class="text-muted">{{.CreatedAt.Format "02.01.2006 15:04"}}</small>
+            </div>
+            {{if not .IsRead}}
+            <button class="btn btn-sm btn-light mark-read-btn" onclick="markNotificationRead({{.ID}})">
+              <i class="material-icons-outlined">done</i>
+            </button>
+            {{end}}
+          </div>
+          {{end}}
+        </div>
+        {{else}}
+        <div class="text-center py-4">
+          <div class="widget-icon-2 bg-light text-muted mx-auto mb-3">
+            <i class="material-icons-outlined">notifications_none</i>
+          </div>
+          <p class="text-muted">Henüz bildirim bulunmuyor</p>
+        </div>
+        {{end}}
+      </div>
     </div>
   </div>
-  <div class="col">
+
+  <!-- Tasks Widget -->
+  <div class="col-12 col-lg-6 mb-4">
     <div class="card rounded-4">
+      <div class="card-header bg-transparent border-0">
+        <div class="d-flex align-items-center">
+          <h6 class="mb-0">Görevler</h6>
+          <div class="ms-auto">
+            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+              <i class="material-icons-outlined">add</i> Yeni Görev
+            </button>
+          </div>
+        </div>
+      </div>
       <div class="card-body">
-        <div class="d-flex align-items-center gap-3">
-          <div class="widget-icon-2 bg-light-warning text-warning">
-            <i class="material-icons-outlined">task</i>
-          </div>
-          <div class="flex-grow-1">
-            <h5 class="mb-0">Görevler</h5>
-            <p class="mb-0">Yapılacaklar listesi</p>
-          </div>
-          <div class="dropdown">
-            <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle" data-bs-toggle="dropdown">
-              <span class="material-icons-outlined fs-5">more_vert</span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="javascript:;">Yeni Görev Ekle</a></li>
-              <li><a class="dropdown-item" href="javascript:;">Tümünü Gör</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="mt-3">
-          <div class="d-flex align-items-center gap-2">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="" id="task1">
-              <label class="form-check-label" for="task1">Profil bilgilerini güncelle</label>
+        {{if .Tasks}}
+        <div class="task-list">
+          {{range .Tasks}}
+          <div class="task-item d-flex align-items-start mb-3 pb-3 border-bottom" data-id="{{.ID}}">
+            <div class="form-check me-3">
+              <input class="form-check-input task-checkbox" type="checkbox" id="task{{.ID}}" 
+                     {{if eq .Status "completed"}}checked{{end}}
+                     onchange="toggleTask({{.ID}})">
+            </div>
+            <div class="flex-grow-1">
+              <label class="form-check-label {{if eq .Status "completed"}}text-decoration-line-through text-muted{{end}}" for="task{{.ID}}">
+                <h6 class="mb-1">{{.Title}}</h6>
+                <p class="mb-1 text-muted small">{{.Description}}</p>
+                <div class="d-flex align-items-center gap-3">
+                  <small class="text-muted">
+                    <i class="material-icons-outlined">schedule</i>
+                    {{if .DueDate}}{{.DueDate.Format "02.01.2006"}}{{else}}Süresiz{{end}}
+                  </small>
+                  <small>
+                    <span class="badge bg-{{if eq .Priority "high"}}danger{{else if eq .Priority "medium"}}warning{{else}}secondary{{end}}">
+                      {{if eq .Priority "high"}}Yüksek{{else if eq .Priority "medium"}}Orta{{else}}Düşük{{end}} Öncelik
+                    </span>
+                  </small>
+                </div>
+              </label>
             </div>
           </div>
-          <div class="d-flex align-items-center gap-2 mt-2">
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" value="" id="task2">
-              <label class="form-check-label" for="task2">Güvenlik ayarlarını kontrol et</label>
-            </div>
-          </div>
+          {{end}}
         </div>
+        {{else}}
+        <div class="text-center py-4">
+          <div class="widget-icon-2 bg-light text-muted mx-auto mb-3">
+            <i class="material-icons-outlined">task_alt</i>
+          </div>
+          <p class="text-muted">Henüz görev bulunmuyor</p>
+        </div>
+        {{end}}
       </div>
     </div>
   </div>
 </div>
 
+<!-- Activity Chart -->
+{{if .IsAdmin}}
 <div class="row">
   <div class="col-12">
     <div class="card rounded-4">
       <div class="card-header bg-transparent border-0">
-        <div class="d-flex align-items-center gap-3">
-          <div>
-            <h6 class="mb-0">Kullanıcı Bilgileri</h6>
-          </div>
-          <div class="dropdown ms-auto">
-            <a href="javascript:;" class="dropdown-toggle-nocaret options dropdown-toggle" data-bs-toggle="dropdown">
-              <span class="material-icons-outlined fs-5">more_vert</span>
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="javascript:;">Profili Düzenle</a></li>
-              <li><a class="dropdown-item" href="javascript:;">Şifre Değiştir</a></li>
-            </ul>
-          </div>
-        </div>
+        <h6 class="mb-0">Son 7 Günlük Aktivite</h6>
       </div>
       <div class="card-body">
-        <div class="table-responsive">
-          <table class="table align-middle mb-0">
-            <thead>
-              <tr>
-                <th>Alan</th>
-                <th>Değer</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Kullanıcı ID</td>
-                <td>{{.UserID}}</td>
-              </tr>
-              <tr>
-                <td>Ad Soyad</td>
-                <td>{{.UserName}}</td>
-              </tr>
-              <tr>
-                <td>E-posta</td>
-                <td>{{.UserEmail}}</td>
-              </tr>
-              <tr>
-                <td>Son Giriş</td>
-                <td>{{.CurrentTime}}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <div id="activityChart"></div>
       </div>
     </div>
   </div>
 </div>
 {{end}}
 
+<!-- Add Task Modal -->
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Yeni Görev Ekle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addTaskForm">
+          <div class="mb-3">
+            <label class="form-label">Görev Başlığı</label>
+            <input type="text" class="form-control" name="title" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Açıklama</label>
+            <textarea class="form-control" name="description" rows="3"></textarea>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Öncelik</label>
+              <select class="form-select" name="priority">
+                <option value="low">Düşük</option>
+                <option value="medium" selected>Orta</option>
+                <option value="high">Yüksek</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Bitiş Tarihi</label>
+              <input type="date" class="form-control" name="due_date">
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+        <button type="button" class="btn btn-primary" onclick="saveTask()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "page_css"}}
+<style>
+.quick-action-card {
+  transition: all 0.3s ease;
+}
+.quick-action-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.1) !important;
+}
+.notification-item:last-child,
+.task-item:last-child {
+  border-bottom: none !important;
+}
+.task-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+</style>
+{{end}}
+
 {{define "page_js"}}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
   $(document).ready(function() {
     // Dashboard sayfası için özel JavaScript
     console.log("Dashboard sayfası yüklendi");
     
-    // Başarılı giriş bildirimi göster
-    if (window.KolajAI && window.KolajAI.notifications) {
-      Lobibox.notify('success', {
-        pauseDelayOnHover: true,
-        size: 'mini',
-        rounded: true,
-        icon: 'bi bi-check-circle-fill',
-        delayIndicator: false,
-        continueDelayOnInactiveTab: false,
-        position: 'top right',
-        msg: 'Giriş işlemi başarılı! Hoş geldiniz, {{.UserName}}.'
-      });
-    }
+    // Initialize activity chart if admin
+    {{if .IsAdmin}}
+    initActivityChart();
+    {{end}}
+    
+    // Auto refresh stats every 30 seconds
+    setInterval(refreshDashboardStats, 30000);
   });
+  
+  // Mark notification as read
+  function markNotificationRead(notificationId) {
+    fetch('/dashboard/api?action=mark-notification-read', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+      },
+      body: JSON.stringify({ notification_id: notificationId })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update UI
+        const notificationItem = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
+        if (notificationItem) {
+          notificationItem.querySelector('h6').classList.remove('fw-bold');
+          notificationItem.querySelector('.mark-read-btn').remove();
+        }
+        
+        // Update notification badge
+        updateNotificationBadge();
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  }
+  
+  // Toggle task completion
+  function toggleTask(taskId) {
+    const checkbox = document.getElementById(`task${taskId}`);
+    const isCompleted = checkbox.checked;
+    
+    fetch('/dashboard/api?action=complete-task', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+      },
+      body: JSON.stringify({ 
+        task_id: taskId,
+        completed: isCompleted 
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update UI
+        const label = checkbox.nextElementSibling.querySelector('.form-check-label');
+        if (isCompleted) {
+          label.classList.add('text-decoration-line-through', 'text-muted');
+        } else {
+          label.classList.remove('text-decoration-line-through', 'text-muted');
+        }
+      } else {
+        // Revert checkbox on error
+        checkbox.checked = !isCompleted;
+        alert('Görev güncellenirken hata oluştu');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      checkbox.checked = !isCompleted;
+    });
+  }
+  
+  // Save new task
+  function saveTask() {
+    const form = document.getElementById('addTaskForm');
+    const formData = new FormData(form);
+    
+    fetch('/tasks/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]')?.content || ''
+      },
+      body: JSON.stringify(Object.fromEntries(formData))
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('addTaskModal')).hide();
+        
+        // Reset form
+        form.reset();
+        
+        // Reload page or update task list
+        location.reload();
+      } else {
+        alert(data.message || 'Görev eklenirken hata oluştu');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Bir hata oluştu');
+    });
+  }
+  
+  // Refresh dashboard statistics
+  function refreshDashboardStats() {
+    fetch('/dashboard/api?action=refresh-stats')
+      .then(response => response.json())
+      .then(stats => {
+        // Update stats cards if they exist
+        {{if .IsAdmin}}
+        updateStatCard('total-users', stats.total_users, stats.new_users_today);
+        updateStatCard('total-orders', stats.total_orders, stats.orders_today);
+        updateStatCard('total-products', stats.total_products);
+        updateStatCard('total-revenue', '₺' + stats.total_revenue.toFixed(2), '₺' + stats.revenue_today.toFixed(2));
+        {{end}}
+      })
+      .catch(error => console.error('Error refreshing stats:', error));
+  }
+  
+  // Update stat card helper
+  function updateStatCard(cardId, mainValue, subValue) {
+    const card = document.getElementById(cardId);
+    if (card) {
+      const mainElement = card.querySelector('h4');
+      if (mainElement) mainElement.textContent = mainValue;
+      
+      if (subValue !== undefined) {
+        const subElement = card.querySelector('small');
+        if (subElement) subElement.textContent = '+' + subValue + ' bugün';
+      }
+    }
+  }
+  
+  // Update notification badge
+  function updateNotificationBadge() {
+    const unreadCount = document.querySelectorAll('.notification-item h6.fw-bold').length;
+    const badges = document.querySelectorAll('.notification-badge');
+    badges.forEach(badge => {
+      if (unreadCount > 0) {
+        badge.textContent = unreadCount;
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+    });
+  }
+  
+  {{if .IsAdmin}}
+  // Initialize activity chart
+  function initActivityChart() {
+    const chartData = {{.ActivityChart}};
+    
+    const options = {
+      series: [{
+        name: 'Aktivite',
+        data: chartData.data
+      }],
+      chart: {
+        type: 'area',
+        height: 350,
+        toolbar: {
+          show: false
+        }
+      },
+      dataLabels: {
+        enabled: false
+      },
+      stroke: {
+        curve: 'smooth',
+        width: 3
+      },
+      xaxis: {
+        categories: chartData.labels
+      },
+      yaxis: {
+        title: {
+          text: 'Kullanıcı Aktivitesi'
+        }
+      },
+      fill: {
+        type: 'gradient',
+        gradient: {
+          shadeIntensity: 1,
+          opacityFrom: 0.7,
+          opacityTo: 0.3,
+          stops: [0, 90, 100]
+        }
+      },
+      colors: ['#5664d2'],
+      tooltip: {
+        y: {
+          formatter: function(val) {
+            return val + " aktivite";
+          }
+        }
+      }
+    };
+    
+    const chart = new ApexCharts(document.querySelector("#activityChart"), options);
+    chart.render();
+  }
+  {{end}}
 </script>
 {{end}} 

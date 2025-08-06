@@ -48,18 +48,76 @@
 <!-- Sayfa özel JS -->
 <script>
 $(document).ready(function() {
-    $('#loginForm').on('submit', function(e) {
-        var email = $('#inputEmailAddress').val();
-        var password = $('#inputChoosePassword').val();
+    // Show/hide password functionality
+    $("#show_hide_password a").on('click', function(event) {
+        event.preventDefault();
+        const input = $('#inputChoosePassword');
+        const icon = $(this).find('i');
         
-        if (!email || !password) {
+        if (input.attr("type") === "text") {
+            input.attr('type', 'password');
+            icon.removeClass("bi-eye-fill").addClass("bi-eye-slash-fill");
+        } else {
+            input.attr('type', 'text');
+            icon.removeClass("bi-eye-slash-fill").addClass("bi-eye-fill");
+        }
+    });
+    
+    // Form validation
+    $('#loginForm').on('submit', function(e) {
+        const email = $('#inputEmailAddress').val().trim();
+        const password = $('#inputChoosePassword').val();
+        let hasError = false;
+        
+        // Email validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email) {
             e.preventDefault();
-            alert('Lütfen tüm alanları doldurun');
-            return false;
+            $('#inputEmailAddress').addClass('is-invalid');
+            $('#inputEmailAddress').siblings('.invalid-feedback').remove();
+            $('#inputEmailAddress').after('<div class="invalid-feedback">E-posta adresi zorunludur</div>');
+            hasError = true;
+        } else if (!emailRegex.test(email)) {
+            e.preventDefault();
+            $('#inputEmailAddress').addClass('is-invalid');
+            $('#inputEmailAddress').siblings('.invalid-feedback').remove();
+            $('#inputEmailAddress').after('<div class="invalid-feedback">Geçerli bir e-posta adresi giriniz</div>');
+            hasError = true;
+        } else {
+            $('#inputEmailAddress').removeClass('is-invalid');
+            $('#inputEmailAddress').siblings('.invalid-feedback').remove();
         }
         
-        // Form validation passed
-        return true;
+        // Password validation
+        if (!password) {
+            e.preventDefault();
+            $('#inputChoosePassword').addClass('is-invalid');
+            $('#inputChoosePassword').parent().siblings('.invalid-feedback').remove();
+            $('#inputChoosePassword').parent().after('<div class="invalid-feedback">Şifre zorunludur</div>');
+            hasError = true;
+        } else if (password.length < 6) {
+            e.preventDefault();
+            $('#inputChoosePassword').addClass('is-invalid');
+            $('#inputChoosePassword').parent().siblings('.invalid-feedback').remove();
+            $('#inputChoosePassword').parent().after('<div class="invalid-feedback">Şifre en az 6 karakter olmalıdır</div>');
+            hasError = true;
+        } else {
+            $('#inputChoosePassword').removeClass('is-invalid');
+            $('#inputChoosePassword').parent().siblings('.invalid-feedback').remove();
+        }
+        
+        return !hasError;
+    });
+    
+    // Remove validation errors on input
+    $('#inputEmailAddress').on('input', function() {
+        $(this).removeClass('is-invalid');
+        $(this).siblings('.invalid-feedback').remove();
+    });
+    
+    $('#inputChoosePassword').on('input', function() {
+        $(this).removeClass('is-invalid');
+        $(this).parent().siblings('.invalid-feedback').remove();
     });
 });
 </script>
