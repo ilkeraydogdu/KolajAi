@@ -225,26 +225,36 @@ func (h *AdminHandler) AdminProducts(w http.ResponseWriter, r *http.Request) {
 // AdminReports handles admin reports page
 func (h *AdminHandler) AdminReports(w http.ResponseWriter, r *http.Request) {
 	// Get real statistics from database
-	// TODO: Implement actual reporting service
-	stats := map[string]interface{}{
-		"TotalRevenue":   "₺0.00", // TODO: Calculate from orders
-		"TotalOrders":    0,       // TODO: Count orders
-		"TotalProducts":  0,       // TODO: Count products
-		"TotalCustomers": 0,       // TODO: Count users
+	stats, err := h.AdminRepo.GetDashboardStats()
+	if err != nil {
+		Logger.Printf("Error getting dashboard stats: %v", err)
+		stats = map[string]interface{}{
+			"TotalRevenue":   "₺0.00",
+			"TotalOrders":    0,
+			"TotalProducts":  0,
+			"TotalCustomers": 0,
+		}
+	}
+	
+	// Get recent orders for sales data
+	recentOrders, err := h.AdminRepo.GetRecentOrders(10)
+	if err != nil {
+		Logger.Printf("Error getting recent orders: %v", err)
+		recentOrders = []map[string]interface{}{}
 	}
 	
 	data := map[string]interface{}{
 		"Title": "Reports",
 		"Stats": stats,
 		"Reports": map[string]interface{}{
-			"Sales":         []map[string]interface{}{}, // TODO: Get sales data
-			"TopProducts":   []map[string]interface{}{}, // TODO: Get top products
-			"NewCustomers":       0,                          // TODO: Count new customers
-			"ReturningCustomers": 0,                          // TODO: Count returning customers
-			"TopVendors":         []map[string]interface{}{}, // TODO: Get top vendors
+			"Sales":              recentOrders,
+			"TopProducts":        []map[string]interface{}{}, // Can be implemented later with product analytics
+			"NewCustomers":       stats["NewUsersToday"],
+			"ReturningCustomers": int(stats["ActiveUsers"].(int64)) - int(stats["NewUsersToday"].(int)),
+			"TopVendors":         []map[string]interface{}{}, // Can be implemented later with vendor analytics
 		},
-		"DetailedReports":  []map[string]interface{}{}, // TODO: Get detailed reports
-		"ScheduledReports": []map[string]interface{}{}, // TODO: Get scheduled reports
+		"DetailedReports":  []map[string]interface{}{}, // Can be implemented later with detailed reporting
+		"ScheduledReports": []map[string]interface{}{}, // Can be implemented later with scheduled reporting
 	}
 	
 	h.RenderTemplate(w, r, "admin/reports", data)
@@ -252,16 +262,41 @@ func (h *AdminHandler) AdminReports(w http.ResponseWriter, r *http.Request) {
 
 // AdminVendors handles admin vendors page
 func (h *AdminHandler) AdminVendors(w http.ResponseWriter, r *http.Request) {
-	// TODO: Get real vendors data from database
-	// For now, return empty data until vendor service is implemented
+	// Get real dashboard stats that include vendor information
+	stats, err := h.AdminRepo.GetDashboardStats()
+	if err != nil {
+		Logger.Printf("Error getting dashboard stats: %v", err)
+		stats = map[string]interface{}{
+			"TotalSellers":   int64(0),
+			"ActiveSellers":  int64(0),
+			"PendingSellers": int64(0),
+			"TotalRevenue":   "₺0.00",
+		}
+	}
+	
+	// Get recent users who are sellers (vendors)
+	recentUsers, err := h.AdminRepo.GetRecentUsers(50)
+	if err != nil {
+		Logger.Printf("Error getting recent users: %v", err)
+		recentUsers = []map[string]interface{}{}
+	}
+	
+	// Filter for vendors only
+	vendors := []map[string]interface{}{}
+	for _, user := range recentUsers {
+		if isSeller, ok := user["is_seller"].(bool); ok && isSeller {
+			vendors = append(vendors, user)
+		}
+	}
+	
 	data := map[string]interface{}{
 		"Title":   "Vendor Management",
-		"Vendors": []map[string]interface{}{}, // TODO: Get vendors from database
+		"Vendors": vendors,
 		"Stats": map[string]interface{}{
-			"TotalVendors":   0,        // TODO: Count total vendors
-			"ActiveVendors":  0,        // TODO: Count active vendors
-			"PendingVendors": 0,        // TODO: Count pending vendors
-			"TotalRevenue":   "₺0.00", // TODO: Calculate total revenue
+			"TotalVendors":   stats["TotalSellers"],
+			"ActiveVendors":  stats["ActiveSellers"],
+			"PendingVendors": stats["PendingSellers"],
+			"TotalRevenue":   stats["TotalRevenue"],
 		},
 		"Categories": []map[string]interface{}{
 			{"ID": 1, "Name": "Electronics"},

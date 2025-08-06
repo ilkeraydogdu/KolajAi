@@ -109,6 +109,7 @@ func TestProductService_ValidateProduct(t *testing.T) {
 			name: "valid product",
 			product: models.Product{
 				Name:       "Test Product",
+				SKU:        "TEST-001",
 				Price:      99.99,
 				Stock:      10,
 				VendorID:   1,
