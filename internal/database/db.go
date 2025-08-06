@@ -110,6 +110,27 @@ func (r *MySQLRepository) Create(table string, fields []string, values []interfa
 	return result.LastInsertId()
 }
 
+// CreateStruct inserts a new record using struct
+func (r *MySQLRepository) CreateStruct(table string, data interface{}) (int64, error) {
+	if !validateTableName(table) {
+		return 0, &DatabaseError{
+			Code:    "INVALID_TABLE",
+			Message: fmt.Sprintf("invalid table name: %s", table),
+		}
+	}
+
+	// Extract fields and values from struct
+	fields, values := extractFieldsAndValues(data)
+	if len(fields) == 0 {
+		return 0, &DatabaseError{
+			Code:    "NO_DATA",
+			Message: "no fields to insert",
+		}
+	}
+
+	return r.Create(table, fields, values)
+}
+
 // Update updates a record
 func (r *MySQLRepository) Update(table string, id interface{}, data interface{}) error {
 	if !validateTableName(table) {
@@ -410,7 +431,7 @@ func (r *MySQLRepository) scanRows(rows *sql.Rows, result interface{}) error {
 }
 
 // FindOne finds a single record
-func (r *MySQLRepository) FindOne(table string, conditions map[string]interface{}, dest interface{}) error {
+func (r *MySQLRepository) FindOne(table string, dest interface{}, conditions map[string]interface{}) error {
 	if !validateTableName(table) {
 		return &DatabaseError{
 			Code:    "INVALID_TABLE",
@@ -872,4 +893,68 @@ func (t *transactionWrapper) Rollback() error {
 	return t.tx.Rollback()
 }
 
+// extractFieldsAndValues extracts fields and values from a struct using reflection
+func extractFieldsAndValues(data interface{}) ([]string, []interface{}) {
+	val := reflect.ValueOf(data)
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+	
+	if val.Kind() != reflect.Struct {
+		return nil, nil
+	}
+	
+	typ := val.Type()
+	fields := make([]string, 0)
+	values := make([]interface{}, 0)
+	
+	for i := 0; i < val.NumField(); i++ {
+		field := typ.Field(i)
+		fieldVal := val.Field(i)
+		
+		// Skip unexported fields
+		if !fieldVal.CanInterface() {
+			continue
+		}
+		
+		// Get db tag or use field name
+		dbTag := field.Tag.Get("db")
+		if dbTag == "" {
+			dbTag = strings.ToLower(field.Name)
+		}
+		
+		// Skip fields with db:"-"
+		if dbTag == "-" {
+			continue
+		}
+		
+		// Skip empty primary key fields (usually auto-increment)
+		if (dbTag == "id" || strings.HasSuffix(dbTag, "_id")) && isZeroValue(fieldVal) {
+			continue
+		}
+		
+		fields = append(fields, dbTag)
+		values = append(values, fieldVal.Interface())
+	}
+	
+	return fields, values
+}
 
+// isZeroValue checks if a value is the zero value for its type
+func isZeroValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
+}

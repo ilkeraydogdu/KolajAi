@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"reflect"
 	"time"
 
@@ -64,9 +63,11 @@ func (r *BaseRepository) FindByDateRange(table, dateField string, start, end tim
 }
 
 // Transaction executes a function within a transaction
-func (r *BaseRepository) Transaction(fn func(*sql.Tx) error) error {
-	return r.db.Transaction(fn)
-}
+// Note: This method is not available in SimpleRepository interface
+// Use Begin() method instead for transaction handling
+// func (r *BaseRepository) Transaction(fn func(*sql.Tx) error) error {
+// 	return r.db.Transaction(fn)
+// }
 
 // Exists checks if a record exists
 func (r *BaseRepository) Exists(table string, conditions map[string]interface{}) (bool, error) {
@@ -134,8 +135,7 @@ func getFieldsAndValues(data interface{}) ([]string, []interface{}) {
 
 // CreateStruct creates a record from a struct (for SimpleRepository compatibility)
 func (r *BaseRepository) CreateStruct(table string, data interface{}) (int64, error) {
-	fields, values := getFieldsAndValues(data)
-	return r.db.Create(table, fields, values)
+	return r.db.CreateStruct(table, data)
 }
 
 // SetConnectionPool sets database connection pool parameters

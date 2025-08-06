@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -111,14 +112,41 @@ func main() {
 
 	// Seed database with initial data
 	MainLogger.Println("Database seeding başlatılıyor...")
-	if err := database.SeedGlobalDatabase(); err != nil {
-		MainLogger.Printf("Database seeding failed (continuing anyway): %v", err)
-	} else {
-		MainLogger.Println("Database seeding tamamlandı!")
-	}
+	
+	// Panic recovery for seeding
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				MainLogger.Printf("Database seeding PANIC: %v", r)
+			}
+		}()
+		
+		if err := database.SeedGlobalDatabase(); err != nil {
+			MainLogger.Printf("Database seeding failed (continuing anyway): %v", err)
+		} else {
+			MainLogger.Println("Database seeding tamamlandı!")
+		}
+	}()
+	MainLogger.Println("✅ Database seeding completed successfully - ANA SERVER")
 
 	// Get database connection for services
-	db := database.GetGlobalDB()
+	MainLogger.Println("Database connection alınıyor...")
+	
+	var db *sql.DB
+	
+	// Panic recovery for database connection
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				MainLogger.Printf("Database connection PANIC: %v", r)
+				os.Exit(1)
+			}
+		}()
+		
+		db = database.GetGlobalDB()
+	}()
+	
+	MainLogger.Println("✅ Database connection alındı")
 
 	// Advanced systems initialization
 	MainLogger.Println("Gelişmiş sistemler başlatılıyor...")
@@ -131,10 +159,25 @@ func main() {
 		Stores:             make(map[string]cache.StoreConfig),
 	})
 	defer cacheManager.Close()
+	MainLogger.Println("✅ Cache Manager başlatıldı")
 
 	// Security Manager
 	MainLogger.Println("Güvenlik sistemi başlatılıyor...")
-	securityManager := security.NewSecurityManager(db, security.SecurityConfig{
+	MainLogger.Printf("EncryptionKey: %s", cfg.Security.EncryptionKey)
+	MainLogger.Printf("JWTSecret: %s", cfg.Security.JWTSecret)
+	
+	var securityManager *security.SecurityManager
+	
+	// Panic recovery for security manager
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				MainLogger.Printf("Security Manager PANIC: %v", r)
+				os.Exit(1)
+			}
+		}()
+		
+		securityManager = security.NewSecurityManager(db, security.SecurityConfig{
 		MaxLoginAttempts:     5,
 		LoginLockoutDuration: 30 * time.Minute,
 		PasswordMinLength:    8,
@@ -152,6 +195,9 @@ func main() {
 		TwoFactorEnabled:    true,
 		AuditLogEnabled:     true,
 	})
+	}()
+
+	MainLogger.Println("✅ Security Manager başlatıldı")
 
 	// Session Manager
 	MainLogger.Println("Session sistemi başlatılıyor...")
@@ -214,8 +260,8 @@ func main() {
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
-	// UserRepository için MySQLRepository kullanıyoruz
-	userRepo := repository.NewUserRepository(mysqlRepo)
+	// UserRepository için SimpleRepository wrapper kullanıyoruz
+	userRepo := repository.NewUserRepository(repo)
 	// emailService := email.NewService() // Email service'i initialize et - temporarily disabled
 	var emailService *email.Service = nil
 	authService := services.NewAuthService(userRepo, emailService)
@@ -248,10 +294,12 @@ func main() {
 	// Asset Manager'ı başlat
 	MainLogger.Println("Asset Manager başlatılıyor...")
 	assetManager := utils.NewAssetManager("dist/manifest.json")
+	MainLogger.Println("✅ Asset Manager başlatıldı")
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
 	MainLogger.Println("Template functions tanımlanıyor...")
+	MainLogger.Println("Dict function tanımlanıyor...")
 
 	// Template fonksiyonlarını tanımla
 	funcMap := template.FuncMap{
@@ -400,6 +448,195 @@ func main() {
 			}
 			return s[:length] + "..."
 		},
+		"substr": func(s string, start, length int) string {
+			if start < 0 || start >= len(s) {
+				return ""
+			}
+			end := start + length
+			if end > len(s) {
+				end = len(s)
+			}
+			return s[start:end]
+		},
+		"maskEmail": func(email string) string {
+			if len(email) < 3 {
+				return email
+			}
+			atIndex := strings.Index(email, "@")
+			if atIndex == -1 {
+				return email
+			}
+			if atIndex < 2 {
+				return email
+			}
+			return email[:2] + "***" + email[atIndex:]
+		},
+		"currency": func(price float64) string {
+			return fmt.Sprintf("%.2f TL", price)
+		},
+		"eq": func(a, b interface{}) bool {
+			return a == b
+		},
+		"ne": func(a, b interface{}) bool {
+			return a != b
+		},
+		"gt": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal > bVal
+		},
+		"ge": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal >= bVal
+		},
+		"le": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal <= bVal
+		},
+		"and": func(a, b bool) bool {
+			return a && b
+		},
+		"or": func(a, b bool) bool {
+			return a || b
+		},
+		"not": func(a bool) bool {
+			return !a
+		},
+		"upper": func(s string) string {
+			return strings.ToUpper(s)
+		},
+		"lower": func(s string) string {
+			return strings.ToLower(s)
+		},
+		"title": func(s string) string {
+			return strings.Title(s)
+		},
+		"trim": func(s string) string {
+			return strings.TrimSpace(s)
+		},
+		"len": func(v interface{}) int {
+			switch val := v.(type) {
+			case string:
+				return len(val)
+			case []interface{}:
+				return len(val)
+			default:
+				return 0
+			}
+		},
+		"div": func(a, b interface{}) float64 {
+			var numA, numB float64
+			switch v := a.(type) {
+			case int:
+				numA = float64(v)
+			case float64:
+				numA = v
+			case float32:
+				numA = float64(v)
+			default:
+				return 0
+			}
+			switch v := b.(type) {
+			case int:
+				numB = float64(v)
+			case float64:
+				numB = v
+			case float32:
+				numB = float64(v)
+			default:
+				return 1
+			}
+			if numB == 0 {
+				return 0
+			}
+			return numA / numB
+		},
+		"mod": func(a, b int) int {
+			if b == 0 {
+				return 0
+			}
+			return a % b
+		},
 	}
 
 	MainLogger.Println("Template parsing başlatılıyor...")
@@ -422,8 +659,26 @@ func main() {
 	
 	MainLogger.Printf("Bulunan template dosyaları: %d", len(templateFiles))
 	
+	// Debug: Template dosyalarını listele
+	for i, file := range templateFiles {
+		MainLogger.Printf("Template %d: %s", i+1, file)
+	}
+	
 	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(templateFiles...)
 	if err != nil {
+		MainLogger.Printf("Template parsing hatası: %v", err)
+		MainLogger.Printf("Problematik template'leri tek tek test ediyorum...")
+		
+		// Template'leri tek tek test et
+		for _, file := range templateFiles {
+			_, testErr := template.New("").Funcs(funcMap).ParseFiles(file)
+			if testErr != nil {
+				MainLogger.Printf("❌ Hatalı template: %s - Hata: %v", file, testErr)
+			} else {
+				MainLogger.Printf("✅ Başarılı template: %s", file)
+			}
+		}
+		
 		MainLogger.Fatalf("Şablonlar yüklenemedi: %v", err)
 	}
 	MainLogger.Printf("Şablonlar başarıyla yüklendi!")
@@ -452,7 +707,7 @@ func main() {
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
 
 	// Admin handler'ı oluştur
-	adminHandler := handlers.NewAdminHandler(h, mysqlRepo)
+	adminHandler := handlers.NewAdminHandler(h, repo)
 
 	// Seller handler'ı oluştur
 	sellerHandler := handlers.NewSellerHandler(h, vendorService, productService, orderService)

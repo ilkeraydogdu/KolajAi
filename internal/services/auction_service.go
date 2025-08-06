@@ -272,18 +272,6 @@ func (s *AuctionService) markPreviousBidsAsLosing(auctionID int) error {
 	return nil
 }
 
-// GetAuctionBids retrieves bids for an auction
-func (s *AuctionService) GetAuctionBids(auctionID int, limit, offset int) ([]models.AuctionBid, error) {
-	var bids []models.AuctionBid
-	conditions := map[string]interface{}{"auction_id": auctionID}
-
-	err := s.repo.FindAll("auction_bids", &bids, conditions, "amount DESC", limit, offset)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get auction bids: %w", err)
-	}
-	return bids, nil
-}
-
 // GetWinningBid retrieves the winning bid for an auction
 func (s *AuctionService) GetWinningBid(auctionID int) (*models.AuctionBid, error) {
 	var bid models.AuctionBid
