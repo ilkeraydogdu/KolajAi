@@ -314,3 +314,174 @@ func (h *Handler) HandleError(w http.ResponseWriter, r *http.Request, err error,
 	w.WriteHeader(http.StatusInternalServerError)
 	h.RenderTemplate(w, r, "error", data)
 }
+
+// Handler struct'ından sonra, helper metodları ekleyelim
+
+// ValidateCSRFToken CSRF token'ı doğrular
+func (h *Handler) ValidateCSRFToken(r *http.Request) bool {
+	// TODO: Gerçek CSRF token doğrulaması implementasyonu
+	// Şimdilik basit bir kontrol
+	token := r.FormValue("csrf_token")
+	sessionToken, _ := h.SessionManager.GetSessionValue(r, "csrf_token")
+	
+	if token == "" || sessionToken == nil {
+		return false
+	}
+	
+	return token == sessionToken.(string)
+}
+
+// CheckLoginRateLimit login denemelerini kontrol eder
+func (h *Handler) CheckLoginRateLimit(email string) bool {
+	// TODO: Redis veya in-memory cache ile gerçek rate limiting
+	// Şimdilik her zaman true döndür
+	return true
+}
+
+// IncrementLoginAttempts başarısız login denemelerini artırır
+func (h *Handler) IncrementLoginAttempts(email string) {
+	// TODO: Redis veya veritabanında login attempt sayısını artır
+	Logger.Printf("Login attempt incremented for: %s", email)
+}
+
+// EmailExists email adresinin veritabanında olup olmadığını kontrol eder
+func (h *Handler) EmailExists(email string) bool {
+	// TODO: Veritabanında email kontrolü
+	// Demo için admin@kolajAi.com varsa true döndür
+	return email == "admin@kolajAi.com"
+}
+
+// GenerateVerificationToken email doğrulama token'ı oluşturur
+func (h *Handler) GenerateVerificationToken() string {
+	// TODO: Güvenli random token oluştur
+	return fmt.Sprintf("verify_%d", time.Now().Unix())
+}
+
+// SetSessionWithExpiry belirli bir süre ile session oluşturur
+func (sm *SessionManager) SetSessionWithExpiry(w http.ResponseWriter, r *http.Request, key, val interface{}, duration time.Duration) error {
+	sm.mutex.Lock()
+	defer sm.mutex.Unlock()
+
+	session, err := sm.store.Get(r, SessionCookieName)
+	if err != nil {
+		sm.Logger.Printf("SetSessionWithExpiry - Oturum çerezini okuma hatası: %v", err)
+		return err
+	}
+
+	// Session değerini ayarla
+	session.Values[key] = val
+	
+	// Session options'ı ayarla
+	session.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   int(duration.Seconds()),
+		HttpOnly: true,
+		Secure:   false, // Production'da true olmalı
+		SameSite: http.SameSiteLaxMode,
+	}
+
+	// Session'ı kaydet
+	err = session.Save(r, w)
+	if err != nil {
+		sm.Logger.Printf("SetSessionWithExpiry - Oturum kaydetme hatası: %v", err)
+		return err
+	}
+
+	sm.Logger.Printf("SetSessionWithExpiry - Oturum başarıyla kaydedildi: key=%v, duration=%v", key, duration)
+	return nil
+}
+
+// GetSessionValue session'dan belirli bir değeri alır
+func (sm *SessionManager) GetSessionValue(r *http.Request, key string) (interface{}, error) {
+	session, err := sm.GetSession(r)
+	if err != nil {
+		return nil, err
+	}
+	
+	value, exists := session.Values[key]
+	if !exists {
+		return nil, fmt.Errorf("key not found in session: %s", key)
+	}
+	
+	return value, nil
+}
+
+// UserInfo represents user information in session
+type UserInfo struct {
+	ID      int64  `json:"id"`
+	Email   string `json:"email"`
+	Name    string `json:"name"`
+	IsAdmin bool   `json:"is_admin"`
+}
+
+// GetUserFromSession retrieves user info from session
+func (h *Handler) GetUserFromSession(r *http.Request) *UserInfo {
+	session, err := h.SessionManager.GetSession(r)
+	if err != nil {
+		Logger.Printf("GetUserFromSession - Session error: %v", err)
+		return nil
+	}
+	
+	userInterface, exists := session.Values[UserKey]
+	if !exists {
+		Logger.Printf("GetUserFromSession - No user in session")
+		return nil
+	}
+	
+	// Try to cast to UserInfo struct
+	if userInfo, ok := userInterface.(*UserInfo); ok {
+		return userInfo
+	}
+	
+	// Try to cast to map for backward compatibility
+	if userMap, ok := userInterface.(map[string]interface{}); ok {
+		userInfo := &UserInfo{}
+		if id, ok := userMap["ID"].(int64); ok {
+			userInfo.ID = id
+		}
+		if email, ok := userMap["Email"].(string); ok {
+			userInfo.Email = email
+		}
+		if name, ok := userMap["Name"].(string); ok {
+			userInfo.Name = name
+		}
+		return userInfo
+	}
+	
+	Logger.Printf("GetUserFromSession - Unable to cast user data")
+	return nil
+}
+
+// GetUserIDFromSession retrieves user ID from session
+func (h *Handler) GetUserIDFromSession(r *http.Request) int64 {
+	userInfo := h.GetUserFromSession(r)
+	if userInfo != nil {
+		return userInfo.ID
+	}
+	
+	// Try direct user_id key for backward compatibility
+	session, err := h.SessionManager.GetSession(r)
+	if err != nil {
+		return 0
+	}
+	
+	if userID, ok := session.Values["user_id"].(int64); ok {
+		return userID
+	}
+	
+	return 0
+}
+
+// IsAdminUser checks if the current user is admin
+func (h *Handler) IsAdminUser(r *http.Request) bool {
+	session, err := h.SessionManager.GetSession(r)
+	if err != nil {
+		return false
+	}
+	
+	if isAdmin, ok := session.Values["is_admin"].(bool); ok {
+		return isAdmin
+	}
+	
+	return false
+}

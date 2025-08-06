@@ -48,6 +48,50 @@
       <div class="valid-feedback">Telefon numarası geçerli!</div>
     </div>
     
+    <div class="col-12">
+      <label for="inputPassword" class="form-label">Şifre</label>
+      <div class="input-group" id="show_hide_password">
+        <input type="password" class="form-control border-end-0" id="inputPassword" name="password" placeholder="Güçlü bir şifre oluşturun" required
+               minlength="8"
+               data-validate="password"
+               data-error-required="Şifre alanı zorunludur"
+               data-error-minlength="Şifre en az 8 karakter olmalıdır"
+               data-error-password="Şifre en az bir büyük harf, bir küçük harf, bir rakam ve bir özel karakter içermelidir"
+               data-success-message="Şifre güçlü!">
+        <a href="javascript:;" class="input-group-text bg-transparent"><i class="bi bi-eye-slash-fill"></i></a>
+      </div>
+      <div class="invalid-feedback">Şifre kriterleri karşılanmıyor</div>
+      <div class="valid-feedback">Şifre güçlü!</div>
+      <div class="password-strength mt-2">
+        <div class="progress" style="height: 5px;">
+          <div class="progress-bar" role="progressbar" id="passwordStrength" style="width: 0%"></div>
+        </div>
+        <small class="text-muted" id="passwordStrengthText">Şifre gücü</small>
+      </div>
+      <ul class="password-requirements mt-2 small text-muted">
+        <li id="length-req"><i class="bi bi-x-circle text-danger"></i> En az 8 karakter</li>
+        <li id="uppercase-req"><i class="bi bi-x-circle text-danger"></i> En az bir büyük harf</li>
+        <li id="lowercase-req"><i class="bi bi-x-circle text-danger"></i> En az bir küçük harf</li>
+        <li id="number-req"><i class="bi bi-x-circle text-danger"></i> En az bir rakam</li>
+        <li id="special-req"><i class="bi bi-x-circle text-danger"></i> En az bir özel karakter</li>
+      </ul>
+    </div>
+    
+    <div class="col-12">
+      <label for="inputConfirmPassword" class="form-label">Şifre Tekrar</label>
+      <div class="input-group" id="show_hide_password_confirm">
+        <input type="password" class="form-control border-end-0" id="inputConfirmPassword" name="confirm_password" placeholder="Şifrenizi tekrar girin" required
+               data-validate="match"
+               data-match="#inputPassword"
+               data-error-required="Şifre tekrar alanı zorunludur"
+               data-error-match="Şifreler eşleşmiyor"
+               data-success-message="Şifreler eşleşiyor!">
+        <a href="javascript:;" class="input-group-text bg-transparent"><i class="bi bi-eye-slash-fill"></i></a>
+      </div>
+      <div class="invalid-feedback">Şifreler eşleşmiyor</div>
+      <div class="valid-feedback">Şifreler eşleşiyor!</div>
+    </div>
+    
     <div class="col-12 mt-3">
       <div class="form-group" id="captchaSection" style="display: none;">
         <label for="captchaAnswer" class="form-label d-flex align-items-center">
@@ -116,6 +160,93 @@
       // Eğer ilk karakter 0 değilse ve alan boş değilse, 0 ekle
       if (value.length > 0 && value.charAt(0) !== '0') {
         $(this).val('0' + value);
+      }
+    });
+    
+    // Password strength checker
+    $('#inputPassword').on('input', function() {
+      const password = $(this).val();
+      let strength = 0;
+      const requirements = {
+        length: password.length >= 8,
+        uppercase: /[A-Z]/.test(password),
+        lowercase: /[a-z]/.test(password),
+        number: /[0-9]/.test(password),
+        special: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+      };
+      
+      // Update requirement indicators
+      $('#length-req i').removeClass('bi-x-circle text-danger').addClass(requirements.length ? 'bi-check-circle text-success' : 'bi-x-circle text-danger');
+      $('#uppercase-req i').removeClass('bi-x-circle text-danger').addClass(requirements.uppercase ? 'bi-check-circle text-success' : 'bi-x-circle text-danger');
+      $('#lowercase-req i').removeClass('bi-x-circle text-danger').addClass(requirements.lowercase ? 'bi-check-circle text-success' : 'bi-x-circle text-danger');
+      $('#number-req i').removeClass('bi-x-circle text-danger').addClass(requirements.number ? 'bi-check-circle text-success' : 'bi-x-circle text-danger');
+      $('#special-req i').removeClass('bi-x-circle text-danger').addClass(requirements.special ? 'bi-check-circle text-success' : 'bi-x-circle text-danger');
+      
+      // Calculate strength
+      Object.values(requirements).forEach(req => {
+        if (req) strength++;
+      });
+      
+      // Update progress bar
+      const percentage = (strength / 5) * 100;
+      const progressBar = $('#passwordStrength');
+      progressBar.css('width', percentage + '%');
+      
+      // Update color and text
+      progressBar.removeClass('bg-danger bg-warning bg-info bg-success');
+      if (strength <= 2) {
+        progressBar.addClass('bg-danger');
+        $('#passwordStrengthText').text('Zayıf şifre').removeClass('text-warning text-info text-success').addClass('text-danger');
+      } else if (strength === 3) {
+        progressBar.addClass('bg-warning');
+        $('#passwordStrengthText').text('Orta güçte şifre').removeClass('text-danger text-info text-success').addClass('text-warning');
+      } else if (strength === 4) {
+        progressBar.addClass('bg-info');
+        $('#passwordStrengthText').text('Güçlü şifre').removeClass('text-danger text-warning text-success').addClass('text-info');
+      } else {
+        progressBar.addClass('bg-success');
+        $('#passwordStrengthText').text('Çok güçlü şifre').removeClass('text-danger text-warning text-info').addClass('text-success');
+      }
+    });
+    
+    // Show/hide password functionality
+    $("#show_hide_password a").on('click', function(event) {
+      event.preventDefault();
+      const input = $('#inputPassword');
+      const icon = $(this).find('i');
+      
+      if (input.attr("type") === "text") {
+        input.attr('type', 'password');
+        icon.removeClass("bi-eye-fill").addClass("bi-eye-slash-fill");
+      } else {
+        input.attr('type', 'text');
+        icon.removeClass("bi-eye-slash-fill").addClass("bi-eye-fill");
+      }
+    });
+    
+    $("#show_hide_password_confirm a").on('click', function(event) {
+      event.preventDefault();
+      const input = $('#inputConfirmPassword');
+      const icon = $(this).find('i');
+      
+      if (input.attr("type") === "text") {
+        input.attr('type', 'password');
+        icon.removeClass("bi-eye-fill").addClass("bi-eye-slash-fill");
+      } else {
+        input.attr('type', 'text');
+        icon.removeClass("bi-eye-slash-fill").addClass("bi-eye-fill");
+      }
+    });
+    
+    // Password match validation
+    $('#inputConfirmPassword').on('input', function() {
+      const password = $('#inputPassword').val();
+      const confirmPassword = $(this).val();
+      
+      if (confirmPassword && password !== confirmPassword) {
+        $(this).addClass('is-invalid').removeClass('is-valid');
+      } else if (confirmPassword && password === confirmPassword) {
+        $(this).addClass('is-valid').removeClass('is-invalid');
       }
     });
   });
