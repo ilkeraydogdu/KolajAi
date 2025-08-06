@@ -11,16 +11,14 @@ server:
 
 database:
   driver: "mysql"
-  host: "${DB_HOST:-localhost}"
-  port: ${DB_PORT:-3306}
-  name: "${DB_NAME:-kolajai}"
-  user: "${DB_USER:-kolajai}"
-  password: "${DB_PASSWORD}"
+  host: "localhost"
+  port: 3306
+  name: "kolajai"
+  user: "kolajai"
+  password: "kolajai123"
   max_open_conns: 25
   max_idle_conns: 25
   conn_max_lifetime: 5
-  # Mock mode for development without database
-  mock_mode: true
 
 security:
   # CRITICAL: All secrets MUST be loaded from environment variables in production

@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -95,29 +94,21 @@ func main() {
 	}
 
 	// Veritabanı bağlantısı (MySQL)
-	var db *sql.DB
-	if cfg.Database.MockMode {
-		MainLogger.Println("Mock mode aktif, veritabanı bağlantısı atlanıyor...")
-		// Mock mode'da nil db kullanacağız
-		db = nil
-	} else {
-		MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
-		dbConfig := database.DefaultConfig()
-		var err error
-		db, err = database.InitDB(dbConfig)
-		if err != nil {
-			MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
-		}
-		defer db.Close()
-
-		// Migration'ları çalıştır
-		MainLogger.Println("Veritabanı migration'ları çalıştırılıyor...")
-		migrationService := migrations.NewMigrationService(db, "kolajAi")
-		if err := migrationService.RunMigrations(); err != nil {
-			MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
-		}
-		MainLogger.Println("Migration'lar başarıyla tamamlandı!")
+	MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
+	dbConfig := database.DefaultConfig()
+	db, err := database.InitDB(dbConfig)
+	if err != nil {
+		MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
 	}
+	defer db.Close()
+
+	// Migration'ları çalıştır
+	MainLogger.Println("Veritabanı migration'ları çalıştırılıyor...")
+	migrationService := migrations.NewMigrationService(db, "kolajAi")
+	if err := migrationService.RunMigrations(); err != nil {
+		MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
+	}
+	MainLogger.Println("Migration'lar başarıyla tamamlandı!")
 
 	// Advanced systems initialization
 	MainLogger.Println("Gelişmiş sistemler başlatılıyor...")
@@ -208,51 +199,27 @@ func main() {
 	// MainLogger.Println("Test sistemi başlatılıyor...")
 
 	// Repository oluştur
-	var mysqlRepo *database.MySQLRepository
-	var repo *database.RepositoryWrapper
-	
-	if !cfg.Database.MockMode {
-		mysqlRepo = database.NewMySQLRepository(db)
-		repo = database.NewRepositoryWrapper(mysqlRepo)
-	}
+	mysqlRepo := database.NewMySQLRepository(db)
+	repo := database.NewRepositoryWrapper(mysqlRepo)
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
-	
-	var userRepo *repository.UserRepository
-	var authService *services.AuthService
-	var vendorService *services.VendorService
-	var productService *services.ProductService
-	var orderService *services.OrderService
-	var auctionService *services.AuctionService
-	var aiService *services.AIService
-	var aiAnalyticsService *services.AIAnalyticsService
-	var aiVisionService *services.AIVisionService
-	
+	// UserRepository için MySQLRepository kullanıyoruz
+	userRepo := repository.NewUserRepository(mysqlRepo)
 	emailService := email.NewService() // Email service'i initialize et
-	
-	if !cfg.Database.MockMode {
-		// UserRepository için MySQLRepository kullanıyoruz
-		userRepo = repository.NewUserRepository(mysqlRepo)
-		authService = services.NewAuthService(userRepo, emailService)
-		vendorService = services.NewVendorService(repo)
-		productService = services.NewProductService(repo)
-		orderService = services.NewOrderService(repo)
-		auctionService = services.NewAuctionService(repo)
-		aiService = services.NewAIService(repo, productService, orderService)
-		aiAnalyticsService = services.NewAIAnalyticsService(repo, productService, orderService)
-		aiVisionService = services.NewAIVisionService(repo, productService)
-		_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
-	}
+	authService := services.NewAuthService(userRepo, emailService)
+	vendorService := services.NewVendorService(repo)
+	productService := services.NewProductService(repo)
+	orderService := services.NewOrderService(repo)
+	auctionService := services.NewAuctionService(repo)
+	aiService := services.NewAIService(repo, productService, orderService)
+	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
+	aiVisionService := services.NewAIVisionService(repo, productService)
+	_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
 	
 	// Yeni gelişmiş AI ve marketplace servisleri
-	var aiAdvancedService *services.AIAdvancedService
-	var marketplaceService *services.MarketplaceIntegrationsService
-	
-	if !cfg.Database.MockMode {
-		aiAdvancedService = services.NewAIAdvancedService(repo, productService, orderService)
-		marketplaceService = services.NewMarketplaceIntegrationsService()
-	}
+	aiAdvancedService := services.NewAIAdvancedService(repo, productService, orderService)
+	marketplaceService := services.NewMarketplaceIntegrationsService()
 	paymentService := services.NewPaymentService(repo)
 	
 	// AI Integration Manager
