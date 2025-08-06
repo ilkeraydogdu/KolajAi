@@ -308,7 +308,9 @@ func NewSecurityManager(db *sql.DB, config SecurityConfig) *SecurityManager {
 		scanners:     make([]VulnerabilityScanner, 0),
 	}
 
-	sm.createSecurityTables()
+	if err := sm.createSecurityTables(); err != nil {
+		fmt.Printf("Warning: Could not create security tables: %v\n", err)
+	}
 	sm.initializeRateLimiter()
 	sm.loadIPLists()
 	sm.initializeValidators()
@@ -334,42 +336,34 @@ func (sm *SecurityManager) createSecurityTables() error {
 			payload TEXT,
 			headers TEXT,
 			timestamp DATETIME NOT NULL,
-			blocked BOOLEAN DEFAULT FALSE,
+			blocked BOOLEAN DEFAULT 0,
 			risk_score DECIMAL(5,2) DEFAULT 0.00,
 			details TEXT,
 			resolution TEXT,
 			resolved_at DATETIME,
-			resolved_by VARCHAR(128),
-			INDEX idx_type (type),
-			INDEX idx_severity (severity),
-			INDEX idx_timestamp (timestamp),
-			INDEX idx_ip_address (ip_address),
-			INDEX idx_user_id (user_id)
+			resolved_by VARCHAR(128)
 		)`,
 		`CREATE TABLE IF NOT EXISTS ip_whitelist (
-			id INT AUTO_INCREMENT PRIMARY KEY,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			ip_address VARCHAR(45) NOT NULL,
 			cidr_range VARCHAR(50),
 			description TEXT,
-			enabled BOOLEAN DEFAULT TRUE,
+			enabled BOOLEAN DEFAULT 1,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			UNIQUE KEY unique_ip (ip_address),
-			INDEX idx_enabled (enabled)
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE (ip_address)
 		)`,
 		`CREATE TABLE IF NOT EXISTS ip_blacklist (
-			id INT AUTO_INCREMENT PRIMARY KEY,
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			ip_address VARCHAR(45) NOT NULL,
 			cidr_range VARCHAR(50),
 			reason TEXT,
 			blocked_until DATETIME,
-			auto_blocked BOOLEAN DEFAULT FALSE,
-			enabled BOOLEAN DEFAULT TRUE,
+			auto_blocked BOOLEAN DEFAULT 0,
+			enabled BOOLEAN DEFAULT 1,
 			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-			UNIQUE KEY unique_ip (ip_address),
-			INDEX idx_enabled (enabled),
-			INDEX idx_blocked_until (blocked_until)
+			updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE (ip_address)
 		)`,
 		`CREATE TABLE IF NOT EXISTS rate_limit_tracking (
 			id VARCHAR(128) PRIMARY KEY,
@@ -378,9 +372,7 @@ func (sm *SecurityManager) createSecurityTables() error {
 			request_count INT DEFAULT 0,
 			window_start DATETIME NOT NULL,
 			window_end DATETIME NOT NULL,
-			last_request DATETIME DEFAULT CURRENT_TIMESTAMP,
-			INDEX idx_key_hash (key_hash),
-			INDEX idx_window_end (window_end)
+			last_request DATETIME DEFAULT CURRENT_TIMESTAMP
 		)`,
 		`CREATE TABLE IF NOT EXISTS vulnerability_scans (
 			id VARCHAR(128) PRIMARY KEY,
@@ -395,11 +387,7 @@ func (sm *SecurityManager) createSecurityTables() error {
 			scan_data TEXT,
 			recommendations TEXT,
 			metadata TEXT,
-			created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-			INDEX idx_target (target),
-			INDEX idx_scan_type (scan_type),
-			INDEX idx_status (status),
-			INDEX idx_start_time (start_time)
+			created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 		)`,
 		`CREATE TABLE IF NOT EXISTS security_audit_log (
 			id VARCHAR(128) PRIMARY KEY,
@@ -410,12 +398,8 @@ func (sm *SecurityManager) createSecurityTables() error {
 			ip_address VARCHAR(45),
 			user_agent TEXT,
 			details TEXT,
-			success BOOLEAN DEFAULT TRUE,
-			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-			INDEX idx_user_id (user_id),
-			INDEX idx_action (action),
-			INDEX idx_timestamp (timestamp),
-			INDEX idx_success (success)
+			success BOOLEAN DEFAULT 1,
+			timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
 		)`,
 	}
 

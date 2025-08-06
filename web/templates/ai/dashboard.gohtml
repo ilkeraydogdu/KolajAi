@@ -228,9 +228,9 @@ function animateCounter(elementId, targetValue, duration = 2000) {
 
 // Initialize counters when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    animateCounter('recommendations-count', 1247);
-    animateCounter('search-queries', 3891);
-    animateCounter('price-optimizations', 567);
+    animateCounter('recommendations-count', {{.AIStats.RecommendationsCount}});
+    animateCounter('search-queries', {{.AIStats.SearchQueriesCount}});
+    animateCounter('price-optimizations', {{.AIStats.PriceOptimizationsCount}});
 });
 
 // Category prediction functionality

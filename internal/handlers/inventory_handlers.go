@@ -173,22 +173,12 @@ func (h *InventoryHandler) APIGetStockLevels(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	// Mock stock data
-	stockData := []map[string]interface{}{
-		{
-			"product_id":    1,
-			"product_name":  "Test Ürün 1",
-			"current_stock": 45,
-			"min_stock":     10,
-			"status":        "normal",
-		},
-		{
-			"product_id":    2,
-			"product_name":  "Test Ürün 2",
-			"current_stock": 5,
-			"min_stock":     15,
-			"status":        "low",
-		},
+	// Get real stock data from database
+	stockData, err := h.InventoryService.GetStockLevels()
+	if err != nil {
+		Logger.Printf("Error getting stock levels: %v", err)
+		http.Error(w, "Failed to get stock levels", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

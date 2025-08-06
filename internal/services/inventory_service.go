@@ -538,3 +538,56 @@ func (s *InventoryService) AnalyzeSupplierPerformance() ([]*SupplierPerformance,
 
 	return suppliers, nil
 }
+
+// GetStockLevels gets current stock levels for all products
+func (s *InventoryService) GetStockLevels() ([]map[string]interface{}, error) {
+	query := `
+		SELECT 
+			p.id as product_id,
+			p.name as product_name,
+			p.stock as current_stock,
+			p.min_stock,
+			CASE 
+				WHEN p.stock <= 0 THEN 'out_of_stock'
+				WHEN p.stock <= p.min_stock THEN 'low'
+				WHEN p.stock > p.min_stock * 3 THEN 'overstock'
+				ELSE 'normal'
+			END as status
+		FROM products p
+		WHERE p.deleted_at IS NULL
+		ORDER BY 
+			CASE 
+				WHEN p.stock <= 0 THEN 1
+				WHEN p.stock <= p.min_stock THEN 2
+				ELSE 3
+			END,
+			p.stock ASC
+	`
+	
+	rows, err := s.repo.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get stock levels: %w", err)
+	}
+	defer rows.Close()
+	
+	var stockData []map[string]interface{}
+	for rows.Next() {
+		var productID, currentStock, minStock int
+		var productName, status string
+		
+		err := rows.Scan(&productID, &productName, &currentStock, &minStock, &status)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan stock data: %w", err)
+		}
+		
+		stockData = append(stockData, map[string]interface{}{
+			"product_id":    productID,
+			"product_name":  productName,
+			"current_stock": currentStock,
+			"min_stock":     minStock,
+			"status":        status,
+		})
+	}
+	
+	return stockData, nil
+}

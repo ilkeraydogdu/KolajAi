@@ -128,14 +128,14 @@ func (s *PaymentService) ProcessPayment(request *PaymentRequest) (*PaymentRespon
 
 // GetPaymentStatus gets payment status by transaction ID
 func (s *PaymentService) GetPaymentStatus(transactionID string) (*PaymentResponse, error) {
-	// Mock implementation - in real system, this would query database
-	return &PaymentResponse{
-		ID:            transactionID,
-		Status:        PaymentStatusCompleted,
-		TransactionID: transactionID,
-		CreatedAt:     time.Now().Add(-5 * time.Minute),
-		CompletedAt:   func() *time.Time { t := time.Now(); return &t }(),
-	}, nil
+	var payment PaymentResponse
+	err := s.repo.FindOne("payments", &payment, map[string]interface{}{
+		"transaction_id": transactionID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("payment not found: %w", err)
+	}
+	return &payment, nil
 }
 
 // RefundPayment refunds a payment
@@ -181,10 +181,12 @@ func (s *PaymentService) simulateCardPayment(request *PaymentRequest) bool {
 	return time.Now().UnixNano()%10 < 9
 }
 
-// savePaymentRecord saves payment record to database (mock)
+// savePaymentRecord saves payment record to database
 func (s *PaymentService) savePaymentRecord(payment *PaymentResponse) error {
-	// In real implementation, this would save to database
-	// For now, just return success
+	_, err := s.repo.CreateStruct("payments", payment)
+	if err != nil {
+		return fmt.Errorf("failed to save payment record: %w", err)
+	}
 	return nil
 }
 

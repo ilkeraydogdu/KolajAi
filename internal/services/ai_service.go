@@ -1,20 +1,196 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	"kolajAi/internal/database"
 	"kolajAi/internal/models"
 	"math"
+	"math/rand"
+	"net/http"
+	"bytes"
+	"os"
 	"sort"
 	"strings"
 	"time"
 )
+
+// Open Source AI Models Configuration
+type OpenSourceAIConfig struct {
+	HuggingFaceAPIKey   string
+	OllamaEndpoint      string
+	LocalLLMEndpoint    string
+	UseLocalModels      bool
+}
+
+// OpenSourceAIClient handles open-source AI model interactions
+type OpenSourceAIClient struct {
+	config     OpenSourceAIConfig
+	httpClient *http.Client
+}
+
+// NewOpenSourceAIClient creates a new open-source AI client
+func NewOpenSourceAIClient() *OpenSourceAIClient {
+	return &OpenSourceAIClient{
+		config: OpenSourceAIConfig{
+			HuggingFaceAPIKey: os.Getenv("HUGGINGFACE_API_KEY"),
+			OllamaEndpoint:    os.Getenv("OLLAMA_ENDPOINT"),
+			LocalLLMEndpoint:  getEnvWithDefault("LOCAL_LLM_ENDPOINT", "http://localhost:11434"),
+			UseLocalModels:    getEnvWithDefault("USE_LOCAL_AI", "true") == "true",
+		},
+		httpClient: &http.Client{Timeout: 30 * time.Second},
+	}
+}
+
+// getEnvWithDefault returns environment variable or default value
+func getEnvWithDefault(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
+}
+
+// HuggingFace integration for product recommendations
+func (client *OpenSourceAIClient) GetHuggingFaceRecommendations(productName, category string) ([]string, error) {
+	if client.config.HuggingFaceAPIKey == "" {
+		// Fallback to rule-based recommendations
+		return client.getRuleBasedRecommendations(productName, category), nil
+	}
+	
+	// Use Hugging Face Transformers API
+	requestBody := map[string]interface{}{
+		"inputs": fmt.Sprintf("Recommend similar products to: %s in category: %s", productName, category),
+		"parameters": map[string]interface{}{
+			"max_length": 100,
+			"num_return_sequences": 5,
+		},
+	}
+	
+	jsonData, _ := json.Marshal(requestBody)
+	req, _ := http.NewRequest("POST", "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium", bytes.NewBuffer(jsonData))
+	req.Header.Set("Authorization", "Bearer "+client.config.HuggingFaceAPIKey)
+	req.Header.Set("Content-Type", "application/json")
+	
+	resp, err := client.httpClient.Do(req)
+	if err != nil {
+		return client.getRuleBasedRecommendations(productName, category), nil
+	}
+	defer resp.Body.Close()
+	
+	var response []map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return client.getRuleBasedRecommendations(productName, category), nil
+	}
+	
+	recommendations := make([]string, 0)
+	for _, item := range response {
+		if text, ok := item["generated_text"].(string); ok {
+			recommendations = append(recommendations, text)
+		}
+	}
+	
+	if len(recommendations) == 0 {
+		return client.getRuleBasedRecommendations(productName, category), nil
+	}
+	
+	return recommendations, nil
+}
+
+// Ollama integration for local LLM
+func (client *OpenSourceAIClient) GetOllamaRecommendations(prompt string) (string, error) {
+	if client.config.OllamaEndpoint == "" {
+		return client.getDefaultResponse(prompt), nil
+	}
+	
+	requestBody := map[string]interface{}{
+		"model":  "llama2",  // or "mistral", "codellama", etc.
+		"prompt": prompt,
+		"stream": false,
+	}
+	
+	jsonData, _ := json.Marshal(requestBody)
+	req, _ := http.NewRequest("POST", client.config.OllamaEndpoint+"/api/generate", bytes.NewBuffer(jsonData))
+	req.Header.Set("Content-Type", "application/json")
+	
+	resp, err := client.httpClient.Do(req)
+	if err != nil {
+		return client.getDefaultResponse(prompt), nil
+	}
+	defer resp.Body.Close()
+	
+	var response map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return client.getDefaultResponse(prompt), nil
+	}
+	
+	if text, ok := response["response"].(string); ok {
+		return text, nil
+	}
+	
+	return client.getDefaultResponse(prompt), nil
+}
+
+// Rule-based fallback recommendations
+func (client *OpenSourceAIClient) getRuleBasedRecommendations(productName, category string) []string {
+	recommendations := make([]string, 0)
+	
+	// Category-based recommendations
+	switch strings.ToLower(category) {
+	case "electronics", "elektronik":
+		recommendations = []string{
+			"Akıllı telefon aksesuarları",
+			"Kablosuz kulaklık",
+			"Powerbank",
+			"Bluetooth hoparlör",
+			"Akıllı saat",
+		}
+	case "clothing", "giyim":
+		recommendations = []string{
+			"Benzer renk ve stil ürünler",
+			"Mevsimlik kıyafetler", 
+			"Aksesuar ürünleri",
+			"Ayakkabı modelleri",
+			"Çanta çeşitleri",
+		}
+	case "home", "ev":
+		recommendations = []string{
+			"Ev dekorasyon ürünleri",
+			"Mutfak gereçleri",
+			"Temizlik malzemeleri",
+			"Bahçe ürünleri",
+			"Ev tekstili",
+		}
+	default:
+		recommendations = []string{
+			"Popüler ürünler",
+			"İndirimli ürünler",
+			"Yeni çıkan ürünler",
+			"En çok satan ürünler",
+			"Benzer kategorideki ürünler",
+		}
+	}
+	
+	return recommendations
+}
+
+// Default response for fallback scenarios
+func (client *OpenSourceAIClient) getDefaultResponse(prompt string) string {
+	responses := []string{
+		"Bu ürün için size özel önerilerimiz hazırlanıyor...",
+		"Benzer ürünleri incelemenizi öneririz.",
+		"Bu kategorideki popüler ürünlere göz atabilirsiniz.",
+		"Size özel kampanyalar için bildirimleri açmanızı öneririz.",
+	}
+	
+	return responses[rand.Intn(len(responses))]
+}
 
 // AIService provides AI-powered features for the marketplace
 type AIService struct {
 	repo           database.SimpleRepository
 	productService *ProductService
 	orderService   *OrderService
+	osAIClient     *OpenSourceAIClient
 }
 
 // NewAIService creates a new AI service
@@ -23,6 +199,7 @@ func NewAIService(repo database.SimpleRepository, productService *ProductService
 		repo:           repo,
 		productService: productService,
 		orderService:   orderService,
+		osAIClient:     NewOpenSourceAIClient(),
 	}
 }
 
@@ -103,13 +280,36 @@ func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*AI
 
 	recommendations := make([]*AIProductRecommendation, 0)
 
-	// Score products based on user preferences
+	// Use open-source AI for enhanced recommendations
+	var aiEnhancedCategories []string
+	if len(allProducts) > 0 {
+		// Get AI-powered category recommendations based on user history
+		sampleProduct := allProducts[0]
+		categoryName := fmt.Sprintf("category_%d", sampleProduct.CategoryID) // Use category ID as fallback
+		aiCategories, err := s.osAIClient.GetHuggingFaceRecommendations(sampleProduct.Name, categoryName)
+		if err == nil {
+			aiEnhancedCategories = aiCategories
+		}
+	}
+
+	// Score products based on user preferences and AI insights
 	for _, product := range allProducts {
 		if product.Status != "active" {
 			continue
 		}
 
 		score := s.calculateRecommendationScore(&product, categoryScores, brandScores, priceRange)
+		
+		// Boost score if product matches AI recommendations
+		for _, aiCategory := range aiEnhancedCategories {
+			productCategoryName := fmt.Sprintf("category_%d", product.CategoryID)
+			if strings.Contains(strings.ToLower(product.Name), strings.ToLower(aiCategory)) ||
+			   strings.Contains(strings.ToLower(productCategoryName), strings.ToLower(aiCategory)) {
+				score += 0.2 // AI boost
+				break
+			}
+		}
+		
 		reason := s.generateRecommendationReason(&product, score)
 
 		if score > 0.3 { // Minimum threshold
@@ -725,4 +925,43 @@ func (s *AIService) GetPriceOptimizations(userID int) (map[string]interface{}, e
 	}
 	
 	return optimizations, nil
+}
+
+// GetAIDashboardStats returns statistics for AI dashboard
+func (s *AIService) GetAIDashboardStats() (map[string]interface{}, error) {
+	stats := make(map[string]interface{})
+	
+	// Count total recommendations made
+	var recommendationCount int64
+	err := s.repo.QueryRow("SELECT COUNT(*) FROM ai_recommendations").Scan(&recommendationCount)
+	if err != nil {
+		recommendationCount = 0
+	}
+	stats["RecommendationsCount"] = recommendationCount
+	
+	// Count total search queries
+	var searchQueryCount int64
+	err = s.repo.QueryRow("SELECT COUNT(*) FROM search_logs WHERE created_at >= datetime('now', '-30 days')").Scan(&searchQueryCount)
+	if err != nil {
+		searchQueryCount = 0
+	}
+	stats["SearchQueriesCount"] = searchQueryCount
+	
+	// Count price optimizations
+	var priceOptimizationCount int64
+	err = s.repo.QueryRow("SELECT COUNT(*) FROM price_optimizations WHERE created_at >= datetime('now', '-30 days')").Scan(&priceOptimizationCount)
+	if err != nil {
+		priceOptimizationCount = 0
+	}
+	stats["PriceOptimizationsCount"] = priceOptimizationCount
+	
+	// AI model usage stats
+	var modelUsageCount int64
+	err = s.repo.QueryRow("SELECT COUNT(*) FROM ai_model_usage WHERE created_at >= datetime('now', '-7 days')").Scan(&modelUsageCount)
+	if err != nil {
+		modelUsageCount = 0
+	}
+	stats["ModelUsageCount"] = modelUsageCount
+	
+	return stats, nil
 }

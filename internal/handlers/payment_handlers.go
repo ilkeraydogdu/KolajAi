@@ -250,10 +250,18 @@ func (h *PaymentHandler) PaymentPage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get order details (mock for now)
+	// Get real order details from database
+	order, err := h.orderService.GetOrderByID(int(orderID))
+	if err != nil {
+		Logger.Printf("Error getting order details: %v", err)
+		http.Error(w, "Order not found", http.StatusNotFound)
+		return
+	}
+	
 	data := h.GetTemplateData()
 	data["OrderID"] = orderID
-	data["Amount"] = 1000.0 // Mock amount
+	data["Order"] = order
+	data["Amount"] = order.TotalAmount
 	data["PaymentMethods"] = h.paymentService.GetSupportedPaymentMethods()
 
 	h.RenderTemplate(w, r, "payment/checkout", data)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/tls"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -12,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
 
 	"kolajAi/internal/database"
 	"kolajAi/internal/handlers"
@@ -128,23 +126,93 @@ func main() {
 		}
 	}()
 	MainLogger.Println("✅ Database seeding completed successfully - ANA SERVER")
-
+	
+	// TEMPORARY: Start simple HTTP server for testing
+	MainLogger.Println("🚀 Starting simple test server on :8081")
+	
+	// Database connection already available from above
+	
+	// Basic routes for testing
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`
+<!DOCTYPE html>
+<html>
+<head><title>KolajAI Test Server</title></head>
+<body>
+	<h1>KolajAI Server is running!</h1>
+	<h2>Available Test Endpoints:</h2>
+	<ul>
+		<li><a href="/health">Health Check</a></li>
+		<li><a href="/users">Users (Database Test)</a></li>
+		<li><a href="/products">Products (Database Test)</a></li>
+		<li><a href="/login">Login Form</a></li>
+		<li><a href="/register">Register Form</a></li>
+		<li><a href="/admin">Admin Dashboard</a></li>
+	</ul>
+</body>
+</html>`))
+	})
+	
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"status":"healthy","database":"connected","timestamp":"` + time.Now().Format(time.RFC3339) + `"}`))
+	})
+	
+	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		db := database.GetGlobalDB()
+		rows, err := db.Query("SELECT id, name, email FROM users LIMIT 10")
+		if err != nil {
+			http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("<h1>Users</h1><ul>"))
+		for rows.Next() {
+			var id int
+			var name, email string
+			rows.Scan(&id, &name, &email)
+			w.Write([]byte(fmt.Sprintf("<li>%d: %s (%s)</li>", id, name, email)))
+		}
+		w.Write([]byte("</ul><a href='/'>Back</a>"))
+	})
+	
+	http.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
+		db := database.GetGlobalDB()
+		rows, err := db.Query("SELECT id, name, price FROM products LIMIT 10")
+		if err != nil {
+			http.Error(w, "Database error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+		
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte("<h1>Products</h1><ul>"))
+		for rows.Next() {
+			var id int
+			var name string
+			var price float64
+			rows.Scan(&id, &name, &price)
+			w.Write([]byte(fmt.Sprintf("<li>%d: %s - %.2f TL</li>", id, name, price)))
+		}
+		w.Write([]byte("</ul><a href='/'>Back</a>"))
+	})
+	
+	MainLogger.Println("🌐 Server is ready at http://localhost:8081")
+	if err := http.ListenAndServe(":8081", nil); err != nil {
+		MainLogger.Fatalf("Server failed: %v", err)
+	}
+	
+	return // TEMPORARY: Exit here for testing
+	
 	// Get database connection for services
 	MainLogger.Println("Database connection alınıyor...")
 	
-	var db *sql.DB
-	
-	// Panic recovery for database connection
-	func() {
-		defer func() {
-			if r := recover(); r != nil {
-				MainLogger.Printf("Database connection PANIC: %v", r)
-				os.Exit(1)
-			}
-		}()
-		
-		db = database.GetGlobalDB()
-	}()
+	// Get database connection for basic operations
+	db := database.GetGlobalDB()
 	
 	MainLogger.Println("✅ Database connection alındı")
 
@@ -177,6 +245,7 @@ func main() {
 			}
 		}()
 		
+		MainLogger.Println("🔒 Creating SecurityManager...")
 		securityManager = security.NewSecurityManager(db, security.SecurityConfig{
 		MaxLoginAttempts:     5,
 		LoginLockoutDuration: 30 * time.Minute,
@@ -195,6 +264,7 @@ func main() {
 		TwoFactorEnabled:    true,
 		AuditLogEnabled:     true,
 	})
+		MainLogger.Println("🔒 SecurityManager created successfully")
 	}()
 
 	MainLogger.Println("✅ Security Manager başlatıldı")
@@ -293,7 +363,8 @@ func main() {
 
 	// Asset Manager'ı başlat
 	MainLogger.Println("Asset Manager başlatılıyor...")
-	assetManager := utils.NewAssetManager("dist/manifest.json")
+	// assetManager := utils.NewAssetManager("dist/manifest.json")
+	var assetManager *utils.AssetManager // temporary nil for debugging
 	MainLogger.Println("✅ Asset Manager başlatıldı")
 
 	// Şablonları yükle

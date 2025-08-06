@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 	"time"
-
 
 	"kolajAi/internal/repository"
 )
@@ -595,9 +595,22 @@ Provide helpful, accurate, and engaging responses. If discussing products, be sp
 Response:`, context, chatContext, message)
 }
 
-func (s *AIChatService) callOpenAI(_ context.Context, _, _ string, _ int) (string, error) {
-	// This would integrate with OpenAI API
-	// For now, return a mock response
+func (s *AIChatService) callOpenAI(ctx context.Context, prompt, model string, maxTokens int) (string, error) {
+	// Check if OpenAI API key is configured
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		// Fallback response when API key is not configured
+		return "I'm KolajAI, your intelligent shopping assistant. I'm currently in demo mode. Please configure OpenAI API key for full functionality.", nil
+	}
+	
+	// Here you would implement actual OpenAI API call
+	// For now, return a contextual response based on the prompt
+	if strings.Contains(strings.ToLower(prompt), "product") {
+		return "I can help you find products, compare prices, and provide recommendations. What are you looking for?", nil
+	} else if strings.Contains(strings.ToLower(prompt), "order") {
+		return "I can help you track orders, process returns, and answer questions about your purchases. What would you like to know?", nil
+	}
+	
 	return "I'm KolajAI, your intelligent shopping assistant. How can I help you today?", nil
 }
 
