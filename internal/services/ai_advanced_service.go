@@ -579,14 +579,20 @@ func (s *AIAdvancedService) AnalyzeProductImage(imageURL string) (map[string]int
 
 // GetAICreditsBalance gets the AI credits balance for a user
 func (s *AIAdvancedService) GetAICreditsBalance(userID int) (int, error) {
-	// This would query the database for user's AI credits
-	// For now, return a mock value
-	return 1000, nil
+	var credits int
+	row := s.repo.QueryRow("SELECT COALESCE(ai_credits, 0) FROM users WHERE id = ?", userID)
+	err := row.Scan(&credits)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get AI credits balance: %w", err)
+	}
+	return credits, nil
 }
 
 // DeductAICredits deducts AI credits from user's balance
 func (s *AIAdvancedService) DeductAICredits(userID int, credits int) error {
-	// This would update the database
-	// For now, just return nil
+	_, err := s.repo.Exec("UPDATE users SET ai_credits = GREATEST(ai_credits - ?, 0) WHERE id = ?", credits, userID)
+	if err != nil {
+		return fmt.Errorf("failed to deduct AI credits: %w", err)
+	}
 	return nil
 }

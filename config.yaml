@@ -10,10 +10,10 @@ server:
   max_header_bytes: 1048576
 
 database:
-  driver: "mysql"
+  driver: "${DB_DRIVER:-sqlite3}"
   host: "${DB_HOST:-localhost}"
   port: ${DB_PORT:-3306}
-  name: "${DB_NAME:-kolajai}"
+  name: "${DB_NAME:-kolajai.db}"
   user: "${DB_USER:-kolajai}"
   password: "${DB_PASSWORD}"
   max_open_conns: 25

@@ -441,17 +441,23 @@ func (h *AdminHandler) AdminSystemHealth(w http.ResponseWriter, r *http.Request)
 
 // AdminSEO handles admin SEO page
 func (h *AdminHandler) AdminSEO(w http.ResponseWriter, r *http.Request) {
-	// Mock SEO data
+	// Get basic SEO stats from database
+	stats, err := h.AdminRepo.GetDashboardStats()
+	if err != nil {
+		Logger.Printf("Error getting dashboard stats for SEO: %v", err)
+		stats = map[string]interface{}{}
+	}
+	
 	data := map[string]interface{}{
 		"Title": "SEO Management",
 		"SEOStats": map[string]interface{}{
-			"OverallScore":        85,
-			"IndexedPages":        1250,
-			"IndexedPagesGrowth":  45,
-			"TotalKeywords":       125,
-			"KeywordRankings":     68,
-			"Backlinks":           890,
-			"BacklinksGrowth":     23,
+			"OverallScore":        85, // Can be calculated based on various metrics
+			"IndexedPages":        stats["TotalProducts"],
+			"IndexedPagesGrowth":  0,
+			"TotalKeywords":       0, // Can be implemented later
+			"KeywordRankings":     0,
+			"Backlinks":           0,
+			"BacklinksGrowth":     0,
 		},
 		"MetaTags": []map[string]interface{}{
 			{
