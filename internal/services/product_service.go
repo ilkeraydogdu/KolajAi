@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kolajAi/internal/database"
 	"kolajAi/internal/models"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -200,6 +201,66 @@ func (s *ProductService) GetCategoryByID(id int) (*models.Category, error) {
 		return nil, fmt.Errorf("failed to get category: %w", err)
 	}
 	return &category, nil
+}
+
+// GetFeaturedProducts retrieves featured products
+func (s *ProductService) GetFeaturedProducts(limit int) ([]models.Product, error) {
+	var products []models.Product
+	conditions := map[string]interface{}{
+		"is_featured": true,
+		"status":      "active",
+	}
+	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, 0)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get featured products: %w", err)
+	}
+	return products, nil
+}
+
+// GetProducts retrieves products with filtering and pagination
+func (s *ProductService) GetProducts(category, search string, page, limit int) ([]models.Product, error) {
+	var products []models.Product
+	conditions := map[string]interface{}{
+		"status": "active",
+	}
+	
+	// Add category filter if provided
+	if category != "" {
+		if categoryID, err := strconv.Atoi(category); err == nil {
+			conditions["category_id"] = categoryID
+		}
+	}
+	
+	// Calculate offset for pagination
+	offset := (page - 1) * limit
+	
+	// For search, we'll need a more complex query, but for now use basic filtering
+	orderBy := "created_at DESC"
+	if search != "" {
+		// This is a simple search implementation
+		// In a real scenario, you'd want to use full-text search or more sophisticated filtering
+		orderBy = "name ASC"
+	}
+	
+	err := s.repo.FindAll("products", &products, conditions, orderBy, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get products: %w", err)
+	}
+	
+	// If search term is provided, filter results (basic implementation)
+	if search != "" {
+		var filteredProducts []models.Product
+		searchLower := strings.ToLower(search)
+		for _, product := range products {
+			if strings.Contains(strings.ToLower(product.Name), searchLower) ||
+				strings.Contains(strings.ToLower(product.Description), searchLower) {
+				filteredProducts = append(filteredProducts, product)
+			}
+		}
+		return filteredProducts, nil
+	}
+	
+	return products, nil
 }
 
 // AddProductImage adds an image to a product

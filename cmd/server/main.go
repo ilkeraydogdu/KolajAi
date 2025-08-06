@@ -738,16 +738,33 @@ func main() {
 	})
 	// Marketplace rotaları
 	appRouter.HandleFunc("/marketplace", func(w http.ResponseWriter, r *http.Request) {
+		// Get categories from database
+		categories, err := productService.GetAllCategories()
+		if err != nil {
+			log.Printf("Categories yüklenirken hata: %v", err)
+			categories = []models.Category{} // Empty slice if error
+		}
+
+		// Get featured products from database
+		featuredProducts, err := productService.GetFeaturedProducts(8) // Get 8 featured products
+		if err != nil {
+			log.Printf("Featured products yüklenirken hata: %v", err)
+			featuredProducts = []models.Product{} // Empty slice if error
+		}
+
+		// Get active auctions from database
+		activeAuctions, err := auctionService.GetActiveAuctions(6) // Get 6 active auctions
+		if err != nil {
+			log.Printf("Active auctions yüklenirken hata: %v", err)
+			activeAuctions = []models.Auction{} // Empty slice if error
+		}
+
 		data := map[string]interface{}{
-			"Title": "Marketplace",
-			"Products": []map[string]interface{}{
-				{
-					"id":    1,
-					"name":  "Test Ürün",
-					"price": 99.99,
-					"image": "/web/static/assets/images/products/test.jpg",
-				},
-			},
+			"Title":            "Marketplace - KolajAI",
+			"Categories":       categories,
+			"FeaturedProducts": featuredProducts,
+			"ActiveAuctions":   activeAuctions,
+			"AppName":          "KolajAI",
 		}
 		h.RenderTemplate(w, r, "marketplace/index.gohtml", data)
 	})

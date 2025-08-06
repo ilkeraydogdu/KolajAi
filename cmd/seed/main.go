@@ -16,8 +16,8 @@ import (
 func main() {
 	fmt.Println("KolajAI Data Seeder başlatılıyor...")
 
-	// Veritabanı bağlantısı
-	db, err := database.NewSQLiteConnection("kolajAi.db")
+	// Veritabanı bağlantısı - MySQL kullan
+	db, err := database.NewConnection()
 	if err != nil {
 		log.Printf("Veritabanı bağlantısı kurulamadı: %v", err)
 		return
@@ -144,29 +144,62 @@ func main() {
 	// Ürünler ekle
 	fmt.Println("Ürünler ekleniyor...")
 	products := []models.Product{
+		// Elektronik ürünler
 		{
-			VendorID: 1, CategoryID: 1, Name: "iPhone 15 Pro", Description: "Apple iPhone 15 Pro 128GB",
-			ShortDesc: "En yeni iPhone modeli", SKU: "IPH15PRO128", Price: 45000.00, ComparePrice: 50000.00,
-			Stock: 50, Status: "active", IsFeatured: true, AllowReviews: true,
-			Tags: "iphone,apple,telefon,akıllı telefon", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+			VendorID: 1, CategoryID: 1, Name: "iPhone 15 Pro", Description: "Apple iPhone 15 Pro 128GB - Titanyum renk. A17 Pro çip, ProRAW fotoğraf, Action Button.",
+			ShortDesc: "Apple'ın en yeni Pro modeli", SKU: "IPH15PRO128-TITANIUM", Price: 45000.00, ComparePrice: 50000.00,
+			Stock: 50, Status: "active", IsFeatured: true, AllowReviews: true, Rating: 4.8, ReviewCount: 234,
+			Tags: "iphone,apple,telefon,akıllı telefon,pro,titanium", CreatedAt: time.Now(), UpdatedAt: time.Now(),
 		},
 		{
-			VendorID: 1, CategoryID: 1, Name: "Samsung Galaxy S24", Description: "Samsung Galaxy S24 256GB",
-			ShortDesc: "Samsung'un flagShip modeli", SKU: "SAMS24256", Price: 35000.00, ComparePrice: 40000.00,
-			Stock: 30, Status: "active", IsFeatured: true, AllowReviews: true,
-			Tags: "samsung,galaxy,telefon,android", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+			VendorID: 1, CategoryID: 1, Name: "Samsung Galaxy S24 Ultra", Description: "Samsung Galaxy S24 Ultra 256GB - Phantom Black. 200MP kamera, S Pen dahil, AI özellikleri.",
+			ShortDesc: "Samsung'un amiral gemisi", SKU: "SAMS24U256-BLACK", Price: 42000.00, ComparePrice: 47000.00,
+			Stock: 30, Status: "active", IsFeatured: true, AllowReviews: true, Rating: 4.7, ReviewCount: 189,
+			Tags: "samsung,galaxy,s24,ultra,telefon,android,s pen", CreatedAt: time.Now(), UpdatedAt: time.Now(),
 		},
 		{
-			VendorID: 2, CategoryID: 2, Name: "Erkek Kot Pantolon", Description: "Slim fit erkek kot pantolon",
-			ShortDesc: "Rahat ve şık kot pantolon", SKU: "ERKEK-KOT-001", Price: 299.99, ComparePrice: 399.99,
-			Stock: 100, Status: "active", IsFeatured: false, AllowReviews: true,
-			Tags: "kot,pantolon,erkek,giyim", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+			VendorID: 1, CategoryID: 1, Name: "MacBook Air M3", Description: "Apple MacBook Air 13.6 inç M3 çip 8GB RAM 256GB SSD - Gece Yarısı. Retina ekran, 18 saat pil.",
+			ShortDesc: "Güçlü ve hafif laptop", SKU: "MBA-M3-256-MIDNIGHT", Price: 32999.00, ComparePrice: 36999.00,
+			Stock: 15, Status: "active", IsFeatured: true, AllowReviews: true, Rating: 4.9, ReviewCount: 156,
+			Tags: "macbook,air,m3,laptop,apple,ultrabook", CreatedAt: time.Now(), UpdatedAt: time.Now(),
 		},
 		{
-			VendorID: 2, CategoryID: 2, Name: "Kadın Elbise", Description: "Şık kadın elbisesi",
-			ShortDesc: "Özel günler için ideal", SKU: "KADIN-ELBISE-001", Price: 599.99, ComparePrice: 799.99,
-			Stock: 25, Status: "active", IsFeatured: true, AllowReviews: true,
-			Tags: "elbise,kadın,giyim,şık", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+			VendorID: 1, CategoryID: 1, Name: "iPad Pro 11 inç", Description: "iPad Pro 11 inç M4 çip 128GB WiFi - Space Black. Liquid Retina ekran, Apple Pencil desteği.",
+			ShortDesc: "Profesyonel tablet deneyimi", SKU: "IPADPRO11-M4-128-BLACK", Price: 28999.00, ComparePrice: 32999.00,
+			Stock: 25, Status: "active", IsFeatured: false, AllowReviews: true, Rating: 4.6, ReviewCount: 98,
+			Tags: "ipad,pro,tablet,apple,m4,pencil", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		},
+		// Giyim ürünleri
+		{
+			VendorID: 2, CategoryID: 2, Name: "Levi's 501 Original Jeans", Description: "Klasik Levi's 501 Original kot pantolon. %100 pamuk, straight fit, vintage yıkama.",
+			ShortDesc: "Zamansız klasik kot pantolon", SKU: "LEVIS-501-32-34-VINTAGE", Price: 599.99, ComparePrice: 699.99,
+			Stock: 100, Status: "active", IsFeatured: false, AllowReviews: true, Rating: 4.5, ReviewCount: 267,
+			Tags: "levis,501,kot,pantolon,erkek,klasik,vintage", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		},
+		{
+			VendorID: 2, CategoryID: 2, Name: "Nike Dri-FIT Tişört", Description: "Nike Dri-FIT teknolojili spor tişört. Nefes alabilir kumaş, nem emici özellik.",
+			ShortDesc: "Performans odaklı spor tişört", SKU: "NIKE-DRIFIT-L-BLACK", Price: 199.99, ComparePrice: 249.99,
+			Stock: 78, Status: "active", IsFeatured: false, AllowReviews: true, Rating: 4.3, ReviewCount: 145,
+			Tags: "nike,tişört,dri-fit,spor,erkek,performance", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		},
+		{
+			VendorID: 2, CategoryID: 2, Name: "Zara Kadın Blazer", Description: "Zara kadın blazer ceket. Ofis ve günlük kullanım için ideal, modern kesim.",
+			ShortDesc: "Şık ve modern blazer", SKU: "ZARA-BLAZER-M-NAVY", Price: 899.99, ComparePrice: 1199.99,
+			Stock: 25, Status: "active", IsFeatured: true, AllowReviews: true, Rating: 4.4, ReviewCount: 89,
+			Tags: "zara,blazer,ceket,kadın,ofis,şık,modern", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		},
+		// Ev & Yaşam ürünleri
+		{
+			VendorID: 1, CategoryID: 3, Name: "Dyson V15 Detect", Description: "Dyson V15 Detect kablosuz süpürge. Lazer toz algılama, 60 dakika çalışma süresi.",
+			ShortDesc: "Gelişmiş kablosuz süpürge", SKU: "DYSON-V15-DETECT-GOLD", Price: 4299.99, ComparePrice: 4799.99,
+			Stock: 8, Status: "active", IsFeatured: true, AllowReviews: true, Rating: 4.8, ReviewCount: 123,
+			Tags: "dyson,süpürge,kablosuz,v15,detect,temizlik", CreatedAt: time.Now(), UpdatedAt: time.Now(),
+		},
+		{
+			VendorID: 2, CategoryID: 3, Name: "Philips Hue Akıllı Ampul", Description: "Philips Hue White and Color akıllı LED ampul. 16 milyon renk, sesli kontrol.",
+			ShortDesc: "Akıllı ev aydınlatması", SKU: "PHILIPS-HUE-E27-COLOR", Price: 399.99, ComparePrice: 499.99,
+			Stock: 45, Status: "active", IsFeatured: false, AllowReviews: true, Rating: 4.6, ReviewCount: 78,
+			Tags: "philips,hue,akıllı,ampul,led,renk,ev", CreatedAt: time.Now(), UpdatedAt: time.Now(),
 		},
 		{
 			VendorID: 1, CategoryID: 3, Name: "Akıllı TV 55\"", Description: "4K UHD Smart TV",

@@ -15,6 +15,19 @@ func NewAuctionService(repo database.SimpleRepository) *AuctionService {
 	return &AuctionService{repo: repo}
 }
 
+// GetActiveAuctions retrieves active auctions
+func (s *AuctionService) GetActiveAuctions(limit int) ([]models.Auction, error) {
+	var auctions []models.Auction
+	conditions := map[string]interface{}{
+		"status": "active",
+	}
+	err := s.repo.FindAll("auctions", &auctions, conditions, "end_time ASC", limit, 0)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get active auctions: %w", err)
+	}
+	return auctions, nil
+}
+
 // CreateAuction creates a new auction
 func (s *AuctionService) CreateAuction(auction *models.Auction) error {
 	auction.CreatedAt = time.Now()
