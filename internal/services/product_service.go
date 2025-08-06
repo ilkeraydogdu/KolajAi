@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kolajAi/internal/database"
 	"kolajAi/internal/models"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -39,6 +40,23 @@ func (s *ProductService) GetProductByID(id int) (*models.Product, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get product: %w", err)
 	}
+	
+	// Load product images
+	images, err := s.GetProductImages(id)
+	if err == nil && len(images) > 0 {
+		product.Images = make([]string, len(images))
+		for i, img := range images {
+			product.Images[i] = img.ImageURL
+			if img.IsPrimary {
+				product.Image = img.ImageURL
+			}
+		}
+		// If no primary image set, use first image as primary
+		if product.Image == "" && len(product.Images) > 0 {
+			product.Image = product.Images[0]
+		}
+	}
+	
 	return &product, nil
 }
 
@@ -112,6 +130,25 @@ func (s *ProductService) GetFeaturedProducts(limit, offset int) ([]models.Produc
 	if err != nil {
 		return nil, fmt.Errorf("failed to get featured products: %w", err)
 	}
+	
+	// Load images for all products
+	for i := range products {
+		images, err := s.GetProductImages(products[i].ID)
+		if err == nil && len(images) > 0 {
+			products[i].Images = make([]string, len(images))
+			for j, img := range images {
+				products[i].Images[j] = img.ImageURL
+				if img.IsPrimary {
+					products[i].Image = img.ImageURL
+				}
+			}
+			// If no primary image set, use first image as primary
+			if products[i].Image == "" && len(products[i].Images) > 0 {
+				products[i].Image = products[i].Images[0]
+			}
+		}
+	}
+	
 	return products, nil
 }
 
@@ -200,6 +237,72 @@ func (s *ProductService) GetCategoryByID(id int) (*models.Category, error) {
 		return nil, fmt.Errorf("failed to get category: %w", err)
 	}
 	return &category, nil
+}
+
+
+
+// GetProducts retrieves products with filtering and pagination
+func (s *ProductService) GetProducts(category, search string, page, limit int) ([]models.Product, error) {
+	var products []models.Product
+	conditions := map[string]interface{}{
+		"status": "active",
+	}
+	
+	// Add category filter if provided
+	if category != "" {
+		if categoryID, err := strconv.Atoi(category); err == nil {
+			conditions["category_id"] = categoryID
+		}
+	}
+	
+	// Calculate offset for pagination
+	offset := (page - 1) * limit
+	
+	// For search, we'll need a more complex query, but for now use basic filtering
+	orderBy := "created_at DESC"
+	if search != "" {
+		// This is a simple search implementation
+		// In a real scenario, you'd want to use full-text search or more sophisticated filtering
+		orderBy = "name ASC"
+	}
+	
+	err := s.repo.FindAll("products", &products, conditions, orderBy, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get products: %w", err)
+	}
+	
+	// Load images for all products
+	for i := range products {
+		images, err := s.GetProductImages(products[i].ID)
+		if err == nil && len(images) > 0 {
+			products[i].Images = make([]string, len(images))
+			for j, img := range images {
+				products[i].Images[j] = img.ImageURL
+				if img.IsPrimary {
+					products[i].Image = img.ImageURL
+				}
+			}
+			// If no primary image set, use first image as primary
+			if products[i].Image == "" && len(products[i].Images) > 0 {
+				products[i].Image = products[i].Images[0]
+			}
+		}
+	}
+	
+	// If search term is provided, filter results (basic implementation)
+	if search != "" {
+		var filteredProducts []models.Product
+		searchLower := strings.ToLower(search)
+		for _, product := range products {
+			if strings.Contains(strings.ToLower(product.Name), searchLower) ||
+				strings.Contains(strings.ToLower(product.Description), searchLower) {
+				filteredProducts = append(filteredProducts, product)
+			}
+		}
+		return filteredProducts, nil
+	}
+	
+	return products, nil
 }
 
 // AddProductImage adds an image to a product

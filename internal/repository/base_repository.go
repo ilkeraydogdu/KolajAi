@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"database/sql"
 	"reflect"
 	"time"
 
@@ -10,18 +9,17 @@ import (
 
 // BaseRepository provides common database operations
 type BaseRepository struct {
-	db *database.MySQLRepository
+	db database.SimpleRepository
 }
 
 // NewBaseRepository creates a new base repository
-func NewBaseRepository(db *database.MySQLRepository) *BaseRepository {
+func NewBaseRepository(db database.SimpleRepository) *BaseRepository {
 	return &BaseRepository{db: db}
 }
 
 // Create inserts a new record
 func (r *BaseRepository) Create(table string, data interface{}) (int64, error) {
-	fields, values := getFieldsAndValues(data)
-	return r.db.Create(table, fields, values)
+	return r.db.CreateStruct(table, data)
 }
 
 // Update updates a record
@@ -46,7 +44,7 @@ func (r *BaseRepository) FindAll(table string, result interface{}, conditions ma
 
 // FindOne retrieves a single record
 func (r *BaseRepository) FindOne(table string, result interface{}, conditions map[string]interface{}) error {
-	return r.db.FindOne(table, conditions, result)
+	return r.db.FindOne(table, result, conditions)
 }
 
 // Count returns the number of records
@@ -65,9 +63,11 @@ func (r *BaseRepository) FindByDateRange(table, dateField string, start, end tim
 }
 
 // Transaction executes a function within a transaction
-func (r *BaseRepository) Transaction(fn func(*sql.Tx) error) error {
-	return r.db.Transaction(fn)
-}
+// Note: This method is not available in SimpleRepository interface
+// Use Begin() method instead for transaction handling
+// func (r *BaseRepository) Transaction(fn func(*sql.Tx) error) error {
+// 	return r.db.Transaction(fn)
+// }
 
 // Exists checks if a record exists
 func (r *BaseRepository) Exists(table string, conditions map[string]interface{}) (bool, error) {
@@ -135,8 +135,7 @@ func getFieldsAndValues(data interface{}) ([]string, []interface{}) {
 
 // CreateStruct creates a record from a struct (for SimpleRepository compatibility)
 func (r *BaseRepository) CreateStruct(table string, data interface{}) (int64, error) {
-	fields, values := getFieldsAndValues(data)
-	return r.db.Create(table, fields, values)
+	return r.db.CreateStruct(table, data)
 }
 
 // SetConnectionPool sets database connection pool parameters

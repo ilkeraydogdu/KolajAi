@@ -100,11 +100,15 @@ type OrderItem struct {
 	ID              int64   `json:"id" db:"id"`
 	OrderID         int64   `json:"order_id" db:"order_id"`
 	ProductID       int64   `json:"product_id" db:"product_id"`
+	VendorID        int64   `json:"vendor_id" db:"vendor_id"`
 	ProductName     string  `json:"product_name" db:"product_name"`
 	ProductSKU      string  `json:"product_sku" db:"product_sku"`
+	VariantInfo     string  `json:"variant_info" db:"variant_info"`
 	Quantity        int     `json:"quantity" db:"quantity"`
 	UnitPrice       float64 `json:"unit_price" db:"unit_price"`
 	TotalPrice      float64 `json:"total_price" db:"total_price"`
+	Commission      float64 `json:"commission" db:"commission"`
+	Status          string  `json:"status" db:"status"`
 	IsWholesale     bool    `json:"is_wholesale" db:"is_wholesale"`
 	ProductSnapshot string  `json:"product_snapshot" db:"product_snapshot"` // JSON snapshot of product at time of order
 	

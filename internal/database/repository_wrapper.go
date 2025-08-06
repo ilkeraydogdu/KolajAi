@@ -167,5 +167,5 @@ func (r *RepositoryWrapper) FindAll(table string, result interface{}, conditions
 // FindOne implements SimpleRepository interface
 func (r *RepositoryWrapper) FindOne(table string, result interface{}, conditions map[string]interface{}) error {
 	// Simple implementation - just call the underlying FindOne
-	return r.MySQLRepository.FindOne(table, conditions, result)
+	return r.MySQLRepository.FindOne(table, result, conditions)
 }

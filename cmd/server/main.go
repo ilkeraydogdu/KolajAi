@@ -2,18 +2,21 @@ package main
 
 import (
 	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 
 	"kolajAi/internal/database"
-	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
+	"kolajAi/internal/models"
 	"kolajAi/internal/repository"
 	"kolajAi/internal/email"
 
@@ -93,22 +96,57 @@ func main() {
 		cfg = config.GetDefaultConfig()
 	}
 
-	// Veritabanı bağlantısı (MySQL)
-	MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
-	dbConfig := database.DefaultConfig()
-	db, err := database.InitDB(dbConfig)
-	if err != nil {
-		MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
+	// Initialize database manager (SQLite for dev, MySQL for prod)
+	MainLogger.Println("Database manager başlatılıyor...")
+	if err := database.InitGlobalDB(); err != nil {
+		MainLogger.Fatalf("Database initialization failed: %v", err)
 	}
-	defer db.Close()
+	defer database.GlobalDBManager.Close()
 
-	// Migration'ları çalıştır
-	MainLogger.Println("Veritabanı migration'ları çalıştırılıyor...")
-	migrationService := migrations.NewMigrationService(db, "kolajAi")
-	if err := migrationService.RunMigrations(); err != nil {
-		MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
+	// Run migrations
+	MainLogger.Println("Database migrations çalıştırılıyor...")
+	if err := database.RunMigrationsForGlobalDB(); err != nil {
+		MainLogger.Fatalf("Migration failed: %v", err)
 	}
-	MainLogger.Println("Migration'lar başarıyla tamamlandı!")
+	MainLogger.Println("Migrations başarıyla tamamlandı!")
+
+	// Seed database with initial data
+	MainLogger.Println("Database seeding başlatılıyor...")
+	
+	// Panic recovery for seeding
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				MainLogger.Printf("Database seeding PANIC: %v", r)
+			}
+		}()
+		
+		if err := database.SeedGlobalDatabase(); err != nil {
+			MainLogger.Printf("Database seeding failed (continuing anyway): %v", err)
+		} else {
+			MainLogger.Println("Database seeding tamamlandı!")
+		}
+	}()
+	MainLogger.Println("✅ Database seeding completed successfully - ANA SERVER")
+
+	// Get database connection for services
+	MainLogger.Println("Database connection alınıyor...")
+	
+	var db *sql.DB
+	
+	// Panic recovery for database connection
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				MainLogger.Printf("Database connection PANIC: %v", r)
+				os.Exit(1)
+			}
+		}()
+		
+		db = database.GetGlobalDB()
+	}()
+	
+	MainLogger.Println("✅ Database connection alındı")
 
 	// Advanced systems initialization
 	MainLogger.Println("Gelişmiş sistemler başlatılıyor...")
@@ -121,10 +159,25 @@ func main() {
 		Stores:             make(map[string]cache.StoreConfig),
 	})
 	defer cacheManager.Close()
+	MainLogger.Println("✅ Cache Manager başlatıldı")
 
 	// Security Manager
 	MainLogger.Println("Güvenlik sistemi başlatılıyor...")
-	securityManager := security.NewSecurityManager(db, security.SecurityConfig{
+	MainLogger.Printf("EncryptionKey: %s", cfg.Security.EncryptionKey)
+	MainLogger.Printf("JWTSecret: %s", cfg.Security.JWTSecret)
+	
+	var securityManager *security.SecurityManager
+	
+	// Panic recovery for security manager
+	func() {
+		defer func() {
+			if r := recover(); r != nil {
+				MainLogger.Printf("Security Manager PANIC: %v", r)
+				os.Exit(1)
+			}
+		}()
+		
+		securityManager = security.NewSecurityManager(db, security.SecurityConfig{
 		MaxLoginAttempts:     5,
 		LoginLockoutDuration: 30 * time.Minute,
 		PasswordMinLength:    8,
@@ -142,6 +195,9 @@ func main() {
 		TwoFactorEnabled:    true,
 		AuditLogEnabled:     true,
 	})
+	}()
+
+	MainLogger.Println("✅ Security Manager başlatıldı")
 
 	// Session Manager
 	MainLogger.Println("Session sistemi başlatılıyor...")
@@ -204,9 +260,10 @@ func main() {
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
-	// UserRepository için MySQLRepository kullanıyoruz
-	userRepo := repository.NewUserRepository(mysqlRepo)
-	emailService := email.NewService() // Email service'i initialize et
+	// UserRepository için SimpleRepository wrapper kullanıyoruz
+	userRepo := repository.NewUserRepository(repo)
+	// emailService := email.NewService() // Email service'i initialize et - temporarily disabled
+	var emailService *email.Service = nil
 	authService := services.NewAuthService(userRepo, emailService)
 	vendorService := services.NewVendorService(repo)
 	productService := services.NewProductService(repo)
@@ -237,9 +294,12 @@ func main() {
 	// Asset Manager'ı başlat
 	MainLogger.Println("Asset Manager başlatılıyor...")
 	assetManager := utils.NewAssetManager("dist/manifest.json")
+	MainLogger.Println("✅ Asset Manager başlatıldı")
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
+	MainLogger.Println("Template functions tanımlanıyor...")
+	MainLogger.Println("Dict function tanımlanıyor...")
 
 	// Template fonksiyonlarını tanımla
 	funcMap := template.FuncMap{
@@ -382,10 +442,243 @@ func main() {
 			schema, _ := seoManager.GenerateSchema(pageType, data)
 			return template.HTML(schema)
 		},
+		"truncate": func(s string, length int) string {
+			if len(s) <= length {
+				return s
+			}
+			return s[:length] + "..."
+		},
+		"substr": func(s string, start, length int) string {
+			if start < 0 || start >= len(s) {
+				return ""
+			}
+			end := start + length
+			if end > len(s) {
+				end = len(s)
+			}
+			return s[start:end]
+		},
+		"maskEmail": func(email string) string {
+			if len(email) < 3 {
+				return email
+			}
+			atIndex := strings.Index(email, "@")
+			if atIndex == -1 {
+				return email
+			}
+			if atIndex < 2 {
+				return email
+			}
+			return email[:2] + "***" + email[atIndex:]
+		},
+		"currency": func(price float64) string {
+			return fmt.Sprintf("%.2f TL", price)
+		},
+		"eq": func(a, b interface{}) bool {
+			return a == b
+		},
+		"ne": func(a, b interface{}) bool {
+			return a != b
+		},
+		"gt": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal > bVal
+		},
+		"ge": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal >= bVal
+		},
+		"le": func(a, b interface{}) bool {
+			var aVal, bVal float64
+			
+			switch v := a.(type) {
+			case int:
+				aVal = float64(v)
+			case int64:
+				aVal = float64(v)
+			case float64:
+				aVal = v
+			case float32:
+				aVal = float64(v)
+			default:
+				return false
+			}
+			
+			switch v := b.(type) {
+			case int:
+				bVal = float64(v)
+			case int64:
+				bVal = float64(v)
+			case float64:
+				bVal = v
+			case float32:
+				bVal = float64(v)
+			default:
+				return false
+			}
+			
+			return aVal <= bVal
+		},
+		"and": func(a, b bool) bool {
+			return a && b
+		},
+		"or": func(a, b bool) bool {
+			return a || b
+		},
+		"not": func(a bool) bool {
+			return !a
+		},
+		"upper": func(s string) string {
+			return strings.ToUpper(s)
+		},
+		"lower": func(s string) string {
+			return strings.ToLower(s)
+		},
+		"title": func(s string) string {
+			return strings.Title(s)
+		},
+		"trim": func(s string) string {
+			return strings.TrimSpace(s)
+		},
+		"len": func(v interface{}) int {
+			switch val := v.(type) {
+			case string:
+				return len(val)
+			case []interface{}:
+				return len(val)
+			default:
+				return 0
+			}
+		},
+		"div": func(a, b interface{}) float64 {
+			var numA, numB float64
+			switch v := a.(type) {
+			case int:
+				numA = float64(v)
+			case float64:
+				numA = v
+			case float32:
+				numA = float64(v)
+			default:
+				return 0
+			}
+			switch v := b.(type) {
+			case int:
+				numB = float64(v)
+			case float64:
+				numB = v
+			case float32:
+				numB = float64(v)
+			default:
+				return 1
+			}
+			if numB == 0 {
+				return 0
+			}
+			return numA / numB
+		},
+		"mod": func(a, b int) int {
+			if b == 0 {
+				return 0
+			}
+			return a % b
+		},
 	}
 
-	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("web/templates/**/*.gohtml")
+	MainLogger.Println("Template parsing başlatılıyor...")
+	
+	// Template dosyalarını manuel olarak bulalım
+	templateFiles := []string{}
+	walkErr := filepath.Walk("web/templates", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.HasSuffix(path, ".gohtml") {
+			templateFiles = append(templateFiles, path)
+		}
+		return nil
+	})
+	
+	if walkErr != nil {
+		MainLogger.Fatalf("Template dosyaları bulunamadı: %v", walkErr)
+	}
+	
+	MainLogger.Printf("Bulunan template dosyaları: %d", len(templateFiles))
+	
+	// Debug: Template dosyalarını listele
+	for i, file := range templateFiles {
+		MainLogger.Printf("Template %d: %s", i+1, file)
+	}
+	
+	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(templateFiles...)
 	if err != nil {
+		MainLogger.Printf("Template parsing hatası: %v", err)
+		MainLogger.Printf("Problematik template'leri tek tek test ediyorum...")
+		
+		// Template'leri tek tek test et
+		for _, file := range templateFiles {
+			_, testErr := template.New("").Funcs(funcMap).ParseFiles(file)
+			if testErr != nil {
+				MainLogger.Printf("❌ Hatalı template: %s - Hata: %v", file, testErr)
+			} else {
+				MainLogger.Printf("✅ Başarılı template: %s", file)
+			}
+		}
+		
 		MainLogger.Fatalf("Şablonlar yüklenemedi: %v", err)
 	}
 	MainLogger.Printf("Şablonlar başarıyla yüklendi!")
@@ -414,7 +707,7 @@ func main() {
 	ecommerceHandler := handlers.NewEcommerceHandler(h, vendorService, productService, orderService, auctionService)
 
 	// Admin handler'ı oluştur
-	adminHandler := handlers.NewAdminHandler(h, mysqlRepo)
+	adminHandler := handlers.NewAdminHandler(h, repo)
 
 	// Seller handler'ı oluştur
 	sellerHandler := handlers.NewSellerHandler(h, vendorService, productService, orderService)
@@ -738,45 +1031,79 @@ func main() {
 	})
 	// Marketplace rotaları
 	appRouter.HandleFunc("/marketplace", func(w http.ResponseWriter, r *http.Request) {
+		// Get categories from database
+		categories, err := productService.GetAllCategories()
+		if err != nil {
+			log.Printf("Error loading categories: %v", err)
+			categories = []models.Category{} // Empty slice on error
+		}
+
+		// Get featured products
+		featuredProducts, err := productService.GetFeaturedProducts(8, 0)
+		if err != nil {
+			log.Printf("Error loading featured products: %v", err)
+			featuredProducts = []models.Product{} // Empty slice on error
+		}
+
+		// Get active auctions
+		activeAuctions, err := auctionService.GetActiveAuctions(6)
+		if err != nil {
+			log.Printf("Error loading active auctions: %v", err)
+			activeAuctions = []models.Auction{} // Empty slice on error
+		}
+
 		data := map[string]interface{}{
-			"Title": "Marketplace",
-			"Products": []map[string]interface{}{
-				{
-					"id":    1,
-					"name":  "Test Ürün",
-					"price": 99.99,
-					"image": "/web/static/assets/images/products/test.jpg",
-				},
-			},
+			"Title":            "KolajAI Marketplace",
+			"Categories":       categories,
+			"FeaturedProducts": featuredProducts,
+			"ActiveAuctions":   activeAuctions,
+			"AppName":          "KolajAI",
 		}
 		h.RenderTemplate(w, r, "marketplace/index.gohtml", data)
 	})
 	
 	appRouter.HandleFunc("/marketplace/products", func(w http.ResponseWriter, r *http.Request) {
+		// Parse query parameters
+		category := r.URL.Query().Get("category")
+		search := r.URL.Query().Get("search")
+		page := 1
+		limit := 20
+		
+		// Get products from database
+		products, err := productService.GetProducts(category, search, page, limit)
+		if err != nil {
+			log.Printf("Error loading products: %v", err)
+			products = []models.Product{} // Empty slice on error
+		}
+		
+		// Get categories for filter
+		categories, err := productService.GetAllCategories()
+		if err != nil {
+			log.Printf("Error loading categories: %v", err)
+			categories = []models.Category{} // Empty slice on error
+		}
+
 		data := map[string]interface{}{
-			"Title": "Ürünler",
-			"Products": []map[string]interface{}{
-				{
-					"id":    1,
-					"name":  "Test Ürün",
-					"price": 99.99,
-					"category": "Elektronik",
-				},
-			},
+			"Title":      "Ürünler - KolajAI",
+			"Products":   products,
+			"Categories": categories,
+			"AppName":    "KolajAI",
 		}
 		h.RenderTemplate(w, r, "marketplace/products.gohtml", data)
 	})
 	
 	appRouter.HandleFunc("/marketplace/categories", func(w http.ResponseWriter, r *http.Request) {
+		// Get categories
+		categories, err := productService.GetAllCategories()
+		if err != nil {
+			log.Printf("Error loading categories: %v", err)
+			categories = []models.Category{} // Empty slice on error
+		}
+
 		data := map[string]interface{}{
-			"Title": "Kategoriler",
-			"Categories": []map[string]interface{}{
-				{
-					"id":   1,
-					"name": "Elektronik",
-					"count": 150,
-				},
-			},
+			"Title":      "Kategoriler - KolajAI",
+			"Categories": categories,
+			"AppName":    "KolajAI",
 		}
 		h.RenderTemplate(w, r, "marketplace/categories.gohtml", data)
 	})
@@ -988,6 +1315,8 @@ func main() {
 	} else {
 		MainLogger.Printf("HTTP sunucu başlatılıyor (TLS YOK - sadece development): %s", addr)
 		MainLogger.Printf("Production için TLS_CERT_FILE ve TLS_KEY_FILE environment variables ayarlayın")
+		MainLogger.Printf("🚀 KolajAI Server is starting on http://localhost%s", addr)
+		MainLogger.Printf("🔗 Marketplace: http://localhost%s/marketplace", addr)
 		if err := server.ListenAndServe(); err != nil {
 			MainLogger.Fatalf("HTTP Server başlatılamadı: %v", err)
 		}

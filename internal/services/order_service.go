@@ -85,6 +85,45 @@ func (s *OrderService) GetOrdersByUser(userID int, limit, offset int) ([]models.
 	return orders, nil
 }
 
+// GetOrdersByVendor retrieves orders by vendor ID
+func (s *OrderService) GetOrdersByVendor(vendorID int, limit, offset int) ([]models.Order, error) {
+	var orders []models.Order
+	
+	// We need to join with order_items table to filter by vendor
+	// For now, we'll use a simple approach - this should be optimized with proper SQL joins
+	conditions := map[string]interface{}{}
+	
+	err := s.repo.FindAll("orders", &orders, conditions, "created_at DESC", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get orders: %w", err)
+	}
+	
+	// Filter orders that have items from this vendor
+	var vendorOrders []models.Order
+	for _, order := range orders {
+		// Get order items for this order
+		items, err := s.GetOrderItems(int(order.ID))
+		if err != nil {
+			continue
+		}
+		
+		// Check if any item belongs to this vendor
+		hasVendorItem := false
+		for _, item := range items {
+			if item.VendorID == int64(vendorID) {
+				hasVendorItem = true
+				break
+			}
+		}
+		
+		if hasVendorItem {
+			vendorOrders = append(vendorOrders, order)
+		}
+	}
+	
+	return vendorOrders, nil
+}
+
 // GetOrdersByStatus retrieves orders by status
 func (s *OrderService) GetOrdersByStatus(status string, limit, offset int) ([]models.Order, error) {
 	var orders []models.Order

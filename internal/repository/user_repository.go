@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -15,12 +16,12 @@ import (
 
 // UserRepository handles user-related database operations
 type UserRepository struct {
-	db       *database.MySQLRepository
+	db       database.SimpleRepository
 	baseRepo *BaseRepository
 }
 
 // NewUserRepository creates a new user repository
-func NewUserRepository(db *database.MySQLRepository) *UserRepository {
+func NewUserRepository(db database.SimpleRepository) *UserRepository {
 	return &UserRepository{
 		db:       db,
 		baseRepo: NewBaseRepository(db),
@@ -515,11 +516,24 @@ func (r *UserRepository) CountByRole(role string) (int64, error) {
 }
 
 // Transaction executes a function within a transaction
-func (r *UserRepository) Transaction(fn func(*sql.Tx) error) error {
-	err := r.baseRepo.Transaction(fn)
+func (r *UserRepository) Transaction(fn func(database.Transaction) error) error {
+	// Use Begin() from SimpleRepository interface instead
+	tx, err := r.baseRepo.Begin()
 	if err != nil {
-		return core.NewDatabaseError("error in transaction", err)
+		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
+	
+	// Execute the function
+	if err := fn(tx); err != nil {
+		tx.Rollback()
+		return fmt.Errorf("transaction failed: %w", err)
+	}
+	
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+	
 	return nil
 }
 
