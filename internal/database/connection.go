@@ -173,15 +173,7 @@ func SetupDatabase(db *sql.DB) error {
 		return fmt.Errorf("failed to apply migrations: %w", err)
 	}
 
-	// Seed verileri oluştur
-	log.Printf("Applying database seeds...")
-
-	// Default admin kullanıcısı oluştur
-	err = CreateDefaultAdminUser(db)
-	if err != nil {
-		log.Printf("Warning: Failed to create default admin user: %v", err)
-		// Devam et, kritik bir hata değil
-	}
+	// Database initialization completed
 
 	return nil
 }

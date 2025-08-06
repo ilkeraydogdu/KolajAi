@@ -68,17 +68,7 @@ func (s *AuctionService) UpdateAuction(id int, auction *models.Auction) error {
 	return nil
 }
 
-// GetActiveAuctions retrieves active auctions
-func (s *AuctionService) GetActiveAuctions(limit, offset int) ([]models.Auction, error) {
-	var auctions []models.Auction
-	conditions := map[string]interface{}{"status": "active"}
 
-	err := s.repo.FindAll("auctions", &auctions, conditions, "end_time ASC", limit, offset)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get active auctions: %w", err)
-	}
-	return auctions, nil
-}
 
 // GetAuctionsByVendor retrieves auctions by vendor ID
 func (s *AuctionService) GetAuctionsByVendor(vendorID int, limit, offset int) ([]models.Auction, error) {

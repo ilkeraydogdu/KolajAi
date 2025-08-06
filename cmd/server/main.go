@@ -8,12 +8,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 
 	"kolajAi/internal/database"
-	"kolajAi/internal/database/migrations"
 	"kolajAi/internal/handlers"
+	"kolajAi/internal/models"
 	"kolajAi/internal/repository"
 	"kolajAi/internal/email"
 
@@ -93,22 +95,30 @@ func main() {
 		cfg = config.GetDefaultConfig()
 	}
 
-	// Veritabanı bağlantısı (MySQL)
-	MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
-	dbConfig := database.DefaultConfig()
-	db, err := database.InitDB(dbConfig)
-	if err != nil {
-		MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
+	// Initialize database manager (SQLite for dev, MySQL for prod)
+	MainLogger.Println("Database manager başlatılıyor...")
+	if err := database.InitGlobalDB(); err != nil {
+		MainLogger.Fatalf("Database initialization failed: %v", err)
 	}
-	defer db.Close()
+	defer database.GlobalDBManager.Close()
 
-	// Migration'ları çalıştır
-	MainLogger.Println("Veritabanı migration'ları çalıştırılıyor...")
-	migrationService := migrations.NewMigrationService(db, "kolajAi")
-	if err := migrationService.RunMigrations(); err != nil {
-		MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
+	// Run migrations
+	MainLogger.Println("Database migrations çalıştırılıyor...")
+	if err := database.RunMigrationsForGlobalDB(); err != nil {
+		MainLogger.Fatalf("Migration failed: %v", err)
 	}
-	MainLogger.Println("Migration'lar başarıyla tamamlandı!")
+	MainLogger.Println("Migrations başarıyla tamamlandı!")
+
+	// Seed database with initial data
+	MainLogger.Println("Database seeding başlatılıyor...")
+	if err := database.SeedGlobalDatabase(); err != nil {
+		MainLogger.Printf("Database seeding failed (continuing anyway): %v", err)
+	} else {
+		MainLogger.Println("Database seeding tamamlandı!")
+	}
+
+	// Get database connection for services
+	db := database.GetGlobalDB()
 
 	// Advanced systems initialization
 	MainLogger.Println("Gelişmiş sistemler başlatılıyor...")
@@ -206,7 +216,8 @@ func main() {
 	MainLogger.Println("Servisler oluşturuluyor...")
 	// UserRepository için MySQLRepository kullanıyoruz
 	userRepo := repository.NewUserRepository(mysqlRepo)
-	emailService := email.NewService() // Email service'i initialize et
+	// emailService := email.NewService() // Email service'i initialize et - temporarily disabled
+	var emailService *email.Service = nil
 	authService := services.NewAuthService(userRepo, emailService)
 	vendorService := services.NewVendorService(repo)
 	productService := services.NewProductService(repo)
@@ -240,6 +251,7 @@ func main() {
 
 	// Şablonları yükle
 	MainLogger.Println("Şablonlar yükleniyor...")
+	MainLogger.Println("Template functions tanımlanıyor...")
 
 	// Template fonksiyonlarını tanımla
 	funcMap := template.FuncMap{
@@ -384,7 +396,27 @@ func main() {
 		},
 	}
 
-	tmpl, err := template.New("").Funcs(funcMap).ParseGlob("web/templates/**/*.gohtml")
+	MainLogger.Println("Template parsing başlatılıyor...")
+	
+	// Template dosyalarını manuel olarak bulalım
+	templateFiles := []string{}
+	walkErr := filepath.Walk("web/templates", func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if strings.HasSuffix(path, ".gohtml") {
+			templateFiles = append(templateFiles, path)
+		}
+		return nil
+	})
+	
+	if walkErr != nil {
+		MainLogger.Fatalf("Template dosyaları bulunamadı: %v", walkErr)
+	}
+	
+	MainLogger.Printf("Bulunan template dosyaları: %d", len(templateFiles))
+	
+	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(templateFiles...)
 	if err != nil {
 		MainLogger.Fatalf("Şablonlar yüklenemedi: %v", err)
 	}
@@ -737,33 +769,30 @@ func main() {
 		h.RenderTemplate(w, r, "ai/ai_editor.html", nil)
 	})
 	// Marketplace rotaları
-	// Initialize mock data service as fallback
-	mockDataService := services.NewMockDataService()
-	
 	appRouter.HandleFunc("/marketplace", func(w http.ResponseWriter, r *http.Request) {
-		// Try to get data from real database first, fallback to mock data
+		// Get categories from database
 		categories, err := productService.GetAllCategories()
 		if err != nil {
-			log.Printf("Database categories failed, using mock data: %v", err)
-			categories, _ = mockDataService.GetAllCategories()
+			log.Printf("Error loading categories: %v", err)
+			categories = []models.Category{} // Empty slice on error
 		}
 
 		// Get featured products
-		featuredProducts, err := productService.GetFeaturedProducts(8)
+		featuredProducts, err := productService.GetFeaturedProducts(8, 0)
 		if err != nil {
-			log.Printf("Database featured products failed, using mock data: %v", err)
-			featuredProducts, _ = mockDataService.GetFeaturedProducts(8)
+			log.Printf("Error loading featured products: %v", err)
+			featuredProducts = []models.Product{} // Empty slice on error
 		}
 
 		// Get active auctions
 		activeAuctions, err := auctionService.GetActiveAuctions(6)
 		if err != nil {
-			log.Printf("Database auctions failed, using mock data: %v", err)
-			activeAuctions, _ = mockDataService.GetActiveAuctions(6)
+			log.Printf("Error loading active auctions: %v", err)
+			activeAuctions = []models.Auction{} // Empty slice on error
 		}
 
 		data := map[string]interface{}{
-			"Title":            "Marketplace - KolajAI",
+			"Title":            "KolajAI Marketplace",
 			"Categories":       categories,
 			"FeaturedProducts": featuredProducts,
 			"ActiveAuctions":   activeAuctions,
@@ -779,17 +808,18 @@ func main() {
 		page := 1
 		limit := 20
 		
-		// Try to get products from database, fallback to mock data
+		// Get products from database
 		products, err := productService.GetProducts(category, search, page, limit)
 		if err != nil {
-			log.Printf("Database products failed, using mock data: %v", err)
-			products, _ = mockDataService.GetProducts(category, search, page, limit)
+			log.Printf("Error loading products: %v", err)
+			products = []models.Product{} // Empty slice on error
 		}
 		
 		// Get categories for filter
 		categories, err := productService.GetAllCategories()
 		if err != nil {
-			categories, _ = mockDataService.GetAllCategories()
+			log.Printf("Error loading categories: %v", err)
+			categories = []models.Category{} // Empty slice on error
 		}
 
 		data := map[string]interface{}{
@@ -805,8 +835,8 @@ func main() {
 		// Get categories
 		categories, err := productService.GetAllCategories()
 		if err != nil {
-			log.Printf("Database categories failed, using mock data: %v", err)
-			categories, _ = mockDataService.GetAllCategories()
+			log.Printf("Error loading categories: %v", err)
+			categories = []models.Category{} // Empty slice on error
 		}
 
 		data := map[string]interface{}{
@@ -1024,6 +1054,8 @@ func main() {
 	} else {
 		MainLogger.Printf("HTTP sunucu başlatılıyor (TLS YOK - sadece development): %s", addr)
 		MainLogger.Printf("Production için TLS_CERT_FILE ve TLS_KEY_FILE environment variables ayarlayın")
+		MainLogger.Printf("🚀 KolajAI Server is starting on http://localhost%s", addr)
+		MainLogger.Printf("🔗 Marketplace: http://localhost%s/marketplace", addr)
 		if err := server.ListenAndServe(); err != nil {
 			MainLogger.Fatalf("HTTP Server başlatılamadı: %v", err)
 		}

@@ -203,19 +203,7 @@ func (s *ProductService) GetCategoryByID(id int) (*models.Category, error) {
 	return &category, nil
 }
 
-// GetFeaturedProducts retrieves featured products
-func (s *ProductService) GetFeaturedProducts(limit int) ([]models.Product, error) {
-	var products []models.Product
-	conditions := map[string]interface{}{
-		"is_featured": true,
-		"status":      "active",
-	}
-	err := s.repo.FindAll("products", &products, conditions, "created_at DESC", limit, 0)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get featured products: %w", err)
-	}
-	return products, nil
-}
+
 
 // GetProducts retrieves products with filtering and pagination
 func (s *ProductService) GetProducts(category, search string, page, limit int) ([]models.Product, error) {

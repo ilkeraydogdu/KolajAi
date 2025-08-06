@@ -119,13 +119,11 @@ func (s *Service) LoadTemplates() error {
 		name = name[:len(name)-7] // Remove .gohtml
 		log.Printf("Template name: %s", name)
 
-		// Template içeriğini okuyorum
-		content, err := os.ReadFile(file)
-		if err != nil {
+		// Template içeriğini kontrol et (debug için)
+		if _, err := os.ReadFile(file); err != nil {
 			log.Printf("Failed to read template file %s: %v", file, err)
 			return fmt.Errorf("failed to read email template %s: %w", name, err)
 		}
-		log.Printf("Template content: %s", string(content))
 
 		// Yeni bir template oluşturup, base template'i kopyalıyorum
 		newTemplate, err := template.Must(baseTemplate.Clone()).ParseFiles(file)
