@@ -737,26 +737,29 @@ func main() {
 		h.RenderTemplate(w, r, "ai/ai_editor.html", nil)
 	})
 	// Marketplace rotaları
+	// Initialize mock data service as fallback
+	mockDataService := services.NewMockDataService()
+	
 	appRouter.HandleFunc("/marketplace", func(w http.ResponseWriter, r *http.Request) {
-		// Get categories from database
+		// Try to get data from real database first, fallback to mock data
 		categories, err := productService.GetAllCategories()
 		if err != nil {
-			log.Printf("Categories yüklenirken hata: %v", err)
-			categories = []models.Category{} // Empty slice if error
+			log.Printf("Database categories failed, using mock data: %v", err)
+			categories, _ = mockDataService.GetAllCategories()
 		}
 
-		// Get featured products from database
-		featuredProducts, err := productService.GetFeaturedProducts(8) // Get 8 featured products
+		// Get featured products
+		featuredProducts, err := productService.GetFeaturedProducts(8)
 		if err != nil {
-			log.Printf("Featured products yüklenirken hata: %v", err)
-			featuredProducts = []models.Product{} // Empty slice if error
+			log.Printf("Database featured products failed, using mock data: %v", err)
+			featuredProducts, _ = mockDataService.GetFeaturedProducts(8)
 		}
 
-		// Get active auctions from database
-		activeAuctions, err := auctionService.GetActiveAuctions(6) // Get 6 active auctions
+		// Get active auctions
+		activeAuctions, err := auctionService.GetActiveAuctions(6)
 		if err != nil {
-			log.Printf("Active auctions yüklenirken hata: %v", err)
-			activeAuctions = []models.Auction{} // Empty slice if error
+			log.Printf("Database auctions failed, using mock data: %v", err)
+			activeAuctions, _ = mockDataService.GetActiveAuctions(6)
 		}
 
 		data := map[string]interface{}{
@@ -770,30 +773,46 @@ func main() {
 	})
 	
 	appRouter.HandleFunc("/marketplace/products", func(w http.ResponseWriter, r *http.Request) {
+		// Parse query parameters
+		category := r.URL.Query().Get("category")
+		search := r.URL.Query().Get("search")
+		page := 1
+		limit := 20
+		
+		// Try to get products from database, fallback to mock data
+		products, err := productService.GetProducts(category, search, page, limit)
+		if err != nil {
+			log.Printf("Database products failed, using mock data: %v", err)
+			products, _ = mockDataService.GetProducts(category, search, page, limit)
+		}
+		
+		// Get categories for filter
+		categories, err := productService.GetAllCategories()
+		if err != nil {
+			categories, _ = mockDataService.GetAllCategories()
+		}
+
 		data := map[string]interface{}{
-			"Title": "Ürünler",
-			"Products": []map[string]interface{}{
-				{
-					"id":    1,
-					"name":  "Test Ürün",
-					"price": 99.99,
-					"category": "Elektronik",
-				},
-			},
+			"Title":      "Ürünler - KolajAI",
+			"Products":   products,
+			"Categories": categories,
+			"AppName":    "KolajAI",
 		}
 		h.RenderTemplate(w, r, "marketplace/products.gohtml", data)
 	})
 	
 	appRouter.HandleFunc("/marketplace/categories", func(w http.ResponseWriter, r *http.Request) {
+		// Get categories
+		categories, err := productService.GetAllCategories()
+		if err != nil {
+			log.Printf("Database categories failed, using mock data: %v", err)
+			categories, _ = mockDataService.GetAllCategories()
+		}
+
 		data := map[string]interface{}{
-			"Title": "Kategoriler",
-			"Categories": []map[string]interface{}{
-				{
-					"id":   1,
-					"name": "Elektronik",
-					"count": 150,
-				},
-			},
+			"Title":      "Kategoriler - KolajAI",
+			"Categories": categories,
+			"AppName":    "KolajAI",
 		}
 		h.RenderTemplate(w, r, "marketplace/categories.gohtml", data)
 	})

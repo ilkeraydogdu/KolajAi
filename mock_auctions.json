@@ -1,0 +1,4 @@
+[
+		{"id": 1, "title": "Vintage Rolex Saati", "description": "1970'lerden kalma orijinal Rolex", "starting_price": 15000.00, "current_bid": 18500.00, "total_bids": 12, "status": "active"},
+		{"id": 2, "title": "Antika Tablo", "description": "18. yüzyıldan kalma yağlı boya tablo", "starting_price": 8000.00, "current_bid": 9200.00, "total_bids": 8, "status": "active"}
+	]

@@ -1,0 +1,8 @@
+[
+		{"id": 1, "name": "Elektronik", "slug": "elektronik", "image": "/web/static/images/categories/electronics.jpg", "is_active": true, "sort_order": 1},
+		{"id": 2, "name": "Giyim", "slug": "giyim", "image": "/web/static/images/categories/clothing.jpg", "is_active": true, "sort_order": 2},
+		{"id": 3, "name": "Ev & Yaşam", "slug": "ev-yasam", "image": "/web/static/images/categories/home.jpg", "is_active": true, "sort_order": 3},
+		{"id": 4, "name": "Spor", "slug": "spor", "image": "/web/static/images/categories/sports.jpg", "is_active": true, "sort_order": 4},
+		{"id": 5, "name": "Kitap", "slug": "kitap", "image": "/web/static/images/categories/books.jpg", "is_active": true, "sort_order": 5},
+		{"id": 6, "name": "Sağlık", "slug": "saglik", "image": "/web/static/images/categories/health.jpg", "is_active": true, "sort_order": 6}
+	]
