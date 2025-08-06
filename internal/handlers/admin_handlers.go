@@ -224,59 +224,27 @@ func (h *AdminHandler) AdminProducts(w http.ResponseWriter, r *http.Request) {
 
 // AdminReports handles admin reports page
 func (h *AdminHandler) AdminReports(w http.ResponseWriter, r *http.Request) {
-	// Mock reports data
+	// Get real statistics from database
+	// TODO: Implement actual reporting service
+	stats := map[string]interface{}{
+		"TotalRevenue":   "₺0.00", // TODO: Calculate from orders
+		"TotalOrders":    0,       // TODO: Count orders
+		"TotalProducts":  0,       // TODO: Count products
+		"TotalCustomers": 0,       // TODO: Count users
+	}
+	
 	data := map[string]interface{}{
 		"Title": "Reports",
-		"Stats": map[string]interface{}{
-			"TotalRevenue":   "₺123,456.78",
-			"TotalOrders":    567,
-			"TotalProducts":  890,
-			"TotalCustomers": 1234,
-		},
+		"Stats": stats,
 		"Reports": map[string]interface{}{
-			"Sales": []map[string]interface{}{
-				{"Date": "2024-01-15", "Amount": "₺1,234.56"},
-				{"Date": "2024-01-14", "Amount": "₺987.65"},
-			},
-			"TopProducts": []map[string]interface{}{
-				{
-					"Name":      "Product 1",
-					"Category":  "Electronics",
-					"SoldCount": 45,
-					"Revenue":   "₺4,499.55",
-					"Image":     "/static/images/product-placeholder.jpg",
-				},
-			},
-			"NewCustomers":      123,
-			"ReturningCustomers": 456,
-			"TopVendors": []map[string]interface{}{
-				{
-					"Name":         "Vendor 1",
-					"ProductCount": 25,
-					"Revenue":      "₺12,345.67",
-					"OrderCount":   89,
-				},
-			},
+			"Sales":         []map[string]interface{}{}, // TODO: Get sales data
+			"TopProducts":   []map[string]interface{}{}, // TODO: Get top products
+			"NewCustomers":       0,                          // TODO: Count new customers
+			"ReturningCustomers": 0,                          // TODO: Count returning customers
+			"TopVendors":         []map[string]interface{}{}, // TODO: Get top vendors
 		},
-		"DetailedReports": []map[string]interface{}{
-			{
-				"ID":        1,
-				"Name":      "Monthly Sales Report",
-				"Type":      "sales",
-				"TypeColor": "success",
-				"UpdatedAt": "2024-01-15",
-				"Status":    "ready",
-			},
-		},
-		"ScheduledReports": []map[string]interface{}{
-			{
-				"ID":         1,
-				"Name":       "Weekly Sales Summary",
-				"Schedule":   "Weekly",
-				"Recipients": "admin@example.com",
-				"Active":     true,
-			},
-		},
+		"DetailedReports":  []map[string]interface{}{}, // TODO: Get detailed reports
+		"ScheduledReports": []map[string]interface{}{}, // TODO: Get scheduled reports
 	}
 	
 	h.RenderTemplate(w, r, "admin/reports", data)
@@ -284,32 +252,16 @@ func (h *AdminHandler) AdminReports(w http.ResponseWriter, r *http.Request) {
 
 // AdminVendors handles admin vendors page
 func (h *AdminHandler) AdminVendors(w http.ResponseWriter, r *http.Request) {
-	// Mock vendors data
+	// TODO: Get real vendors data from database
+	// For now, return empty data until vendor service is implemented
 	data := map[string]interface{}{
-		"Title": "Vendor Management",
-		"Vendors": []map[string]interface{}{
-			{
-				"ID":                 1,
-				"Name":               "Vendor 1",
-				"BusinessName":       "Vendor Business Ltd.",
-				"Email":              "vendor@example.com",
-				"Phone":              "+90 555 123 4567",
-				"ProductCount":       25,
-				"ActiveProductCount": 23,
-				"TotalSales":         "₺12,345.67",
-				"OrderCount":         89,
-				"CommissionRate":     15.0,
-				"CommissionEarned":   "₺1,851.85",
-				"Status":             "active",
-				"CreatedAt":          "2024-01-01",
-				"Logo":               "/static/images/vendor-logo.jpg",
-			},
-		},
+		"Title":   "Vendor Management",
+		"Vendors": []map[string]interface{}{}, // TODO: Get vendors from database
 		"Stats": map[string]interface{}{
-			"TotalVendors":   50,
-			"ActiveVendors":  45,
-			"PendingVendors": 3,
-			"TotalRevenue":   "₺500,000.00",
+			"TotalVendors":   0,        // TODO: Count total vendors
+			"ActiveVendors":  0,        // TODO: Count active vendors
+			"PendingVendors": 0,        // TODO: Count pending vendors
+			"TotalRevenue":   "₺0.00", // TODO: Calculate total revenue
 		},
 		"Categories": []map[string]interface{}{
 			{"ID": 1, "Name": "Electronics"},

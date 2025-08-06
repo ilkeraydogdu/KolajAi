@@ -19,10 +19,8 @@ func main() {
 	connectionString := "kolajai:password@tcp(localhost:3306)/kolajai?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := database.NewConnection(connectionString)
 	if err != nil {
-		// MySQL yoksa, migration'ları çalıştırmayalım, sadece mock data oluşturalım
 		log.Printf("MySQL bağlantısı kurulamadı: %v", err)
-		log.Printf("Mock data oluşturuluyor...")
-		createMockDataFiles()
+		log.Printf("Veritabanı bağlantısı olmadan seed işlemi yapılamaz")
 		return
 	}
 	defer db.Close()
@@ -234,44 +232,4 @@ func main() {
 	fmt.Println("Satıcı 1: vendor1@kolajAi.com / admin123")
 	fmt.Println("Satıcı 2: vendor2@kolajAi.com / admin123")
 	fmt.Println("Kullanıcı 1: user1@kolajAi.com / admin123")
-}
-
-// createMockDataFiles creates mock data files for development
-func createMockDataFiles() {
-	fmt.Println("Mock data dosyaları oluşturuluyor...")
-	
-	// Mock kategoriler
-	categories := `[
-		{"id": 1, "name": "Elektronik", "slug": "elektronik", "image": "/web/static/images/categories/electronics.jpg", "is_active": true, "sort_order": 1},
-		{"id": 2, "name": "Giyim", "slug": "giyim", "image": "/web/static/images/categories/clothing.jpg", "is_active": true, "sort_order": 2},
-		{"id": 3, "name": "Ev & Yaşam", "slug": "ev-yasam", "image": "/web/static/images/categories/home.jpg", "is_active": true, "sort_order": 3},
-		{"id": 4, "name": "Spor", "slug": "spor", "image": "/web/static/images/categories/sports.jpg", "is_active": true, "sort_order": 4},
-		{"id": 5, "name": "Kitap", "slug": "kitap", "image": "/web/static/images/categories/books.jpg", "is_active": true, "sort_order": 5},
-		{"id": 6, "name": "Sağlık", "slug": "saglik", "image": "/web/static/images/categories/health.jpg", "is_active": true, "sort_order": 6}
-	]`
-	
-	// Mock ürünler
-	products := `[
-		{"id": 1, "vendor_id": 1, "category_id": 1, "name": "iPhone 15 Pro", "description": "Apple iPhone 15 Pro 128GB - Titanyum renk", "short_desc": "Apple'ın en yeni Pro modeli", "sku": "IPH15PRO128", "price": 45000.00, "stock": 50, "status": "active", "is_featured": true, "rating": 4.8, "review_count": 234},
-		{"id": 2, "vendor_id": 1, "category_id": 1, "name": "Samsung Galaxy S24 Ultra", "description": "Samsung Galaxy S24 Ultra 256GB - Phantom Black", "short_desc": "Samsung'un amiral gemisi", "sku": "SAMS24U256", "price": 42000.00, "stock": 30, "status": "active", "is_featured": true, "rating": 4.7, "review_count": 189},
-		{"id": 3, "vendor_id": 1, "category_id": 1, "name": "MacBook Air M3", "description": "Apple MacBook Air 13.6 inç M3 çip 8GB RAM 256GB SSD", "short_desc": "Güçlü ve hafif laptop", "sku": "MBA-M3-256", "price": 32999.00, "stock": 15, "status": "active", "is_featured": true, "rating": 4.9, "review_count": 156},
-		{"id": 4, "vendor_id": 2, "category_id": 2, "name": "Levi's 501 Original Jeans", "description": "Klasik Levi's 501 Original kot pantolon", "short_desc": "Zamansız klasik kot pantolon", "sku": "LEVIS-501-32", "price": 599.99, "stock": 100, "status": "active", "is_featured": false, "rating": 4.5, "review_count": 267},
-		{"id": 5, "vendor_id": 2, "category_id": 2, "name": "Nike Dri-FIT Tişört", "description": "Nike Dri-FIT teknolojili spor tişört", "short_desc": "Performans odaklı spor tişört", "sku": "NIKE-DRIFIT-L", "price": 199.99, "stock": 78, "status": "active", "is_featured": false, "rating": 4.3, "review_count": 145}
-	]`
-	
-	// Mock açık artırmalar
-	auctions := `[
-		{"id": 1, "title": "Vintage Rolex Saati", "description": "1970'lerden kalma orijinal Rolex", "starting_price": 15000.00, "current_bid": 18500.00, "total_bids": 12, "status": "active"},
-		{"id": 2, "title": "Antika Tablo", "description": "18. yüzyıldan kalma yağlı boya tablo", "starting_price": 8000.00, "current_bid": 9200.00, "total_bids": 8, "status": "active"}
-	]`
-	
-	// Dosyaları oluştur
-	os.WriteFile("mock_categories.json", []byte(categories), 0644)
-	os.WriteFile("mock_products.json", []byte(products), 0644)
-	os.WriteFile("mock_auctions.json", []byte(auctions), 0644)
-	
-	fmt.Println("✅ Mock data dosyaları oluşturuldu:")
-	fmt.Println("  - mock_categories.json")
-	fmt.Println("  - mock_products.json") 
-	fmt.Println("  - mock_auctions.json")
 }

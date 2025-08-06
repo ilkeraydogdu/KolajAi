@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
-	"log"
 	
+	"kolajAi/internal/models"
 	"kolajAi/internal/services"
 )
 
@@ -16,6 +18,26 @@ type SellerHandler struct {
 	VendorService  *services.VendorService
 	ProductService *services.ProductService
 	OrderService   *services.OrderService
+}
+
+// getUserIDFromSession gets user ID from session
+func (h *SellerHandler) getUserIDFromSession(w http.ResponseWriter, r *http.Request) (int, error) {
+	session, err := h.SessionManager.GetSession(r)
+	if err != nil {
+		return 0, fmt.Errorf("oturum bilgisi alınamadı: %w", err)
+	}
+	
+	userIDInterface, exists := session.Values[UserKey]
+	if !exists {
+		return 0, fmt.Errorf("kullanıcı bilgisi bulunamadı")
+	}
+	
+	userID, ok := userIDInterface.(int)
+	if !ok {
+		return 0, fmt.Errorf("geçersiz kullanıcı bilgisi")
+	}
+	
+	return userID, nil
 }
 
 // NewSellerHandler creates a new seller handler
@@ -36,10 +58,10 @@ func (h *SellerHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get current user ID (mock implementation)
-	userID := 1 // Mock user ID - in real implementation, get from session
-	if userID == 0 {
-		h.RedirectWithFlash(w, r, "/login", "Kullanıcı bilgisi bulunamadı")
+	// Get current user ID from session
+	userID, err := h.getUserIDFromSession(w, r)
+	if err != nil {
+		h.RedirectWithFlash(w, r, "/login", err.Error())
 		return
 	}
 
@@ -63,24 +85,11 @@ func (h *SellerHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Get recent orders (mock data for now)
-	recentOrders := []map[string]interface{}{
-		{
-			"id":          1,
-			"customer":    "Ahmet Yılmaz",
-			"product":     "Test Ürün",
-			"amount":      99.99,
-			"status":      "completed",
-			"created_at":  time.Now().Add(-24 * time.Hour),
-		},
-		{
-			"id":          2,
-			"customer":    "Ayşe Demir",
-			"product":     "Test Ürün 2",
-			"amount":      149.99,
-			"status":      "pending",
-			"created_at":  time.Now().Add(-48 * time.Hour),
-		},
+	// Get recent orders from database
+	recentOrders, err := h.OrderService.GetOrdersByVendor(vendor.ID, 5, 0)
+	if err != nil {
+		log.Printf("Error getting recent orders: %v", err)
+		recentOrders = []models.Order{} // Empty slice on error
 	}
 
 	data := map[string]interface{}{
@@ -101,9 +110,10 @@ func (h *SellerHandler) Products(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := 1 // Mock user ID
-	if userID == 0 {
-		h.RedirectWithFlash(w, r, "/login", "Kullanıcı bilgisi bulunamadı")
+	// Get current user ID from session
+	userID, err := h.getUserIDFromSession(w, r)
+	if err != nil {
+		h.RedirectWithFlash(w, r, "/login", err.Error())
 		return
 	}
 
@@ -115,24 +125,11 @@ func (h *SellerHandler) Products(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get vendor products (mock data for now)
-	products := []map[string]interface{}{
-		{
-			"id":          1,
-			"name":        "Test Ürün 1",
-			"price":       99.99,
-			"stock":       50,
-			"status":      "active",
-			"created_at":  time.Now().Add(-72 * time.Hour),
-		},
-		{
-			"id":          2,
-			"name":        "Test Ürün 2",
-			"price":       149.99,
-			"stock":       25,
-			"status":      "active",
-			"created_at":  time.Now().Add(-96 * time.Hour),
-		},
+	// Get vendor products from database
+	products, err := h.ProductService.GetProductsByVendor(vendor.ID, 50, 0)
+	if err != nil {
+		log.Printf("Error getting vendor products: %v", err)
+		products = []models.Product{} // Empty slice on error
 	}
 
 	data := map[string]interface{}{
@@ -152,9 +149,10 @@ func (h *SellerHandler) Orders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := 1 // Mock user ID
-	if userID == 0 {
-		h.RedirectWithFlash(w, r, "/login", "Kullanıcı bilgisi bulunamadı")
+	// Get current user ID from session
+	userID, err := h.getUserIDFromSession(w, r)
+	if err != nil {
+		h.RedirectWithFlash(w, r, "/login", err.Error())
 		return
 	}
 
@@ -166,35 +164,11 @@ func (h *SellerHandler) Orders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get vendor orders (mock data for now)
-	orders := []map[string]interface{}{
-		{
-			"id":          1,
-			"customer":    "Ahmet Yılmaz",
-			"product":     "Test Ürün 1",
-			"quantity":    2,
-			"amount":      199.98,
-			"status":      "completed",
-			"created_at":  time.Now().Add(-24 * time.Hour),
-		},
-		{
-			"id":          2,
-			"customer":    "Ayşe Demir",
-			"product":     "Test Ürün 2",
-			"quantity":    1,
-			"amount":      149.99,
-			"status":      "pending",
-			"created_at":  time.Now().Add(-48 * time.Hour),
-		},
-		{
-			"id":          3,
-			"customer":    "Mehmet Kaya",
-			"product":     "Test Ürün 1",
-			"quantity":    1,
-			"amount":      99.99,
-			"status":      "shipped",
-			"created_at":  time.Now().Add(-72 * time.Hour),
-		},
+	// Get vendor orders from database
+	orders, err := h.OrderService.GetOrdersByVendor(vendor.ID, 50, 0)
+	if err != nil {
+		log.Printf("Error getting vendor orders: %v", err)
+		orders = []models.Order{} // Empty slice on error
 	}
 
 	data := map[string]interface{}{
@@ -215,31 +189,25 @@ func (h *SellerHandler) APIGetProducts(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := 1 // Mock user ID
+	// Get current user ID from session
+	userID, err := h.getUserIDFromSession(w, r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	
 	vendor, err := h.VendorService.GetVendorByUserID(userID)
 	if err != nil {
 		http.Error(w, "Vendor not found", http.StatusNotFound)
 		return
 	}
 
-	// Mock products data
-	products := []map[string]interface{}{
-		{
-			"id":          1,
-			"name":        "Test Ürün 1",
-			"price":       99.99,
-			"stock":       50,
-			"status":      "active",
-			"vendor_id":   vendor.ID,
-		},
-		{
-			"id":          2,
-			"name":        "Test Ürün 2",
-			"price":       149.99,
-			"stock":       25,
-			"status":      "active",
-			"vendor_id":   vendor.ID,
-		},
+	// Get products from database
+	products, err := h.ProductService.GetProductsByVendor(vendor.ID, 50, 0)
+	if err != nil {
+		log.Printf("Error getting vendor products: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -292,35 +260,25 @@ func (h *SellerHandler) APIGetOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := 1 // Mock user ID
+	// Get current user ID from session
+	userID, err := h.getUserIDFromSession(w, r)
+	if err != nil {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	
 	vendor, err := h.VendorService.GetVendorByUserID(userID)
 	if err != nil {
 		http.Error(w, "Vendor not found", http.StatusNotFound)
 		return
 	}
 
-	// Mock orders data
-	orders := []map[string]interface{}{
-		{
-			"id":          1,
-			"customer":    "Ahmet Yılmaz",
-			"product":     "Test Ürün 1",
-			"quantity":    2,
-			"amount":      199.98,
-			"status":      "completed",
-			"vendor_id":   vendor.ID,
-			"created_at":  time.Now().Add(-24 * time.Hour),
-		},
-		{
-			"id":          2,
-			"customer":    "Ayşe Demir",
-			"product":     "Test Ürün 2",
-			"quantity":    1,
-			"amount":      149.99,
-			"status":      "pending",
-			"vendor_id":   vendor.ID,
-			"created_at":  time.Now().Add(-48 * time.Hour),
-		},
+	// Get orders from database
+	orders, err := h.OrderService.GetOrdersByVendor(vendor.ID, 50, 0)
+	if err != nil {
+		log.Printf("Error getting vendor orders: %v", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -1,7 +1,0 @@
-[
-		{"id": 1, "vendor_id": 1, "category_id": 1, "name": "iPhone 15 Pro", "description": "Apple iPhone 15 Pro 128GB - Titanyum renk", "short_desc": "Apple'ın en yeni Pro modeli", "sku": "IPH15PRO128", "price": 45000.00, "stock": 50, "status": "active", "is_featured": true, "rating": 4.8, "review_count": 234},
-		{"id": 2, "vendor_id": 1, "category_id": 1, "name": "Samsung Galaxy S24 Ultra", "description": "Samsung Galaxy S24 Ultra 256GB - Phantom Black", "short_desc": "Samsung'un amiral gemisi", "sku": "SAMS24U256", "price": 42000.00, "stock": 30, "status": "active", "is_featured": true, "rating": 4.7, "review_count": 189},
-		{"id": 3, "vendor_id": 1, "category_id": 1, "name": "MacBook Air M3", "description": "Apple MacBook Air 13.6 inç M3 çip 8GB RAM 256GB SSD", "short_desc": "Güçlü ve hafif laptop", "sku": "MBA-M3-256", "price": 32999.00, "stock": 15, "status": "active", "is_featured": true, "rating": 4.9, "review_count": 156},
-		{"id": 4, "vendor_id": 2, "category_id": 2, "name": "Levi's 501 Original Jeans", "description": "Klasik Levi's 501 Original kot pantolon", "short_desc": "Zamansız klasik kot pantolon", "sku": "LEVIS-501-32", "price": 599.99, "stock": 100, "status": "active", "is_featured": false, "rating": 4.5, "review_count": 267},
-		{"id": 5, "vendor_id": 2, "category_id": 2, "name": "Nike Dri-FIT Tişört", "description": "Nike Dri-FIT teknolojili spor tişört", "short_desc": "Performans odaklı spor tişört", "sku": "NIKE-DRIFIT-L", "price": 199.99, "stock": 78, "status": "active", "is_featured": false, "rating": 4.3, "review_count": 145}
-	]
