@@ -259,6 +259,19 @@ func (h *AIHandler) GetAIDashboard(w http.ResponseWriter, r *http.Request) {
 	data["PageTitle"] = "AI Dashboard - KolajAI"
 	data["PageDescription"] = "AI-powered insights and recommendations for your marketplace experience"
 
+	// Get AI dashboard statistics
+	aiStats, err := h.aiService.GetAIDashboardStats()
+	if err != nil {
+		Logger.Printf("Error getting AI dashboard stats: %v", err)
+		aiStats = map[string]interface{}{
+			"RecommendationsCount":     int64(0),
+			"SearchQueriesCount":       int64(0),
+			"PriceOptimizationsCount":  int64(0),
+			"ModelUsageCount":          int64(0),
+		}
+	}
+	data["AIStats"] = aiStats
+
 	// Get some sample recommendations for display
 	recommendations, err := h.aiService.GetPersonalizedRecommendations(int(user.ID), 6)
 	if err != nil {

@@ -25,9 +25,9 @@ func NewAIVisionHandler(base *Handler, aiVisionService *services.AIVisionService
 
 // GetVisionDashboard displays the AI vision dashboard
 func (h *AIVisionHandler) GetVisionDashboard(w http.ResponseWriter, r *http.Request) {
-	// Get user ID from session (simplified)
-	userID := 1 // Placeholder - implement session management
-	if userID == 0 {
+	// Get user ID from session
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
@@ -76,14 +76,18 @@ func (h *AIVisionHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 
 	// Parse multipart form
-	err := r.ParseMultipartForm(10 << 20) // 10MB max
+	err = r.ParseMultipartForm(10 << 20) // 10MB max
 	if err != nil {
 		h.WriteJSONError(w, "Failed to parse form", http.StatusBadRequest)
 		return
@@ -116,7 +120,11 @@ func (h *AIVisionHandler) UploadImage(w http.ResponseWriter, r *http.Request) {
 
 // SearchImages handles intelligent image search
 func (h *AIVisionHandler) SearchImages(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -192,7 +200,11 @@ func (h *AIVisionHandler) SearchImages(w http.ResponseWriter, r *http.Request) {
 
 // GetImageAnalysis returns detailed analysis for a specific image
 func (h *AIVisionHandler) GetImageAnalysis(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -223,7 +235,11 @@ func (h *AIVisionHandler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -235,7 +251,7 @@ func (h *AIVisionHandler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.aiVisionService.DeleteImage(userID, imageID)
+	err = h.aiVisionService.DeleteImage(userID, imageID)
 	if err != nil {
 		h.WriteJSONError(w, fmt.Sprintf("Failed to delete image: %v", err), http.StatusInternalServerError)
 		return
@@ -249,7 +265,11 @@ func (h *AIVisionHandler) DeleteImage(w http.ResponseWriter, r *http.Request) {
 
 // GetImagesByCategory returns images filtered by category
 func (h *AIVisionHandler) GetImagesByCategory(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -282,7 +302,11 @@ func (h *AIVisionHandler) GetImagesByCategory(w http.ResponseWriter, r *http.Req
 
 // GetImagesByTag returns images filtered by tag
 func (h *AIVisionHandler) GetImagesByTag(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -320,7 +344,11 @@ func (h *AIVisionHandler) CreateCollection(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -357,7 +385,11 @@ func (h *AIVisionHandler) UpdateCollection(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -380,7 +412,7 @@ func (h *AIVisionHandler) UpdateCollection(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err := h.aiVisionService.UpdateImageCollection(userID, collectionID, request.Name, request.Description, request.ImageIDs, false)
+	err = h.aiVisionService.UpdateImageCollection(userID, collectionID, request.Name, request.Description, request.ImageIDs, false)
 	if err != nil {
 		h.WriteJSONError(w, fmt.Sprintf("Failed to update collection: %v", err), http.StatusInternalServerError)
 		return
@@ -399,7 +431,11 @@ func (h *AIVisionHandler) DeleteCollection(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -411,7 +447,7 @@ func (h *AIVisionHandler) DeleteCollection(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	err := h.aiVisionService.DeleteImageCollection(userID, collectionID)
+	err = h.aiVisionService.DeleteImageCollection(userID, collectionID)
 	if err != nil {
 		h.WriteJSONError(w, fmt.Sprintf("Failed to delete collection: %v", err), http.StatusInternalServerError)
 		return
@@ -425,7 +461,11 @@ func (h *AIVisionHandler) DeleteCollection(w http.ResponseWriter, r *http.Reques
 
 // SuggestCategories suggests product categories based on image analysis
 func (h *AIVisionHandler) SuggestCategories(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -451,7 +491,11 @@ func (h *AIVisionHandler) SuggestCategories(w http.ResponseWriter, r *http.Reque
 
 // GetUserStats returns user's image statistics
 func (h *AIVisionHandler) GetUserStats(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -471,7 +515,11 @@ func (h *AIVisionHandler) GetUserStats(w http.ResponseWriter, r *http.Request) {
 
 // GetImageLibrary returns user's organized image library
 func (h *AIVisionHandler) GetImageLibrary(w http.ResponseWriter, r *http.Request) {
-	userID := 1 // Placeholder - implement session management
+	userID, err := h.getUserIDFromSession(r)
+	if err != nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return
+	}
 	if userID == 0 {
 		h.WriteJSONError(w, "Unauthorized", http.StatusUnauthorized)
 		return
@@ -545,4 +593,19 @@ func (h *AIVisionHandler) WriteJSONError(w http.ResponseWriter, message string, 
 		"success": false,
 		"error":   message,
 	})
+}
+
+// getUserIDFromSession extracts user ID from session
+func (h *AIVisionHandler) getUserIDFromSession(r *http.Request) (int, error) {
+	session, err := h.SessionManager.GetSession(r)
+	if err != nil || session.Values["user_id"] == nil {
+		return 0, fmt.Errorf("no valid session")
+	}
+	
+	userID, ok := session.Values["user_id"].(int)
+	if !ok || userID == 0 {
+		return 0, fmt.Errorf("invalid user ID")
+	}
+	
+	return userID, nil
 }
