@@ -41,8 +41,10 @@ type Product struct {
 	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
 	
 	// Computed fields for templates (not stored in DB)
-	DiscountPrice      float64 `json:"discount_price,omitempty" db:"-"`
-	DiscountPercentage int     `json:"discount_percentage,omitempty" db:"-"`
+	Images             []string `json:"images,omitempty" db:"-"`
+	Image              string   `json:"image,omitempty" db:"-"` // Primary image
+	DiscountPrice      float64  `json:"discount_price,omitempty" db:"-"`
+	DiscountPercentage int      `json:"discount_percentage,omitempty" db:"-"`
 }
 
 // Validate checks if the product data is valid

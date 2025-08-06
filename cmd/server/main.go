@@ -394,6 +394,12 @@ func main() {
 			schema, _ := seoManager.GenerateSchema(pageType, data)
 			return template.HTML(schema)
 		},
+		"truncate": func(s string, length int) string {
+			if len(s) <= length {
+				return s
+			}
+			return s[:length] + "..."
+		},
 	}
 
 	MainLogger.Println("Template parsing başlatılıyor...")

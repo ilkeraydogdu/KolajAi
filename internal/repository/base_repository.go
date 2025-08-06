@@ -10,18 +10,17 @@ import (
 
 // BaseRepository provides common database operations
 type BaseRepository struct {
-	db *database.MySQLRepository
+	db database.SimpleRepository
 }
 
 // NewBaseRepository creates a new base repository
-func NewBaseRepository(db *database.MySQLRepository) *BaseRepository {
+func NewBaseRepository(db database.SimpleRepository) *BaseRepository {
 	return &BaseRepository{db: db}
 }
 
 // Create inserts a new record
 func (r *BaseRepository) Create(table string, data interface{}) (int64, error) {
-	fields, values := getFieldsAndValues(data)
-	return r.db.Create(table, fields, values)
+	return r.db.CreateStruct(table, data)
 }
 
 // Update updates a record
@@ -46,7 +45,7 @@ func (r *BaseRepository) FindAll(table string, result interface{}, conditions ma
 
 // FindOne retrieves a single record
 func (r *BaseRepository) FindOne(table string, result interface{}, conditions map[string]interface{}) error {
-	return r.db.FindOne(table, conditions, result)
+	return r.db.FindOne(table, result, conditions)
 }
 
 // Count returns the number of records

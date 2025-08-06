@@ -21,7 +21,7 @@ type AdminHandler struct {
 }
 
 // NewAdminHandler creates a new admin handler
-func NewAdminHandler(h *Handler, db *database.MySQLRepository) *AdminHandler {
+func NewAdminHandler(h *Handler, db database.SimpleRepository) *AdminHandler {
 	return &AdminHandler{
 		Handler:   h,
 		AdminRepo: repository.NewAdminRepository(db),

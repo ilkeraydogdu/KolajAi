@@ -14,7 +14,7 @@ type AdminRepository struct {
 }
 
 // NewAdminRepository creates a new admin repository
-func NewAdminRepository(db *database.MySQLRepository) *AdminRepository {
+func NewAdminRepository(db database.SimpleRepository) *AdminRepository {
 	return &AdminRepository{
 		BaseRepository: NewBaseRepository(db),
 	}

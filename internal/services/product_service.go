@@ -40,6 +40,23 @@ func (s *ProductService) GetProductByID(id int) (*models.Product, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get product: %w", err)
 	}
+	
+	// Load product images
+	images, err := s.GetProductImages(id)
+	if err == nil && len(images) > 0 {
+		product.Images = make([]string, len(images))
+		for i, img := range images {
+			product.Images[i] = img.ImageURL
+			if img.IsPrimary {
+				product.Image = img.ImageURL
+			}
+		}
+		// If no primary image set, use first image as primary
+		if product.Image == "" && len(product.Images) > 0 {
+			product.Image = product.Images[0]
+		}
+	}
+	
 	return &product, nil
 }
 
@@ -113,6 +130,25 @@ func (s *ProductService) GetFeaturedProducts(limit, offset int) ([]models.Produc
 	if err != nil {
 		return nil, fmt.Errorf("failed to get featured products: %w", err)
 	}
+	
+	// Load images for all products
+	for i := range products {
+		images, err := s.GetProductImages(products[i].ID)
+		if err == nil && len(images) > 0 {
+			products[i].Images = make([]string, len(images))
+			for j, img := range images {
+				products[i].Images[j] = img.ImageURL
+				if img.IsPrimary {
+					products[i].Image = img.ImageURL
+				}
+			}
+			// If no primary image set, use first image as primary
+			if products[i].Image == "" && len(products[i].Images) > 0 {
+				products[i].Image = products[i].Images[0]
+			}
+		}
+	}
+	
 	return products, nil
 }
 
@@ -233,6 +269,24 @@ func (s *ProductService) GetProducts(category, search string, page, limit int) (
 	err := s.repo.FindAll("products", &products, conditions, orderBy, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products: %w", err)
+	}
+	
+	// Load images for all products
+	for i := range products {
+		images, err := s.GetProductImages(products[i].ID)
+		if err == nil && len(images) > 0 {
+			products[i].Images = make([]string, len(images))
+			for j, img := range images {
+				products[i].Images[j] = img.ImageURL
+				if img.IsPrimary {
+					products[i].Image = img.ImageURL
+				}
+			}
+			// If no primary image set, use first image as primary
+			if products[i].Image == "" && len(products[i].Images) > 0 {
+				products[i].Image = products[i].Images[0]
+			}
+		}
 	}
 	
 	// If search term is provided, filter results (basic implementation)

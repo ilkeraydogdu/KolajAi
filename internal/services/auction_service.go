@@ -25,6 +25,25 @@ func (s *AuctionService) GetActiveAuctions(limit int) ([]models.Auction, error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get active auctions: %w", err)
 	}
+	
+	// Load images for all auctions
+	for i := range auctions {
+		images, err := s.GetAuctionImages(auctions[i].ID)
+		if err == nil && len(images) > 0 {
+			auctions[i].Images = make([]string, len(images))
+			for j, img := range images {
+				auctions[i].Images[j] = img.ImageURL
+				if img.IsPrimary {
+					auctions[i].Image = img.ImageURL
+				}
+			}
+			// If no primary image set, use first image as primary
+			if auctions[i].Image == "" && len(auctions[i].Images) > 0 {
+				auctions[i].Image = auctions[i].Images[0]
+			}
+		}
+	}
+	
 	return auctions, nil
 }
 
@@ -55,6 +74,23 @@ func (s *AuctionService) GetAuctionByID(id int) (*models.Auction, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auction: %w", err)
 	}
+	
+	// Load auction images
+	images, err := s.GetAuctionImages(id)
+	if err == nil && len(images) > 0 {
+		auction.Images = make([]string, len(images))
+		for i, img := range images {
+			auction.Images[i] = img.ImageURL
+			if img.IsPrimary {
+				auction.Image = img.ImageURL
+			}
+		}
+		// If no primary image set, use first image as primary
+		if auction.Image == "" && len(auction.Images) > 0 {
+			auction.Image = auction.Images[0]
+		}
+	}
+	
 	return &auction, nil
 }
 
@@ -68,7 +104,17 @@ func (s *AuctionService) UpdateAuction(id int, auction *models.Auction) error {
 	return nil
 }
 
+// GetAuctionBids retrieves bids for an auction
+func (s *AuctionService) GetAuctionBids(auctionID int, limit, offset int) ([]models.AuctionBid, error) {
+	var bids []models.AuctionBid
+	conditions := map[string]interface{}{"auction_id": auctionID}
 
+	err := s.repo.FindAll("auction_bids", &bids, conditions, "amount DESC", limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get auction bids: %w", err)
+	}
+	return bids, nil
+}
 
 // GetAuctionsByVendor retrieves auctions by vendor ID
 func (s *AuctionService) GetAuctionsByVendor(vendorID int, limit, offset int) ([]models.Auction, error) {

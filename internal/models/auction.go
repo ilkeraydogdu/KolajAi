@@ -25,6 +25,10 @@ type Auction struct {
 	ExtendMinutes int       `json:"extend_minutes" db:"extend_minutes"`
 	CreatedAt     time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
+	
+	// Computed fields for templates (not stored in DB)
+	Images        []string `json:"images,omitempty" db:"-"`
+	Image         string   `json:"image,omitempty" db:"-"` // Primary image
 }
 
 // AuctionBid represents a bid in an auction
