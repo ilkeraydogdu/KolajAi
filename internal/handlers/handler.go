@@ -18,8 +18,8 @@ import (
 const (
 	SessionCookieName = "kolaj-session"
 	// UserKey hem context aktarımında hem de oturum verilerinde kullanılacak
-	UserKey           = "user"
-	FlashKey          = "flash"
+	UserKey  = "user"
+	FlashKey = "flash"
 )
 
 var (
@@ -32,7 +32,7 @@ func init() {
 	if env == "" {
 		env = os.Getenv("GIN_MODE")
 	}
-	
+
 	if env == "production" || env == "release" {
 		// Production'da sadece stdout'a minimal log
 		Logger = log.New(os.Stdout, "[HANDLER] ", log.LstdFlags)
@@ -323,11 +323,11 @@ func (h *Handler) ValidateCSRFToken(r *http.Request) bool {
 	// Şimdilik basit bir kontrol
 	token := r.FormValue("csrf_token")
 	sessionToken, _ := h.SessionManager.GetSessionValue(r, "csrf_token")
-	
+
 	if token == "" || sessionToken == nil {
 		return false
 	}
-	
+
 	return token == sessionToken.(string)
 }
 
@@ -370,7 +370,7 @@ func (sm *SessionManager) SetSessionWithExpiry(w http.ResponseWriter, r *http.Re
 
 	// Session değerini ayarla
 	session.Values[key] = val
-	
+
 	// Session options'ı ayarla
 	session.Options = &sessions.Options{
 		Path:     "/",
@@ -397,12 +397,12 @@ func (sm *SessionManager) GetSessionValue(r *http.Request, key string) (interfac
 	if err != nil {
 		return nil, err
 	}
-	
+
 	value, exists := session.Values[key]
 	if !exists {
 		return nil, fmt.Errorf("key not found in session: %s", key)
 	}
-	
+
 	return value, nil
 }
 
@@ -421,18 +421,18 @@ func (h *Handler) GetUserFromSession(r *http.Request) *UserInfo {
 		Logger.Printf("GetUserFromSession - Session error: %v", err)
 		return nil
 	}
-	
+
 	userInterface, exists := session.Values[UserKey]
 	if !exists {
 		Logger.Printf("GetUserFromSession - No user in session")
 		return nil
 	}
-	
+
 	// Try to cast to UserInfo struct
 	if userInfo, ok := userInterface.(*UserInfo); ok {
 		return userInfo
 	}
-	
+
 	// Try to cast to map for backward compatibility
 	if userMap, ok := userInterface.(map[string]interface{}); ok {
 		userInfo := &UserInfo{}
@@ -447,7 +447,7 @@ func (h *Handler) GetUserFromSession(r *http.Request) *UserInfo {
 		}
 		return userInfo
 	}
-	
+
 	Logger.Printf("GetUserFromSession - Unable to cast user data")
 	return nil
 }
@@ -458,17 +458,17 @@ func (h *Handler) GetUserIDFromSession(r *http.Request) int64 {
 	if userInfo != nil {
 		return userInfo.ID
 	}
-	
+
 	// Try direct user_id key for backward compatibility
 	session, err := h.SessionManager.GetSession(r)
 	if err != nil {
 		return 0
 	}
-	
+
 	if userID, ok := session.Values["user_id"].(int64); ok {
 		return userID
 	}
-	
+
 	return 0
 }
 
@@ -478,10 +478,10 @@ func (h *Handler) IsAdminUser(r *http.Request) bool {
 	if err != nil {
 		return false
 	}
-	
+
 	if isAdmin, ok := session.Values["is_admin"].(bool); ok {
 		return isAdmin
 	}
-	
+
 	return false
 }

@@ -20,86 +20,86 @@ type SEOManager struct {
 
 // SEOConfig holds SEO configuration
 type SEOConfig struct {
-	DefaultLanguage   string            `json:"default_language"`
-	SupportedLanguages []Language       `json:"supported_languages"`
-	SitemapConfig     SitemapConfig     `json:"sitemap_config"`
-	RobotsConfig      RobotsConfig      `json:"robots_config"`
-	MetaDefaults      MetaDefaults      `json:"meta_defaults"`
-	SchemaConfig      SchemaConfig      `json:"schema_config"`
-	URLPatterns       map[string]string `json:"url_patterns"`
-	RedirectRules     []RedirectRule    `json:"redirect_rules"`
+	DefaultLanguage    string            `json:"default_language"`
+	SupportedLanguages []Language        `json:"supported_languages"`
+	SitemapConfig      SitemapConfig     `json:"sitemap_config"`
+	RobotsConfig       RobotsConfig      `json:"robots_config"`
+	MetaDefaults       MetaDefaults      `json:"meta_defaults"`
+	SchemaConfig       SchemaConfig      `json:"schema_config"`
+	URLPatterns        map[string]string `json:"url_patterns"`
+	RedirectRules      []RedirectRule    `json:"redirect_rules"`
 }
 
 // Language represents a supported language
 type Language struct {
-	Code        string `json:"code"`         // "tr", "en", "de"
-	Name        string `json:"name"`         // "Türkçe", "English", "Deutsch"
-	LocaleName  string `json:"locale_name"`  // "tr-TR", "en-US", "de-DE"
-	Direction   string `json:"direction"`    // "ltr", "rtl"
-	Enabled     bool   `json:"enabled"`
-	IsDefault   bool   `json:"is_default"`
-	URLPrefix   string `json:"url_prefix"`   // "/tr", "/en", "/de"
-	Currency    string `json:"currency"`     // "TRY", "USD", "EUR"
-	DateFormat  string `json:"date_format"`  // "02.01.2006", "01/02/2006"
-	TimeZone    string `json:"timezone"`     // "Europe/Istanbul", "America/New_York"
+	Code       string `json:"code"`        // "tr", "en", "de"
+	Name       string `json:"name"`        // "Türkçe", "English", "Deutsch"
+	LocaleName string `json:"locale_name"` // "tr-TR", "en-US", "de-DE"
+	Direction  string `json:"direction"`   // "ltr", "rtl"
+	Enabled    bool   `json:"enabled"`
+	IsDefault  bool   `json:"is_default"`
+	URLPrefix  string `json:"url_prefix"`  // "/tr", "/en", "/de"
+	Currency   string `json:"currency"`    // "TRY", "USD", "EUR"
+	DateFormat string `json:"date_format"` // "02.01.2006", "01/02/2006"
+	TimeZone   string `json:"timezone"`    // "Europe/Istanbul", "America/New_York"
 }
 
 // SitemapConfig holds sitemap configuration
 type SitemapConfig struct {
-	Enabled           bool              `json:"enabled"`
-	MaxURLsPerFile    int               `json:"max_urls_per_file"`
-	UpdateFrequency   string            `json:"update_frequency"`
-	Priority          float64           `json:"priority"`
-	IncludeImages     bool              `json:"include_images"`
-	IncludeVideos     bool              `json:"include_videos"`
-	IncludeNews       bool              `json:"include_news"`
-	ExcludePatterns   []string          `json:"exclude_patterns"`
-	CustomSitemaps    []CustomSitemap   `json:"custom_sitemaps"`
-	CompressionEnabled bool             `json:"compression_enabled"`
+	Enabled            bool            `json:"enabled"`
+	MaxURLsPerFile     int             `json:"max_urls_per_file"`
+	UpdateFrequency    string          `json:"update_frequency"`
+	Priority           float64         `json:"priority"`
+	IncludeImages      bool            `json:"include_images"`
+	IncludeVideos      bool            `json:"include_videos"`
+	IncludeNews        bool            `json:"include_news"`
+	ExcludePatterns    []string        `json:"exclude_patterns"`
+	CustomSitemaps     []CustomSitemap `json:"custom_sitemaps"`
+	CompressionEnabled bool            `json:"compression_enabled"`
 }
 
 // CustomSitemap represents custom sitemap configuration
 type CustomSitemap struct {
-	Name        string   `json:"name"`
-	URLPattern  string   `json:"url_pattern"`
-	DataSource  string   `json:"data_source"`
-	UpdateFreq  string   `json:"update_freq"`
-	Priority    float64  `json:"priority"`
-	Languages   []string `json:"languages"`
+	Name       string   `json:"name"`
+	URLPattern string   `json:"url_pattern"`
+	DataSource string   `json:"data_source"`
+	UpdateFreq string   `json:"update_freq"`
+	Priority   float64  `json:"priority"`
+	Languages  []string `json:"languages"`
 }
 
 // RobotsConfig holds robots.txt configuration
 type RobotsConfig struct {
-	Enabled         bool            `json:"enabled"`
-	UserAgents      []UserAgentRule `json:"user_agents"`
-	SitemapURLs     []string        `json:"sitemap_urls"`
-	CrawlDelay      int             `json:"crawl_delay"`
-	CustomRules     []string        `json:"custom_rules"`
+	Enabled     bool            `json:"enabled"`
+	UserAgents  []UserAgentRule `json:"user_agents"`
+	SitemapURLs []string        `json:"sitemap_urls"`
+	CrawlDelay  int             `json:"crawl_delay"`
+	CustomRules []string        `json:"custom_rules"`
 }
 
 // UserAgentRule represents robots.txt user agent rules
 type UserAgentRule struct {
-	UserAgent string   `json:"user_agent"`
-	Allow     []string `json:"allow"`
-	Disallow  []string `json:"disallow"`
-	CrawlDelay int     `json:"crawl_delay"`
+	UserAgent  string   `json:"user_agent"`
+	Allow      []string `json:"allow"`
+	Disallow   []string `json:"disallow"`
+	CrawlDelay int      `json:"crawl_delay"`
 }
 
 // MetaDefaults holds default meta tag values
 type MetaDefaults struct {
-	Title            string            `json:"title"`
-	Description      string            `json:"description"`
-	Keywords         string            `json:"keywords"`
-	Author           string            `json:"author"`
-	Publisher        string            `json:"publisher"`
-	Copyright        string            `json:"copyright"`
-	Robots           string            `json:"robots"`
-	Viewport         string            `json:"viewport"`
-	CharSet          string            `json:"charset"`
-	Language         string            `json:"language"`
-	OpenGraph        OpenGraphDefaults `json:"open_graph"`
-	TwitterCard      TwitterDefaults   `json:"twitter_card"`
-	CustomMeta       map[string]string `json:"custom_meta"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	Keywords    string            `json:"keywords"`
+	Author      string            `json:"author"`
+	Publisher   string            `json:"publisher"`
+	Copyright   string            `json:"copyright"`
+	Robots      string            `json:"robots"`
+	Viewport    string            `json:"viewport"`
+	CharSet     string            `json:"charset"`
+	Language    string            `json:"language"`
+	OpenGraph   OpenGraphDefaults `json:"open_graph"`
+	TwitterCard TwitterDefaults   `json:"twitter_card"`
+	CustomMeta  map[string]string `json:"custom_meta"`
 }
 
 // OpenGraphDefaults holds Open Graph default values
@@ -114,10 +114,10 @@ type OpenGraphDefaults struct {
 
 // TwitterDefaults holds Twitter Card default values
 type TwitterDefaults struct {
-	Card     string `json:"card"`
-	Site     string `json:"site"`
-	Creator  string `json:"creator"`
-	Image    string `json:"image"`
+	Card    string `json:"card"`
+	Site    string `json:"site"`
+	Creator string `json:"creator"`
+	Image   string `json:"image"`
 }
 
 // SchemaConfig holds Schema.org configuration
@@ -133,11 +133,11 @@ type SchemaConfig struct {
 
 // Schema structures
 type OrganizationSchema struct {
-	Name        string   `json:"name"`
-	URL         string   `json:"url"`
-	Logo        string   `json:"logo"`
+	Name        string    `json:"name"`
+	URL         string    `json:"url"`
+	Logo        string    `json:"logo"`
 	ContactInfo []Contact `json:"contact_info"`
-	SameAs      []string `json:"same_as"`
+	SameAs      []string  `json:"same_as"`
 }
 
 type Contact struct {
@@ -146,9 +146,9 @@ type Contact struct {
 }
 
 type WebSiteSchema struct {
-	Name           string `json:"name"`
-	URL            string `json:"url"`
-	Description    string `json:"description"`
+	Name            string `json:"name"`
+	URL             string `json:"url"`
+	Description     string `json:"description"`
 	PotentialAction string `json:"potential_action"`
 }
 
@@ -217,19 +217,19 @@ type SEOImage struct {
 
 // SEOIssue represents an SEO issue
 type SEOIssue struct {
-	Type        string `json:"type"`
-	Severity    string `json:"severity"`
-	Message     string `json:"message"`
-	Element     string `json:"element"`
-	Suggestion  string `json:"suggestion"`
+	Type       string `json:"type"`
+	Severity   string `json:"severity"`
+	Message    string `json:"message"`
+	Element    string `json:"element"`
+	Suggestion string `json:"suggestion"`
 }
 
 // SEOSuggestion represents an SEO improvement suggestion
 type SEOSuggestion struct {
-	Type        string `json:"type"`
-	Priority    string `json:"priority"`
-	Message     string `json:"message"`
-	Action      string `json:"action"`
+	Type           string `json:"type"`
+	Priority       string `json:"priority"`
+	Message        string `json:"message"`
+	Action         string `json:"action"`
 	ExpectedImpact string `json:"expected_impact"`
 }
 
@@ -255,22 +255,22 @@ type SitemapImage struct {
 
 // SitemapVideo represents a video in sitemap
 type SitemapVideo struct {
-	XMLName     xml.Name `xml:"video:video"`
-	ThumbnailLoc string  `xml:"video:thumbnail_loc"`
-	Title       string   `xml:"video:title"`
-	Description string   `xml:"video:description"`
-	ContentLoc  string   `xml:"video:content_loc,omitempty"`
-	PlayerLoc   string   `xml:"video:player_loc,omitempty"`
-	Duration    int      `xml:"video:duration,omitempty"`
+	XMLName      xml.Name `xml:"video:video"`
+	ThumbnailLoc string   `xml:"video:thumbnail_loc"`
+	Title        string   `xml:"video:title"`
+	Description  string   `xml:"video:description"`
+	ContentLoc   string   `xml:"video:content_loc,omitempty"`
+	PlayerLoc    string   `xml:"video:player_loc,omitempty"`
+	Duration     int      `xml:"video:duration,omitempty"`
 }
 
 // SitemapNews represents news in sitemap
 type SitemapNews struct {
-	XMLName     xml.Name `xml:"news:news"`
+	XMLName     xml.Name        `xml:"news:news"`
 	Publication NewsPublication `xml:"news:publication"`
-	Title       string   `xml:"news:title"`
-	PublishDate string   `xml:"news:publication_date"`
-	Keywords    string   `xml:"news:keywords,omitempty"`
+	Title       string          `xml:"news:title"`
+	PublishDate string          `xml:"news:publication_date"`
+	Keywords    string          `xml:"news:keywords,omitempty"`
 }
 
 // NewsPublication represents news publication info
@@ -289,19 +289,19 @@ type SitemapAlternate struct {
 
 // Sitemap represents the main sitemap structure
 type Sitemap struct {
-	XMLName xml.Name     `xml:"urlset"`
-	Xmlns   string       `xml:"xmlns,attr"`
-	XmlnsImage string    `xml:"xmlns:image,attr,omitempty"`
-	XmlnsVideo string    `xml:"xmlns:video,attr,omitempty"`
-	XmlnsNews  string    `xml:"xmlns:news,attr,omitempty"`
-	XmlnsXhtml string    `xml:"xmlns:xhtml,attr,omitempty"`
-	URLs    []SitemapURL `xml:"url"`
+	XMLName    xml.Name     `xml:"urlset"`
+	Xmlns      string       `xml:"xmlns,attr"`
+	XmlnsImage string       `xml:"xmlns:image,attr,omitempty"`
+	XmlnsVideo string       `xml:"xmlns:video,attr,omitempty"`
+	XmlnsNews  string       `xml:"xmlns:news,attr,omitempty"`
+	XmlnsXhtml string       `xml:"xmlns:xhtml,attr,omitempty"`
+	URLs       []SitemapURL `xml:"url"`
 }
 
 // SitemapIndex represents sitemap index
 type SitemapIndex struct {
-	XMLName  xml.Name         `xml:"sitemapindex"`
-	Xmlns    string           `xml:"xmlns,attr"`
+	XMLName  xml.Name            `xml:"sitemapindex"`
+	Xmlns    string              `xml:"xmlns,attr"`
 	Sitemaps []SitemapIndexEntry `xml:"sitemap"`
 }
 
@@ -325,7 +325,7 @@ func NewSEOManager(db *sql.DB, config SEOConfig) *SEOManager {
 		db:     db,
 		config: config,
 	}
-	
+
 	sm.createSEOTables()
 	return sm
 }
@@ -528,22 +528,22 @@ func (sm *SEOManager) GenerateRobotsTxt() string {
 	// Add user agent rules
 	for _, rule := range sm.config.RobotsConfig.UserAgents {
 		robots.WriteString(fmt.Sprintf("User-agent: %s\n", rule.UserAgent))
-		
+
 		// Add allow rules
 		for _, allow := range rule.Allow {
 			robots.WriteString(fmt.Sprintf("Allow: %s\n", allow))
 		}
-		
+
 		// Add disallow rules
 		for _, disallow := range rule.Disallow {
 			robots.WriteString(fmt.Sprintf("Disallow: %s\n", disallow))
 		}
-		
+
 		// Add crawl delay if specified
 		if rule.CrawlDelay > 0 {
 			robots.WriteString(fmt.Sprintf("Crawl-delay: %d\n", rule.CrawlDelay))
 		}
-		
+
 		robots.WriteString("\n")
 	}
 
@@ -571,13 +571,13 @@ func (sm *SEOManager) GetTranslation(entityType string, entityID int, language s
 		SELECT field_value FROM seo_translations 
 		WHERE entity_type = ? AND entity_id = ? AND language = ? AND field_name = ?
 	`
-	
+
 	var value string
 	err := sm.db.QueryRow(query, entityType, entityID, language, fieldName).Scan(&value)
 	if err != nil {
 		return "", err
 	}
-	
+
 	return value, nil
 }
 
@@ -588,7 +588,7 @@ func (sm *SEOManager) SetTranslation(entityType string, entityID int, language s
 		VALUES (?, ?, ?, ?, ?)
 		ON DUPLICATE KEY UPDATE field_value = VALUES(field_value), updated_at = NOW()
 	`
-	
+
 	_, err := sm.db.Exec(query, entityType, entityID, language, fieldName, value)
 	return err
 }
@@ -599,7 +599,7 @@ func (sm *SEOManager) GetAllTranslations(entityType string, entityID int) (map[s
 		SELECT language, field_name, field_value FROM seo_translations 
 		WHERE entity_type = ? AND entity_id = ?
 	`
-	
+
 	rows, err := sm.db.Query(query, entityType, entityID)
 	if err != nil {
 		return nil, err
@@ -607,36 +607,36 @@ func (sm *SEOManager) GetAllTranslations(entityType string, entityID int) (map[s
 	defer rows.Close()
 
 	translations := make(map[string]map[string]string)
-	
+
 	for rows.Next() {
 		var language, fieldName, fieldValue string
 		if err := rows.Scan(&language, &fieldName, &fieldValue); err != nil {
 			continue
 		}
-		
+
 		if translations[language] == nil {
 			translations[language] = make(map[string]string)
 		}
 		translations[language][fieldName] = fieldValue
 	}
-	
+
 	return translations, nil
 }
 
 // GenerateAlternateURLs generates alternate language URLs for a page
 func (sm *SEOManager) GenerateAlternateURLs(baseURL string, currentLanguage string) map[string]string {
 	alternates := make(map[string]string)
-	
+
 	for _, lang := range sm.config.SupportedLanguages {
 		if !lang.Enabled || lang.Code == currentLanguage {
 			continue
 		}
-		
+
 		// Generate alternate URL based on URL pattern
 		alternateURL := sm.generateLanguageURL(baseURL, lang.Code)
 		alternates[lang.Code] = alternateURL
 	}
-	
+
 	return alternates
 }
 
@@ -650,18 +650,18 @@ func (sm *SEOManager) generateLanguageURL(baseURL string, language string) strin
 			break
 		}
 	}
-	
+
 	// Parse base URL
 	parsedURL, err := url.Parse(baseURL)
 	if err != nil {
 		return baseURL
 	}
-	
+
 	// Add language prefix if not default language
 	if !langConfig.IsDefault && langConfig.URLPrefix != "" {
 		parsedURL.Path = langConfig.URLPrefix + parsedURL.Path
 	}
-	
+
 	return parsedURL.String()
 }
 
@@ -672,27 +672,27 @@ func (sm *SEOManager) OptimizePage(pageURL string, content string, language stri
 	if err != nil {
 		return nil, err
 	}
-	
+
 	page.Language = language
-	
+
 	// Calculate SEO score
 	page.SEOScore = sm.analyzer.CalculateSEOScore(page)
-	
+
 	// Find issues
 	page.Issues = sm.analyzer.FindIssues(page)
-	
+
 	// Generate suggestions
 	page.Suggestions = sm.analyzer.GenerateSuggestions(page)
-	
+
 	// Generate alternate URLs
 	page.AlternateURLs = sm.GenerateAlternateURLs(pageURL, language)
-	
+
 	// Save to database
 	err = sm.saveSEOPage(page)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return page, nil
 }
 
@@ -705,7 +705,7 @@ func (sm *SEOManager) getSitemapPages(language string) ([]*SEOPage, error) {
 		WHERE language = ? AND sitemap_include = TRUE AND index_status = 'index'
 		ORDER BY priority DESC, last_modified DESC
 	`
-	
+
 	rows, err := sm.db.Query(query, language)
 	if err != nil {
 		return nil, err
@@ -713,11 +713,11 @@ func (sm *SEOManager) getSitemapPages(language string) ([]*SEOPage, error) {
 	defer rows.Close()
 
 	pages := make([]*SEOPage, 0)
-	
+
 	for rows.Next() {
 		page := &SEOPage{}
 		var alternateURLsJSON string
-		
+
 		err := rows.Scan(
 			&page.URL, &page.Title, &page.Description, &page.CanonicalURL,
 			&alternateURLsJSON, &page.Priority, &page.ChangeFreq,
@@ -726,15 +726,15 @@ func (sm *SEOManager) getSitemapPages(language string) ([]*SEOPage, error) {
 		if err != nil {
 			continue
 		}
-		
+
 		// Parse alternate URLs
 		if alternateURLsJSON != "" {
 			json.Unmarshal([]byte(alternateURLsJSON), &page.AlternateURLs)
 		}
-		
+
 		pages = append(pages, page)
 	}
-	
+
 	return pages, nil
 }
 
@@ -799,7 +799,7 @@ func (sm *SEOManager) GetSEOAnalytics(url string, language string, startDate, en
 		WHERE url = ? AND language = ? AND date BETWEEN ? AND ?
 		ORDER BY date ASC
 	`
-	
+
 	rows, err := sm.db.Query(query, url, language, startDate.Format("2006-01-02"), endDate.Format("2006-01-02"))
 	if err != nil {
 		return nil, err
@@ -807,38 +807,38 @@ func (sm *SEOManager) GetSEOAnalytics(url string, language string, startDate, en
 	defer rows.Close()
 
 	analytics := make([]map[string]interface{}, 0)
-	
+
 	for rows.Next() {
 		var date time.Time
 		var impressions, clicks, avgSessionDuration, pageViews, uniqueVisitors int
 		var ctr, avgPosition, bounceRate float64
-		
+
 		err := rows.Scan(&date, &impressions, &clicks, &ctr, &avgPosition,
 			&bounceRate, &avgSessionDuration, &pageViews, &uniqueVisitors)
 		if err != nil {
 			continue
 		}
-		
+
 		analytics = append(analytics, map[string]interface{}{
-			"date":                    date.Format("2006-01-02"),
-			"impressions":             impressions,
-			"clicks":                  clicks,
-			"ctr":                     ctr,
-			"average_position":        avgPosition,
-			"bounce_rate":             bounceRate,
-			"avg_session_duration":    avgSessionDuration,
-			"page_views":              pageViews,
-			"unique_visitors":         uniqueVisitors,
+			"date":                 date.Format("2006-01-02"),
+			"impressions":          impressions,
+			"clicks":               clicks,
+			"ctr":                  ctr,
+			"average_position":     avgPosition,
+			"bounce_rate":          bounceRate,
+			"avg_session_duration": avgSessionDuration,
+			"page_views":           pageViews,
+			"unique_visitors":      uniqueVisitors,
 		})
 	}
-	
+
 	return analytics, nil
 }
 
 // GenerateHreflangTags generates hreflang tags for a page
 func (sm *SEOManager) GenerateHreflangTags(baseURL string, currentLanguage string) []map[string]string {
 	tags := make([]map[string]string, 0)
-	
+
 	// Add current language
 	for _, lang := range sm.config.SupportedLanguages {
 		if lang.Code == currentLanguage {
@@ -850,7 +850,7 @@ func (sm *SEOManager) GenerateHreflangTags(baseURL string, currentLanguage strin
 			break
 		}
 	}
-	
+
 	// Add alternate languages
 	alternateURLs := sm.GenerateAlternateURLs(baseURL, currentLanguage)
 	for langCode, altURL := range alternateURLs {
@@ -865,7 +865,7 @@ func (sm *SEOManager) GenerateHreflangTags(baseURL string, currentLanguage strin
 			}
 		}
 	}
-	
+
 	// Add x-default for default language
 	defaultLang := sm.getDefaultLanguage()
 	if defaultLang != nil {
@@ -876,7 +876,7 @@ func (sm *SEOManager) GenerateHreflangTags(baseURL string, currentLanguage strin
 			"href":     defaultURL,
 		})
 	}
-	
+
 	return tags
 }
 
@@ -893,37 +893,37 @@ func (sm *SEOManager) getDefaultLanguage() *Language {
 // ValidateURL validates if URL follows SEO best practices
 func (sm *SEOManager) ValidateURL(url string) []SEOIssue {
 	issues := make([]SEOIssue, 0)
-	
+
 	// Check URL length
 	if len(url) > 255 {
 		issues = append(issues, SEOIssue{
-			Type:     "url_length",
-			Severity: "medium",
-			Message:  "URL too long (over 255 characters)",
+			Type:       "url_length",
+			Severity:   "medium",
+			Message:    "URL too long (over 255 characters)",
 			Suggestion: "Consider shortening the URL for better SEO",
 		})
 	}
-	
+
 	// Check for special characters
 	if matched, _ := regexp.MatchString(`[^a-zA-Z0-9\-_/.]`, url); matched {
 		issues = append(issues, SEOIssue{
-			Type:     "url_characters",
-			Severity: "low",
-			Message:  "URL contains special characters",
+			Type:       "url_characters",
+			Severity:   "low",
+			Message:    "URL contains special characters",
 			Suggestion: "Use only alphanumeric characters, hyphens, and underscores",
 		})
 	}
-	
+
 	// Check for uppercase letters
 	if matched, _ := regexp.MatchString(`[A-Z]`, url); matched {
 		issues = append(issues, SEOIssue{
-			Type:     "url_case",
-			Severity: "low",
-			Message:  "URL contains uppercase letters",
+			Type:       "url_case",
+			Severity:   "low",
+			Message:    "URL contains uppercase letters",
 			Suggestion: "Use lowercase letters for better consistency",
 		})
 	}
-	
+
 	return issues
 }
 
@@ -933,11 +933,11 @@ func (sm *SEOManager) GenerateStructuredData(dataType string, data map[string]in
 		"@context": "http://schema.org",
 		"@type":    dataType,
 	}
-	
+
 	// Add data fields
 	for key, value := range data {
 		schema[key] = value
 	}
-	
+
 	return schema
 }

@@ -25,7 +25,7 @@ type IntegrationMonitor struct {
 
 // MonitoringConfig holds monitoring configuration
 type MonitoringConfig struct {
-	HealthCheckInterval    time.Duration `json:"health_check_interval"`
+	HealthCheckInterval   time.Duration `json:"health_check_interval"`
 	MetricsInterval       time.Duration `json:"metrics_interval"`
 	AlertThreshold        int           `json:"alert_threshold"`
 	MaxFailures           int           `json:"max_failures"`
@@ -38,27 +38,27 @@ type MonitoringConfig struct {
 
 // HealthChecker manages health checking for a single integration
 type HealthChecker struct {
-	IntegrationID   string
-	Provider        registry.IntegrationProvider
-	Status          HealthStatus
-	LastCheck       time.Time
-	LastSuccess     time.Time
-	FailureCount    int
-	ResponseTime    time.Duration
-	ErrorHistory    []HealthCheckError
-	Metrics         *HealthMetrics
-	Config          *HealthCheckConfig
-	mutex           sync.RWMutex
+	IntegrationID string
+	Provider      registry.IntegrationProvider
+	Status        HealthStatus
+	LastCheck     time.Time
+	LastSuccess   time.Time
+	FailureCount  int
+	ResponseTime  time.Duration
+	ErrorHistory  []HealthCheckError
+	Metrics       *HealthMetrics
+	Config        *HealthCheckConfig
+	mutex         sync.RWMutex
 }
 
 // HealthStatus represents the health status of an integration
 type HealthStatus string
 
 const (
-	HealthStatusHealthy   HealthStatus = "healthy"
-	HealthStatusUnhealthy HealthStatus = "unhealthy"
-	HealthStatusDegraded  HealthStatus = "degraded"
-	HealthStatusUnknown   HealthStatus = "unknown"
+	HealthStatusHealthy     HealthStatus = "healthy"
+	HealthStatusUnhealthy   HealthStatus = "unhealthy"
+	HealthStatusDegraded    HealthStatus = "degraded"
+	HealthStatusUnknown     HealthStatus = "unknown"
 	HealthStatusMaintenance HealthStatus = "maintenance"
 )
 
@@ -76,73 +76,73 @@ type HealthCheckConfig struct {
 
 // HealthCheckError represents a health check error
 type HealthCheckError struct {
-	Timestamp time.Time `json:"timestamp"`
-	Error     string    `json:"error"`
+	Timestamp time.Time     `json:"timestamp"`
+	Error     string        `json:"error"`
 	Duration  time.Duration `json:"duration"`
-	Attempt   int       `json:"attempt"`
+	Attempt   int           `json:"attempt"`
 }
 
 // HealthMetrics holds health-related metrics
 type HealthMetrics struct {
-	TotalChecks      int64         `json:"total_checks"`
-	SuccessfulChecks int64         `json:"successful_checks"`
-	FailedChecks     int64         `json:"failed_checks"`
+	TotalChecks         int64         `json:"total_checks"`
+	SuccessfulChecks    int64         `json:"successful_checks"`
+	FailedChecks        int64         `json:"failed_checks"`
 	AverageResponseTime time.Duration `json:"average_response_time"`
-	MaxResponseTime  time.Duration `json:"max_response_time"`
-	MinResponseTime  time.Duration `json:"min_response_time"`
-	Uptime           time.Duration `json:"uptime"`
-	Downtime         time.Duration `json:"downtime"`
-	LastFailure      *time.Time    `json:"last_failure,omitempty"`
-	FailureRate      float64       `json:"failure_rate"`
+	MaxResponseTime     time.Duration `json:"max_response_time"`
+	MinResponseTime     time.Duration `json:"min_response_time"`
+	Uptime              time.Duration `json:"uptime"`
+	Downtime            time.Duration `json:"downtime"`
+	LastFailure         *time.Time    `json:"last_failure,omitempty"`
+	FailureRate         float64       `json:"failure_rate"`
 }
 
 // MetricsCollector collects and aggregates metrics from all integrations
 type MetricsCollector struct {
-	metrics          map[string]*IntegrationMetrics
+	metrics           map[string]*IntegrationMetrics
 	aggregatedMetrics *AggregatedMetrics
-	mutex            sync.RWMutex
-	config           *MetricsConfig
+	mutex             sync.RWMutex
+	config            *MetricsConfig
 }
 
 // MetricsConfig holds metrics collection configuration
 type MetricsConfig struct {
-	Enabled              bool          `json:"enabled"`
-	CollectionInterval   time.Duration `json:"collection_interval"`
-	RetentionPeriod      time.Duration `json:"retention_period"`
-	EnablePerformanceMetrics bool      `json:"enable_performance_metrics"`
-	EnableBusinessMetrics bool         `json:"enable_business_metrics"`
-	MaxDataPoints        int           `json:"max_data_points"`
+	Enabled                  bool          `json:"enabled"`
+	CollectionInterval       time.Duration `json:"collection_interval"`
+	RetentionPeriod          time.Duration `json:"retention_period"`
+	EnablePerformanceMetrics bool          `json:"enable_performance_metrics"`
+	EnableBusinessMetrics    bool          `json:"enable_business_metrics"`
+	MaxDataPoints            int           `json:"max_data_points"`
 }
 
 // IntegrationMetrics holds metrics for a single integration
 type IntegrationMetrics struct {
-	IntegrationID       string                    `json:"integration_id"`
-	IntegrationName     string                    `json:"integration_name"`
-	Category            string                    `json:"category"`
-	Status              HealthStatus              `json:"status"`
-	RequestCount        int64                     `json:"request_count"`
-	ErrorCount          int64                     `json:"error_count"`
-	AverageResponseTime time.Duration             `json:"average_response_time"`
-	ThroughputRPS       float64                   `json:"throughput_rps"`
-	ErrorRate           float64                   `json:"error_rate"`
-	Availability        float64                   `json:"availability"`
-	LastActivity        time.Time                 `json:"last_activity"`
-	PerformanceMetrics  *PerformanceMetrics       `json:"performance_metrics,omitempty"`
-	BusinessMetrics     *BusinessMetrics          `json:"business_metrics,omitempty"`
-	TimeSeriesData      []MetricDataPoint         `json:"time_series_data"`
-	Timestamp           time.Time                 `json:"timestamp"`
+	IntegrationID       string              `json:"integration_id"`
+	IntegrationName     string              `json:"integration_name"`
+	Category            string              `json:"category"`
+	Status              HealthStatus        `json:"status"`
+	RequestCount        int64               `json:"request_count"`
+	ErrorCount          int64               `json:"error_count"`
+	AverageResponseTime time.Duration       `json:"average_response_time"`
+	ThroughputRPS       float64             `json:"throughput_rps"`
+	ErrorRate           float64             `json:"error_rate"`
+	Availability        float64             `json:"availability"`
+	LastActivity        time.Time           `json:"last_activity"`
+	PerformanceMetrics  *PerformanceMetrics `json:"performance_metrics,omitempty"`
+	BusinessMetrics     *BusinessMetrics    `json:"business_metrics,omitempty"`
+	TimeSeriesData      []MetricDataPoint   `json:"time_series_data"`
+	Timestamp           time.Time           `json:"timestamp"`
 }
 
 // PerformanceMetrics holds performance-related metrics
 type PerformanceMetrics struct {
-	CPUUsage        float64       `json:"cpu_usage"`
-	MemoryUsage     int64         `json:"memory_usage"`
-	NetworkIO       int64         `json:"network_io"`
-	DiskIO          int64         `json:"disk_io"`
-	CacheHitRate    float64       `json:"cache_hit_rate"`
-	QueueSize       int           `json:"queue_size"`
-	ActiveConnections int         `json:"active_connections"`
-	ResponseTimes   []time.Duration `json:"response_times"`
+	CPUUsage          float64         `json:"cpu_usage"`
+	MemoryUsage       int64           `json:"memory_usage"`
+	NetworkIO         int64           `json:"network_io"`
+	DiskIO            int64           `json:"disk_io"`
+	CacheHitRate      float64         `json:"cache_hit_rate"`
+	QueueSize         int             `json:"queue_size"`
+	ActiveConnections int             `json:"active_connections"`
+	ResponseTimes     []time.Duration `json:"response_times"`
 }
 
 // BusinessMetrics holds business-related metrics
@@ -158,71 +158,71 @@ type BusinessMetrics struct {
 
 // MetricDataPoint represents a single data point in time series
 type MetricDataPoint struct {
-	Timestamp time.Time   `json:"timestamp"`
-	Value     interface{} `json:"value"`
-	MetricType string     `json:"metric_type"`
+	Timestamp  time.Time   `json:"timestamp"`
+	Value      interface{} `json:"value"`
+	MetricType string      `json:"metric_type"`
 }
 
 // AggregatedMetrics holds aggregated metrics across all integrations
 type AggregatedMetrics struct {
-	TotalIntegrations    int                              `json:"total_integrations"`
-	HealthyIntegrations  int                              `json:"healthy_integrations"`
-	UnhealthyIntegrations int                             `json:"unhealthy_integrations"`
-	DegradedIntegrations int                              `json:"degraded_integrations"`
-	OverallAvailability  float64                          `json:"overall_availability"`
-	TotalRequests        int64                            `json:"total_requests"`
-	TotalErrors          int64                            `json:"total_errors"`
-	OverallErrorRate     float64                          `json:"overall_error_rate"`
-	CategoryMetrics      map[string]*CategoryMetrics      `json:"category_metrics"`
-	RegionMetrics        map[string]*RegionMetrics        `json:"region_metrics"`
-	Timestamp            time.Time                        `json:"timestamp"`
+	TotalIntegrations     int                         `json:"total_integrations"`
+	HealthyIntegrations   int                         `json:"healthy_integrations"`
+	UnhealthyIntegrations int                         `json:"unhealthy_integrations"`
+	DegradedIntegrations  int                         `json:"degraded_integrations"`
+	OverallAvailability   float64                     `json:"overall_availability"`
+	TotalRequests         int64                       `json:"total_requests"`
+	TotalErrors           int64                       `json:"total_errors"`
+	OverallErrorRate      float64                     `json:"overall_error_rate"`
+	CategoryMetrics       map[string]*CategoryMetrics `json:"category_metrics"`
+	RegionMetrics         map[string]*RegionMetrics   `json:"region_metrics"`
+	Timestamp             time.Time                   `json:"timestamp"`
 }
 
 // CategoryMetrics holds metrics for a specific integration category
 type CategoryMetrics struct {
-	Category            string    `json:"category"`
-	IntegrationCount    int       `json:"integration_count"`
-	HealthyCount        int       `json:"healthy_count"`
-	UnhealthyCount      int       `json:"unhealthy_count"`
+	Category            string        `json:"category"`
+	IntegrationCount    int           `json:"integration_count"`
+	HealthyCount        int           `json:"healthy_count"`
+	UnhealthyCount      int           `json:"unhealthy_count"`
 	AverageResponseTime time.Duration `json:"average_response_time"`
-	TotalRequests       int64     `json:"total_requests"`
-	TotalErrors         int64     `json:"total_errors"`
-	ErrorRate           float64   `json:"error_rate"`
-	Availability        float64   `json:"availability"`
+	TotalRequests       int64         `json:"total_requests"`
+	TotalErrors         int64         `json:"total_errors"`
+	ErrorRate           float64       `json:"error_rate"`
+	Availability        float64       `json:"availability"`
 }
 
 // RegionMetrics holds metrics for a specific region
 type RegionMetrics struct {
-	Region              string    `json:"region"`
-	IntegrationCount    int       `json:"integration_count"`
-	HealthyCount        int       `json:"healthy_count"`
-	UnhealthyCount      int       `json:"unhealthy_count"`
+	Region              string        `json:"region"`
+	IntegrationCount    int           `json:"integration_count"`
+	HealthyCount        int           `json:"healthy_count"`
+	UnhealthyCount      int           `json:"unhealthy_count"`
 	AverageResponseTime time.Duration `json:"average_response_time"`
-	TotalRequests       int64     `json:"total_requests"`
-	TotalErrors         int64     `json:"total_errors"`
-	ErrorRate           float64   `json:"error_rate"`
-	Availability        float64   `json:"availability"`
+	TotalRequests       int64         `json:"total_requests"`
+	TotalErrors         int64         `json:"total_errors"`
+	ErrorRate           float64       `json:"error_rate"`
+	Availability        float64       `json:"availability"`
 }
 
 // AlertManager manages alerts and notifications
 type AlertManager struct {
-	alerts         []Alert
-	alertRules     []AlertRule
-	notifications  []NotificationChannel
-	mutex          sync.RWMutex
-	config         *AlertConfig
+	alerts        []Alert
+	alertRules    []AlertRule
+	notifications []NotificationChannel
+	mutex         sync.RWMutex
+	config        *AlertConfig
 }
 
 // AlertConfig holds alert configuration
 type AlertConfig struct {
-	Enabled                bool          `json:"enabled"`
-	EvaluationInterval     time.Duration `json:"evaluation_interval"`
-	MaxAlerts              int           `json:"max_alerts"`
-	AlertRetentionPeriod   time.Duration `json:"alert_retention_period"`
-	DefaultSeverity        AlertSeverity `json:"default_severity"`
-	EnableEmailNotifications bool        `json:"enable_email_notifications"`
-	EnableSlackNotifications bool        `json:"enable_slack_notifications"`
-	EnableWebhookNotifications bool      `json:"enable_webhook_notifications"`
+	Enabled                    bool          `json:"enabled"`
+	EvaluationInterval         time.Duration `json:"evaluation_interval"`
+	MaxAlerts                  int           `json:"max_alerts"`
+	AlertRetentionPeriod       time.Duration `json:"alert_retention_period"`
+	DefaultSeverity            AlertSeverity `json:"default_severity"`
+	EnableEmailNotifications   bool          `json:"enable_email_notifications"`
+	EnableSlackNotifications   bool          `json:"enable_slack_notifications"`
+	EnableWebhookNotifications bool          `json:"enable_webhook_notifications"`
 }
 
 // Alert represents an alert
@@ -242,14 +242,14 @@ type Alert struct {
 
 // AlertRule defines conditions for triggering alerts
 type AlertRule struct {
-	ID          string        `json:"id"`
-	Name        string        `json:"name"`
-	Description string        `json:"description"`
-	Condition   string        `json:"condition"`
-	Threshold   float64       `json:"threshold"`
-	Duration    time.Duration `json:"duration"`
-	Severity    AlertSeverity `json:"severity"`
-	Enabled     bool          `json:"enabled"`
+	ID          string            `json:"id"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Condition   string            `json:"condition"`
+	Threshold   float64           `json:"threshold"`
+	Duration    time.Duration     `json:"duration"`
+	Severity    AlertSeverity     `json:"severity"`
+	Enabled     bool              `json:"enabled"`
 	Labels      map[string]string `json:"labels"`
 }
 
@@ -275,11 +275,11 @@ const (
 
 // NotificationChannel represents a notification channel
 type NotificationChannel struct {
-	ID       string            `json:"id"`
-	Type     string            `json:"type"`
-	Name     string            `json:"name"`
-	Config   map[string]string `json:"config"`
-	Enabled  bool              `json:"enabled"`
+	ID      string            `json:"id"`
+	Type    string            `json:"type"`
+	Name    string            `json:"name"`
+	Config  map[string]string `json:"config"`
+	Enabled bool              `json:"enabled"`
 }
 
 // Logger interface for monitoring logs
@@ -327,31 +327,31 @@ func NewIntegrationMonitor(registry *registry.IntegrationRegistry, logger Logger
 		metricsCollector: &MetricsCollector{
 			metrics: make(map[string]*IntegrationMetrics),
 			config: &MetricsConfig{
-				Enabled:              true,
-				CollectionInterval:   30 * time.Second,
-				RetentionPeriod:      24 * time.Hour,
+				Enabled:                  true,
+				CollectionInterval:       30 * time.Second,
+				RetentionPeriod:          24 * time.Hour,
 				EnablePerformanceMetrics: true,
-				EnableBusinessMetrics: true,
-				MaxDataPoints:        1000,
+				EnableBusinessMetrics:    true,
+				MaxDataPoints:            1000,
 			},
 		},
 		alertManager: &AlertManager{
 			alerts:     []Alert{},
 			alertRules: []AlertRule{},
 			config: &AlertConfig{
-				Enabled:                true,
-				EvaluationInterval:     30 * time.Second,
-				MaxAlerts:              1000,
-				AlertRetentionPeriod:   7 * 24 * time.Hour,
-				DefaultSeverity:        SeverityMedium,
-				EnableEmailNotifications: true,
-				EnableSlackNotifications: true,
+				Enabled:                    true,
+				EvaluationInterval:         30 * time.Second,
+				MaxAlerts:                  1000,
+				AlertRetentionPeriod:       7 * 24 * time.Hour,
+				DefaultSeverity:            SeverityMedium,
+				EnableEmailNotifications:   true,
+				EnableSlackNotifications:   true,
 				EnableWebhookNotifications: true,
 			},
 		},
 		logger: logger,
 		config: &MonitoringConfig{
-			HealthCheckInterval:    60 * time.Second,
+			HealthCheckInterval:   60 * time.Second,
 			MetricsInterval:       30 * time.Second,
 			AlertThreshold:        3,
 			MaxFailures:           5,
@@ -387,9 +387,9 @@ func (im *IntegrationMonitor) Start(ctx context.Context) error {
 	im.initializeDefaultAlertRules()
 
 	im.logger.Info("Integration monitor started", map[string]interface{}{
-		"integrations_count": len(integrations),
+		"integrations_count":    len(integrations),
 		"health_check_interval": im.config.HealthCheckInterval,
-		"metrics_interval": im.config.MetricsInterval,
+		"metrics_interval":      im.config.MetricsInterval,
 	})
 
 	// Start monitoring goroutines
@@ -421,7 +421,7 @@ func (im *IntegrationMonitor) initializeHealthChecker(integration *registry.Inte
 	provider, exists := im.registry.GetProvider(integration.ID)
 	if !exists {
 		im.logger.Warn("Provider not found for integration", map[string]interface{}{
-			"integration_id": integration.ID,
+			"integration_id":   integration.ID,
 			"integration_name": integration.DisplayName,
 		})
 		return
@@ -540,7 +540,7 @@ func (im *IntegrationMonitor) performSingleHealthCheck(ctx context.Context, inte
 	}
 
 	// Calculate average response time
-	totalTime := time.Duration(checker.Metrics.TotalChecks-1) * checker.Metrics.AverageResponseTime + responseTime
+	totalTime := time.Duration(checker.Metrics.TotalChecks-1)*checker.Metrics.AverageResponseTime + responseTime
 	checker.Metrics.AverageResponseTime = totalTime / time.Duration(checker.Metrics.TotalChecks)
 
 	if success {
@@ -558,7 +558,7 @@ func (im *IntegrationMonitor) performSingleHealthCheck(ctx context.Context, inte
 
 		im.logger.Debug("Health check succeeded", map[string]interface{}{
 			"integration_id": integrationID,
-			"response_time": responseTime,
+			"response_time":  responseTime,
 		})
 
 	} else {
@@ -595,9 +595,9 @@ func (im *IntegrationMonitor) performSingleHealthCheck(ctx context.Context, inte
 
 		im.logger.Error("Health check failed", map[string]interface{}{
 			"integration_id": integrationID,
-			"error": lastErr.Error(),
-			"failure_count": checker.FailureCount,
-			"response_time": responseTime,
+			"error":          lastErr.Error(),
+			"failure_count":  checker.FailureCount,
+			"response_time":  responseTime,
 		})
 
 		// Update failure time
@@ -678,12 +678,12 @@ func (im *IntegrationMonitor) collectIntegrationMetrics(integration *registry.In
 		healthChecker.mutex.RLock()
 		metrics.Status = healthChecker.Status
 		metrics.AverageResponseTime = healthChecker.Metrics.AverageResponseTime
-		
+
 		// Calculate availability
 		if healthChecker.Metrics.TotalChecks > 0 {
 			metrics.Availability = float64(healthChecker.Metrics.SuccessfulChecks) / float64(healthChecker.Metrics.TotalChecks) * 100
 		}
-		
+
 		metrics.ErrorRate = healthChecker.Metrics.FailureRate
 		healthChecker.mutex.RUnlock()
 	}
@@ -691,7 +691,7 @@ func (im *IntegrationMonitor) collectIntegrationMetrics(integration *registry.In
 	// Get provider metrics if available
 	if provider, exists := im.registry.GetProvider(integration.ID); exists {
 		providerMetrics := provider.GetMetrics()
-		
+
 		if requestCount, ok := providerMetrics["request_count"].(int64); ok {
 			metrics.RequestCount = requestCount
 		}
@@ -826,7 +826,7 @@ func (im *IntegrationMonitor) calculateAggregatedMetrics(timestamp time.Time) {
 		}
 
 		// Calculate average response time for category
-		totalTime := time.Duration(catMetrics.IntegrationCount-1) * catMetrics.AverageResponseTime + metrics.AverageResponseTime
+		totalTime := time.Duration(catMetrics.IntegrationCount-1)*catMetrics.AverageResponseTime + metrics.AverageResponseTime
 		catMetrics.AverageResponseTime = totalTime / time.Duration(catMetrics.IntegrationCount)
 	}
 
@@ -914,7 +914,7 @@ func (im *IntegrationMonitor) evaluateAlerts() {
 func (im *IntegrationMonitor) evaluateAlertRule(rule AlertRule) {
 	// This is a simplified implementation
 	// In a real system, you would have a more sophisticated rule evaluation engine
-	
+
 	switch rule.Condition {
 	case "error_rate_high":
 		im.evaluateErrorRateAlert(rule)
@@ -983,7 +983,7 @@ func (im *IntegrationMonitor) evaluateIntegrationDownAlert(rule AlertRule) {
 // createAlert creates a new alert
 func (im *IntegrationMonitor) createAlert(integrationID string, rule AlertRule, description string) {
 	alertID := fmt.Sprintf("%s_%s_%d", integrationID, rule.ID, time.Now().Unix())
-	
+
 	alert := Alert{
 		ID:            alertID,
 		IntegrationID: integrationID,
@@ -1002,11 +1002,11 @@ func (im *IntegrationMonitor) createAlert(integrationID string, rule AlertRule, 
 	im.alertManager.mutex.Unlock()
 
 	im.logger.Warn("Alert triggered", map[string]interface{}{
-		"alert_id": alertID,
+		"alert_id":       alertID,
 		"integration_id": integrationID,
-		"rule_id": rule.ID,
-		"severity": rule.Severity,
-		"description": description,
+		"rule_id":        rule.ID,
+		"severity":       rule.Severity,
+		"description":    description,
 	})
 
 	// Send notifications
@@ -1020,7 +1020,7 @@ func (im *IntegrationMonitor) sendAlertNotifications(alert Alert) {
 	im.logger.Info("Alert notification sent", map[string]interface{}{
 		"alert_id": alert.ID,
 		"severity": alert.Severity,
-		"title": alert.Title,
+		"title":    alert.Title,
 	})
 }
 
@@ -1040,7 +1040,7 @@ func (im *IntegrationMonitor) triggerFailureAlert(integrationID string, checker 
 func (im *IntegrationMonitor) triggerRecoveryAlert(integrationID string, checker *HealthChecker) {
 	im.logger.Info("Integration recovered", map[string]interface{}{
 		"integration_id": integrationID,
-		"downtime": time.Since(checker.LastSuccess),
+		"downtime":       time.Since(checker.LastSuccess),
 	})
 }
 
@@ -1121,7 +1121,7 @@ func (im *IntegrationMonitor) initializeDefaultAlertRules() {
 func (im *IntegrationMonitor) GetIntegrationHealth(integrationID string) (*HealthChecker, bool) {
 	im.mutex.RLock()
 	defer im.mutex.RUnlock()
-	
+
 	checker, exists := im.healthCheckers[integrationID]
 	return checker, exists
 }
@@ -1130,13 +1130,13 @@ func (im *IntegrationMonitor) GetIntegrationHealth(integrationID string) (*Healt
 func (im *IntegrationMonitor) GetAllHealthStatus() map[string]*HealthChecker {
 	im.mutex.RLock()
 	defer im.mutex.RUnlock()
-	
+
 	// Create a copy to avoid race conditions
 	healthStatus := make(map[string]*HealthChecker)
 	for k, v := range im.healthCheckers {
 		healthStatus[k] = v
 	}
-	
+
 	return healthStatus
 }
 
@@ -1144,7 +1144,7 @@ func (im *IntegrationMonitor) GetAllHealthStatus() map[string]*HealthChecker {
 func (im *IntegrationMonitor) GetMetrics(integrationID string) (*IntegrationMetrics, bool) {
 	im.metricsCollector.mutex.RLock()
 	defer im.metricsCollector.mutex.RUnlock()
-	
+
 	metrics, exists := im.metricsCollector.metrics[integrationID]
 	return metrics, exists
 }
@@ -1153,7 +1153,7 @@ func (im *IntegrationMonitor) GetMetrics(integrationID string) (*IntegrationMetr
 func (im *IntegrationMonitor) GetAggregatedMetrics() *AggregatedMetrics {
 	im.metricsCollector.mutex.RLock()
 	defer im.metricsCollector.mutex.RUnlock()
-	
+
 	return im.metricsCollector.aggregatedMetrics
 }
 
@@ -1161,14 +1161,14 @@ func (im *IntegrationMonitor) GetAggregatedMetrics() *AggregatedMetrics {
 func (im *IntegrationMonitor) GetActiveAlerts() []Alert {
 	im.alertManager.mutex.RLock()
 	defer im.alertManager.mutex.RUnlock()
-	
+
 	var activeAlerts []Alert
 	for _, alert := range im.alertManager.alerts {
 		if alert.Status == AlertStatusFiring {
 			activeAlerts = append(activeAlerts, alert)
 		}
 	}
-	
+
 	return activeAlerts
 }
 

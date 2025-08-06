@@ -32,21 +32,21 @@ type TwoFASetup struct {
 
 // TwoFAValidation represents 2FA validation result
 type TwoFAValidation struct {
-	Valid       bool   `json:"valid"`
-	Used        bool   `json:"used"`
-	Error       string `json:"error,omitempty"`
-	BackupUsed  bool   `json:"backup_used"`
-	TimeWindow  int    `json:"time_window,omitempty"`
+	Valid      bool   `json:"valid"`
+	Used       bool   `json:"used"`
+	Error      string `json:"error,omitempty"`
+	BackupUsed bool   `json:"backup_used"`
+	TimeWindow int    `json:"time_window,omitempty"`
 }
 
 // BackupCode represents a 2FA backup code
 type BackupCode struct {
-	ID        int       `json:"id"`
-	UserID    int64     `json:"user_id"`
-	Code      string    `json:"code"`
-	Used      bool      `json:"used"`
+	ID        int        `json:"id"`
+	UserID    int64      `json:"user_id"`
+	Code      string     `json:"code"`
+	Used      bool       `json:"used"`
 	UsedAt    *time.Time `json:"used_at,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time  `json:"created_at"`
 }
 
 // NewTwoFAService creates a new 2FA service
@@ -148,7 +148,7 @@ func (t *TwoFAService) EnableTwoFA(userID int64, secret string, verificationCode
 // DisableTwoFA disables 2FA for user
 func (t *TwoFAService) DisableTwoFA(userID int64, password string) error {
 	// TODO: Verify user password before disabling 2FA
-	
+
 	// Start transaction
 	tx, err := t.db.Begin()
 	if err != nil {
@@ -193,7 +193,7 @@ func (t *TwoFAService) ValidateCode(userID int64, code string) *TwoFAValidation 
 		FROM users 
 		WHERE id = ? AND two_factor_enabled = 1
 	`, userID).Scan(&secret, &enabled)
-	
+
 	if err != nil {
 		return &TwoFAValidation{
 			Valid: false,
@@ -313,7 +313,7 @@ func (t *TwoFAService) IsTwoFAEnabled(userID int64) (bool, error) {
 	err := t.db.QueryRow(`
 		SELECT two_factor_enabled FROM users WHERE id = ?
 	`, userID).Scan(&enabled)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil
@@ -331,7 +331,7 @@ func (t *TwoFAService) GetBackupCodeCount(userID int64) (int, error) {
 		SELECT COUNT(*) FROM two_factor_backup_codes 
 		WHERE user_id = ? AND used = 0
 	`, userID).Scan(&count)
-	
+
 	if err != nil {
 		return 0, fmt.Errorf("failed to count backup codes: %w", err)
 	}
@@ -352,7 +352,7 @@ func (t *TwoFAService) validateAndUseBackupCode(userID int64, code string) bool 
 		SELECT id FROM two_factor_backup_codes 
 		WHERE user_id = ? AND code = ? AND used = 0
 	`, userID, code).Scan(&codeID)
-	
+
 	if err != nil {
 		return false
 	}
@@ -363,13 +363,13 @@ func (t *TwoFAService) validateAndUseBackupCode(userID int64, code string) bool 
 		SET used = 1, used_at = CURRENT_TIMESTAMP 
 		WHERE id = ?
 	`, codeID)
-	
+
 	return err == nil
 }
 
 func (t *TwoFAService) generateBackupCodes(count int) ([]string, error) {
 	codes := make([]string, count)
-	
+
 	for i := 0; i < count; i++ {
 		code, err := t.generateSingleBackupCode()
 		if err != nil {
@@ -377,7 +377,7 @@ func (t *TwoFAService) generateBackupCodes(count int) ([]string, error) {
 		}
 		codes[i] = code
 	}
-	
+
 	return codes, nil
 }
 
@@ -387,16 +387,16 @@ func (t *TwoFAService) generateSingleBackupCode() (string, error) {
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
-	
+
 	// Convert to base32 and format
 	code := base32.StdEncoding.EncodeToString(bytes)
 	code = strings.TrimRight(code, "=") // Remove padding
-	
+
 	// Format as XXXX-XXXX
 	if len(code) >= 8 {
 		return fmt.Sprintf("%s-%s", code[:4], code[4:8]), nil
 	}
-	
+
 	return code, nil
 }
 

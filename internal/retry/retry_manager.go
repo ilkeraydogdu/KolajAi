@@ -55,7 +55,7 @@ func NewRetryManager(config RetryConfig) *RetryManager {
 	if config.BackoffFactor <= 1 {
 		config.BackoffFactor = 2.0
 	}
-	
+
 	return &RetryManager{
 		config: config,
 	}
@@ -79,34 +79,34 @@ func (rm *RetryManager) Execute(ctx context.Context, fn RetryableFunc) *RetryRes
 		Attempts: 0,
 		Success:  false,
 	}
-	
+
 	for attempt := 0; attempt < rm.config.MaxAttempts; attempt++ {
 		result.Attempts++
-		
+
 		// Check context before attempting
 		if err := ctx.Err(); err != nil {
 			result.LastError = err
 			break
 		}
-		
+
 		// Execute the function
 		err := fn(ctx)
 		if err == nil {
 			result.Success = true
 			break
 		}
-		
+
 		result.LastError = err
-		
+
 		// Check if error is retryable
 		if !rm.isRetryableError(err) {
 			break
 		}
-		
+
 		// Don't sleep after the last attempt
 		if attempt < rm.config.MaxAttempts-1 {
 			delay := rm.calculateDelay(attempt)
-			
+
 			select {
 			case <-ctx.Done():
 				result.LastError = ctx.Err()
@@ -116,7 +116,7 @@ func (rm *RetryManager) Execute(ctx context.Context, fn RetryableFunc) *RetryRes
 			}
 		}
 	}
-	
+
 	result.TotalDuration = time.Since(startTime)
 	return result
 }
@@ -128,34 +128,34 @@ func (rm *RetryManager) ExecuteWithCustomRetry(ctx context.Context, fn Retryable
 		Attempts: 0,
 		Success:  false,
 	}
-	
+
 	for attempt := 0; attempt < rm.config.MaxAttempts; attempt++ {
 		result.Attempts++
-		
+
 		// Check context before attempting
 		if err := ctx.Err(); err != nil {
 			result.LastError = err
 			break
 		}
-		
+
 		// Execute the function
 		err := fn(ctx)
 		if err == nil {
 			result.Success = true
 			break
 		}
-		
+
 		result.LastError = err
-		
+
 		// Check if error is retryable using custom function
 		if !isRetryable(err) {
 			break
 		}
-		
+
 		// Don't sleep after the last attempt
 		if attempt < rm.config.MaxAttempts-1 {
 			delay := rm.calculateDelay(attempt)
-			
+
 			select {
 			case <-ctx.Done():
 				result.LastError = ctx.Err()
@@ -165,7 +165,7 @@ func (rm *RetryManager) ExecuteWithCustomRetry(ctx context.Context, fn Retryable
 			}
 		}
 	}
-	
+
 	result.TotalDuration = time.Since(startTime)
 	return result
 }
@@ -174,12 +174,12 @@ func (rm *RetryManager) ExecuteWithCustomRetry(ctx context.Context, fn Retryable
 func (rm *RetryManager) calculateDelay(attempt int) time.Duration {
 	// Exponential backoff
 	delay := float64(rm.config.InitialDelay) * math.Pow(rm.config.BackoffFactor, float64(attempt))
-	
+
 	// Apply max delay cap
 	if delay > float64(rm.config.MaxDelay) {
 		delay = float64(rm.config.MaxDelay)
 	}
-	
+
 	// Apply jitter if enabled
 	if rm.config.JitterEnabled {
 		// Use cryptographically secure random for jitter
@@ -196,7 +196,7 @@ func (rm *RetryManager) calculateDelay(attempt int) time.Duration {
 			}
 		}
 	}
-	
+
 	return time.Duration(delay)
 }
 
@@ -205,16 +205,16 @@ func (rm *RetryManager) isRetryableError(err error) bool {
 	if err == nil {
 		return false
 	}
-	
+
 	errMsg := err.Error()
-	
+
 	// Check against configured retryable errors
 	for _, retryableErr := range rm.config.RetryableErrors {
 		if contains(errMsg, retryableErr) {
 			return true
 		}
 	}
-	
+
 	// Check for common retryable patterns
 	retryablePatterns := []string{
 		"timeout",
@@ -226,22 +226,22 @@ func (rm *RetryManager) isRetryableError(err error) bool {
 		"connection reset",
 		"EOF",
 	}
-	
+
 	for _, pattern := range retryablePatterns {
 		if contains(errMsg, pattern) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
 // contains checks if a string contains a substring (case-insensitive)
 func contains(s, substr string) bool {
-	return len(s) >= len(substr) && 
-		(s == substr || 
-		 len(s) > len(substr) && 
-		 (containsIgnoreCase(s, substr)))
+	return len(s) >= len(substr) &&
+		(s == substr ||
+			len(s) > len(substr) &&
+				(containsIgnoreCase(s, substr)))
 }
 
 // containsIgnoreCase performs case-insensitive substring search
@@ -272,7 +272,7 @@ func indexOfSubstring(s, substr string) int {
 	if len(substr) > len(s) {
 		return -1
 	}
-	
+
 	for i := 0; i <= len(s)-len(substr); i++ {
 		match := true
 		for j := 0; j < len(substr); j++ {
@@ -308,14 +308,14 @@ func (rm *RetryManager) ExecuteOperation(ctx context.Context, op RetryableOperat
 	defer func() {
 		rm.config.MaxAttempts = originalMaxAttempts
 	}()
-	
+
 	// Apply timeout if specified
 	if op.Timeout > 0 {
 		var cancel context.CancelFunc
 		ctx, cancel = context.WithTimeout(ctx, op.Timeout)
 		defer cancel()
 	}
-	
+
 	// Execute with retry
 	var result *RetryResult
 	result = rm.Execute(ctx, func(ctx context.Context) error {
@@ -325,7 +325,7 @@ func (rm *RetryManager) ExecuteOperation(ctx context.Context, op RetryableOperat
 		}
 		return err
 	})
-	
+
 	// Call appropriate callback
 	if result.Success {
 		if op.OnSuccess != nil {

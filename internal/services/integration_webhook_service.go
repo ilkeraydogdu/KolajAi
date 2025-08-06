@@ -16,9 +16,9 @@ import (
 // IntegrationWebhookService manages webhooks for marketplace integrations
 type IntegrationWebhookService struct {
 	marketplaceService *MarketplaceIntegrationsService
-	aiManager         *AIIntegrationManager
-	webhookHandlers   map[string]WebhookHandler
-	secretKeys        map[string]string
+	aiManager          *AIIntegrationManager
+	webhookHandlers    map[string]WebhookHandler
+	secretKeys         map[string]string
 }
 
 // WebhookHandler interface for handling different webhook types
@@ -51,11 +51,11 @@ func NewIntegrationWebhookService(
 ) *IntegrationWebhookService {
 	service := &IntegrationWebhookService{
 		marketplaceService: marketplaceService,
-		aiManager:         aiManager,
-		webhookHandlers:   make(map[string]WebhookHandler),
-		secretKeys:        make(map[string]string),
+		aiManager:          aiManager,
+		webhookHandlers:    make(map[string]WebhookHandler),
+		secretKeys:         make(map[string]string),
 	}
-	
+
 	service.registerDefaultHandlers()
 	return service
 }
@@ -91,14 +91,14 @@ func (ws *IntegrationWebhookService) HandleWebhook(w http.ResponseWriter, r *htt
 		http.Error(w, "Missing integration ID", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Get integration details
 	integration, err := ws.marketplaceService.GetIntegration(integrationID)
 	if err != nil {
 		http.Error(w, "Integration not found", http.StatusNotFound)
 		return
 	}
-	
+
 	// Read request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -106,7 +106,7 @@ func (ws *IntegrationWebhookService) HandleWebhook(w http.ResponseWriter, r *htt
 		return
 	}
 	defer r.Body.Close()
-	
+
 	// Extract headers
 	headers := make(map[string]string)
 	for key, values := range r.Header {
@@ -114,26 +114,26 @@ func (ws *IntegrationWebhookService) HandleWebhook(w http.ResponseWriter, r *htt
 			headers[key] = values[0]
 		}
 	}
-	
+
 	// Get webhook handler for integration type
 	handler, exists := ws.webhookHandlers[integration.Type]
 	if !exists {
 		http.Error(w, "No handler for integration type", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Validate webhook signature
 	signature := headers["X-Signature"]
 	if signature == "" {
 		signature = headers["X-Hub-Signature-256"]
 	}
-	
+
 	secretKey := ws.secretKeys[integrationID]
 	if secretKey != "" && !handler.ValidateSignature(body, signature, secretKey) {
 		http.Error(w, "Invalid signature", http.StatusUnauthorized)
 		return
 	}
-	
+
 	// Create webhook event
 	event := &WebhookEvent{
 		ID:            ws.generateEventID(),
@@ -144,16 +144,16 @@ func (ws *IntegrationWebhookService) HandleWebhook(w http.ResponseWriter, r *htt
 		Headers:       headers,
 		MaxRetries:    3,
 	}
-	
+
 	// Parse payload
 	if err := json.Unmarshal(body, &event.Payload); err != nil {
 		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
 		return
 	}
-	
-		// Process webhook asynchronously
+
+	// Process webhook asynchronously
 	go ws.processWebhookAsync(r.Context(), event, handler)
-	
+
 	// Return success response
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("OK"))
@@ -165,17 +165,17 @@ func (ws *IntegrationWebhookService) processWebhookAsync(ctx context.Context, ev
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	
+
 	for attempt := 0; attempt <= event.MaxRetries; attempt++ {
 		event.RetryCount = attempt
-		
+
 		// Convert payload back to JSON for handler
 		payloadBytes, _ := json.Marshal(event.Payload)
-		
+
 		// Process webhook
 		if err := handler.Handle(ctx, payloadBytes, event.Headers); err != nil {
 			event.Error = err.Error()
-			
+
 			if attempt < event.MaxRetries {
 				// Wait before retry (exponential backoff)
 				waitTime := time.Duration(attempt*attempt) * time.Second
@@ -191,7 +191,7 @@ func (ws *IntegrationWebhookService) processWebhookAsync(ctx context.Context, ev
 			break
 		}
 	}
-	
+
 	// Store webhook event for debugging/monitoring
 	ws.storeWebhookEvent(event)
 }
@@ -202,12 +202,12 @@ func (ws *IntegrationWebhookService) extractIntegrationID(r *http.Request) strin
 	if integrationID := r.URL.Query().Get("integration_id"); integrationID != "" {
 		return integrationID
 	}
-	
+
 	// Try to get from headers
 	if integrationID := r.Header.Get("X-Integration-ID"); integrationID != "" {
 		return integrationID
 	}
-	
+
 	return ""
 }
 
@@ -217,11 +217,11 @@ func (ws *IntegrationWebhookService) extractEventType(headers map[string]string,
 	if eventType := headers["X-Event-Type"]; eventType != "" {
 		return eventType
 	}
-	
+
 	if eventType := headers["X-GitHub-Event"]; eventType != "" {
 		return eventType
 	}
-	
+
 	// Try to extract from payload
 	var payload map[string]interface{}
 	if err := json.Unmarshal(body, &payload); err != nil {
@@ -229,14 +229,14 @@ func (ws *IntegrationWebhookService) extractEventType(headers map[string]string,
 		log.Printf("WARN - Failed to unmarshal webhook payload for event type detection: %v", err)
 		return "unknown"
 	}
-	
+
 	if eventType, ok := payload["event_type"].(string); ok {
 		return eventType
 	}
 	if eventType, ok := payload["type"].(string); ok {
 		return eventType
 	}
-	
+
 	return "unknown"
 }
 

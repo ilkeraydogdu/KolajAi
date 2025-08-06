@@ -1,6 +1,7 @@
 package services
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"kolajAi/internal/database"
@@ -8,7 +9,6 @@ import (
 	"math"
 	"math/rand"
 	"net/http"
-	"bytes"
 	"os"
 	"sort"
 	"strings"
@@ -17,10 +17,10 @@ import (
 
 // Open Source AI Models Configuration
 type OpenSourceAIConfig struct {
-	HuggingFaceAPIKey   string
-	OllamaEndpoint      string
-	LocalLLMEndpoint    string
-	UseLocalModels      bool
+	HuggingFaceAPIKey string
+	OllamaEndpoint    string
+	LocalLLMEndpoint  string
+	UseLocalModels    bool
 }
 
 // OpenSourceAIClient handles open-source AI model interactions
@@ -56,43 +56,43 @@ func (client *OpenSourceAIClient) GetHuggingFaceRecommendations(productName, cat
 		// Fallback to rule-based recommendations
 		return client.getRuleBasedRecommendations(productName, category), nil
 	}
-	
+
 	// Use Hugging Face Transformers API
 	requestBody := map[string]interface{}{
 		"inputs": fmt.Sprintf("Recommend similar products to: %s in category: %s", productName, category),
 		"parameters": map[string]interface{}{
-			"max_length": 100,
+			"max_length":           100,
 			"num_return_sequences": 5,
 		},
 	}
-	
+
 	jsonData, _ := json.Marshal(requestBody)
 	req, _ := http.NewRequest("POST", "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium", bytes.NewBuffer(jsonData))
 	req.Header.Set("Authorization", "Bearer "+client.config.HuggingFaceAPIKey)
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return client.getRuleBasedRecommendations(productName, category), nil
 	}
 	defer resp.Body.Close()
-	
+
 	var response []map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return client.getRuleBasedRecommendations(productName, category), nil
 	}
-	
+
 	recommendations := make([]string, 0)
 	for _, item := range response {
 		if text, ok := item["generated_text"].(string); ok {
 			recommendations = append(recommendations, text)
 		}
 	}
-	
+
 	if len(recommendations) == 0 {
 		return client.getRuleBasedRecommendations(productName, category), nil
 	}
-	
+
 	return recommendations, nil
 }
 
@@ -101,39 +101,39 @@ func (client *OpenSourceAIClient) GetOllamaRecommendations(prompt string) (strin
 	if client.config.OllamaEndpoint == "" {
 		return client.getDefaultResponse(prompt), nil
 	}
-	
+
 	requestBody := map[string]interface{}{
-		"model":  "llama2",  // or "mistral", "codellama", etc.
+		"model":  "llama2", // or "mistral", "codellama", etc.
 		"prompt": prompt,
 		"stream": false,
 	}
-	
+
 	jsonData, _ := json.Marshal(requestBody)
 	req, _ := http.NewRequest("POST", client.config.OllamaEndpoint+"/api/generate", bytes.NewBuffer(jsonData))
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	resp, err := client.httpClient.Do(req)
 	if err != nil {
 		return client.getDefaultResponse(prompt), nil
 	}
 	defer resp.Body.Close()
-	
+
 	var response map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return client.getDefaultResponse(prompt), nil
 	}
-	
+
 	if text, ok := response["response"].(string); ok {
 		return text, nil
 	}
-	
+
 	return client.getDefaultResponse(prompt), nil
 }
 
 // Rule-based fallback recommendations
 func (client *OpenSourceAIClient) getRuleBasedRecommendations(productName, category string) []string {
 	recommendations := make([]string, 0)
-	
+
 	// Category-based recommendations
 	switch strings.ToLower(category) {
 	case "electronics", "elektronik":
@@ -147,7 +147,7 @@ func (client *OpenSourceAIClient) getRuleBasedRecommendations(productName, categ
 	case "clothing", "giyim":
 		recommendations = []string{
 			"Benzer renk ve stil ürünler",
-			"Mevsimlik kıyafetler", 
+			"Mevsimlik kıyafetler",
 			"Aksesuar ürünleri",
 			"Ayakkabı modelleri",
 			"Çanta çeşitleri",
@@ -169,7 +169,7 @@ func (client *OpenSourceAIClient) getRuleBasedRecommendations(productName, categ
 			"Benzer kategorideki ürünler",
 		}
 	}
-	
+
 	return recommendations
 }
 
@@ -181,7 +181,7 @@ func (client *OpenSourceAIClient) getDefaultResponse(prompt string) string {
 		"Bu kategorideki popüler ürünlere göz atabilirsiniz.",
 		"Size özel kampanyalar için bildirimleri açmanızı öneririz.",
 	}
-	
+
 	return responses[rand.Intn(len(responses))]
 }
 
@@ -299,17 +299,17 @@ func (s *AIService) GetPersonalizedRecommendations(userID int, limit int) ([]*AI
 		}
 
 		score := s.calculateRecommendationScore(&product, categoryScores, brandScores, priceRange)
-		
+
 		// Boost score if product matches AI recommendations
 		for _, aiCategory := range aiEnhancedCategories {
 			productCategoryName := fmt.Sprintf("category_%d", product.CategoryID)
 			if strings.Contains(strings.ToLower(product.Name), strings.ToLower(aiCategory)) ||
-			   strings.Contains(strings.ToLower(productCategoryName), strings.ToLower(aiCategory)) {
+				strings.Contains(strings.ToLower(productCategoryName), strings.ToLower(aiCategory)) {
 				score += 0.2 // AI boost
 				break
 			}
 		}
-		
+
 		reason := s.generateRecommendationReason(&product, score)
 
 		if score > 0.3 { // Minimum threshold
@@ -598,7 +598,7 @@ func (s *AIService) PredictProductCategory(productName, description string) ([]*
 
 		if confidence > 0.1 { // Minimum confidence threshold
 			predictions = append(predictions, &CategoryPrediction{
-								CategoryID: int(category.ID),
+				CategoryID:   int(category.ID),
 				CategoryName: category.Name,
 				Confidence:   confidence,
 			})
@@ -803,21 +803,21 @@ func (s *AIService) generateSearchSuggestions(query string, results []struct {
 func (s *AIService) EnhancedSearch(query string, userID int, filters map[string]interface{}) ([]models.Product, error) {
 	// This would implement AI-enhanced search logic
 	// For now, we'll use the basic product search and enhance it
-	
+
 	// Get products using filters
 	products, err := s.productService.GetProductsWithFilters(filters, "relevance", "DESC", 50, 0)
 	if err != nil {
 		return nil, fmt.Errorf("failed to search products: %w", err)
 	}
-	
+
 	// Apply AI ranking based on query relevance
 	rankedProducts := s.rankProductsByRelevance(products, query)
-	
+
 	// Limit results
 	if len(rankedProducts) > 20 {
 		rankedProducts = rankedProducts[:20]
 	}
-	
+
 	return rankedProducts, nil
 }
 
@@ -826,21 +826,21 @@ func (s *AIService) rankProductsByRelevance(products []models.Product, query str
 	if query == "" {
 		return products
 	}
-	
+
 	queryLower := strings.ToLower(query)
 	queryWords := strings.Fields(queryLower)
-	
+
 	// Score each product
 	type scoredProduct struct {
 		product models.Product
 		score   float64
 	}
-	
+
 	var scored []scoredProduct
-	
+
 	for _, product := range products {
 		score := 0.0
-		
+
 		// Check name relevance
 		nameLower := strings.ToLower(product.Name)
 		for _, word := range queryWords {
@@ -848,7 +848,7 @@ func (s *AIService) rankProductsByRelevance(products []models.Product, query str
 				score += 2.0
 			}
 		}
-		
+
 		// Check description relevance
 		descLower := strings.ToLower(product.Description)
 		for _, word := range queryWords {
@@ -856,7 +856,7 @@ func (s *AIService) rankProductsByRelevance(products []models.Product, query str
 				score += 1.0
 			}
 		}
-		
+
 		// Check tags relevance (since we don't have direct category name)
 		tagsLower := strings.ToLower(product.Tags)
 		for _, word := range queryWords {
@@ -864,21 +864,21 @@ func (s *AIService) rankProductsByRelevance(products []models.Product, query str
 				score += 1.5
 			}
 		}
-		
+
 		scored = append(scored, scoredProduct{product: product, score: score})
 	}
-	
+
 	// Sort by score
 	sort.Slice(scored, func(i, j int) bool {
 		return scored[i].score > scored[j].score
 	})
-	
+
 	// Extract products
 	var result []models.Product
 	for _, sp := range scored {
 		result = append(result, sp.product)
 	}
-	
+
 	return result
 }
 
@@ -886,26 +886,26 @@ func (s *AIService) rankProductsByRelevance(products []models.Product, query str
 func (s *AIService) GetPriceOptimizations(userID int) (map[string]interface{}, error) {
 	// This would implement AI-powered price optimization analysis
 	// For now, we'll return sample data
-	
+
 	optimizations := map[string]interface{}{
 		"recommendations": []map[string]interface{}{
 			{
-				"product_id":       1,
-				"current_price":    99.99,
-				"suggested_price":  89.99,
-				"reason":           "Market analysis suggests 10% price reduction could increase sales by 25%",
-				"confidence":       0.85,
+				"product_id":      1,
+				"current_price":   99.99,
+				"suggested_price": 89.99,
+				"reason":          "Market analysis suggests 10% price reduction could increase sales by 25%",
+				"confidence":      0.85,
 				"expected_impact": map[string]interface{}{
 					"sales_increase": 25.0,
 					"revenue_change": 12.5,
 				},
 			},
 			{
-				"product_id":       2,
-				"current_price":    149.99,
-				"suggested_price":  159.99,
-				"reason":           "Demand is high and competitor prices are higher",
-				"confidence":       0.92,
+				"product_id":      2,
+				"current_price":   149.99,
+				"suggested_price": 159.99,
+				"reason":          "Demand is high and competitor prices are higher",
+				"confidence":      0.92,
 				"expected_impact": map[string]interface{}{
 					"sales_decrease": -5.0,
 					"revenue_change": 15.0,
@@ -923,14 +923,14 @@ func (s *AIService) GetPriceOptimizations(userID int) (map[string]interface{}, e
 			"max_price":     200.00,
 		},
 	}
-	
+
 	return optimizations, nil
 }
 
 // GetAIDashboardStats returns statistics for AI dashboard
 func (s *AIService) GetAIDashboardStats() (map[string]interface{}, error) {
 	stats := make(map[string]interface{})
-	
+
 	// Count total recommendations made
 	var recommendationCount int64
 	err := s.repo.QueryRow("SELECT COUNT(*) FROM ai_recommendations").Scan(&recommendationCount)
@@ -938,7 +938,7 @@ func (s *AIService) GetAIDashboardStats() (map[string]interface{}, error) {
 		recommendationCount = 0
 	}
 	stats["RecommendationsCount"] = recommendationCount
-	
+
 	// Count total search queries
 	var searchQueryCount int64
 	err = s.repo.QueryRow("SELECT COUNT(*) FROM search_logs WHERE created_at >= datetime('now', '-30 days')").Scan(&searchQueryCount)
@@ -946,7 +946,7 @@ func (s *AIService) GetAIDashboardStats() (map[string]interface{}, error) {
 		searchQueryCount = 0
 	}
 	stats["SearchQueriesCount"] = searchQueryCount
-	
+
 	// Count price optimizations
 	var priceOptimizationCount int64
 	err = s.repo.QueryRow("SELECT COUNT(*) FROM price_optimizations WHERE created_at >= datetime('now', '-30 days')").Scan(&priceOptimizationCount)
@@ -954,7 +954,7 @@ func (s *AIService) GetAIDashboardStats() (map[string]interface{}, error) {
 		priceOptimizationCount = 0
 	}
 	stats["PriceOptimizationsCount"] = priceOptimizationCount
-	
+
 	// AI model usage stats
 	var modelUsageCount int64
 	err = s.repo.QueryRow("SELECT COUNT(*) FROM ai_model_usage WHERE created_at >= datetime('now', '-7 days')").Scan(&modelUsageCount)
@@ -962,6 +962,6 @@ func (s *AIService) GetAIDashboardStats() (map[string]interface{}, error) {
 		modelUsageCount = 0
 	}
 	stats["ModelUsageCount"] = modelUsageCount
-	
+
 	return stats, nil
 }

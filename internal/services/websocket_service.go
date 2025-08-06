@@ -1,7 +1,6 @@
 package services
 
 import (
-
 	"encoding/json"
 	"fmt"
 	"log"
@@ -73,24 +72,24 @@ const (
 
 // ConnectionStats represents WebSocket connection statistics
 type ConnectionStats struct {
-	TotalConnections    int                    `json:"total_connections"`
-	ActiveConnections   int                    `json:"active_connections"`
-	ConnectionsByUser   map[int64]int          `json:"connections_by_user"`
-	MessagesSent        int64                  `json:"messages_sent"`
-	MessagesReceived    int64                  `json:"messages_received"`
-	ChannelSubscriptions map[string]int        `json:"channel_subscriptions"`
-	Uptime              time.Duration          `json:"uptime"`
-	LastActivity        time.Time              `json:"last_activity"`
-	ErrorCount          int64                  `json:"error_count"`
+	TotalConnections     int            `json:"total_connections"`
+	ActiveConnections    int            `json:"active_connections"`
+	ConnectionsByUser    map[int64]int  `json:"connections_by_user"`
+	MessagesSent         int64          `json:"messages_sent"`
+	MessagesReceived     int64          `json:"messages_received"`
+	ChannelSubscriptions map[string]int `json:"channel_subscriptions"`
+	Uptime               time.Duration  `json:"uptime"`
+	LastActivity         time.Time      `json:"last_activity"`
+	ErrorCount           int64          `json:"error_count"`
 }
 
 // NewWebSocketService creates a new WebSocket service
 func NewWebSocketService() *WebSocketService {
 	return &WebSocketService{
 		clients:    make(map[string]*Client),
-			broadcast:  make(chan []byte, 64), // Reduced from 256 to 64
-	register:   make(chan *Client),
-	unregister: make(chan *Client),
+		broadcast:  make(chan []byte, 64), // Reduced from 256 to 64
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,

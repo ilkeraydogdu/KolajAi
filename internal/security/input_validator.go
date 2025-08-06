@@ -13,8 +13,8 @@ import (
 
 // InputValidator provides comprehensive input validation and sanitization
 type InputValidator struct {
-	maxStringLength int
-	allowedDomains  map[string]bool
+	maxStringLength   int
+	allowedDomains    map[string]bool
 	sqlInjectionRegex *regexp.Regexp
 	xssRegex          *regexp.Regexp
 	emailRegex        *regexp.Regexp
@@ -24,36 +24,36 @@ type InputValidator struct {
 
 // ValidationResult contains validation result and sanitized value
 type ValidationResult struct {
-	IsValid      bool     `json:"is_valid"`
+	IsValid        bool        `json:"is_valid"`
 	SanitizedValue interface{} `json:"sanitized_value"`
-	Errors       []string `json:"errors"`
-	Warnings     []string `json:"warnings"`
+	Errors         []string    `json:"errors"`
+	Warnings       []string    `json:"warnings"`
 }
 
 // ValidationRule defines validation rules for different input types
 type ValidationRule struct {
-	Required     bool   `json:"required"`
-	MinLength    int    `json:"min_length"`
-	MaxLength    int    `json:"max_length"`
-	Pattern      string `json:"pattern"`
+	Required      bool     `json:"required"`
+	MinLength     int      `json:"min_length"`
+	MaxLength     int      `json:"max_length"`
+	Pattern       string   `json:"pattern"`
 	AllowedValues []string `json:"allowed_values"`
-	Type         string `json:"type"` // string, int, float, email, url, phone, etc.
+	Type          string   `json:"type"` // string, int, float, email, url, phone, etc.
 }
 
 // NewInputValidator creates a new input validator
 func NewInputValidator() *InputValidator {
 	// Common SQL injection patterns
 	sqlPattern := `(?i)(union|select|insert|update|delete|drop|create|alter|exec|execute|script|javascript|vbscript|onload|onerror|onclick)`
-	
+
 	// Common XSS patterns
 	xssPattern := `(?i)(<script|javascript:|vbscript:|onload=|onerror=|onclick=|onmouseover=|<iframe|<object|<embed)`
-	
+
 	// Email validation pattern (RFC 5322 compliant)
 	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	
+
 	// Phone number pattern (international format)
 	phonePattern := `^\+?[1-9]\d{1,14}$`
-	
+
 	// URL validation pattern
 	urlPattern := `^https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/.*)?$`
 
@@ -71,8 +71,8 @@ func NewInputValidator() *InputValidator {
 // ValidateString validates and sanitizes string input
 func (v *InputValidator) ValidateString(input string, rule ValidationRule) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -153,8 +153,8 @@ func (v *InputValidator) ValidateString(input string, rule ValidationRule) *Vali
 // ValidateEmail validates email addresses
 func (v *InputValidator) ValidateEmail(email string) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -195,8 +195,8 @@ func (v *InputValidator) ValidateEmail(email string) *ValidationResult {
 // ValidateURL validates and sanitizes URLs
 func (v *InputValidator) ValidateURL(inputURL string) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -234,7 +234,7 @@ func (v *InputValidator) ValidateURL(inputURL string) *ValidationResult {
 		if colonIndex := strings.Index(host, ":"); colonIndex != -1 {
 			host = host[:colonIndex]
 		}
-		
+
 		if !v.allowedDomains[host] {
 			result.IsValid = false
 			result.Errors = append(result.Errors, "URL domain not allowed")
@@ -248,8 +248,8 @@ func (v *InputValidator) ValidateURL(inputURL string) *ValidationResult {
 // ValidatePhone validates phone numbers
 func (v *InputValidator) ValidatePhone(phone string) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -268,7 +268,7 @@ func (v *InputValidator) ValidatePhone(phone string) *ValidationResult {
 	}
 
 	result.SanitizedValue = sanitized
-	
+
 	if sanitized != phone {
 		result.Warnings = append(result.Warnings, "phone number was sanitized")
 	}
@@ -279,8 +279,8 @@ func (v *InputValidator) ValidatePhone(phone string) *ValidationResult {
 // ValidateInteger validates integer input
 func (v *InputValidator) ValidateInteger(input string, min, max int64) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -317,8 +317,8 @@ func (v *InputValidator) ValidateInteger(input string, min, max int64) *Validati
 // ValidateFloat validates float input
 func (v *InputValidator) ValidateFloat(input string, min, max float64) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -355,8 +355,8 @@ func (v *InputValidator) ValidateFloat(input string, min, max float64) *Validati
 // ValidateDate validates date input
 func (v *InputValidator) ValidateDate(input, format string) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -387,8 +387,8 @@ func (v *InputValidator) ValidateDate(input, format string) *ValidationResult {
 // ValidateJSON validates JSON input
 func (v *InputValidator) ValidateJSON(input string) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
+		IsValid:  true,
+		Errors:   []string{},
 		Warnings: []string{},
 	}
 
@@ -425,9 +425,9 @@ func (v *InputValidator) ValidateJSON(input string) *ValidationResult {
 // ValidateProductData validates marketplace product data
 func (v *InputValidator) ValidateProductData(data map[string]interface{}) *ValidationResult {
 	result := &ValidationResult{
-		IsValid: true,
-		Errors:  []string{},
-		Warnings: []string{},
+		IsValid:        true,
+		Errors:         []string{},
+		Warnings:       []string{},
 		SanitizedValue: make(map[string]interface{}),
 	}
 
@@ -528,7 +528,7 @@ func (v *InputValidator) containsXSS(input string) bool {
 func (v *InputValidator) sanitizeString(input string) string {
 	// HTML escape
 	sanitized := html.EscapeString(input)
-	
+
 	// Remove control characters
 	sanitized = strings.Map(func(r rune) rune {
 		if unicode.IsControl(r) && r != '\n' && r != '\r' && r != '\t' {
@@ -536,10 +536,10 @@ func (v *InputValidator) sanitizeString(input string) string {
 		}
 		return r
 	}, sanitized)
-	
+
 	// Trim whitespace
 	sanitized = strings.TrimSpace(sanitized)
-	
+
 	return sanitized
 }
 
@@ -617,25 +617,25 @@ func IsValidationPassed(results map[string]*ValidationResult) bool {
 // GetValidationErrors extracts all validation errors
 func GetValidationErrors(results map[string]*ValidationResult) map[string][]string {
 	errors := make(map[string][]string)
-	
+
 	for field, result := range results {
 		if len(result.Errors) > 0 {
 			errors[field] = result.Errors
 		}
 	}
-	
+
 	return errors
 }
 
 // GetSanitizedData extracts all sanitized values
 func GetSanitizedData(results map[string]*ValidationResult) map[string]interface{} {
 	sanitized := make(map[string]interface{})
-	
+
 	for field, result := range results {
 		if result.IsValid && result.SanitizedValue != nil {
 			sanitized[field] = result.SanitizedValue
 		}
 	}
-	
+
 	return sanitized
 }

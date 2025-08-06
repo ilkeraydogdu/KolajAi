@@ -25,7 +25,7 @@ func (s *AuctionService) GetActiveAuctions(limit int) ([]models.Auction, error) 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get active auctions: %w", err)
 	}
-	
+
 	// Load images for all auctions
 	for i := range auctions {
 		images, err := s.GetAuctionImages(auctions[i].ID)
@@ -43,7 +43,7 @@ func (s *AuctionService) GetActiveAuctions(limit int) ([]models.Auction, error) 
 			}
 		}
 	}
-	
+
 	return auctions, nil
 }
 
@@ -74,7 +74,7 @@ func (s *AuctionService) GetAuctionByID(id int) (*models.Auction, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auction: %w", err)
 	}
-	
+
 	// Load auction images
 	images, err := s.GetAuctionImages(id)
 	if err == nil && len(images) > 0 {
@@ -90,7 +90,7 @@ func (s *AuctionService) GetAuctionByID(id int) (*models.Auction, error) {
 			auction.Image = auction.Images[0]
 		}
 	}
-	
+
 	return &auction, nil
 }
 

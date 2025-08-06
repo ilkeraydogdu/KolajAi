@@ -50,16 +50,16 @@ type JobHandler func(ctx context.Context, job *Job) error
 
 // JobManager manages async job processing
 type JobManager struct {
-	handlers      map[string]JobHandler
-	jobs          map[string]*Job
-	queue         chan *Job
-	workers       int
-	maxQueueSize  int
-	mu            sync.RWMutex
-	wg            sync.WaitGroup
-	ctx           context.Context
-	cancel        context.CancelFunc
-	logger        *log.Logger
+	handlers     map[string]JobHandler
+	jobs         map[string]*Job
+	queue        chan *Job
+	workers      int
+	maxQueueSize int
+	mu           sync.RWMutex
+	wg           sync.WaitGroup
+	ctx          context.Context
+	cancel       context.CancelFunc
+	logger       *log.Logger
 }
 
 // JobManagerConfig holds configuration for job manager
@@ -80,9 +80,9 @@ func NewJobManager(config JobManagerConfig) *JobManager {
 	if config.Logger == nil {
 		config.Logger = log.Default()
 	}
-	
+
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	jm := &JobManager{
 		handlers:     make(map[string]JobHandler),
 		jobs:         make(map[string]*Job),
@@ -93,10 +93,10 @@ func NewJobManager(config JobManagerConfig) *JobManager {
 		cancel:       cancel,
 		logger:       config.Logger,
 	}
-	
+
 	// Start workers
 	jm.startWorkers()
-	
+
 	return jm
 }
 
@@ -121,11 +121,11 @@ func (jm *JobManager) SubmitJob(job *Job) error {
 	if job.MaxRetries == 0 {
 		job.MaxRetries = 3
 	}
-	
+
 	jm.mu.Lock()
 	jm.jobs[job.ID] = job
 	jm.mu.Unlock()
-	
+
 	select {
 	case jm.queue <- job:
 		jm.logger.Printf("Job %s submitted successfully", job.ID)
@@ -139,12 +139,12 @@ func (jm *JobManager) SubmitJob(job *Job) error {
 func (jm *JobManager) GetJob(id string) (*Job, error) {
 	jm.mu.RLock()
 	defer jm.mu.RUnlock()
-	
+
 	job, exists := jm.jobs[id]
 	if !exists {
 		return nil, fmt.Errorf("job not found: %s", id)
 	}
-	
+
 	return job, nil
 }
 
@@ -152,14 +152,14 @@ func (jm *JobManager) GetJob(id string) (*Job, error) {
 func (jm *JobManager) GetJobsByStatus(status JobStatus) []*Job {
 	jm.mu.RLock()
 	defer jm.mu.RUnlock()
-	
+
 	var jobs []*Job
 	for _, job := range jm.jobs {
 		if job.Status == status {
 			jobs = append(jobs, job)
 		}
 	}
-	
+
 	return jobs
 }
 
@@ -167,20 +167,20 @@ func (jm *JobManager) GetJobsByStatus(status JobStatus) []*Job {
 func (jm *JobManager) CancelJob(id string) error {
 	jm.mu.Lock()
 	defer jm.mu.Unlock()
-	
+
 	job, exists := jm.jobs[id]
 	if !exists {
 		return fmt.Errorf("job not found: %s", id)
 	}
-	
+
 	if job.Status != JobStatusPending && job.Status != JobStatusRunning {
 		return fmt.Errorf("job %s cannot be cancelled (status: %s)", id, job.Status)
 	}
-	
+
 	job.Status = JobStatusCancelled
 	now := time.Now()
 	job.CompletedAt = &now
-	
+
 	return nil
 }
 
@@ -195,15 +195,15 @@ func (jm *JobManager) startWorkers() {
 // worker processes jobs from the queue
 func (jm *JobManager) worker(id int) {
 	defer jm.wg.Done()
-	
+
 	jm.logger.Printf("Worker %d started", id)
-	
+
 	for {
 		select {
 		case <-jm.ctx.Done():
 			jm.logger.Printf("Worker %d shutting down", id)
 			return
-			
+
 		case job := <-jm.queue:
 			jm.processJob(job)
 		}
@@ -213,29 +213,29 @@ func (jm *JobManager) worker(id int) {
 // processJob processes a single job
 func (jm *JobManager) processJob(job *Job) {
 	jm.logger.Printf("Processing job %s (type: %s)", job.ID, job.Type)
-	
+
 	// Update job status
 	jm.updateJobStatus(job, JobStatusRunning)
 	now := time.Now()
 	job.StartedAt = &now
-	
+
 	// Get handler
 	jm.mu.RLock()
 	handler, exists := jm.handlers[job.Type]
 	jm.mu.RUnlock()
-	
+
 	if !exists {
 		jm.handleJobError(job, fmt.Errorf("no handler registered for job type: %s", job.Type))
 		return
 	}
-	
+
 	// Create job context with timeout
 	ctx, cancel := context.WithTimeout(jm.ctx, 30*time.Minute)
 	defer cancel()
-	
+
 	// Execute job
 	err := handler(ctx, job)
-	
+
 	if err != nil {
 		jm.handleJobError(job, err)
 	} else {
@@ -254,12 +254,12 @@ func (jm *JobManager) updateJobStatus(job *Job, status JobStatus) {
 func (jm *JobManager) handleJobError(job *Job, err error) {
 	job.Error = err.Error()
 	job.RetryCount++
-	
+
 	if job.RetryCount < job.MaxRetries {
 		// Retry the job
 		jm.logger.Printf("Job %s failed, retrying (%d/%d): %v", job.ID, job.RetryCount, job.MaxRetries, err)
 		job.Status = JobStatusPending
-		
+
 		// Add back to queue with exponential backoff
 		go func() {
 			delay := time.Duration(job.RetryCount) * time.Minute
@@ -273,7 +273,7 @@ func (jm *JobManager) handleJobError(job *Job, err error) {
 		now := time.Now()
 		job.CompletedAt = &now
 	}
-	
+
 	jm.mu.Lock()
 	jm.jobs[job.ID] = job
 	jm.mu.Unlock()
@@ -282,11 +282,11 @@ func (jm *JobManager) handleJobError(job *Job, err error) {
 // handleJobSuccess handles successful job completion
 func (jm *JobManager) handleJobSuccess(job *Job) {
 	jm.logger.Printf("Job %s completed successfully", job.ID)
-	
+
 	job.Status = JobStatusCompleted
 	now := time.Now()
 	job.CompletedAt = &now
-	
+
 	jm.mu.Lock()
 	jm.jobs[job.ID] = job
 	jm.mu.Unlock()
@@ -295,16 +295,16 @@ func (jm *JobManager) handleJobSuccess(job *Job) {
 // Shutdown gracefully shuts down the job manager
 func (jm *JobManager) Shutdown() {
 	jm.logger.Println("Shutting down job manager...")
-	
+
 	// Cancel context to signal workers to stop
 	jm.cancel()
-	
+
 	// Wait for all workers to finish
 	jm.wg.Wait()
-	
+
 	// Close the queue
 	close(jm.queue)
-	
+
 	jm.logger.Println("Job manager shut down complete")
 }
 
@@ -312,7 +312,7 @@ func (jm *JobManager) Shutdown() {
 func (jm *JobManager) GetStats() JobManagerStats {
 	jm.mu.RLock()
 	defer jm.mu.RUnlock()
-	
+
 	stats := JobManagerStats{
 		TotalJobs:    len(jm.jobs),
 		QueueSize:    len(jm.queue),
@@ -320,21 +320,21 @@ func (jm *JobManager) GetStats() JobManagerStats {
 		MaxQueueSize: jm.maxQueueSize,
 		JobsByStatus: make(map[JobStatus]int),
 	}
-	
+
 	for _, job := range jm.jobs {
 		stats.JobsByStatus[job.Status]++
 	}
-	
+
 	return stats
 }
 
 // JobManagerStats holds job manager statistics
 type JobManagerStats struct {
-	TotalJobs    int                  `json:"total_jobs"`
-	QueueSize    int                  `json:"queue_size"`
-	Workers      int                  `json:"workers"`
-	MaxQueueSize int                  `json:"max_queue_size"`
-	JobsByStatus map[JobStatus]int    `json:"jobs_by_status"`
+	TotalJobs    int               `json:"total_jobs"`
+	QueueSize    int               `json:"queue_size"`
+	Workers      int               `json:"workers"`
+	MaxQueueSize int               `json:"max_queue_size"`
+	JobsByStatus map[JobStatus]int `json:"jobs_by_status"`
 }
 
 // generateJobID generates a unique job ID
@@ -361,12 +361,12 @@ func NewPriorityQueue(size int) *PriorityQueue {
 	pq := &PriorityQueue{
 		queues: make(map[JobPriority]chan *Job),
 	}
-	
+
 	// Initialize queues for each priority level
 	for _, priority := range []JobPriority{JobPriorityUrgent, JobPriorityHigh, JobPriorityNormal, JobPriorityLow} {
 		pq.queues[priority] = make(chan *Job, size/4)
 	}
-	
+
 	return pq
 }
 
@@ -376,7 +376,7 @@ func (pq *PriorityQueue) Push(job *Job) error {
 	if !exists {
 		return fmt.Errorf("invalid job priority: %d", job.Priority)
 	}
-	
+
 	select {
 	case queue <- job:
 		return nil
@@ -396,7 +396,7 @@ func (pq *PriorityQueue) Pop() (*Job, error) {
 			continue
 		}
 	}
-	
+
 	return nil, fmt.Errorf("all queues are empty")
 }
 

@@ -214,16 +214,16 @@ func main() {
 	// Template'leri yükle - sadece index sayfası için gerekli olanlar
 	essentialTemplates := []string{}
 	for _, file := range templateFiles {
-		if strings.Contains(file, "marketplace/index.gohtml") || 
-		   strings.Contains(file, "layout/base.gohtml") ||
-		   strings.Contains(file, "layout/header.gohtml") ||
-		   strings.Contains(file, "layout/footer.gohtml") {
+		if strings.Contains(file, "marketplace/index.gohtml") ||
+			strings.Contains(file, "layout/base.gohtml") ||
+			strings.Contains(file, "layout/header.gohtml") ||
+			strings.Contains(file, "layout/footer.gohtml") {
 			essentialTemplates = append(essentialTemplates, file)
 		}
 	}
-	
+
 	log.Printf("Essential template dosyaları: %d", len(essentialTemplates))
-	
+
 	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(essentialTemplates...)
 	if err != nil {
 		log.Printf("Template parse hatası: %v", err)

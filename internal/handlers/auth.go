@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 	"time"
-	
+
 	"golang.org/x/crypto/bcrypt"
-	"github.com/kolajai/internal/models"
+	"kolajAi/internal/models"
 )
 
 var (
@@ -22,7 +22,7 @@ func init() {
 	if env == "" {
 		env = os.Getenv("GIN_MODE")
 	}
-	
+
 	if env == "production" || env == "release" {
 		// Production'da sadece stdout'a minimal log
 		AuthLogger = log.New(os.Stdout, "[AUTH] ", log.LstdFlags)
@@ -89,7 +89,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		// Gerçek veritabanı kimlik doğrulaması
 		// TODO: Repository pattern ile veritabanından kullanıcıyı çek
 		var user models.User
-		
+
 		// Demo için sabit kullanıcı - production'da veritabanından çekilmeli
 		if email == "admin@kolajAi.com" {
 			// Demo password hash for "Admin123!"
@@ -136,7 +136,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 		// Başarılı giriş
 		AuthLogger.Printf("Login - Başarılı giriş: %s", email)
-		
+
 		// Login attempts sıfırla
 		user.ResetLoginAttempts()
 		// TODO: Veritabanında güncelle
@@ -388,18 +388,18 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 
 		// Yeni kullanıcı oluştur
 		user := models.User{
-			Name:     name,
-			Email:    email,
-			Phone:    phone,
-			Password: string(hashedPassword),
-			Role:     "customer",
-			IsActive: true,
-			IsAdmin:  false,
-			IsSeller: false,
-			EmailVerified: false,
+			Name:                   name,
+			Email:                  email,
+			Phone:                  phone,
+			Password:               string(hashedPassword),
+			Role:                   "customer",
+			IsActive:               true,
+			IsAdmin:                false,
+			IsSeller:               false,
+			EmailVerified:          false,
 			EmailVerificationToken: h.GenerateVerificationToken(),
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+			CreatedAt:              time.Now(),
+			UpdatedAt:              time.Now(),
 		}
 
 		// Kullanıcıyı doğrula
@@ -435,25 +435,25 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	// Validation kurallarını JSON olarak hazırla
 	validationRules := map[string]interface{}{
 		"name": map[string]interface{}{
-			"required": true,
+			"required":  true,
 			"minLength": 5,
 		},
 		"email": map[string]interface{}{
 			"required": true,
-			"email": true,
+			"email":    true,
 		},
 		"phone": map[string]interface{}{
 			"required": true,
-			"pattern": "0[0-9 ]{10,14}",
+			"pattern":  "0[0-9 ]{10,14}",
 		},
 		"password": map[string]interface{}{
-			"required": true,
+			"required":  true,
 			"minLength": 8,
-			"pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+			"pattern":   "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
 		},
 		"confirm_password": map[string]interface{}{
 			"required": true,
-			"match": "password",
+			"match":    "password",
 		},
 		"terms": map[string]interface{}{
 			"required": true,
@@ -463,9 +463,9 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	rulesJSON, _ := json.Marshal(validationRules)
 
 	data := map[string]interface{}{
-		"Title":          "Kayıt Ol - KolajAI",
-		"PageHeading":    "Hesap Oluştur",
-		"PageSubHeading": "Yeni bir hesap oluşturmak için lütfen bilgilerinizi girin!",
+		"Title":           "Kayıt Ol - KolajAI",
+		"PageHeading":     "Hesap Oluştur",
+		"PageSubHeading":  "Yeni bir hesap oluşturmak için lütfen bilgilerinizi girin!",
 		"ValidationRules": string(rulesJSON),
 	}
 
@@ -501,7 +501,7 @@ func (h *Handler) VerifyTempPassword(w http.ResponseWriter, r *http.Request) {
 	// Basit doğrulama - production'da daha güçlü bir sistem olmalı
 	// Şimdilik sadece başarılı response döndürelim
 	AuthLogger.Printf("VerifyTempPassword - Email: %s", req.Email)
-	
+
 	// Basit kontrol: temp password boş değilse geçerli kabul et
 	if req.TempPassword != "" && req.Email != "" {
 		json.NewEncoder(w).Encode(map[string]interface{}{

@@ -46,34 +46,34 @@ type EmailProvider interface {
 
 // EmailRequest represents an email sending request
 type EmailRequest struct {
-	To          []string          `json:"to"`
-	CC          []string          `json:"cc,omitempty"`
-	BCC         []string          `json:"bcc,omitempty"`
-	Subject     string            `json:"subject"`
-	HTMLBody    string            `json:"html_body,omitempty"`
-	TextBody    string            `json:"text_body,omitempty"`
-	FromEmail   string            `json:"from_email,omitempty"`
-	FromName    string            `json:"from_name,omitempty"`
-	ReplyTo     string            `json:"reply_to,omitempty"`
-	Attachments []EmailAttachment `json:"attachments,omitempty"`
-	Headers     map[string]string `json:"headers,omitempty"`
-	TemplateID  string            `json:"template_id,omitempty"`
+	To          []string               `json:"to"`
+	CC          []string               `json:"cc,omitempty"`
+	BCC         []string               `json:"bcc,omitempty"`
+	Subject     string                 `json:"subject"`
+	HTMLBody    string                 `json:"html_body,omitempty"`
+	TextBody    string                 `json:"text_body,omitempty"`
+	FromEmail   string                 `json:"from_email,omitempty"`
+	FromName    string                 `json:"from_name,omitempty"`
+	ReplyTo     string                 `json:"reply_to,omitempty"`
+	Attachments []EmailAttachment      `json:"attachments,omitempty"`
+	Headers     map[string]string      `json:"headers,omitempty"`
+	TemplateID  string                 `json:"template_id,omitempty"`
 	Variables   map[string]interface{} `json:"variables,omitempty"`
-	Priority    EmailPriority     `json:"priority"`
-	TrackOpens  bool              `json:"track_opens"`
-	TrackClicks bool              `json:"track_clicks"`
+	Priority    EmailPriority          `json:"priority"`
+	TrackOpens  bool                   `json:"track_opens"`
+	TrackClicks bool                   `json:"track_clicks"`
 }
 
 // BulkEmailRequest represents bulk email sending request
 type BulkEmailRequest struct {
-	Template    EmailTemplate     `json:"template"`
-	Recipients  []EmailRecipient  `json:"recipients"`
-	FromEmail   string            `json:"from_email,omitempty"`
-	FromName    string            `json:"from_name,omitempty"`
-	ReplyTo     string            `json:"reply_to,omitempty"`
-	Priority    EmailPriority     `json:"priority"`
-	TrackOpens  bool              `json:"track_opens"`
-	TrackClicks bool              `json:"track_clicks"`
+	Template    EmailTemplate    `json:"template"`
+	Recipients  []EmailRecipient `json:"recipients"`
+	FromEmail   string           `json:"from_email,omitempty"`
+	FromName    string           `json:"from_name,omitempty"`
+	ReplyTo     string           `json:"reply_to,omitempty"`
+	Priority    EmailPriority    `json:"priority"`
+	TrackOpens  bool             `json:"track_opens"`
+	TrackClicks bool             `json:"track_clicks"`
 }
 
 // EmailRecipient represents a bulk email recipient
@@ -111,14 +111,14 @@ const (
 
 // EmailStatus represents email delivery status
 type EmailStatus struct {
-	MessageID    string            `json:"message_id"`
-	Status       string            `json:"status"`
-	DeliveredAt  *time.Time        `json:"delivered_at,omitempty"`
-	OpenedAt     *time.Time        `json:"opened_at,omitempty"`
-	ClickedAt    *time.Time        `json:"clicked_at,omitempty"`
-	BouncedAt    *time.Time        `json:"bounced_at,omitempty"`
-	Error        string            `json:"error,omitempty"`
-	Metadata     map[string]interface{} `json:"metadata,omitempty"`
+	MessageID   string                 `json:"message_id"`
+	Status      string                 `json:"status"`
+	DeliveredAt *time.Time             `json:"delivered_at,omitempty"`
+	OpenedAt    *time.Time             `json:"opened_at,omitempty"`
+	ClickedAt   *time.Time             `json:"clicked_at,omitempty"`
+	BouncedAt   *time.Time             `json:"bounced_at,omitempty"`
+	Error       string                 `json:"error,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // EmailLog represents email sending log
@@ -281,7 +281,7 @@ func (s *EmailService) SendBulkEmail(req *BulkEmailRequest) ([]*EmailLog, error)
 // SendTransactionalEmail sends predefined transactional emails
 func (s *EmailService) SendTransactionalEmail(emailType string, recipient string, variables map[string]interface{}) error {
 	templates := s.getTransactionalTemplates()
-	
+
 	template, exists := templates[emailType]
 	if !exists {
 		return fmt.Errorf("unknown email type: %s", emailType)
@@ -339,10 +339,10 @@ func (s *EmailService) SendOrderConfirmationEmail(order *models.Order, customer 
 // SendShippingNotificationEmail sends shipping notification email
 func (s *EmailService) SendShippingNotificationEmail(shipment *models.Shipment, customer *models.Customer) error {
 	variables := map[string]interface{}{
-		"CustomerName":    customer.GetFullName(),
-		"OrderID":         shipment.OrderID,
-		"TrackingNumber":  shipment.TrackingNumber,
-		"TrackingURL":     fmt.Sprintf("https://kolaj.ai/track/%s", shipment.TrackingNumber),
+		"CustomerName":      customer.GetFullName(),
+		"OrderID":           shipment.OrderID,
+		"TrackingNumber":    shipment.TrackingNumber,
+		"TrackingURL":       fmt.Sprintf("https://kolaj.ai/track/%s", shipment.TrackingNumber),
 		"EstimatedDelivery": "",
 	}
 
@@ -602,10 +602,10 @@ func NewSMTPProvider(config EmailConfig) *SMTPProvider {
 func (p *SMTPProvider) SendEmail(req *EmailRequest) error {
 	// Basic SMTP implementation
 	auth := smtp.PlainAuth("", p.config.Username, p.config.Password, p.config.SMTPHost)
-	
+
 	to := req.To
 	msg := p.buildMessage(req)
-	
+
 	addr := fmt.Sprintf("%s:%d", p.config.SMTPHost, p.config.SMTPPort)
 	return smtp.SendMail(addr, auth, req.FromEmail, to, []byte(msg))
 }
@@ -614,15 +614,15 @@ func (p *SMTPProvider) SendBulkEmail(req *BulkEmailRequest) error {
 	// For SMTP, send individual emails
 	for _, recipient := range req.Recipients {
 		emailReq := &EmailRequest{
-			To:       []string{recipient.Email},
-			Subject:  req.Template.Subject,
-			HTMLBody: req.Template.HTMLBody,
-			TextBody: req.Template.TextBody,
+			To:        []string{recipient.Email},
+			Subject:   req.Template.Subject,
+			HTMLBody:  req.Template.HTMLBody,
+			TextBody:  req.Template.TextBody,
 			FromEmail: req.FromEmail,
-			FromName: req.FromName,
+			FromName:  req.FromName,
 			Variables: recipient.Variables,
 		}
-		
+
 		if err := p.SendEmail(emailReq); err != nil {
 			return err
 		}
@@ -640,20 +640,20 @@ func (p *SMTPProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error)
 
 func (p *SMTPProvider) buildMessage(req *EmailRequest) string {
 	var msg bytes.Buffer
-	
+
 	msg.WriteString(fmt.Sprintf("From: %s <%s>\r\n", req.FromName, req.FromEmail))
 	msg.WriteString(fmt.Sprintf("To: %s\r\n", strings.Join(req.To, ",")))
 	msg.WriteString(fmt.Sprintf("Subject: %s\r\n", req.Subject))
 	msg.WriteString("MIME-Version: 1.0\r\n")
 	msg.WriteString("Content-Type: text/html; charset=UTF-8\r\n")
 	msg.WriteString("\r\n")
-	
+
 	if req.HTMLBody != "" {
 		msg.WriteString(req.HTMLBody)
 	} else {
 		msg.WriteString(req.TextBody)
 	}
-	
+
 	return msg.String()
 }
 
@@ -666,32 +666,32 @@ func NewSendGridProvider(config EmailConfig) *SendGridProvider { return &SendGri
 func NewMailgunProvider(config EmailConfig) *MailgunProvider   { return &MailgunProvider{config} }
 func NewSESProvider(config EmailConfig) *SESProvider           { return &SESProvider{config} }
 
-func (p *SendGridProvider) SendEmail(req *EmailRequest) error { 
-	return errors.New("SendGrid provider disabled - use SMTP instead") 
+func (p *SendGridProvider) SendEmail(req *EmailRequest) error {
+	return errors.New("SendGrid provider disabled - use SMTP instead")
 }
-func (p *SendGridProvider) SendBulkEmail(req *BulkEmailRequest) error { 
-	return errors.New("SendGrid provider disabled - use SMTP instead") 
+func (p *SendGridProvider) SendBulkEmail(req *BulkEmailRequest) error {
+	return errors.New("SendGrid provider disabled - use SMTP instead")
 }
-func (p *SendGridProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { 
-	return nil, errors.New("SendGrid provider disabled - use SMTP instead") 
-}
-
-func (p *MailgunProvider) SendEmail(req *EmailRequest) error { 
-	return errors.New("Mailgun provider disabled - use SMTP instead") 
-}
-func (p *MailgunProvider) SendBulkEmail(req *BulkEmailRequest) error { 
-	return errors.New("Mailgun provider disabled - use SMTP instead") 
-}
-func (p *MailgunProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { 
-	return nil, errors.New("Mailgun provider disabled - use SMTP instead") 
+func (p *SendGridProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) {
+	return nil, errors.New("SendGrid provider disabled - use SMTP instead")
 }
 
-func (p *SESProvider) SendEmail(req *EmailRequest) error { 
-	return errors.New("SES provider disabled - use SMTP instead") 
+func (p *MailgunProvider) SendEmail(req *EmailRequest) error {
+	return errors.New("Mailgun provider disabled - use SMTP instead")
 }
-func (p *SESProvider) SendBulkEmail(req *BulkEmailRequest) error { 
-	return errors.New("SES provider disabled - use SMTP instead") 
+func (p *MailgunProvider) SendBulkEmail(req *BulkEmailRequest) error {
+	return errors.New("Mailgun provider disabled - use SMTP instead")
 }
-func (p *SESProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) { 
-	return nil, errors.New("SES provider disabled - use SMTP instead") 
+func (p *MailgunProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) {
+	return nil, errors.New("Mailgun provider disabled - use SMTP instead")
+}
+
+func (p *SESProvider) SendEmail(req *EmailRequest) error {
+	return errors.New("SES provider disabled - use SMTP instead")
+}
+func (p *SESProvider) SendBulkEmail(req *BulkEmailRequest) error {
+	return errors.New("SES provider disabled - use SMTP instead")
+}
+func (p *SESProvider) GetDeliveryStatus(messageID string) (*EmailStatus, error) {
+	return nil, errors.New("SES provider disabled - use SMTP instead")
 }

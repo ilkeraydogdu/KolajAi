@@ -45,23 +45,23 @@ func NewAIVisionService(repo database.SimpleRepository, productService *ProductS
 
 // ImageAnalysisResult represents the result of image analysis
 type ImageAnalysisResult struct {
-	ImageID          string                   `json:"image_id"`
-	UserID           int                      `json:"user_id"`
-	OriginalFilename string                   `json:"original_filename"`
-	StoredFilename   string                   `json:"stored_filename"`
-	FileSize         int64                    `json:"file_size"`
-	Dimensions       ImageDimensions          `json:"dimensions"`
-	Format           string                   `json:"format"`
-	Hash             string                   `json:"hash"`
-	DetectedObjects  []DetectedObject         `json:"detected_objects"`
-	CategoryPredictions []CategoryPrediction  `json:"category_predictions"`
-	ColorAnalysis    ColorAnalysis            `json:"color_analysis"`
-	QualityScore     float64                  `json:"quality_score"`
-	Tags             []string                 `json:"tags"`
-	Metadata         map[string]interface{}   `json:"metadata"`
-	ProcessingTime   time.Duration            `json:"processing_time"`
-	CreatedAt        time.Time                `json:"created_at"`
-	UpdatedAt        time.Time                `json:"updated_at"`
+	ImageID             string                 `json:"image_id"`
+	UserID              int                    `json:"user_id"`
+	OriginalFilename    string                 `json:"original_filename"`
+	StoredFilename      string                 `json:"stored_filename"`
+	FileSize            int64                  `json:"file_size"`
+	Dimensions          ImageDimensions        `json:"dimensions"`
+	Format              string                 `json:"format"`
+	Hash                string                 `json:"hash"`
+	DetectedObjects     []DetectedObject       `json:"detected_objects"`
+	CategoryPredictions []CategoryPrediction   `json:"category_predictions"`
+	ColorAnalysis       ColorAnalysis          `json:"color_analysis"`
+	QualityScore        float64                `json:"quality_score"`
+	Tags                []string               `json:"tags"`
+	Metadata            map[string]interface{} `json:"metadata"`
+	ProcessingTime      time.Duration          `json:"processing_time"`
+	CreatedAt           time.Time              `json:"created_at"`
+	UpdatedAt           time.Time              `json:"updated_at"`
 }
 
 // ImageDimensions represents image dimensions
@@ -72,10 +72,10 @@ type ImageDimensions struct {
 
 // DetectedObject represents an object detected in the image
 type DetectedObject struct {
-	Label      string      `json:"label"`
-	Confidence float64     `json:"confidence"`
+	Label       string      `json:"label"`
+	Confidence  float64     `json:"confidence"`
 	BoundingBox BoundingBox `json:"bounding_box"`
-	Category   string      `json:"category"`
+	Category    string      `json:"category"`
 }
 
 // BoundingBox represents object location in the image
@@ -111,9 +111,9 @@ type RGB struct {
 
 // UserImageLibrary represents a user's organized image library
 type UserImageLibrary struct {
-	UserID     int                    `json:"user_id"`
-	Categories map[string][]string    `json:"categories"` // category -> image_ids
-	Tags       map[string][]string    `json:"tags"`       // tag -> image_ids
+	UserID      int                   `json:"user_id"`
+	Categories  map[string][]string   `json:"categories"` // category -> image_ids
+	Tags        map[string][]string   `json:"tags"`       // tag -> image_ids
 	Collections map[string]Collection `json:"collections"`
 	TotalImages int                   `json:"total_images"`
 	TotalSize   int64                 `json:"total_size"`
@@ -134,18 +134,18 @@ type Collection struct {
 
 // SmartSearchQuery represents an advanced image search query
 type SmartSearchQuery struct {
-	UserID        int      `json:"user_id"`
-	Query         string   `json:"query"`
-	Categories    []string `json:"categories"`
-	Tags          []string `json:"tags"`
-	Colors        []string `json:"colors"`
-	ObjectTypes   []string `json:"object_types"`
+	UserID        int       `json:"user_id"`
+	Query         string    `json:"query"`
+	Categories    []string  `json:"categories"`
+	Tags          []string  `json:"tags"`
+	Colors        []string  `json:"colors"`
+	ObjectTypes   []string  `json:"object_types"`
 	DateRange     DateRange `json:"date_range"`
-	QualityFilter string   `json:"quality_filter"` // high, medium, low, any
-	SizeFilter    string   `json:"size_filter"`    // large, medium, small, any
-	SortBy        string   `json:"sort_by"`        // relevance, date, quality, size
-	Limit         int      `json:"limit"`
-	Offset        int      `json:"offset"`
+	QualityFilter string    `json:"quality_filter"` // high, medium, low, any
+	SizeFilter    string    `json:"size_filter"`    // large, medium, small, any
+	SortBy        string    `json:"sort_by"`        // relevance, date, quality, size
+	Limit         int       `json:"limit"`
+	Offset        int       `json:"offset"`
 }
 
 // DateRange represents a date range for filtering
@@ -275,41 +275,41 @@ func (s *AIVisionService) detectObjects(img image.Image) []DetectedObject {
 
 	// Analyze image characteristics to detect common objects
 	colorAnalysis := s.analyzeColors(img)
-	
+
 	// Simple heuristic-based detection (replace with real ML models)
 	if s.hasTextCharacteristics(img) {
 		objects = append(objects, DetectedObject{
-			Label:      "text",
-			Confidence: 0.75,
+			Label:       "text",
+			Confidence:  0.75,
 			BoundingBox: BoundingBox{X: 0, Y: 0, Width: width, Height: height},
-			Category:   "document",
+			Category:    "document",
 		})
 	}
 
 	if s.hasProductCharacteristics(img, colorAnalysis) {
 		objects = append(objects, DetectedObject{
-			Label:      "product",
-			Confidence: 0.80,
-			BoundingBox: BoundingBox{X: width/4, Y: height/4, Width: width/2, Height: height/2},
-			Category:   "commerce",
+			Label:       "product",
+			Confidence:  0.80,
+			BoundingBox: BoundingBox{X: width / 4, Y: height / 4, Width: width / 2, Height: height / 2},
+			Category:    "commerce",
 		})
 	}
 
 	if s.hasPersonCharacteristics(img) {
 		objects = append(objects, DetectedObject{
-			Label:      "person",
-			Confidence: 0.70,
-			BoundingBox: BoundingBox{X: width/3, Y: height/6, Width: width/3, Height: height*2/3},
-			Category:   "people",
+			Label:       "person",
+			Confidence:  0.70,
+			BoundingBox: BoundingBox{X: width / 3, Y: height / 6, Width: width / 3, Height: height * 2 / 3},
+			Category:    "people",
 		})
 	}
 
 	if s.hasVehicleCharacteristics(img, colorAnalysis) {
 		objects = append(objects, DetectedObject{
-			Label:      "vehicle",
-			Confidence: 0.65,
-			BoundingBox: BoundingBox{X: width/6, Y: height/3, Width: width*2/3, Height: height/3},
-			Category:   "transportation",
+			Label:       "vehicle",
+			Confidence:  0.65,
+			BoundingBox: BoundingBox{X: width / 6, Y: height / 3, Width: width * 2 / 3, Height: height / 3},
+			Category:    "transportation",
 		})
 	}
 
@@ -331,7 +331,7 @@ func (s *AIVisionService) predictCategories(img image.Image, objects []DetectedO
 		confidence := s.calculateCategoryConfidence(img, objects, category)
 		if confidence > 0.1 {
 			predictions = append(predictions, CategoryPrediction{
-								CategoryID: int(category.ID),
+				CategoryID:   int(category.ID),
 				CategoryName: category.Name,
 				Confidence:   confidence,
 			})
@@ -547,12 +547,12 @@ func (s *AIVisionService) calculateSaturation(colors []DominantColor) float64 {
 		r, g, b := float64(color.RGB.R)/255, float64(color.RGB.G)/255, float64(color.RGB.B)/255
 		max := math.Max(math.Max(r, g), b)
 		min := math.Min(math.Min(r, g), b)
-		
+
 		var saturation float64
 		if max != 0 {
 			saturation = (max - min) / max
 		}
-		
+
 		totalSaturation += saturation * color.Percentage / 100
 	}
 
@@ -742,7 +742,7 @@ func (s *AIVisionService) hasTextCharacteristics(img image.Image) bool {
 			r1, g1, b1, _ := img.At(x, y).RGBA()
 			if x+1 < bounds.Max.X {
 				r2, g2, b2, _ := img.At(x+1, y).RGBA()
-				
+
 				diff := math.Abs(float64(r1-r2)) + math.Abs(float64(g1-g2)) + math.Abs(float64(b1-b2))
 				if diff > 30000 { // High contrast threshold
 					highContrastRegions++
@@ -759,11 +759,11 @@ func (s *AIVisionService) hasProductCharacteristics(img image.Image, colorAnalys
 	// - Good lighting (brightness between 0.3-0.8)
 	// - Reasonable contrast
 	// - Not too many dominant colors (clean background)
-	
-	return colorAnalysis.Brightness > 0.3 && 
-		   colorAnalysis.Brightness < 0.8 && 
-		   colorAnalysis.Contrast > 0.2 && 
-		   len(colorAnalysis.DominantColors) <= 4
+
+	return colorAnalysis.Brightness > 0.3 &&
+		colorAnalysis.Brightness < 0.8 &&
+		colorAnalysis.Contrast > 0.2 &&
+		len(colorAnalysis.DominantColors) <= 4
 }
 
 func (s *AIVisionService) hasPersonCharacteristics(img image.Image) bool {
@@ -794,8 +794,8 @@ func (s *AIVisionService) hasPersonCharacteristics(img image.Image) bool {
 func (s *AIVisionService) isSkinTone(r, g, b int) bool {
 	// Simplified skin tone detection
 	return r > 95 && g > 40 && b > 20 &&
-		   r > g && r > b &&
-		   r-g > 15 && r-b > 15
+		r > g && r > b &&
+		r-g > 15 && r-b > 15
 }
 
 func (s *AIVisionService) hasVehicleCharacteristics(img image.Image, colorAnalysis ColorAnalysis) bool {
@@ -803,10 +803,10 @@ func (s *AIVisionService) hasVehicleCharacteristics(img image.Image, colorAnalys
 	// - Strong geometric shapes
 	// - Metallic colors
 	// - High contrast edges
-	
-	return colorAnalysis.Contrast > 0.4 && 
-		   (s.hasMetallicColors(colorAnalysis.DominantColors) || 
-		    colorAnalysis.ColorScheme == "neutral")
+
+	return colorAnalysis.Contrast > 0.4 &&
+		(s.hasMetallicColors(colorAnalysis.DominantColors) ||
+			colorAnalysis.ColorScheme == "neutral")
 }
 
 func (s *AIVisionService) hasMetallicColors(colors []DominantColor) bool {
@@ -935,7 +935,7 @@ func (s *AIVisionService) getImageByHash(userID int, hash string) (*ImageAnalysi
 func (s *AIVisionService) updateUserLibrary(userID int, result *ImageAnalysisResult) error {
 	// This would update the user's image library organization
 	// For now, we'll implement a simple version
-	
+
 	// Update category associations
 	for _, cat := range result.CategoryPredictions {
 		if cat.Confidence > 0.5 {
@@ -1125,12 +1125,12 @@ func (s *AIVisionService) generateSearchSuggestions(query SmartSearchQuery, resu
 		tag   string
 		count int
 	}
-	
+
 	tagList := make([]tagCount, 0, len(tagCounts))
 	for tag, count := range tagCounts {
 		tagList = append(tagList, tagCount{tag: tag, count: count})
 	}
-	
+
 	sort.Slice(tagList, func(i, j int) bool {
 		return tagList[i].count > tagList[j].count
 	})
@@ -1269,7 +1269,7 @@ func (s *AIVisionService) getUserCollections(userID int) ([]Collection, error) {
 // CreateImageCollection creates a new image collection for a user
 func (s *AIVisionService) CreateImageCollection(userID int, name, description string, imageIDs []string, isPublic bool) (*Collection, error) {
 	collectionID := fmt.Sprintf("coll_%d_%d", userID, time.Now().Unix())
-	
+
 	collection := &Collection{
 		ID:          collectionID,
 		Name:        name,
@@ -1648,7 +1648,7 @@ func (s *AIVisionService) SuggestProductCategories(imageID string, userID int) (
 							}
 							if !found {
 								suggestions = append(suggestions, CategoryPrediction{
-												CategoryID: int(cat.ID),
+									CategoryID:   int(cat.ID),
 									CategoryName: cat.Name,
 									Confidence:   obj.Confidence * 0.8, // Slightly lower confidence for derived suggestions
 								})
@@ -1676,7 +1676,7 @@ func (s *AIVisionService) SuggestProductCategories(imageID string, userID int) (
 // mapObjectToCategories maps detected objects to potential product categories
 func (s *AIVisionService) mapObjectToCategories(objectLabel string) []string {
 	objectLower := strings.ToLower(objectLabel)
-	
+
 	categoryMap := map[string][]string{
 		"person":    {"Giyim", "Moda", "Aksesuar"},
 		"product":   {"Genel", "Elektronik", "Ev & Yaşam"},

@@ -222,11 +222,11 @@ func (r *UserRepository) ResetUserPassword(email, newPassword string) error {
 
 		// Hash'lenmiş şifreyi string'e dönüştür
 		hashedPasswordStr = string(hashedPassword)
-			log.Printf("DEBUG - ResetUserPassword: Şifre başarıyla hash'lendi")
-	log.Printf("DEBUG - ResetUserPassword: Hash bcrypt formatında: %v",
-		strings.HasPrefix(hashedPasswordStr, "$2a$") ||
-			strings.HasPrefix(hashedPasswordStr, "$2b$") ||
-			strings.HasPrefix(hashedPasswordStr, "$2y$"))
+		log.Printf("DEBUG - ResetUserPassword: Şifre başarıyla hash'lendi")
+		log.Printf("DEBUG - ResetUserPassword: Hash bcrypt formatında: %v",
+			strings.HasPrefix(hashedPasswordStr, "$2a$") ||
+				strings.HasPrefix(hashedPasswordStr, "$2b$") ||
+				strings.HasPrefix(hashedPasswordStr, "$2y$"))
 	}
 
 	// Doğrudan SQL sorgusu ile şifre güncelleme ve hesabı aktifleştirme
@@ -522,18 +522,18 @@ func (r *UserRepository) Transaction(fn func(database.Transaction) error) error 
 	if err != nil {
 		return fmt.Errorf("failed to begin transaction: %w", err)
 	}
-	
+
 	// Execute the function
 	if err := fn(tx); err != nil {
 		tx.Rollback()
 		return fmt.Errorf("transaction failed: %w", err)
 	}
-	
+
 	// Commit the transaction
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
-	
+
 	return nil
 }
 

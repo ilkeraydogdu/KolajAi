@@ -13,26 +13,26 @@ import (
 type IntegrationAnalyticsService struct {
 	db                 *sql.DB
 	marketplaceService *MarketplaceIntegrationsService
-	aiManager         *AIIntegrationManager
-	metrics           *IntegrationMetrics
-	alerts            *AlertManager
-	reports           *ReportGenerator
-	mu                sync.RWMutex
+	aiManager          *AIIntegrationManager
+	metrics            *IntegrationMetrics
+	alerts             *AlertManager
+	reports            *ReportGenerator
+	mu                 sync.RWMutex
 }
 
 // IntegrationMetrics holds real-time metrics
 type IntegrationMetrics struct {
-	TotalIntegrations    int                            `json:"total_integrations"`
-	ActiveIntegrations   int                            `json:"active_integrations"`
-	SyncOperations       map[string]*SyncMetrics        `json:"sync_operations"`
-	ErrorRates          map[string]float64             `json:"error_rates"`
-	ResponseTimes       map[string]time.Duration       `json:"response_times"`
-	ThroughputRates     map[string]float64             `json:"throughput_rates"`
-	HealthScores        map[string]float64             `json:"health_scores"`
-	LastUpdated         time.Time                      `json:"last_updated"`
-	DailyStats          map[string]*DailyIntegrationStats `json:"daily_stats"`
-	WeeklyTrends        map[string]*WeeklyTrend        `json:"weekly_trends"`
-	MonthlyReports      map[string]*MonthlyReport      `json:"monthly_reports"`
+	TotalIntegrations  int                               `json:"total_integrations"`
+	ActiveIntegrations int                               `json:"active_integrations"`
+	SyncOperations     map[string]*SyncMetrics           `json:"sync_operations"`
+	ErrorRates         map[string]float64                `json:"error_rates"`
+	ResponseTimes      map[string]time.Duration          `json:"response_times"`
+	ThroughputRates    map[string]float64                `json:"throughput_rates"`
+	HealthScores       map[string]float64                `json:"health_scores"`
+	LastUpdated        time.Time                         `json:"last_updated"`
+	DailyStats         map[string]*DailyIntegrationStats `json:"daily_stats"`
+	WeeklyTrends       map[string]*WeeklyTrend           `json:"weekly_trends"`
+	MonthlyReports     map[string]*MonthlyReport         `json:"monthly_reports"`
 }
 
 // SyncMetrics holds sync operation metrics
@@ -61,23 +61,23 @@ type DailyIntegrationStats struct {
 
 // WeeklyTrend holds weekly trend data
 type WeeklyTrend struct {
-	WeekStarting     time.Time `json:"week_starting"`
-	SyncGrowth       float64   `json:"sync_growth"`
-	ErrorReduction   float64   `json:"error_reduction"`
-	PerformanceGain  float64   `json:"performance_gain"`
-	RevenueIncrease  float64   `json:"revenue_increase"`
+	WeekStarting    time.Time `json:"week_starting"`
+	SyncGrowth      float64   `json:"sync_growth"`
+	ErrorReduction  float64   `json:"error_reduction"`
+	PerformanceGain float64   `json:"performance_gain"`
+	RevenueIncrease float64   `json:"revenue_increase"`
 }
 
 // MonthlyReport holds monthly report data
 type MonthlyReport struct {
-	Month            time.Time                    `json:"month"`
-	TotalOperations  int64                        `json:"total_operations"`
-	SuccessRate      float64                      `json:"success_rate"`
-	AverageResponse  time.Duration                `json:"average_response"`
-	TotalRevenue     float64                      `json:"total_revenue"`
-	TopPerformers    []IntegrationPerformance     `json:"top_performers"`
-	Issues           []IntegrationIssue           `json:"issues"`
-	Recommendations  []string                     `json:"recommendations"`
+	Month           time.Time                `json:"month"`
+	TotalOperations int64                    `json:"total_operations"`
+	SuccessRate     float64                  `json:"success_rate"`
+	AverageResponse time.Duration            `json:"average_response"`
+	TotalRevenue    float64                  `json:"total_revenue"`
+	TopPerformers   []IntegrationPerformance `json:"top_performers"`
+	Issues          []IntegrationIssue       `json:"issues"`
+	Recommendations []string                 `json:"recommendations"`
 }
 
 // IntegrationPerformance holds performance data for an integration
@@ -112,14 +112,14 @@ type AlertManager struct {
 
 // IntegrationAlertRule defines conditions for triggering alerts (renamed to avoid conflict)
 type IntegrationAlertRule struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Condition   string                 `json:"condition"`
-	Threshold   float64                `json:"threshold"`
-	Duration    time.Duration          `json:"duration"`
-	Severity    string                 `json:"severity"`
-	Enabled     bool                   `json:"enabled"`
-	Metadata    map[string]interface{} `json:"metadata"`
+	ID        string                 `json:"id"`
+	Name      string                 `json:"name"`
+	Condition string                 `json:"condition"`
+	Threshold float64                `json:"threshold"`
+	Duration  time.Duration          `json:"duration"`
+	Severity  string                 `json:"severity"`
+	Enabled   bool                   `json:"enabled"`
+	Metadata  map[string]interface{} `json:"metadata"`
 }
 
 // Alert represents an alert
@@ -148,23 +148,23 @@ type ReportGenerator struct {
 
 // ReportTemplate defines report structure
 type ReportTemplate struct {
-	ID          string                 `json:"id"`
-	Name        string                 `json:"name"`
-	Type        string                 `json:"type"`
-	Schedule    string                 `json:"schedule"`
-	Recipients  []string               `json:"recipients"`
-	Sections    []ReportSection        `json:"sections"`
-	Filters     map[string]interface{} `json:"filters"`
-	Format      string                 `json:"format"`
+	ID         string                 `json:"id"`
+	Name       string                 `json:"name"`
+	Type       string                 `json:"type"`
+	Schedule   string                 `json:"schedule"`
+	Recipients []string               `json:"recipients"`
+	Sections   []ReportSection        `json:"sections"`
+	Filters    map[string]interface{} `json:"filters"`
+	Format     string                 `json:"format"`
 }
 
 // ReportSection defines a section of a report
 type ReportSection struct {
-	Title       string                 `json:"title"`
-	Type        string                 `json:"type"`
-	Query       string                 `json:"query"`
-	Visualization string               `json:"visualization"`
-	Parameters  map[string]interface{} `json:"parameters"`
+	Title         string                 `json:"title"`
+	Type          string                 `json:"type"`
+	Query         string                 `json:"query"`
+	Visualization string                 `json:"visualization"`
+	Parameters    map[string]interface{} `json:"parameters"`
 }
 
 // NewIntegrationAnalyticsService creates a new analytics service
@@ -176,16 +176,16 @@ func NewIntegrationAnalyticsService(
 	service := &IntegrationAnalyticsService{
 		db:                 db,
 		marketplaceService: marketplaceService,
-		aiManager:         aiManager,
-		metrics:           NewIntegrationMetrics(),
-		alerts:            NewAlertManager(),
-		reports:           NewReportGenerator(),
+		aiManager:          aiManager,
+		metrics:            NewIntegrationMetrics(),
+		alerts:             NewAlertManager(),
+		reports:            NewReportGenerator(),
 	}
-	
+
 	service.createAnalyticsTables()
 	service.startMetricsCollection()
 	service.startAlertMonitoring()
-	
+
 	return service
 }
 
@@ -292,7 +292,7 @@ func (ias *IntegrationAnalyticsService) startMetricsCollection() {
 	go func() {
 		ticker := time.NewTicker(1 * time.Minute)
 		defer ticker.Stop()
-		
+
 		for range ticker.C {
 			ias.collectMetrics()
 		}
@@ -304,7 +304,7 @@ func (ias *IntegrationAnalyticsService) startAlertMonitoring() {
 	go func() {
 		ticker := time.NewTicker(30 * time.Second)
 		defer ticker.Stop()
-		
+
 		for range ticker.C {
 			ias.checkAlertRules()
 		}
@@ -315,37 +315,37 @@ func (ias *IntegrationAnalyticsService) startAlertMonitoring() {
 func (ias *IntegrationAnalyticsService) collectMetrics() {
 	ias.mu.Lock()
 	defer ias.mu.Unlock()
-	
+
 	// Get all integrations
 	integrations := ias.marketplaceService.GetAllIntegrations()
-	
+
 	ias.metrics.TotalIntegrations = len(integrations)
 	ias.metrics.ActiveIntegrations = 0
-	
+
 	for integrationID, integration := range integrations {
 		if integration.IsActive {
 			ias.metrics.ActiveIntegrations++
 		}
-		
+
 		// Collect sync metrics
 		syncMetrics := ias.collectSyncMetrics(integrationID)
 		ias.metrics.SyncOperations[integrationID] = syncMetrics
-		
+
 		// Calculate error rates
 		ias.metrics.ErrorRates[integrationID] = ias.calculateErrorRate(integrationID)
-		
+
 		// Measure response times
 		ias.metrics.ResponseTimes[integrationID] = ias.measureResponseTime(integrationID)
-		
+
 		// Calculate throughput
 		ias.metrics.ThroughputRates[integrationID] = ias.calculateThroughput(integrationID)
-		
+
 		// Calculate health scores
 		ias.metrics.HealthScores[integrationID] = ias.calculateHealthScore(integrationID)
 	}
-	
+
 	ias.metrics.LastUpdated = time.Now()
-	
+
 	// Store metrics to database
 	ias.storeMetrics()
 }
@@ -364,11 +364,11 @@ func (ias *IntegrationAnalyticsService) collectSyncMetrics(integrationID string)
 		FROM integration_sync_logs 
 		WHERE integration_id = ? AND start_time > DATE_SUB(NOW(), INTERVAL 24 HOUR)
 	`
-	
+
 	var metrics SyncMetrics
 	var avgResponseMs sql.NullFloat64
 	var lastSyncTime sql.NullTime
-	
+
 	err := ias.db.QueryRow(query, integrationID).Scan(
 		&metrics.TotalSyncs,
 		&metrics.SuccessfulSyncs,
@@ -377,7 +377,7 @@ func (ias *IntegrationAnalyticsService) collectSyncMetrics(integrationID string)
 		&lastSyncTime,
 		&metrics.ProductsSynced,
 	)
-	
+
 	if err == nil {
 		if avgResponseMs.Valid {
 			metrics.AverageTime = time.Duration(avgResponseMs.Float64) * time.Millisecond
@@ -386,7 +386,7 @@ func (ias *IntegrationAnalyticsService) collectSyncMetrics(integrationID string)
 			metrics.LastSyncTime = lastSyncTime.Time
 		}
 	}
-	
+
 	return &metrics
 }
 
@@ -399,13 +399,13 @@ func (ias *IntegrationAnalyticsService) calculateErrorRate(integrationID string)
 		FROM integration_sync_logs 
 		WHERE integration_id = ? AND start_time > DATE_SUB(NOW(), INTERVAL 1 HOUR)
 	`
-	
+
 	var totalOps, errorOps int
 	err := ias.db.QueryRow(query, integrationID).Scan(&totalOps, &errorOps)
 	if err != nil || totalOps == 0 {
 		return 0.0
 	}
-	
+
 	return float64(errorOps) / float64(totalOps) * 100.0
 }
 
@@ -416,13 +416,13 @@ func (ias *IntegrationAnalyticsService) measureResponseTime(integrationID string
 		FROM integration_sync_logs 
 		WHERE integration_id = ? AND start_time > DATE_SUB(NOW(), INTERVAL 1 HOUR)
 	`
-	
+
 	var avgMs sql.NullFloat64
 	err := ias.db.QueryRow(query, integrationID).Scan(&avgMs)
 	if err != nil || !avgMs.Valid {
 		return 0
 	}
-	
+
 	return time.Duration(avgMs.Float64) * time.Millisecond
 }
 
@@ -433,13 +433,13 @@ func (ias *IntegrationAnalyticsService) calculateThroughput(integrationID string
 		FROM integration_sync_logs 
 		WHERE integration_id = ? AND start_time > DATE_SUB(NOW(), INTERVAL 1 HOUR)
 	`
-	
+
 	var operations int
 	err := ias.db.QueryRow(query, integrationID).Scan(&operations)
 	if err != nil {
 		return 0.0
 	}
-	
+
 	return float64(operations) / 60.0 // operations per minute
 }
 
@@ -448,12 +448,12 @@ func (ias *IntegrationAnalyticsService) calculateHealthScore(integrationID strin
 	errorRate := ias.metrics.ErrorRates[integrationID]
 	responseTime := ias.metrics.ResponseTimes[integrationID]
 	throughput := ias.metrics.ThroughputRates[integrationID]
-	
+
 	// Calculate health score based on multiple factors
 	errorScore := math.Max(0, 100-errorRate*2)
 	responseScore := math.Max(0, 100-float64(responseTime.Milliseconds())/10)
 	throughputScore := math.Min(100, throughput*10)
-	
+
 	return (errorScore + responseScore + throughputScore) / 3.0
 }
 
@@ -462,15 +462,15 @@ func (ias *IntegrationAnalyticsService) storeMetrics() {
 	for integrationID, errorRate := range ias.metrics.ErrorRates {
 		ias.storeMetric(integrationID, "error_rate", errorRate)
 	}
-	
+
 	for integrationID, responseTime := range ias.metrics.ResponseTimes {
 		ias.storeMetric(integrationID, "response_time", float64(responseTime.Milliseconds()))
 	}
-	
+
 	for integrationID, throughput := range ias.metrics.ThroughputRates {
 		ias.storeMetric(integrationID, "throughput", throughput)
 	}
-	
+
 	for integrationID, healthScore := range ias.metrics.HealthScores {
 		ias.storeMetric(integrationID, "health_score", healthScore)
 	}
@@ -482,7 +482,7 @@ func (ias *IntegrationAnalyticsService) storeMetric(integrationID, metricType st
 		INSERT INTO integration_metrics (id, integration_id, metric_type, metric_value, timestamp)
 		VALUES (?, ?, ?, ?, NOW())
 	`
-	
+
 	metricID := fmt.Sprintf("%s_%s_%d", integrationID, metricType, time.Now().Unix())
 	ias.db.Exec(query, metricID, integrationID, metricType, value)
 }
@@ -493,17 +493,17 @@ func (ias *IntegrationAnalyticsService) checkAlertRules() {
 		if !rule.Enabled {
 			continue
 		}
-		
+
 		if ias.evaluateAlertRule(rule) {
 			alert := Alert{
-				ID:            ias.generateAlertID(),
-				RuleID:        rule.ID,
-				Message:       fmt.Sprintf("Alert rule '%s' triggered", rule.Name),
-				Severity:      rule.Severity,
-				Timestamp:     time.Now(),
-				Metadata:      rule.Metadata,
+				ID:        ias.generateAlertID(),
+				RuleID:    rule.ID,
+				Message:   fmt.Sprintf("Alert rule '%s' triggered", rule.Name),
+				Severity:  rule.Severity,
+				Timestamp: time.Now(),
+				Metadata:  rule.Metadata,
 			}
-			
+
 			ias.triggerAlert(alert)
 		}
 	}
@@ -520,14 +520,14 @@ func (ias *IntegrationAnalyticsService) evaluateAlertRule(rule IntegrationAlertR
 func (ias *IntegrationAnalyticsService) triggerAlert(alert Alert) {
 	// Store alert in database
 	ias.storeAlert(alert)
-	
+
 	// Send to notification channel
 	select {
 	case ias.alerts.notifications <- alert:
 	default:
 		// Channel full, log error
 	}
-	
+
 	// Notify subscribers
 	for _, subscriber := range ias.alerts.subscribers {
 		go subscriber.Notify(alert)
@@ -540,7 +540,7 @@ func (ias *IntegrationAnalyticsService) storeAlert(alert Alert) {
 		INSERT INTO integration_alerts (id, rule_id, integration_id, alert_type, severity, message, triggered_at, metadata)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
 	`
-	
+
 	metadataJSON, _ := json.Marshal(alert.Metadata)
 	ias.db.Exec(query, alert.ID, alert.RuleID, alert.IntegrationID, "system", alert.Severity, alert.Message, alert.Timestamp, string(metadataJSON))
 }
@@ -554,7 +554,7 @@ func (ias *IntegrationAnalyticsService) generateAlertID() string {
 func (ias *IntegrationAnalyticsService) GetMetrics() *IntegrationMetrics {
 	ias.mu.RLock()
 	defer ias.mu.RUnlock()
-	
+
 	// Return a copy of metrics
 	metricsCopy := *ias.metrics
 	return &metricsCopy
@@ -564,15 +564,15 @@ func (ias *IntegrationAnalyticsService) GetMetrics() *IntegrationMetrics {
 func (ias *IntegrationAnalyticsService) GetIntegrationHealth(integrationID string) map[string]interface{} {
 	ias.mu.RLock()
 	defer ias.mu.RUnlock()
-	
+
 	return map[string]interface{}{
-		"integration_id":  integrationID,
-		"health_score":    ias.metrics.HealthScores[integrationID],
-		"error_rate":      ias.metrics.ErrorRates[integrationID],
-		"response_time":   ias.metrics.ResponseTimes[integrationID],
-		"throughput":      ias.metrics.ThroughputRates[integrationID],
-		"sync_metrics":    ias.metrics.SyncOperations[integrationID],
-		"last_updated":    ias.metrics.LastUpdated,
+		"integration_id": integrationID,
+		"health_score":   ias.metrics.HealthScores[integrationID],
+		"error_rate":     ias.metrics.ErrorRates[integrationID],
+		"response_time":  ias.metrics.ResponseTimes[integrationID],
+		"throughput":     ias.metrics.ThroughputRates[integrationID],
+		"sync_metrics":   ias.metrics.SyncOperations[integrationID],
+		"last_updated":   ias.metrics.LastUpdated,
 	}
 }
 

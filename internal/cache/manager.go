@@ -13,37 +13,37 @@ import (
 
 // CacheManager handles comprehensive caching
 type CacheManager struct {
-	stores    map[string]CacheStore
-	config    CacheConfig
-	stats     *CacheStats
-	mu        sync.RWMutex
-	db        *sql.DB
-	metrics   *MetricsCollector
+	stores  map[string]CacheStore
+	config  CacheConfig
+	stats   *CacheStats
+	mu      sync.RWMutex
+	db      *sql.DB
+	metrics *MetricsCollector
 }
 
 // CacheConfig holds cache configuration
 type CacheConfig struct {
-	DefaultTTL       time.Duration            `json:"default_ttl"`
-	MaxMemoryUsage   int64                    `json:"max_memory_usage"`
-	EvictionPolicy   EvictionPolicy           `json:"eviction_policy"`
+	DefaultTTL         time.Duration          `json:"default_ttl"`
+	MaxMemoryUsage     int64                  `json:"max_memory_usage"`
+	EvictionPolicy     EvictionPolicy         `json:"eviction_policy"`
 	CompressionEnabled bool                   `json:"compression_enabled"`
-	EncryptionEnabled bool                    `json:"encryption_enabled"`
-	EncryptionKey    string                   `json:"encryption_key"`
-	Stores           map[string]StoreConfig   `json:"stores"`
-	Clusters         []ClusterConfig          `json:"clusters"`
-	Replication      ReplicationConfig        `json:"replication"`
-	Monitoring       MonitoringConfig         `json:"monitoring"`
-	Persistence      PersistenceConfig        `json:"persistence"`
+	EncryptionEnabled  bool                   `json:"encryption_enabled"`
+	EncryptionKey      string                 `json:"encryption_key"`
+	Stores             map[string]StoreConfig `json:"stores"`
+	Clusters           []ClusterConfig        `json:"clusters"`
+	Replication        ReplicationConfig      `json:"replication"`
+	Monitoring         MonitoringConfig       `json:"monitoring"`
+	Persistence        PersistenceConfig      `json:"persistence"`
 }
 
 // StoreConfig holds individual store configuration
 type StoreConfig struct {
-	Type           StoreType     `json:"type"`
-	MaxSize        int64         `json:"max_size"`
-	TTL            time.Duration `json:"ttl"`
-	EvictionPolicy EvictionPolicy `json:"eviction_policy"`
-	Shards         int           `json:"shards"`
-	Enabled        bool          `json:"enabled"`
+	Type           StoreType              `json:"type"`
+	MaxSize        int64                  `json:"max_size"`
+	TTL            time.Duration          `json:"ttl"`
+	EvictionPolicy EvictionPolicy         `json:"eviction_policy"`
+	Shards         int                    `json:"shards"`
+	Enabled        bool                   `json:"enabled"`
 	Settings       map[string]interface{} `json:"settings"`
 }
 
@@ -58,47 +58,47 @@ type ClusterConfig struct {
 
 // ReplicationConfig holds replication configuration
 type ReplicationConfig struct {
-	Enabled       bool          `json:"enabled"`
-	Factor        int           `json:"factor"`
-	SyncMode      string        `json:"sync_mode"` // "sync", "async"
-	HealthCheck   time.Duration `json:"health_check"`
-	FailoverTime  time.Duration `json:"failover_time"`
+	Enabled      bool          `json:"enabled"`
+	Factor       int           `json:"factor"`
+	SyncMode     string        `json:"sync_mode"` // "sync", "async"
+	HealthCheck  time.Duration `json:"health_check"`
+	FailoverTime time.Duration `json:"failover_time"`
 }
 
 // MonitoringConfig holds monitoring configuration
 type MonitoringConfig struct {
-	Enabled         bool          `json:"enabled"`
-	MetricsInterval time.Duration `json:"metrics_interval"`
+	Enabled         bool            `json:"enabled"`
+	MetricsInterval time.Duration   `json:"metrics_interval"`
 	AlertThresholds AlertThresholds `json:"alert_thresholds"`
-	LogLevel        string        `json:"log_level"`
+	LogLevel        string          `json:"log_level"`
 }
 
 // AlertThresholds holds alert threshold configuration
 type AlertThresholds struct {
-	MemoryUsage    float64 `json:"memory_usage"`
-	HitRatio       float64 `json:"hit_ratio"`
-	ResponseTime   time.Duration `json:"response_time"`
-	ErrorRate      float64 `json:"error_rate"`
+	MemoryUsage  float64       `json:"memory_usage"`
+	HitRatio     float64       `json:"hit_ratio"`
+	ResponseTime time.Duration `json:"response_time"`
+	ErrorRate    float64       `json:"error_rate"`
 }
 
 // PersistenceConfig holds persistence configuration
 type PersistenceConfig struct {
-	Enabled       bool          `json:"enabled"`
+	Enabled        bool          `json:"enabled"`
 	BackupInterval time.Duration `json:"backup_interval"`
-	BackupPath    string        `json:"backup_path"`
-	Compression   bool          `json:"compression"`
-	Encryption    bool          `json:"encryption"`
+	BackupPath     string        `json:"backup_path"`
+	Compression    bool          `json:"compression"`
+	Encryption     bool          `json:"encryption"`
 }
 
 // StoreType represents different cache store types
 type StoreType string
 
 const (
-	StoreTypeMemory     StoreType = "memory"
-	StoreTypeRedis      StoreType = "redis"
-	StoreTypeMemcached  StoreType = "memcached"
-	StoreTypeDatabase   StoreType = "database"
-	StoreTypeFile       StoreType = "file"
+	StoreTypeMemory      StoreType = "memory"
+	StoreTypeRedis       StoreType = "redis"
+	StoreTypeMemcached   StoreType = "memcached"
+	StoreTypeDatabase    StoreType = "database"
+	StoreTypeFile        StoreType = "file"
 	StoreTypeDistributed StoreType = "distributed"
 )
 
@@ -129,46 +129,46 @@ type CacheStore interface {
 
 // CacheItem represents a cached item
 type CacheItem struct {
-	Key        string                 `json:"key"`
-	Value      []byte                 `json:"value"`
-	TTL        time.Duration          `json:"ttl"`
-	CreatedAt  time.Time              `json:"created_at"`
-	AccessedAt time.Time              `json:"accessed_at"`
-	AccessCount int64                 `json:"access_count"`
-	Size       int64                  `json:"size"`
-	Compressed bool                   `json:"compressed"`
-	Encrypted  bool                   `json:"encrypted"`
-	Tags       []string               `json:"tags"`
-	Metadata   map[string]interface{} `json:"metadata"`
+	Key         string                 `json:"key"`
+	Value       []byte                 `json:"value"`
+	TTL         time.Duration          `json:"ttl"`
+	CreatedAt   time.Time              `json:"created_at"`
+	AccessedAt  time.Time              `json:"accessed_at"`
+	AccessCount int64                  `json:"access_count"`
+	Size        int64                  `json:"size"`
+	Compressed  bool                   `json:"compressed"`
+	Encrypted   bool                   `json:"encrypted"`
+	Tags        []string               `json:"tags"`
+	Metadata    map[string]interface{} `json:"metadata"`
 }
 
 // CacheStats represents cache statistics
 type CacheStats struct {
-	TotalHits        int64                 `json:"total_hits"`
-	TotalMisses      int64                 `json:"total_misses"`
-	TotalSets        int64                 `json:"total_sets"`
-	TotalDeletes     int64                 `json:"total_deletes"`
-	TotalEvictions   int64                 `json:"total_evictions"`
-	TotalMemoryUsage int64                 `json:"total_memory_usage"`
-	HitRatio         float64               `json:"hit_ratio"`
+	TotalHits        int64                  `json:"total_hits"`
+	TotalMisses      int64                  `json:"total_misses"`
+	TotalSets        int64                  `json:"total_sets"`
+	TotalDeletes     int64                  `json:"total_deletes"`
+	TotalEvictions   int64                  `json:"total_evictions"`
+	TotalMemoryUsage int64                  `json:"total_memory_usage"`
+	HitRatio         float64                `json:"hit_ratio"`
 	StoreStats       map[string]*StoreStats `json:"store_stats"`
-	LastReset        time.Time             `json:"last_reset"`
+	LastReset        time.Time              `json:"last_reset"`
 	mu               sync.RWMutex
 }
 
 // StoreStats represents individual store statistics
 type StoreStats struct {
-	Hits          int64         `json:"hits"`
-	Misses        int64         `json:"misses"`
-	Sets          int64         `json:"sets"`
-	Deletes       int64         `json:"deletes"`
-	Evictions     int64         `json:"evictions"`
-	MemoryUsage   int64         `json:"memory_usage"`
-	ItemCount     int64         `json:"item_count"`
-	HitRatio      float64       `json:"hit_ratio"`
-	AvgSetTime    time.Duration `json:"avg_set_time"`
-	AvgGetTime    time.Duration `json:"avg_get_time"`
-	LastAccess    time.Time     `json:"last_access"`
+	Hits        int64         `json:"hits"`
+	Misses      int64         `json:"misses"`
+	Sets        int64         `json:"sets"`
+	Deletes     int64         `json:"deletes"`
+	Evictions   int64         `json:"evictions"`
+	MemoryUsage int64         `json:"memory_usage"`
+	ItemCount   int64         `json:"item_count"`
+	HitRatio    float64       `json:"hit_ratio"`
+	AvgSetTime  time.Duration `json:"avg_set_time"`
+	AvgGetTime  time.Duration `json:"avg_get_time"`
+	LastAccess  time.Time     `json:"last_access"`
 }
 
 // CacheOperation represents cache operation types
@@ -206,11 +206,11 @@ type ClientInfo struct {
 
 // MetricsCollector collects cache metrics
 type MetricsCollector struct {
-	enabled     bool
-	interval    time.Duration
-	events      chan CacheEvent
-	aggregates  map[string]*MetricAggregate
-	mu          sync.RWMutex
+	enabled    bool
+	interval   time.Duration
+	events     chan CacheEvent
+	aggregates map[string]*MetricAggregate
+	mu         sync.RWMutex
 }
 
 // MetricAggregate represents aggregated metrics
@@ -346,7 +346,7 @@ func (cm *CacheManager) createCacheTables() error {
 // Get retrieves a value from cache
 func (cm *CacheManager) Get(ctx context.Context, storeName, key string) ([]byte, error) {
 	start := time.Now()
-	
+
 	store, exists := cm.getStore(storeName)
 	if !exists {
 		return nil, fmt.Errorf("store %s not found", storeName)
@@ -365,7 +365,7 @@ func (cm *CacheManager) Get(ctx context.Context, storeName, key string) ([]byte,
 		Duration:  duration,
 		Timestamp: time.Now(),
 	}
-	
+
 	if err != nil {
 		event.Error = err.Error()
 		cm.stats.RecordMiss(storeName)
@@ -375,14 +375,14 @@ func (cm *CacheManager) Get(ctx context.Context, storeName, key string) ([]byte,
 	}
 
 	cm.recordEvent(event)
-	
+
 	return value, err
 }
 
 // Set stores a value in cache
 func (cm *CacheManager) Set(ctx context.Context, storeName, key string, value []byte, ttl time.Duration) error {
 	start := time.Now()
-	
+
 	store, exists := cm.getStore(storeName)
 	if !exists {
 		return fmt.Errorf("store %s not found", storeName)
@@ -419,7 +419,7 @@ func (cm *CacheManager) Set(ctx context.Context, storeName, key string, value []
 		Duration:  duration,
 		Timestamp: time.Now(),
 	}
-	
+
 	if err != nil {
 		event.Error = err.Error()
 	} else {
@@ -427,14 +427,14 @@ func (cm *CacheManager) Set(ctx context.Context, storeName, key string, value []
 	}
 
 	cm.recordEvent(event)
-	
+
 	return err
 }
 
 // Delete removes a value from cache
 func (cm *CacheManager) Delete(ctx context.Context, storeName, key string) error {
 	start := time.Now()
-	
+
 	store, exists := cm.getStore(storeName)
 	if !exists {
 		return fmt.Errorf("store %s not found", storeName)
@@ -453,7 +453,7 @@ func (cm *CacheManager) Delete(ctx context.Context, storeName, key string) error
 		Duration:  duration,
 		Timestamp: time.Now(),
 	}
-	
+
 	if err != nil {
 		event.Error = err.Error()
 	} else {
@@ -461,7 +461,7 @@ func (cm *CacheManager) Delete(ctx context.Context, storeName, key string) error
 	}
 
 	cm.recordEvent(event)
-	
+
 	return err
 }
 
@@ -491,13 +491,13 @@ func (cm *CacheManager) GetOrSet(ctx context.Context, storeName, key string, ttl
 // GetMulti retrieves multiple values from cache
 func (cm *CacheManager) GetMulti(ctx context.Context, storeName string, keys []string) (map[string][]byte, error) {
 	results := make(map[string][]byte)
-	
+
 	for _, key := range keys {
 		if value, err := cm.Get(ctx, storeName, key); err == nil {
 			results[key] = value
 		}
 	}
-	
+
 	return results, nil
 }
 
@@ -508,7 +508,7 @@ func (cm *CacheManager) SetMulti(ctx context.Context, storeName string, items ma
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -519,7 +519,7 @@ func (cm *CacheManager) DeleteMulti(ctx context.Context, storeName string, keys 
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -543,7 +543,7 @@ func (cm *CacheManager) InvalidateByTags(ctx context.Context, storeName string, 
 // Flush clears all items from a store
 func (cm *CacheManager) Flush(ctx context.Context, storeName string) error {
 	start := time.Now()
-	
+
 	store, exists := cm.getStore(storeName)
 	if !exists {
 		return fmt.Errorf("store %s not found", storeName)
@@ -561,13 +561,13 @@ func (cm *CacheManager) Flush(ctx context.Context, storeName string) error {
 		Duration:  duration,
 		Timestamp: time.Now(),
 	}
-	
+
 	if err != nil {
 		event.Error = err.Error()
 	}
 
 	cm.recordEvent(event)
-	
+
 	return err
 }
 
@@ -575,13 +575,13 @@ func (cm *CacheManager) Flush(ctx context.Context, storeName string) error {
 func (cm *CacheManager) GetStats() *CacheStats {
 	cm.stats.mu.RLock()
 	defer cm.stats.mu.RUnlock()
-	
+
 	// Calculate hit ratio
 	totalRequests := cm.stats.TotalHits + cm.stats.TotalMisses
 	if totalRequests > 0 {
 		cm.stats.HitRatio = float64(cm.stats.TotalHits) / float64(totalRequests)
 	}
-	
+
 	return cm.stats
 }
 
@@ -598,7 +598,7 @@ func (cm *CacheManager) GetStoreStats(storeName string) (*StoreStats, error) {
 // BuildKey builds a structured cache key
 func (cm *CacheManager) BuildKey(keyData CacheKey) string {
 	parts := make([]string, 0)
-	
+
 	if keyData.Prefix != "" {
 		parts = append(parts, keyData.Prefix)
 	}
@@ -614,7 +614,7 @@ func (cm *CacheManager) BuildKey(keyData CacheKey) string {
 	if keyData.Version != "" {
 		parts = append(parts, "v"+keyData.Version)
 	}
-	
+
 	// Add sorted parameters
 	if len(keyData.Params) > 0 {
 		paramKeys := make([]string, 0, len(keyData.Params))
@@ -622,20 +622,20 @@ func (cm *CacheManager) BuildKey(keyData CacheKey) string {
 			paramKeys = append(paramKeys, k)
 		}
 		sort.Strings(paramKeys)
-		
+
 		for _, k := range paramKeys {
 			parts = append(parts, k+"="+keyData.Params[k])
 		}
 	}
-	
+
 	key := strings.Join(parts, ":")
-	
+
 	// Add hash if key is too long
 	if len(key) > 250 {
 		hash := sha256.Sum256([]byte(key))
 		return fmt.Sprintf("hash:%x", hash)
 	}
-	
+
 	return key
 }
 
@@ -648,13 +648,13 @@ func (cm *CacheManager) HashKey(key string) string {
 // GetHealthStatus returns health status of all stores
 func (cm *CacheManager) GetHealthStatus() map[string]bool {
 	status := make(map[string]bool)
-	
+
 	for name, store := range cm.stores {
 		// Simple health check by trying to get stats
 		_, err := store.Stats(context.Background())
 		status[name] = err == nil
 	}
-	
+
 	return status
 }
 
@@ -663,7 +663,7 @@ func (cm *CacheManager) GetHealthStatus() map[string]bool {
 func (cm *CacheManager) getStore(name string) (CacheStore, bool) {
 	cm.mu.RLock()
 	defer cm.mu.RUnlock()
-	
+
 	store, exists := cm.stores[name]
 	return store, exists
 }
@@ -715,9 +715,9 @@ func (cm *CacheManager) startMonitoring() {
 func (cs *CacheStats) RecordHit(storeName string) {
 	cs.mu.Lock()
 	defer cs.mu.Unlock()
-	
+
 	cs.TotalHits++
-	
+
 	if cs.StoreStats[storeName] == nil {
 		cs.StoreStats[storeName] = &StoreStats{}
 	}
@@ -728,9 +728,9 @@ func (cs *CacheStats) RecordHit(storeName string) {
 func (cs *CacheStats) RecordMiss(storeName string) {
 	cs.mu.Lock()
 	defer cs.mu.Unlock()
-	
+
 	cs.TotalMisses++
-	
+
 	if cs.StoreStats[storeName] == nil {
 		cs.StoreStats[storeName] = &StoreStats{}
 	}
@@ -741,9 +741,9 @@ func (cs *CacheStats) RecordMiss(storeName string) {
 func (cs *CacheStats) RecordSet(storeName string) {
 	cs.mu.Lock()
 	defer cs.mu.Unlock()
-	
+
 	cs.TotalSets++
-	
+
 	if cs.StoreStats[storeName] == nil {
 		cs.StoreStats[storeName] = &StoreStats{}
 	}
@@ -753,9 +753,9 @@ func (cs *CacheStats) RecordSet(storeName string) {
 func (cs *CacheStats) RecordDelete(storeName string) {
 	cs.mu.Lock()
 	defer cs.mu.Unlock()
-	
+
 	cs.TotalDeletes++
-	
+
 	if cs.StoreStats[storeName] == nil {
 		cs.StoreStats[storeName] = &StoreStats{}
 	}
@@ -765,7 +765,7 @@ func (cs *CacheStats) RecordDelete(storeName string) {
 func (cs *CacheStats) Reset() {
 	cs.mu.Lock()
 	defer cs.mu.Unlock()
-	
+
 	cs.TotalHits = 0
 	cs.TotalMisses = 0
 	cs.TotalSets = 0
@@ -798,7 +798,7 @@ func (mc *MetricsCollector) processEvent(event CacheEvent) {
 	defer mc.mu.Unlock()
 
 	key := fmt.Sprintf("%s:%s", event.Store, event.Operation)
-	
+
 	if mc.aggregates[key] == nil {
 		mc.aggregates[key] = &MetricAggregate{
 			MinTime: event.Duration,
@@ -810,18 +810,18 @@ func (mc *MetricsCollector) processEvent(event CacheEvent) {
 	agg.Count++
 	agg.TotalTime += event.Duration
 	agg.AvgTime = time.Duration(int64(agg.TotalTime) / agg.Count)
-	
+
 	if event.Duration < agg.MinTime {
 		agg.MinTime = event.Duration
 	}
 	if event.Duration > agg.MaxTime {
 		agg.MaxTime = event.Duration
 	}
-	
+
 	if !event.Success {
 		agg.Errors++
 	}
-	
+
 	agg.LastUpdated = time.Now()
 }
 

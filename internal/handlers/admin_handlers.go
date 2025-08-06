@@ -3,16 +3,16 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
-	"log"
-	
+
 	"github.com/gorilla/mux"
-	"kolajAi/internal/repository"
-	"kolajAi/internal/models"
 	"kolajAi/internal/database"
 	"kolajAi/internal/middleware"
+	"kolajAi/internal/models"
+	"kolajAi/internal/repository"
 )
 
 // AdminHandler handles admin-related requests
@@ -59,7 +59,7 @@ func (h *AdminHandler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 		"RecentOrders": recentOrders,
 		"RecentUsers":  recentUsers,
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/dashboard", data)
 }
 
@@ -75,7 +75,7 @@ func (h *AdminHandler) AdminUsers(w http.ResponseWriter, r *http.Request) {
 
 	limit := 20
 	filters := make(map[string]interface{})
-	
+
 	// Get filters from query params
 	if status := r.URL.Query().Get("status"); status != "" {
 		filters["status"] = status
@@ -114,7 +114,7 @@ func (h *AdminHandler) AdminUsers(w http.ResponseWriter, r *http.Request) {
 		"Stats":       stats,
 		"Filters":     filters,
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/users", data)
 }
 
@@ -130,7 +130,7 @@ func (h *AdminHandler) AdminOrders(w http.ResponseWriter, r *http.Request) {
 
 	limit := 20
 	filters := make(map[string]interface{})
-	
+
 	// Get filters from query params
 	if status := r.URL.Query().Get("status"); status != "" {
 		filters["status"] = status
@@ -166,7 +166,7 @@ func (h *AdminHandler) AdminOrders(w http.ResponseWriter, r *http.Request) {
 		"Stats":       stats,
 		"Filters":     filters,
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/orders", data)
 }
 
@@ -182,7 +182,7 @@ func (h *AdminHandler) AdminProducts(w http.ResponseWriter, r *http.Request) {
 
 	limit := 20
 	filters := make(map[string]interface{})
-	
+
 	// Get filters from query params
 	if status := r.URL.Query().Get("status"); status != "" {
 		filters["status"] = status
@@ -219,7 +219,7 @@ func (h *AdminHandler) AdminProducts(w http.ResponseWriter, r *http.Request) {
 		"TotalPages":  totalPages,
 		"Filters":     filters,
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/products", data)
 }
 
@@ -236,14 +236,14 @@ func (h *AdminHandler) AdminReports(w http.ResponseWriter, r *http.Request) {
 			"TotalCustomers": 0,
 		}
 	}
-	
+
 	// Get recent orders for sales data
 	recentOrders, err := h.AdminRepo.GetRecentOrders(10)
 	if err != nil {
 		Logger.Printf("Error getting recent orders: %v", err)
 		recentOrders = []map[string]interface{}{}
 	}
-	
+
 	data := map[string]interface{}{
 		"Title": "Reports",
 		"Stats": stats,
@@ -257,7 +257,7 @@ func (h *AdminHandler) AdminReports(w http.ResponseWriter, r *http.Request) {
 		"DetailedReports":  []map[string]interface{}{}, // Can be implemented later with detailed reporting
 		"ScheduledReports": []map[string]interface{}{}, // Can be implemented later with scheduled reporting
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/reports", data)
 }
 
@@ -274,14 +274,14 @@ func (h *AdminHandler) AdminVendors(w http.ResponseWriter, r *http.Request) {
 			"TotalRevenue":   "₺0.00",
 		}
 	}
-	
+
 	// Get recent users who are sellers (vendors)
 	recentUsers, err := h.AdminRepo.GetRecentUsers(50)
 	if err != nil {
 		Logger.Printf("Error getting recent users: %v", err)
 		recentUsers = []map[string]interface{}{}
 	}
-	
+
 	// Filter for vendors only
 	vendors := []map[string]interface{}{}
 	for _, user := range recentUsers {
@@ -289,7 +289,7 @@ func (h *AdminHandler) AdminVendors(w http.ResponseWriter, r *http.Request) {
 			vendors = append(vendors, user)
 		}
 	}
-	
+
 	data := map[string]interface{}{
 		"Title":   "Vendor Management",
 		"Vendors": vendors,
@@ -307,7 +307,7 @@ func (h *AdminHandler) AdminVendors(w http.ResponseWriter, r *http.Request) {
 		"CurrentPage": 1,
 		"TotalPages":  5,
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/vendors", data)
 }
 
@@ -318,8 +318,8 @@ func (h *AdminHandler) AdminSystemHealth(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		log.Printf("Error getting system health: %v", err)
 		systemHealth = map[string]interface{}{
-			"OverallStatus": "unhealthy",
-			"HealthScore":   0,
+			"OverallStatus":  "unhealthy",
+			"HealthScore":    0,
 			"DatabaseStatus": "disconnected",
 		}
 	}
@@ -332,7 +332,7 @@ func (h *AdminHandler) AdminSystemHealth(w http.ResponseWriter, r *http.Request)
 	systemHealth["DatabaseConnections"] = "N/A"
 
 	data := map[string]interface{}{
-		"Title": "System Health",
+		"Title":        "System Health",
 		"SystemHealth": systemHealth,
 		"ServerStatus": map[string]interface{}{
 			"CPU": map[string]interface{}{
@@ -436,7 +436,7 @@ func (h *AdminHandler) AdminSystemHealth(w http.ResponseWriter, r *http.Request)
 			},
 		},
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/system-health", data)
 }
 
@@ -448,17 +448,17 @@ func (h *AdminHandler) AdminSEO(w http.ResponseWriter, r *http.Request) {
 		Logger.Printf("Error getting dashboard stats for SEO: %v", err)
 		stats = map[string]interface{}{}
 	}
-	
+
 	data := map[string]interface{}{
 		"Title": "SEO Management",
 		"SEOStats": map[string]interface{}{
-			"OverallScore":        85, // Can be calculated based on various metrics
-			"IndexedPages":        stats["TotalProducts"],
-			"IndexedPagesGrowth":  0,
-			"TotalKeywords":       0, // Can be implemented later
-			"KeywordRankings":     0,
-			"Backlinks":           0,
-			"BacklinksGrowth":     0,
+			"OverallScore":       85, // Can be calculated based on various metrics
+			"IndexedPages":       stats["TotalProducts"],
+			"IndexedPagesGrowth": 0,
+			"TotalKeywords":      0, // Can be implemented later
+			"KeywordRankings":    0,
+			"Backlinks":          0,
+			"BacklinksGrowth":    0,
 		},
 		"MetaTags": []map[string]interface{}{
 			{
@@ -512,10 +512,10 @@ func (h *AdminHandler) AdminSEO(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 		"Sitemap": map[string]interface{}{
-			"TotalURLs":          1250,
-			"IsValid":            true,
-			"LastGenerated":      "2024-01-15 10:00:00",
-			"SubmittedToGoogle":  true,
+			"TotalURLs":         1250,
+			"IsValid":           true,
+			"LastGenerated":     "2024-01-15 10:00:00",
+			"SubmittedToGoogle": true,
 		},
 		"Robots": map[string]interface{}{
 			"IsValid": true,
@@ -548,7 +548,7 @@ func (h *AdminHandler) AdminSEO(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	}
-	
+
 	h.RenderTemplate(w, r, "admin/seo", data)
 }
 
@@ -567,7 +567,7 @@ func (h *AdminHandler) APIGetUserStats(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -579,7 +579,7 @@ func (h *AdminHandler) APIGetUserStats(w http.ResponseWriter, r *http.Request) {
 func (h *AdminHandler) APIUpdateUserStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userIDStr := vars["id"]
-	
+
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -590,11 +590,11 @@ func (h *AdminHandler) APIUpdateUserStatus(w http.ResponseWriter, r *http.Reques
 		})
 		return
 	}
-	
+
 	var request struct {
 		Status string `json:"status"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -604,10 +604,10 @@ func (h *AdminHandler) APIUpdateUserStatus(w http.ResponseWriter, r *http.Reques
 		})
 		return
 	}
-	
+
 	// Convert status to boolean
 	isActive := request.Status == "active"
-	
+
 	// Update user status in database
 	err = h.AdminRepo.UpdateUserStatus(userID, isActive)
 	if err != nil {
@@ -620,7 +620,7 @@ func (h *AdminHandler) APIUpdateUserStatus(w http.ResponseWriter, r *http.Reques
 		})
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -632,7 +632,7 @@ func (h *AdminHandler) APIUpdateUserStatus(w http.ResponseWriter, r *http.Reques
 func (h *AdminHandler) APIUpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	orderIDStr := vars["id"]
-	
+
 	orderID, err := strconv.ParseInt(orderIDStr, 10, 64)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -643,11 +643,11 @@ func (h *AdminHandler) APIUpdateOrderStatus(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
-	
+
 	var request struct {
 		Status string `json:"status"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -657,7 +657,7 @@ func (h *AdminHandler) APIUpdateOrderStatus(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
-	
+
 	// Update order status in database
 	err = h.AdminRepo.UpdateOrderStatus(orderID, request.Status)
 	if err != nil {
@@ -670,7 +670,7 @@ func (h *AdminHandler) APIUpdateOrderStatus(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -682,7 +682,7 @@ func (h *AdminHandler) APIUpdateOrderStatus(w http.ResponseWriter, r *http.Reque
 func (h *AdminHandler) APIDeleteUser(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userIDStr := vars["id"]
-	
+
 	userID, err := strconv.ParseInt(userIDStr, 10, 64)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -693,7 +693,7 @@ func (h *AdminHandler) APIDeleteUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	// Delete user in database (soft delete)
 	err = h.AdminRepo.DeleteUser(userID)
 	if err != nil {
@@ -706,7 +706,7 @@ func (h *AdminHandler) APIDeleteUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -718,7 +718,7 @@ func (h *AdminHandler) APIDeleteUser(w http.ResponseWriter, r *http.Request) {
 func (h *AdminHandler) APIDeleteOrder(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	orderID := vars["id"]
-	
+
 	// Mock deletion
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -741,28 +741,28 @@ func (h *AdminHandler) APISystemHealthCheck(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
-	
+
 	// Add timestamp and format response
 	healthData["timestamp"] = time.Now().Format(time.RFC3339)
-	
+
 	// Add basic checks
 	checks := []map[string]interface{}{}
 	if healthData["DatabaseStatus"] == "connected" {
 		checks = append(checks, map[string]interface{}{
-			"name": "database", 
-			"status": "pass", 
+			"name":    "database",
+			"status":  "pass",
 			"details": "Database connection successful",
 		})
 	} else {
 		checks = append(checks, map[string]interface{}{
-			"name": "database", 
-			"status": "fail", 
+			"name":    "database",
+			"status":  "fail",
 			"details": "Database connection failed",
 		})
 	}
-	
+
 	healthData["checks"] = checks
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -799,7 +799,7 @@ func (h *AdminHandler) APIAnalyzeSEO(w http.ResponseWriter, r *http.Request) {
 			"Add more internal links",
 		},
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -810,7 +810,7 @@ func (h *AdminHandler) APIAnalyzeSEO(w http.ResponseWriter, r *http.Request) {
 // APICreateUser creates a new user
 func (h *AdminHandler) APICreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -820,7 +820,7 @@ func (h *AdminHandler) APICreateUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	// Validate user data
 	if err := user.Validate(); err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -831,11 +831,11 @@ func (h *AdminHandler) APICreateUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	// Set timestamps
 	user.CreatedAt = time.Now()
 	user.UpdatedAt = time.Now()
-	
+
 	// Create user in database
 	userID, err := h.AdminRepo.Create("users", user)
 	if err != nil {
@@ -848,9 +848,9 @@ func (h *AdminHandler) APICreateUser(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	user.ID = userID
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -865,7 +865,7 @@ func (h *AdminHandler) APIBulkProductAction(w http.ResponseWriter, r *http.Reque
 		Action     string  `json:"action"`
 		ProductIDs []int64 `json:"product_ids"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -875,7 +875,7 @@ func (h *AdminHandler) APIBulkProductAction(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
-	
+
 	if len(request.ProductIDs) == 0 {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -885,7 +885,7 @@ func (h *AdminHandler) APIBulkProductAction(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
-	
+
 	// Process bulk action
 	var newStatus string
 	switch request.Action {
@@ -907,7 +907,7 @@ func (h *AdminHandler) APIBulkProductAction(w http.ResponseWriter, r *http.Reque
 		})
 		return
 	}
-	
+
 	// Update products in database
 	successCount := 0
 	for _, productID := range request.ProductIDs {
@@ -921,7 +921,7 @@ func (h *AdminHandler) APIBulkProductAction(w http.ResponseWriter, r *http.Reque
 			successCount++
 		}
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -938,7 +938,7 @@ func (h *AdminHandler) APIBulkProductAction(w http.ResponseWriter, r *http.Reque
 func (h *AdminHandler) APIUpdateProductStatus(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	productIDStr := vars["id"]
-	
+
 	productID, err := strconv.ParseInt(productIDStr, 10, 64)
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
@@ -949,11 +949,11 @@ func (h *AdminHandler) APIUpdateProductStatus(w http.ResponseWriter, r *http.Req
 		})
 		return
 	}
-	
+
 	var request struct {
 		Status string `json:"status"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -963,7 +963,7 @@ func (h *AdminHandler) APIUpdateProductStatus(w http.ResponseWriter, r *http.Req
 		})
 		return
 	}
-	
+
 	// Update product status in database
 	err = h.AdminRepo.Update("products", productID, map[string]interface{}{
 		"status":     request.Status,
@@ -979,7 +979,7 @@ func (h *AdminHandler) APIUpdateProductStatus(w http.ResponseWriter, r *http.Req
 		})
 		return
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -993,7 +993,7 @@ func (h *AdminHandler) APIExportUsers(w http.ResponseWriter, r *http.Request) {
 		Format string   `json:"format"`
 		Fields []string `json:"fields"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
@@ -1003,7 +1003,7 @@ func (h *AdminHandler) APIExportUsers(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	// Get all users (for now, we'll limit to 1000)
 	users, _, err := h.AdminRepo.GetUsers(1, 1000, map[string]interface{}{})
 	if err != nil {
@@ -1016,7 +1016,7 @@ func (h *AdminHandler) APIExportUsers(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	
+
 	// For now, we'll return the data as JSON
 	// In a real implementation, you would generate CSV/Excel/PDF based on the format
 	w.Header().Set("Content-Type", "application/json")
@@ -1070,7 +1070,7 @@ func (h *AdminHandler) UpdateUserStatus(w http.ResponseWriter, r *http.Request) 
 	// Perform action
 	var actionType string
 	var newStatus interface{}
-	
+
 	switch req.Action {
 	case "ban":
 		err = h.AdminRepo.BanUser(req.UserID, req.Reason)
@@ -1095,10 +1095,10 @@ func (h *AdminHandler) UpdateUserStatus(w http.ResponseWriter, r *http.Request) 
 
 	if err != nil {
 		log.Printf("Error updating user status: %v", err)
-		
+
 		// Log failed action
 		middleware.LogAdminAction(adminID, actionType, "user", &req.UserID, currentUser, nil, r)
-		
+
 		http.Error(w, "Failed to update user status", http.StatusInternalServerError)
 		return
 	}
@@ -1152,11 +1152,11 @@ func (h *AdminHandler) BulkUserAction(w http.ResponseWriter, r *http.Request) {
 	// Process each user
 	successCount := 0
 	failedCount := 0
-	
+
 	for _, userID := range req.UserIDs {
 		var err error
 		var actionType string
-		
+
 		switch req.Action {
 		case "ban":
 			err = h.AdminRepo.BanUser(userID, req.Reason)
@@ -1197,5 +1197,3 @@ func (h *AdminHandler) BulkUserAction(w http.ResponseWriter, r *http.Request) {
 		"message":       fmt.Sprintf("Processed %d users successfully, %d failed", successCount, failedCount),
 	})
 }
-
-

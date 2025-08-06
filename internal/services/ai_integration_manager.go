@@ -12,13 +12,13 @@ import (
 // AIIntegrationManager provides AI-powered integration management
 type AIIntegrationManager struct {
 	marketplaceService *MarketplaceIntegrationsService
-	aiService         *AIService
-	learningEngine    *MachineLearningEngine
-	autoOptimizer     *AutoOptimizer
-	predictiveSync    *PredictiveSync
-	intelligentRouter *IntelligentRouter
-	healthMonitor     *SmartHealthMonitor
-	mu                sync.RWMutex
+	aiService          *AIService
+	learningEngine     *MachineLearningEngine
+	autoOptimizer      *AutoOptimizer
+	predictiveSync     *PredictiveSync
+	intelligentRouter  *IntelligentRouter
+	healthMonitor      *SmartHealthMonitor
+	mu                 sync.RWMutex
 }
 
 // MachineLearningEngine handles AI learning and predictions
@@ -31,20 +31,20 @@ type MachineLearningEngine struct {
 
 // MLModel represents a machine learning model
 type MLModel struct {
-	ID           string                 `json:"id"`
-	Type         string                 `json:"type"` // classification, regression, clustering
-	Accuracy     float64                `json:"accuracy"`
-	LastTrained  time.Time              `json:"last_trained"`
-	Parameters   map[string]interface{} `json:"parameters"`
-	IsActive     bool                   `json:"is_active"`
+	ID          string                 `json:"id"`
+	Type        string                 `json:"type"` // classification, regression, clustering
+	Accuracy    float64                `json:"accuracy"`
+	LastTrained time.Time              `json:"last_trained"`
+	Parameters  map[string]interface{} `json:"parameters"`
+	IsActive    bool                   `json:"is_active"`
 }
 
 // TrainingDataPoint represents a single training data point
 type TrainingDataPoint struct {
 	Features map[string]float64 `json:"features"`
 	Label    interface{}        `json:"label"`
-	Weight   float64           `json:"weight"`
-	Created  time.Time         `json:"created"`
+	Weight   float64            `json:"weight"`
+	Created  time.Time          `json:"created"`
 }
 
 // PredictionResult holds prediction results
@@ -57,9 +57,9 @@ type PredictionResult struct {
 
 // AutoOptimizer provides automatic optimization for integrations
 type AutoOptimizer struct {
-	optimizationRules map[string]*OptimizationRule
+	optimizationRules  map[string]*OptimizationRule
 	performanceMetrics map[string]*PerformanceMetric
-	mu                sync.RWMutex
+	mu                 sync.RWMutex
 }
 
 // OptimizationRule defines optimization parameters
@@ -75,13 +75,13 @@ type OptimizationRule struct {
 
 // PerformanceMetric tracks integration performance
 type PerformanceMetric struct {
-	IntegrationID   string    `json:"integration_id"`
-	ResponseTime    float64   `json:"response_time"`
-	SuccessRate     float64   `json:"success_rate"`
-	ErrorRate       float64   `json:"error_rate"`
-	ThroughputRPS   float64   `json:"throughput_rps"`
-	LastUpdated     time.Time `json:"last_updated"`
-	TrendDirection  string    `json:"trend_direction"` // improving, declining, stable
+	IntegrationID  string    `json:"integration_id"`
+	ResponseTime   float64   `json:"response_time"`
+	SuccessRate    float64   `json:"success_rate"`
+	ErrorRate      float64   `json:"error_rate"`
+	ThroughputRPS  float64   `json:"throughput_rps"`
+	LastUpdated    time.Time `json:"last_updated"`
+	TrendDirection string    `json:"trend_direction"` // improving, declining, stable
 }
 
 // PredictiveSync predicts optimal sync timing
@@ -93,12 +93,12 @@ type PredictiveSync struct {
 
 // SyncPattern represents learned sync patterns
 type SyncPattern struct {
-	IntegrationID    string        `json:"integration_id"`
-	OptimalTimes     []time.Time   `json:"optimal_times"`
-	AvgDuration      time.Duration `json:"avg_duration"`
-	SuccessRate      float64       `json:"success_rate"`
-	ResourceUsage    float64       `json:"resource_usage"`
-	LastAnalyzed     time.Time     `json:"last_analyzed"`
+	IntegrationID string        `json:"integration_id"`
+	OptimalTimes  []time.Time   `json:"optimal_times"`
+	AvgDuration   time.Duration `json:"avg_duration"`
+	SuccessRate   float64       `json:"success_rate"`
+	ResourceUsage float64       `json:"resource_usage"`
+	LastAnalyzed  time.Time     `json:"last_analyzed"`
 }
 
 // DemandForecast predicts marketplace demand
@@ -120,20 +120,20 @@ type IntelligentRouter struct {
 
 // RoutingStrategy defines intelligent routing rules
 type RoutingStrategy struct {
-	ID               string                 `json:"id"`
-	IntegrationType  string                 `json:"integration_type"`
-	Strategy         string                 `json:"strategy"` // round_robin, weighted, ai_optimized
-	Parameters       map[string]interface{} `json:"parameters"`
-	HealthThreshold  float64                `json:"health_threshold"`
-	IsActive         bool                   `json:"is_active"`
+	ID              string                 `json:"id"`
+	IntegrationType string                 `json:"integration_type"`
+	Strategy        string                 `json:"strategy"` // round_robin, weighted, ai_optimized
+	Parameters      map[string]interface{} `json:"parameters"`
+	HealthThreshold float64                `json:"health_threshold"`
+	IsActive        bool                   `json:"is_active"`
 }
 
 // AILoadBalancer provides AI-powered load balancing
 type AILoadBalancer struct {
-	nodes           map[string]*LoadBalancerNode
-	algorithm       string // ai_predictive, performance_based, adaptive
-	decisionModel   *MLModel
-	mu              sync.RWMutex
+	nodes         map[string]*LoadBalancerNode
+	algorithm     string // ai_predictive, performance_based, adaptive
+	decisionModel *MLModel
+	mu            sync.RWMutex
 }
 
 // LoadBalancerNode represents a load balancer node
@@ -158,17 +158,17 @@ type SmartHealthMonitor struct {
 
 // AIDiagnostics provides AI-powered diagnostics
 type AIDiagnostics struct {
-	diagnosticModels map[string]*MLModel
-	anomalyDetector  *AnomalyDetector
+	diagnosticModels  map[string]*MLModel
+	anomalyDetector   *AnomalyDetector
 	rootCauseAnalyzer *RootCauseAnalyzer
 }
 
 // AnomalyDetector detects anomalies in integration behavior
 type AnomalyDetector struct {
-	threshold       float64
-	detectionModel  *MLModel
-	anomalyHistory  []AnomalyEvent
-	mu              sync.RWMutex
+	threshold      float64
+	detectionModel *MLModel
+	anomalyHistory []AnomalyEvent
+	mu             sync.RWMutex
 }
 
 // AnomalyEvent represents a detected anomaly
@@ -185,9 +185,9 @@ type AnomalyEvent struct {
 
 // RootCauseAnalyzer analyzes root causes of issues
 type RootCauseAnalyzer struct {
-	analysisModel   *MLModel
-	causePatterns   map[string]*CausePattern
-	correlationMap  map[string][]string
+	analysisModel  *MLModel
+	causePatterns  map[string]*CausePattern
+	correlationMap map[string][]string
 }
 
 // CausePattern represents a root cause pattern
@@ -210,29 +210,29 @@ type PredictiveAlerts struct {
 
 // AlertRule defines predictive alert rules
 type AlertRule struct {
-	ID              string                 `json:"id"`
-	Name            string                 `json:"name"`
-	IntegrationID   string                 `json:"integration_id"`
-	Condition       string                 `json:"condition"`
-	Threshold       float64                `json:"threshold"`
+	ID               string                 `json:"id"`
+	Name             string                 `json:"name"`
+	IntegrationID    string                 `json:"integration_id"`
+	Condition        string                 `json:"condition"`
+	Threshold        float64                `json:"threshold"`
 	PredictionWindow time.Duration          `json:"prediction_window"`
-	Actions         []string               `json:"actions"`
-	IsActive        bool                   `json:"is_active"`
-	Metadata        map[string]interface{} `json:"metadata"`
+	Actions          []string               `json:"actions"`
+	IsActive         bool                   `json:"is_active"`
+	Metadata         map[string]interface{} `json:"metadata"`
 }
 
 // AlertEvent represents a predictive alert
 type AlertEvent struct {
-	ID            string                 `json:"id"`
-	RuleID        string                 `json:"rule_id"`
-	IntegrationID string                 `json:"integration_id"`
-	Level         string                 `json:"level"` // info, warning, error, critical
-	Message       string                 `json:"message"`
-	PredictedTime time.Time              `json:"predicted_time"`
-	Confidence    float64                `json:"confidence"`
-	Metadata      map[string]interface{} `json:"metadata"`
-	Timestamp     time.Time              `json:"timestamp"`
-	IsAcknowledged bool                  `json:"is_acknowledged"`
+	ID             string                 `json:"id"`
+	RuleID         string                 `json:"rule_id"`
+	IntegrationID  string                 `json:"integration_id"`
+	Level          string                 `json:"level"` // info, warning, error, critical
+	Message        string                 `json:"message"`
+	PredictedTime  time.Time              `json:"predicted_time"`
+	Confidence     float64                `json:"confidence"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	Timestamp      time.Time              `json:"timestamp"`
+	IsAcknowledged bool                   `json:"is_acknowledged"`
 }
 
 // AutoHealing provides automatic healing capabilities
@@ -244,15 +244,15 @@ type AutoHealing struct {
 
 // HealingStrategy defines auto-healing strategies
 type HealingStrategy struct {
-	ID              string                 `json:"id"`
-	IntegrationID   string                 `json:"integration_id"`
+	ID               string                 `json:"id"`
+	IntegrationID    string                 `json:"integration_id"`
 	TriggerCondition string                 `json:"trigger_condition"`
-	Actions         []string               `json:"actions"`
-	MaxAttempts     int                    `json:"max_attempts"`
-	CooldownPeriod  time.Duration          `json:"cooldown_period"`
-	SuccessRate     float64                `json:"success_rate"`
-	IsActive        bool                   `json:"is_active"`
-	Parameters      map[string]interface{} `json:"parameters"`
+	Actions          []string               `json:"actions"`
+	MaxAttempts      int                    `json:"max_attempts"`
+	CooldownPeriod   time.Duration          `json:"cooldown_period"`
+	SuccessRate      float64                `json:"success_rate"`
+	IsActive         bool                   `json:"is_active"`
+	Parameters       map[string]interface{} `json:"parameters"`
 }
 
 // HealingAction represents an auto-healing action
@@ -278,13 +278,13 @@ type PerformanceML struct {
 
 // PerformanceBenchmark represents performance benchmarks
 type PerformanceBenchmark struct {
-	IntegrationID   string    `json:"integration_id"`
-	Category        string    `json:"category"`
-	Metric          string    `json:"metric"`
-	BenchmarkValue  float64   `json:"benchmark_value"`
-	CurrentValue    float64   `json:"current_value"`
-	PerformanceGap  float64   `json:"performance_gap"`
-	LastUpdated     time.Time `json:"last_updated"`
+	IntegrationID  string    `json:"integration_id"`
+	Category       string    `json:"category"`
+	Metric         string    `json:"metric"`
+	BenchmarkValue float64   `json:"benchmark_value"`
+	CurrentValue   float64   `json:"current_value"`
+	PerformanceGap float64   `json:"performance_gap"`
+	LastUpdated    time.Time `json:"last_updated"`
 }
 
 // OptimizationTip provides optimization recommendations
@@ -293,7 +293,7 @@ type OptimizationTip struct {
 	Category      string   `json:"category"`
 	Title         string   `json:"title"`
 	Description   string   `json:"description"`
-	Impact        string   `json:"impact"` // low, medium, high
+	Impact        string   `json:"impact"`     // low, medium, high
 	Difficulty    string   `json:"difficulty"` // easy, medium, hard
 	EstimatedGain float64  `json:"estimated_gain"`
 	Steps         []string `json:"steps"`
@@ -303,17 +303,17 @@ type OptimizationTip struct {
 func NewAIIntegrationManager(marketplaceService *MarketplaceIntegrationsService, aiService *AIService) *AIIntegrationManager {
 	manager := &AIIntegrationManager{
 		marketplaceService: marketplaceService,
-		aiService:         aiService,
-		learningEngine:    NewMachineLearningEngine(),
-		autoOptimizer:     NewAutoOptimizer(),
-		predictiveSync:    NewPredictiveSync(),
-		intelligentRouter: NewIntelligentRouter(),
-		healthMonitor:     NewSmartHealthMonitor(),
+		aiService:          aiService,
+		learningEngine:     NewMachineLearningEngine(),
+		autoOptimizer:      NewAutoOptimizer(),
+		predictiveSync:     NewPredictiveSync(),
+		intelligentRouter:  NewIntelligentRouter(),
+		healthMonitor:      NewSmartHealthMonitor(),
 	}
-	
+
 	// Initialize AI models and start background processes
 	go manager.startBackgroundProcesses()
-	
+
 	return manager
 }
 
@@ -432,7 +432,7 @@ func (aim *AIIntegrationManager) startBackgroundProcesses() {
 func (aim *AIIntegrationManager) runPerformanceMonitoring() {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		aim.analyzePerformanceMetrics()
 	}
@@ -442,7 +442,7 @@ func (aim *AIIntegrationManager) runPerformanceMonitoring() {
 func (aim *AIIntegrationManager) runPredictiveAnalysis() {
 	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		aim.runPredictiveModels()
 	}
@@ -452,7 +452,7 @@ func (aim *AIIntegrationManager) runPredictiveAnalysis() {
 func (aim *AIIntegrationManager) runAutoOptimization() {
 	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		aim.executeOptimizations()
 	}
@@ -462,7 +462,7 @@ func (aim *AIIntegrationManager) runAutoOptimization() {
 func (aim *AIIntegrationManager) runHealthMonitoring() {
 	ticker := time.NewTicker(15 * time.Second)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		aim.monitorIntegrationHealth()
 	}
@@ -472,7 +472,7 @@ func (aim *AIIntegrationManager) runHealthMonitoring() {
 func (aim *AIIntegrationManager) runModelTraining() {
 	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		aim.trainModels()
 	}
@@ -481,12 +481,12 @@ func (aim *AIIntegrationManager) runModelTraining() {
 // analyzePerformanceMetrics analyzes performance metrics
 func (aim *AIIntegrationManager) analyzePerformanceMetrics() {
 	integrations := aim.marketplaceService.GetAllIntegrations()
-	
+
 	for id, integration := range integrations {
 		if !integration.IsActive {
 			continue
 		}
-		
+
 		// Simulate performance metrics collection
 		metric := &PerformanceMetric{
 			IntegrationID:  id,
@@ -497,11 +497,11 @@ func (aim *AIIntegrationManager) analyzePerformanceMetrics() {
 			LastUpdated:    time.Now(),
 			TrendDirection: aim.analyzeTrend(id),
 		}
-		
+
 		aim.autoOptimizer.mu.Lock()
 		aim.autoOptimizer.performanceMetrics[id] = metric
 		aim.autoOptimizer.mu.Unlock()
-		
+
 		// Check for performance issues
 		if metric.SuccessRate < 0.95 || metric.ResponseTime > 5000 {
 			aim.triggerPerformanceAlert(id, metric)
@@ -568,31 +568,31 @@ func (aim *AIIntegrationManager) triggerPerformanceAlert(integrationID string, m
 		Confidence:    0.85,
 		Timestamp:     time.Now(),
 		Metadata: map[string]interface{}{
-			"success_rate":   metric.SuccessRate,
-			"response_time":  metric.ResponseTime,
-			"error_rate":     metric.ErrorRate,
+			"success_rate":  metric.SuccessRate,
+			"response_time": metric.ResponseTime,
+			"error_rate":    metric.ErrorRate,
 		},
 	}
-	
+
 	aim.healthMonitor.predictiveAlerts.mu.Lock()
 	aim.healthMonitor.predictiveAlerts.alertHistory = append(
 		aim.healthMonitor.predictiveAlerts.alertHistory, *alert)
 	aim.healthMonitor.predictiveAlerts.mu.Unlock()
-	
+
 	log.Printf("Performance alert triggered for integration %s: %s", integrationID, alert.Message)
 }
 
 // runPredictiveModels runs predictive models
 func (aim *AIIntegrationManager) runPredictiveModels() {
 	integrations := aim.marketplaceService.GetAllIntegrations()
-	
+
 	for id := range integrations {
 		// Predict optimal sync time
 		aim.predictOptimalSyncTime(id)
-		
+
 		// Predict demand
 		aim.predictDemand(id)
-		
+
 		// Predict potential issues
 		aim.predictPotentialIssues(id)
 	}
@@ -601,8 +601,8 @@ func (aim *AIIntegrationManager) runPredictiveModels() {
 // predictOptimalSyncTime predicts optimal sync time
 func (aim *AIIntegrationManager) predictOptimalSyncTime(integrationID string) {
 	// AI-based prediction of optimal sync time
-	optimalTime := time.Now().Add(time.Duration((time.Now().Unix()%3600)*int64(time.Second)))
-	
+	optimalTime := time.Now().Add(time.Duration((time.Now().Unix() % 3600) * int64(time.Second)))
+
 	pattern := &SyncPattern{
 		IntegrationID: integrationID,
 		OptimalTimes:  []time.Time{optimalTime},
@@ -611,7 +611,7 @@ func (aim *AIIntegrationManager) predictOptimalSyncTime(integrationID string) {
 		ResourceUsage: 0.3,
 		LastAnalyzed:  time.Now(),
 	}
-	
+
 	aim.predictiveSync.mu.Lock()
 	aim.predictiveSync.syncPatterns[integrationID] = pattern
 	aim.predictiveSync.mu.Unlock()
@@ -623,9 +623,9 @@ func (aim *AIIntegrationManager) predictDemand(integrationID string) {
 	baseDemand := 100.0
 	seasonalFactor := 1.0 + (0.2 * math.Sin(float64(time.Now().YearDay())*2*math.Pi/365))
 	trendFactor := 1.0 + (0.1 * math.Sin(float64(time.Now().Unix())/86400))
-	
+
 	predictedDemand := baseDemand * seasonalFactor * trendFactor
-	
+
 	forecast := &DemandForecast{
 		IntegrationID:   integrationID,
 		PredictedDemand: predictedDemand,
@@ -634,7 +634,7 @@ func (aim *AIIntegrationManager) predictDemand(integrationID string) {
 		Factors:         []string{"seasonal", "trend", "historical"},
 		ValidUntil:      time.Now().Add(24 * time.Hour),
 	}
-	
+
 	aim.predictiveSync.mu.Lock()
 	aim.predictiveSync.demandForecasts[integrationID] = forecast
 	aim.predictiveSync.mu.Unlock()
@@ -644,7 +644,7 @@ func (aim *AIIntegrationManager) predictDemand(integrationID string) {
 func (aim *AIIntegrationManager) predictPotentialIssues(integrationID string) {
 	// AI-based issue prediction
 	riskScore := aim.calculateRiskScore(integrationID)
-	
+
 	if riskScore > 0.7 {
 		alert := &AlertEvent{
 			ID:            fmt.Sprintf("pred_%s_%d", integrationID, time.Now().Unix()),
@@ -655,11 +655,11 @@ func (aim *AIIntegrationManager) predictPotentialIssues(integrationID string) {
 			Confidence:    riskScore,
 			Timestamp:     time.Now(),
 			Metadata: map[string]interface{}{
-				"risk_score": riskScore,
+				"risk_score":      riskScore,
 				"prediction_type": "performance_degradation",
 			},
 		}
-		
+
 		aim.healthMonitor.predictiveAlerts.mu.Lock()
 		aim.healthMonitor.predictiveAlerts.alertHistory = append(
 			aim.healthMonitor.predictiveAlerts.alertHistory, *alert)
@@ -673,7 +673,7 @@ func (aim *AIIntegrationManager) calculateRiskScore(integrationID string) float6
 	baseRisk := 0.1
 	timeBasedRisk := 0.3 * math.Abs(math.Sin(float64(time.Now().Unix())/3600))
 	loadBasedRisk := 0.4 * aim.getCurrentLoadFactor(integrationID)
-	
+
 	return math.Min(1.0, baseRisk+timeBasedRisk+loadBasedRisk)
 }
 
@@ -681,7 +681,7 @@ func (aim *AIIntegrationManager) calculateRiskScore(integrationID string) float6
 func (aim *AIIntegrationManager) executeOptimizations() {
 	aim.autoOptimizer.mu.RLock()
 	defer aim.autoOptimizer.mu.RUnlock()
-	
+
 	for id, metric := range aim.autoOptimizer.performanceMetrics {
 		if metric.SuccessRate < 0.98 {
 			aim.optimizeIntegration(id, metric)
@@ -692,10 +692,10 @@ func (aim *AIIntegrationManager) executeOptimizations() {
 // optimizeIntegration optimizes a specific integration
 func (aim *AIIntegrationManager) optimizeIntegration(integrationID string, metric *PerformanceMetric) {
 	log.Printf("Optimizing integration %s (Success Rate: %.2f%%)", integrationID, metric.SuccessRate*100)
-	
+
 	// Apply AI-driven optimizations
 	optimizations := aim.generateOptimizations(integrationID, metric)
-	
+
 	for _, opt := range optimizations {
 		aim.applyOptimization(integrationID, opt)
 	}
@@ -704,7 +704,7 @@ func (aim *AIIntegrationManager) optimizeIntegration(integrationID string, metri
 // generateOptimizations generates optimization recommendations
 func (aim *AIIntegrationManager) generateOptimizations(_ string, metric *PerformanceMetric) []OptimizationTip {
 	tips := []OptimizationTip{}
-	
+
 	if metric.ResponseTime > 2000 {
 		tips = append(tips, OptimizationTip{
 			ID:            "reduce_response_time",
@@ -717,7 +717,7 @@ func (aim *AIIntegrationManager) generateOptimizations(_ string, metric *Perform
 			Steps:         []string{"Enable response caching", "Optimize query parameters", "Use connection pooling"},
 		})
 	}
-	
+
 	if metric.ErrorRate > 0.05 {
 		tips = append(tips, OptimizationTip{
 			ID:            "reduce_error_rate",
@@ -730,14 +730,14 @@ func (aim *AIIntegrationManager) generateOptimizations(_ string, metric *Perform
 			Steps:         []string{"Add exponential backoff", "Implement circuit breaker", "Improve error logging"},
 		})
 	}
-	
+
 	return tips
 }
 
 // applyOptimization applies an optimization
 func (aim *AIIntegrationManager) applyOptimization(integrationID string, tip OptimizationTip) {
 	log.Printf("Applying optimization '%s' to integration %s", tip.Title, integrationID)
-	
+
 	// Simulate optimization application
 	// In a real implementation, this would apply actual optimizations
 }
@@ -745,18 +745,18 @@ func (aim *AIIntegrationManager) applyOptimization(integrationID string, tip Opt
 // monitorIntegrationHealth monitors integration health
 func (aim *AIIntegrationManager) monitorIntegrationHealth() {
 	integrations := aim.marketplaceService.GetAllIntegrations()
-	
+
 	for id, integration := range integrations {
 		if !integration.IsActive {
 			continue
 		}
-		
+
 		healthScore := aim.calculateHealthScore(id)
-		
+
 		if healthScore < 0.8 {
 			aim.triggerHealthAlert(id, healthScore)
 		}
-		
+
 		// Check for anomalies
 		aim.detectAnomalies(id)
 	}
@@ -768,7 +768,7 @@ func (aim *AIIntegrationManager) calculateHealthScore(integrationID string) floa
 	performanceScore := aim.getPerformanceScore(integrationID)
 	reliabilityScore := aim.getReliabilityScore(integrationID)
 	availabilityScore := aim.getAvailabilityScore(integrationID)
-	
+
 	// Weighted average
 	return (performanceScore*0.4 + reliabilityScore*0.4 + availabilityScore*0.2)
 }
@@ -777,7 +777,7 @@ func (aim *AIIntegrationManager) calculateHealthScore(integrationID string) floa
 func (aim *AIIntegrationManager) getPerformanceScore(integrationID string) float64 {
 	aim.autoOptimizer.mu.RLock()
 	defer aim.autoOptimizer.mu.RUnlock()
-	
+
 	if metric, exists := aim.autoOptimizer.performanceMetrics[integrationID]; exists {
 		return metric.SuccessRate
 	}
@@ -810,12 +810,12 @@ func (aim *AIIntegrationManager) triggerHealthAlert(integrationID string, health
 			"threshold":    0.8,
 		},
 	}
-	
+
 	aim.healthMonitor.predictiveAlerts.mu.Lock()
 	aim.healthMonitor.predictiveAlerts.alertHistory = append(
 		aim.healthMonitor.predictiveAlerts.alertHistory, *alert)
 	aim.healthMonitor.predictiveAlerts.mu.Unlock()
-	
+
 	log.Printf("Health alert triggered for integration %s: %.2f", integrationID, healthScore)
 }
 
@@ -824,9 +824,9 @@ func (aim *AIIntegrationManager) detectAnomalies(integrationID string) {
 	// AI-based anomaly detection
 	currentMetrics := aim.getCurrentMetrics(integrationID)
 	historicalBaseline := aim.getHistoricalBaseline(integrationID)
-	
+
 	anomalyScore := aim.calculateAnomalyScore(currentMetrics, historicalBaseline)
-	
+
 	if anomalyScore > aim.healthMonitor.aiDiagnostics.anomalyDetector.threshold {
 		anomaly := AnomalyEvent{
 			ID:            fmt.Sprintf("anomaly_%s_%d", integrationID, time.Now().Unix()),
@@ -838,12 +838,12 @@ func (aim *AIIntegrationManager) detectAnomalies(integrationID string) {
 			Timestamp:     time.Now(),
 			IsResolved:    false,
 		}
-		
+
 		aim.healthMonitor.aiDiagnostics.anomalyDetector.mu.Lock()
 		aim.healthMonitor.aiDiagnostics.anomalyDetector.anomalyHistory = append(
 			aim.healthMonitor.aiDiagnostics.anomalyDetector.anomalyHistory, anomaly)
 		aim.healthMonitor.aiDiagnostics.anomalyDetector.mu.Unlock()
-		
+
 		log.Printf("Anomaly detected for integration %s: %s", integrationID, anomaly.Description)
 	}
 }
@@ -872,19 +872,19 @@ func (aim *AIIntegrationManager) getHistoricalBaseline(_ string) map[string]inte
 func (aim *AIIntegrationManager) calculateAnomalyScore(current, baseline map[string]interface{}) float64 {
 	// Simple anomaly score calculation
 	score := 0.0
-	
+
 	if currentRT, ok := current["response_time"].(float64); ok {
 		if baselineRT, ok := baseline["response_time"].(float64); ok {
 			score += math.Abs(currentRT-baselineRT) / baselineRT
 		}
 	}
-	
+
 	if currentSR, ok := current["success_rate"].(float64); ok {
 		if baselineSR, ok := baseline["success_rate"].(float64); ok {
 			score += math.Abs(currentSR-baselineSR) / baselineSR
 		}
 	}
-	
+
 	return score
 }
 
@@ -903,16 +903,16 @@ func (aim *AIIntegrationManager) getSeverityLevel(score float64) string {
 // trainModels trains machine learning models
 func (aim *AIIntegrationManager) trainModels() {
 	log.Println("Training AI models for integration optimization...")
-	
+
 	// Train performance prediction model
 	aim.trainPerformancePredictionModel()
-	
+
 	// Train demand forecasting model
 	aim.trainDemandForecastingModel()
-	
+
 	// Train anomaly detection model
 	aim.trainAnomalyDetectionModel()
-	
+
 	// Train optimization recommendation model
 	aim.trainOptimizationModel()
 }
@@ -931,11 +931,11 @@ func (aim *AIIntegrationManager) trainPerformancePredictionModel() {
 		},
 		IsActive: true,
 	}
-	
+
 	aim.learningEngine.mu.Lock()
 	aim.learningEngine.models["performance_predictor"] = model
 	aim.learningEngine.mu.Unlock()
-	
+
 	log.Println("Performance prediction model trained successfully")
 }
 
@@ -947,17 +947,17 @@ func (aim *AIIntegrationManager) trainDemandForecastingModel() {
 		Accuracy:    0.78,
 		LastTrained: time.Now(),
 		Parameters: map[string]interface{}{
-			"algorithm":     "time_series",
-			"seasonality":   true,
-			"trend":         true,
+			"algorithm":   "time_series",
+			"seasonality": true,
+			"trend":       true,
 		},
 		IsActive: true,
 	}
-	
+
 	aim.learningEngine.mu.Lock()
 	aim.learningEngine.models["demand_forecaster"] = model
 	aim.learningEngine.mu.Unlock()
-	
+
 	log.Println("Demand forecasting model trained successfully")
 }
 
@@ -974,11 +974,11 @@ func (aim *AIIntegrationManager) trainAnomalyDetectionModel() {
 		},
 		IsActive: true,
 	}
-	
+
 	aim.learningEngine.mu.Lock()
 	aim.learningEngine.models["anomaly_detector"] = model
 	aim.learningEngine.mu.Unlock()
-	
+
 	log.Println("Anomaly detection model trained successfully")
 }
 
@@ -990,17 +990,17 @@ func (aim *AIIntegrationManager) trainOptimizationModel() {
 		Accuracy:    0.88,
 		LastTrained: time.Now(),
 		Parameters: map[string]interface{}{
-			"algorithm":     "random_forest",
-			"n_estimators":  100,
-			"max_depth":     10,
+			"algorithm":    "random_forest",
+			"n_estimators": 100,
+			"max_depth":    10,
 		},
 		IsActive: true,
 	}
-	
+
 	aim.learningEngine.mu.Lock()
 	aim.learningEngine.models["optimization_recommender"] = model
 	aim.learningEngine.mu.Unlock()
-	
+
 	log.Println("Optimization recommendation model trained successfully")
 }
 
@@ -1008,7 +1008,7 @@ func (aim *AIIntegrationManager) trainOptimizationModel() {
 func (aim *AIIntegrationManager) GetAIInsights(integrationID string) (map[string]interface{}, error) {
 	aim.mu.RLock()
 	defer aim.mu.RUnlock()
-	
+
 	insights := map[string]interface{}{
 		"integration_id": integrationID,
 		"timestamp":      time.Now(),
@@ -1018,7 +1018,7 @@ func (aim *AIIntegrationManager) GetAIInsights(integrationID string) (map[string
 		"optimizations":  aim.getOptimizationInsights(integrationID),
 		"anomalies":      aim.getAnomalyInsights(integrationID),
 	}
-	
+
 	return insights, nil
 }
 
@@ -1026,18 +1026,18 @@ func (aim *AIIntegrationManager) GetAIInsights(integrationID string) (map[string
 func (aim *AIIntegrationManager) getPerformanceInsights(integrationID string) map[string]interface{} {
 	aim.autoOptimizer.mu.RLock()
 	defer aim.autoOptimizer.mu.RUnlock()
-	
+
 	if metric, exists := aim.autoOptimizer.performanceMetrics[integrationID]; exists {
 		return map[string]interface{}{
-			"response_time":    metric.ResponseTime,
-			"success_rate":     metric.SuccessRate,
-			"error_rate":       metric.ErrorRate,
-			"throughput_rps":   metric.ThroughputRPS,
-			"trend_direction":  metric.TrendDirection,
-			"last_updated":     metric.LastUpdated,
+			"response_time":   metric.ResponseTime,
+			"success_rate":    metric.SuccessRate,
+			"error_rate":      metric.ErrorRate,
+			"throughput_rps":  metric.ThroughputRPS,
+			"trend_direction": metric.TrendDirection,
+			"last_updated":    metric.LastUpdated,
 		}
 	}
-	
+
 	return map[string]interface{}{}
 }
 
@@ -1045,17 +1045,17 @@ func (aim *AIIntegrationManager) getPerformanceInsights(integrationID string) ma
 func (aim *AIIntegrationManager) getPredictiveInsights(integrationID string) map[string]interface{} {
 	aim.predictiveSync.mu.RLock()
 	defer aim.predictiveSync.mu.RUnlock()
-	
+
 	insights := map[string]interface{}{}
-	
+
 	if pattern, exists := aim.predictiveSync.syncPatterns[integrationID]; exists {
 		insights["sync_pattern"] = pattern
 	}
-	
+
 	if forecast, exists := aim.predictiveSync.demandForecasts[integrationID]; exists {
 		insights["demand_forecast"] = forecast
 	}
-	
+
 	return insights
 }
 
@@ -1063,15 +1063,15 @@ func (aim *AIIntegrationManager) getPredictiveInsights(integrationID string) map
 func (aim *AIIntegrationManager) getOptimizationInsights(integrationID string) map[string]interface{} {
 	aim.autoOptimizer.mu.RLock()
 	defer aim.autoOptimizer.mu.RUnlock()
-	
+
 	if metric, exists := aim.autoOptimizer.performanceMetrics[integrationID]; exists {
 		tips := aim.generateOptimizations(integrationID, metric)
 		return map[string]interface{}{
 			"optimization_tips": tips,
-			"estimated_impact": aim.calculateOptimizationImpact(tips),
+			"estimated_impact":  aim.calculateOptimizationImpact(tips),
 		}
 	}
-	
+
 	return map[string]interface{}{}
 }
 
@@ -1088,21 +1088,21 @@ func (aim *AIIntegrationManager) calculateOptimizationImpact(tips []Optimization
 func (aim *AIIntegrationManager) getAnomalyInsights(integrationID string) map[string]interface{} {
 	aim.healthMonitor.aiDiagnostics.anomalyDetector.mu.RLock()
 	defer aim.healthMonitor.aiDiagnostics.anomalyDetector.mu.RUnlock()
-	
+
 	recentAnomalies := []AnomalyEvent{}
 	cutoff := time.Now().Add(-24 * time.Hour)
-	
+
 	for _, anomaly := range aim.healthMonitor.aiDiagnostics.anomalyDetector.anomalyHistory {
 		if anomaly.IntegrationID == integrationID && anomaly.Timestamp.After(cutoff) {
 			recentAnomalies = append(recentAnomalies, anomaly)
 		}
 	}
-	
+
 	// Sort by timestamp (most recent first)
 	sort.Slice(recentAnomalies, func(i, j int) bool {
 		return recentAnomalies[i].Timestamp.After(recentAnomalies[j].Timestamp)
 	})
-	
+
 	return map[string]interface{}{
 		"recent_anomalies": recentAnomalies,
 		"anomaly_count":    len(recentAnomalies),
@@ -1113,7 +1113,7 @@ func (aim *AIIntegrationManager) getAnomalyInsights(integrationID string) map[st
 func (aim *AIIntegrationManager) GetAllAIInsights() (map[string]interface{}, error) {
 	integrations := aim.marketplaceService.GetAllIntegrations()
 	allInsights := make(map[string]interface{})
-	
+
 	for id := range integrations {
 		insights, err := aim.GetAIInsights(id)
 		if err != nil {
@@ -1121,17 +1121,17 @@ func (aim *AIIntegrationManager) GetAllAIInsights() (map[string]interface{}, err
 		}
 		allInsights[id] = insights
 	}
-	
+
 	// Add global insights
 	allInsights["global"] = map[string]interface{}{
-		"total_integrations":    len(integrations),
-		"active_integrations":   aim.countActiveIntegrations(),
-		"average_health_score":  aim.calculateAverageHealthScore(),
-		"total_anomalies":       aim.getTotalAnomalies(),
+		"total_integrations":         len(integrations),
+		"active_integrations":        aim.countActiveIntegrations(),
+		"average_health_score":       aim.calculateAverageHealthScore(),
+		"total_anomalies":            aim.getTotalAnomalies(),
 		"optimization_opportunities": aim.getOptimizationOpportunities(),
-		"ai_models_status":      aim.getAIModelsStatus(),
+		"ai_models_status":           aim.getAIModelsStatus(),
 	}
-	
+
 	return allInsights, nil
 }
 
@@ -1152,18 +1152,18 @@ func (aim *AIIntegrationManager) calculateAverageHealthScore() float64 {
 	integrations := aim.marketplaceService.GetAllIntegrations()
 	totalScore := 0.0
 	activeCount := 0
-	
+
 	for id, integration := range integrations {
 		if integration.IsActive {
 			totalScore += aim.calculateHealthScore(id)
 			activeCount++
 		}
 	}
-	
+
 	if activeCount == 0 {
 		return 0.0
 	}
-	
+
 	return totalScore / float64(activeCount)
 }
 
@@ -1171,7 +1171,7 @@ func (aim *AIIntegrationManager) calculateAverageHealthScore() float64 {
 func (aim *AIIntegrationManager) getTotalAnomalies() int {
 	aim.healthMonitor.aiDiagnostics.anomalyDetector.mu.RLock()
 	defer aim.healthMonitor.aiDiagnostics.anomalyDetector.mu.RUnlock()
-	
+
 	return len(aim.healthMonitor.aiDiagnostics.anomalyDetector.anomalyHistory)
 }
 
@@ -1179,14 +1179,14 @@ func (aim *AIIntegrationManager) getTotalAnomalies() int {
 func (aim *AIIntegrationManager) getOptimizationOpportunities() int {
 	aim.autoOptimizer.mu.RLock()
 	defer aim.autoOptimizer.mu.RUnlock()
-	
+
 	opportunities := 0
 	for _, metric := range aim.autoOptimizer.performanceMetrics {
 		if metric.SuccessRate < 0.98 || metric.ResponseTime > 2000 {
 			opportunities++
 		}
 	}
-	
+
 	return opportunities
 }
 
@@ -1194,18 +1194,18 @@ func (aim *AIIntegrationManager) getOptimizationOpportunities() int {
 func (aim *AIIntegrationManager) getAIModelsStatus() map[string]interface{} {
 	aim.learningEngine.mu.RLock()
 	defer aim.learningEngine.mu.RUnlock()
-	
+
 	status := map[string]interface{}{
-		"total_models": len(aim.learningEngine.models),
+		"total_models":  len(aim.learningEngine.models),
 		"active_models": 0,
-		"models": make([]map[string]interface{}, 0),
+		"models":        make([]map[string]interface{}, 0),
 	}
-	
+
 	for _, model := range aim.learningEngine.models {
 		if model.IsActive {
 			status["active_models"] = status["active_models"].(int) + 1
 		}
-		
+
 		modelInfo := map[string]interface{}{
 			"id":           model.ID,
 			"type":         model.Type,
@@ -1213,9 +1213,9 @@ func (aim *AIIntegrationManager) getAIModelsStatus() map[string]interface{} {
 			"last_trained": model.LastTrained,
 			"is_active":    model.IsActive,
 		}
-		
+
 		status["models"] = append(status["models"].([]map[string]interface{}), modelInfo)
 	}
-	
+
 	return status
 }

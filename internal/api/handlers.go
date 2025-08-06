@@ -14,14 +14,14 @@ import (
 
 // APIHandlers provides comprehensive REST API endpoints
 type APIHandlers struct {
-	middleware      *APIMiddleware
-	productService  *services.ProductService
-	orderService    *services.OrderService
-	vendorService   *services.VendorService
-	aiService       *services.AIService
-	authService     *services.AuthService
+	middleware       *APIMiddleware
+	productService   *services.ProductService
+	orderService     *services.OrderService
+	vendorService    *services.VendorService
+	aiService        *services.AIService
+	authService      *services.AuthService
 	inventoryService *services.InventoryService
-	validator       *validation.Validator
+	validator        *validation.Validator
 }
 
 // NewAPIHandlers creates new API handlers
@@ -486,12 +486,12 @@ func (h *APIHandlers) sendError(w http.ResponseWriter, r *http.Request, statusCo
 func (h *APIHandlers) sendResponse(w http.ResponseWriter, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	
+
 	response := map[string]interface{}{
 		"success": true,
 		"data":    data,
 	}
-	
+
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -555,7 +555,7 @@ func (h *APIHandlers) getProductCategories(w http.ResponseWriter, r *http.Reques
 		{"id": 4, "name": "Spor", "slug": "spor"},
 		{"id": 5, "name": "Kitap", "slug": "kitap"},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"categories": categories,
 		"total":      len(categories),
@@ -577,19 +577,19 @@ func (h *APIHandlers) getTrendingProducts(w http.ResponseWriter, r *http.Request
 	// This would typically fetch from database
 	products := []map[string]interface{}{
 		{
-			"id":    1,
-			"name":  "Trending Product 1",
-			"price": 99.99,
+			"id":          1,
+			"name":        "Trending Product 1",
+			"price":       99.99,
 			"trend_score": 95,
 		},
 		{
-			"id":    2,
-			"name":  "Trending Product 2", 
-			"price": 149.99,
+			"id":          2,
+			"name":        "Trending Product 2",
+			"price":       149.99,
 			"trend_score": 88,
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"products": products,
 		"total":    len(products),
@@ -625,7 +625,7 @@ func (h *APIHandlers) getFeaturedProducts(w http.ResponseWriter, r *http.Request
 			"rating":   4.9,
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"products": products,
 		"total":    len(products),
@@ -651,10 +651,10 @@ func (h *APIHandlers) getOrderByID(w http.ResponseWriter, r *http.Request) {
 	// Extract order ID from URL path
 	// This would typically fetch from database
 	order := map[string]interface{}{
-		"id":       1,
-		"user_id":  1,
-		"total":    299.99,
-		"status":   "pending",
+		"id":      1,
+		"user_id": 1,
+		"total":   299.99,
+		"status":  "pending",
 		"items": []map[string]interface{}{
 			{
 				"product_id": 1,
@@ -663,7 +663,7 @@ func (h *APIHandlers) getOrderByID(w http.ResponseWriter, r *http.Request) {
 			},
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"order": order,
 	})
@@ -703,12 +703,12 @@ func (h *APIHandlers) handleOrderStatus(w http.ResponseWriter, r *http.Request) 
 func (h *APIHandlers) getOrderStatus(w http.ResponseWriter, r *http.Request) {
 	// This would typically fetch from database
 	status := map[string]interface{}{
-		"order_id":     1,
-		"status":       "processing",
-		"last_updated": "2024-01-15T10:30:00Z",
+		"order_id":        1,
+		"status":          "processing",
+		"last_updated":    "2024-01-15T10:30:00Z",
 		"tracking_number": "TRK123456789",
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"status": status,
 	})
@@ -820,7 +820,7 @@ func (h *APIHandlers) getUserProfile(w http.ResponseWriter, r *http.Request) {
 		"phone": "+1234567890",
 		"role":  "user",
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"profile": profile,
 	})
@@ -850,19 +850,19 @@ func (h *APIHandlers) getUserOrders(w http.ResponseWriter, r *http.Request) {
 	// Get user orders implementation
 	orders := []map[string]interface{}{
 		{
-			"id":       1,
-			"total":    299.99,
-			"status":   "completed",
-			"date":     "2024-01-15",
+			"id":     1,
+			"total":  299.99,
+			"status": "completed",
+			"date":   "2024-01-15",
 		},
 		{
-			"id":       2,
-			"total":    199.99,
-			"status":   "pending",
-			"date":     "2024-01-16",
+			"id":     2,
+			"total":  199.99,
+			"status": "pending",
+			"date":   "2024-01-16",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"orders": orders,
 		"total":  len(orders),
@@ -898,7 +898,7 @@ func (h *APIHandlers) getUserWishlist(w http.ResponseWriter, r *http.Request) {
 			"price": 149.99,
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"wishlist": wishlist,
 		"total":    len(wishlist),
@@ -940,21 +940,21 @@ func (h *APIHandlers) getVendors(w http.ResponseWriter, r *http.Request) {
 	// Get vendors implementation
 	vendors := []map[string]interface{}{
 		{
-			"id":      1,
-			"name":    "Vendor 1",
-			"email":   "vendor1@example.com",
-			"status":  "active",
-			"rating":  4.5,
+			"id":     1,
+			"name":   "Vendor 1",
+			"email":  "vendor1@example.com",
+			"status": "active",
+			"rating": 4.5,
 		},
 		{
-			"id":      2,
-			"name":    "Vendor 2",
-			"email":   "vendor2@example.com",
-			"status":  "active",
-			"rating":  4.2,
+			"id":     2,
+			"name":   "Vendor 2",
+			"email":  "vendor2@example.com",
+			"status": "active",
+			"rating": 4.2,
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"vendors": vendors,
 		"total":   len(vendors),
@@ -965,8 +965,8 @@ func (h *APIHandlers) getVendors(w http.ResponseWriter, r *http.Request) {
 func (h *APIHandlers) createVendor(w http.ResponseWriter, r *http.Request) {
 	// Create vendor implementation
 	h.sendResponse(w, map[string]interface{}{
-		"success": true,
-		"message": "Vendor created successfully",
+		"success":   true,
+		"message":   "Vendor created successfully",
 		"vendor_id": 3,
 	})
 }
@@ -997,7 +997,7 @@ func (h *APIHandlers) getVendorByID(w http.ResponseWriter, r *http.Request) {
 		"rating":  4.5,
 		"address": "123 Main St, City, Country",
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"vendor": vendor,
 	})
@@ -1050,7 +1050,7 @@ func (h *APIHandlers) getVendorProducts(w http.ResponseWriter, r *http.Request) 
 			"category":  "Clothing",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"products": products,
 		"total":    len(products),
@@ -1086,7 +1086,7 @@ func (h *APIHandlers) getVendorOrders(w http.ResponseWriter, r *http.Request) {
 			"date":      "2024-01-14",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"orders": orders,
 		"total":  len(orders),
@@ -1122,10 +1122,10 @@ func (h *APIHandlers) performAISearch(w http.ResponseWriter, r *http.Request) {
 			"description": "Machine learning suggested item",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
-		"results": results,
-		"total":   len(results),
+		"results":    results,
+		"total":      len(results),
 		"query_time": "0.05s",
 		"ai_powered": true,
 	})
@@ -1145,10 +1145,10 @@ func (h *APIHandlers) handleAIAnalytics(w http.ResponseWriter, r *http.Request) 
 func (h *APIHandlers) getAIAnalytics(w http.ResponseWriter, r *http.Request) {
 	// AI analytics implementation
 	analytics := map[string]interface{}{
-		"total_searches":      1500,
-		"ai_recommendations":  850,
-		"conversion_rate":     0.12,
-		"user_satisfaction":   4.7,
+		"total_searches":     1500,
+		"ai_recommendations": 850,
+		"conversion_rate":    0.12,
+		"user_satisfaction":  4.7,
 		"popular_categories": []string{"Electronics", "Clothing", "Books"},
 		"trending_products": []map[string]interface{}{
 			{
@@ -1163,9 +1163,9 @@ func (h *APIHandlers) getAIAnalytics(w http.ResponseWriter, r *http.Request) {
 			"uptime":        99.9,
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
-		"analytics": analytics,
+		"analytics":    analytics,
 		"generated_at": "2024-01-15T10:30:00Z",
 	})
 }
@@ -1203,7 +1203,7 @@ func (h *APIHandlers) getInventory(w http.ResponseWriter, r *http.Request) {
 			"status":     "low_stock",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"inventory": inventory,
 		"total":     len(inventory),
@@ -1252,7 +1252,7 @@ func (h *APIHandlers) getStockLevels(w http.ResponseWriter, r *http.Request) {
 			"status":        "low",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"stock_levels": stockLevels,
 		"total":        len(stockLevels),
@@ -1299,7 +1299,7 @@ func (h *APIHandlers) getInventoryAlerts(w http.ResponseWriter, r *http.Request)
 			"created_at": "2024-01-15T09:30:00Z",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"alerts": alerts,
 		"total":  len(alerts),
@@ -1363,23 +1363,23 @@ func (h *APIHandlers) getAdminUsers(w http.ResponseWriter, r *http.Request) {
 	// Get admin users implementation
 	users := []map[string]interface{}{
 		{
-			"id":       1,
-			"name":     "Admin User 1",
-			"email":    "admin1@example.com",
-			"role":     "admin",
-			"status":   "active",
+			"id":         1,
+			"name":       "Admin User 1",
+			"email":      "admin1@example.com",
+			"role":       "admin",
+			"status":     "active",
 			"last_login": "2024-01-15T10:00:00Z",
 		},
 		{
-			"id":       2,
-			"name":     "Admin User 2",
-			"email":    "admin2@example.com",
-			"role":     "admin",
-			"status":   "active",
+			"id":         2,
+			"name":       "Admin User 2",
+			"email":      "admin2@example.com",
+			"role":       "admin",
+			"status":     "active",
 			"last_login": "2024-01-14T15:30:00Z",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"users": users,
 		"total": len(users),
@@ -1411,31 +1411,31 @@ func (h *APIHandlers) getAdminReports(w http.ResponseWriter, r *http.Request) {
 	// Get admin reports implementation
 	reports := map[string]interface{}{
 		"sales": map[string]interface{}{
-			"total_revenue":    15000.50,
-			"orders_count":     125,
-			"average_order":    120.00,
-			"growth_rate":      15.5,
+			"total_revenue": 15000.50,
+			"orders_count":  125,
+			"average_order": 120.00,
+			"growth_rate":   15.5,
 		},
 		"users": map[string]interface{}{
-			"total_users":      1250,
-			"active_users":     980,
+			"total_users":       1250,
+			"active_users":      980,
 			"new_registrations": 45,
-			"retention_rate":   78.5,
+			"retention_rate":    78.5,
 		},
 		"products": map[string]interface{}{
-			"total_products":   450,
-			"best_selling":     "Product ABC",
-			"low_stock_count":  12,
-			"out_of_stock":     3,
+			"total_products":  450,
+			"best_selling":    "Product ABC",
+			"low_stock_count": 12,
+			"out_of_stock":    3,
 		},
 		"performance": map[string]interface{}{
-			"page_views":       25000,
-			"bounce_rate":      35.2,
-			"conversion_rate":  3.8,
-			"avg_session":      "5m 32s",
+			"page_views":      25000,
+			"bounce_rate":     35.2,
+			"conversion_rate": 3.8,
+			"avg_session":     "5m 32s",
 		},
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"reports":      reports,
 		"generated_at": "2024-01-15T10:30:00Z",
@@ -1473,7 +1473,7 @@ func (h *APIHandlers) getSystemHealth(w http.ResponseWriter, r *http.Request) {
 		},
 		"last_check": "2024-01-15T10:30:00Z",
 	}
-	
+
 	h.sendResponse(w, map[string]interface{}{
 		"health": health,
 	})

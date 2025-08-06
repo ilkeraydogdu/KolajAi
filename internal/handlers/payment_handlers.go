@@ -162,7 +162,7 @@ func (h *PaymentHandler) GetPaymentMethods(w http.ResponseWriter, r *http.Reques
 	}
 
 	methods := h.paymentService.GetSupportedPaymentMethods()
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -188,15 +188,15 @@ func (h *PaymentHandler) CalculatePaymentFee(w http.ResponseWriter, r *http.Requ
 	}
 
 	fee := h.paymentService.CalculatePaymentFee(request.Amount, request.Method)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
 		"data": map[string]interface{}{
-			"amount":     request.Amount,
-			"fee":        fee,
-			"total":      request.Amount + fee,
-			"method":     request.Method,
+			"amount": request.Amount,
+			"fee":    fee,
+			"total":  request.Amount + fee,
+			"method": request.Method,
 		},
 	})
 }
@@ -257,7 +257,7 @@ func (h *PaymentHandler) PaymentPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Order not found", http.StatusNotFound)
 		return
 	}
-	
+
 	data := h.GetTemplateData()
 	data["OrderID"] = orderID
 	data["Order"] = order

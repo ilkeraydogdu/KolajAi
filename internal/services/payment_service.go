@@ -11,11 +11,11 @@ import (
 type PaymentMethod string
 
 const (
-	PaymentMethodCreditCard PaymentMethod = "credit_card"
-	PaymentMethodDebitCard  PaymentMethod = "debit_card"
-	PaymentMethodPayPal     PaymentMethod = "paypal"
+	PaymentMethodCreditCard   PaymentMethod = "credit_card"
+	PaymentMethodDebitCard    PaymentMethod = "debit_card"
+	PaymentMethodPayPal       PaymentMethod = "paypal"
 	PaymentMethodBankTransfer PaymentMethod = "bank_transfer"
-	PaymentMethodCash       PaymentMethod = "cash"
+	PaymentMethodCash         PaymentMethod = "cash"
 )
 
 // PaymentStatus represents payment status
@@ -31,14 +31,14 @@ const (
 
 // PaymentRequest represents a payment request
 type PaymentRequest struct {
-	OrderID       int64         `json:"order_id"`
-	Amount        float64       `json:"amount"`
-	Currency      string        `json:"currency"`
-	Method        PaymentMethod `json:"method"`
-	CustomerID    int64         `json:"customer_id"`
-	Description   string        `json:"description"`
-	CallbackURL   string        `json:"callback_url"`
-	Metadata      map[string]interface{} `json:"metadata"`
+	OrderID     int64                  `json:"order_id"`
+	Amount      float64                `json:"amount"`
+	Currency    string                 `json:"currency"`
+	Method      PaymentMethod          `json:"method"`
+	CustomerID  int64                  `json:"customer_id"`
+	Description string                 `json:"description"`
+	CallbackURL string                 `json:"callback_url"`
+	Metadata    map[string]interface{} `json:"metadata"`
 }
 
 // PaymentResponse represents a payment response
@@ -142,7 +142,7 @@ func (s *PaymentService) GetPaymentStatus(transactionID string) (*PaymentRespons
 func (s *PaymentService) RefundPayment(transactionID string, amount float64, reason string) (*PaymentResponse, error) {
 	// Mock refund processing
 	refundID := fmt.Sprintf("REF_%s_%d", transactionID, time.Now().Unix())
-	
+
 	return &PaymentResponse{
 		ID:            refundID,
 		Status:        PaymentStatusRefunded,
@@ -211,7 +211,7 @@ func (s *PaymentService) CalculatePaymentFee(amount float64, method PaymentMetho
 // CreatePaymentIntent creates a payment intent for frontend
 func (s *PaymentService) CreatePaymentIntent(orderID int64, amount float64) (map[string]interface{}, error) {
 	intentID := fmt.Sprintf("PI_%d_%d", orderID, time.Now().Unix())
-	
+
 	return map[string]interface{}{
 		"id":            intentID,
 		"amount":        amount,

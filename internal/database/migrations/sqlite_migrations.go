@@ -191,7 +191,7 @@ func RunSQLiteMigrations(db *sql.DB) error {
 
 	for i, migration := range SQLiteMigrations {
 		log.Printf("Running migration %d/%d", i+1, len(SQLiteMigrations))
-		
+
 		if _, err := db.Exec(migration); err != nil {
 			return fmt.Errorf("failed to run migration %d: %w", i+1, err)
 		}

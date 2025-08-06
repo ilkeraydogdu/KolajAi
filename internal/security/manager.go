@@ -26,108 +26,108 @@ type SecurityManager struct {
 
 // SecurityConfig holds security configuration
 type SecurityConfig struct {
-	MaxLoginAttempts     int           `json:"max_login_attempts"`
-	LoginLockoutDuration time.Duration `json:"login_lockout_duration"`
-	PasswordMinLength    int           `json:"password_min_length"`
-	PasswordRequireUpper bool          `json:"password_require_upper"`
-	PasswordRequireLower bool          `json:"password_require_lower"`
-	PasswordRequireDigit bool          `json:"password_require_digit"`
-	PasswordRequireSymbol bool         `json:"password_require_symbol"`
-	SessionTimeout       time.Duration `json:"session_timeout"`
-	CSRFTokenLength      int           `json:"csrf_token_length"`
-	EnableIPWhitelist    bool          `json:"enable_ip_whitelist"`
-	EnableIPBlacklist    bool          `json:"enable_ip_blacklist"`
-	EnableRateLimit      bool          `json:"enable_rate_limit"`
-	RateLimitRules       []RateLimitRule `json:"rate_limit_rules"`
-	SecurityHeaders      SecurityHeaders `json:"security_headers"`
-	SQLInjectionPatterns []string        `json:"sql_injection_patterns"`
-	XSSPatterns          []string        `json:"xss_patterns"`
-	FileUploadRules      FileUploadRules `json:"file_upload_rules"`
-	EncryptionKey        string          `json:"encryption_key"`
-	JWTSecret            string          `json:"jwt_secret"`
-	TwoFactorEnabled     bool            `json:"two_factor_enabled"`
-	AuditLogEnabled      bool            `json:"audit_log_enabled"`
+	MaxLoginAttempts      int             `json:"max_login_attempts"`
+	LoginLockoutDuration  time.Duration   `json:"login_lockout_duration"`
+	PasswordMinLength     int             `json:"password_min_length"`
+	PasswordRequireUpper  bool            `json:"password_require_upper"`
+	PasswordRequireLower  bool            `json:"password_require_lower"`
+	PasswordRequireDigit  bool            `json:"password_require_digit"`
+	PasswordRequireSymbol bool            `json:"password_require_symbol"`
+	SessionTimeout        time.Duration   `json:"session_timeout"`
+	CSRFTokenLength       int             `json:"csrf_token_length"`
+	EnableIPWhitelist     bool            `json:"enable_ip_whitelist"`
+	EnableIPBlacklist     bool            `json:"enable_ip_blacklist"`
+	EnableRateLimit       bool            `json:"enable_rate_limit"`
+	RateLimitRules        []RateLimitRule `json:"rate_limit_rules"`
+	SecurityHeaders       SecurityHeaders `json:"security_headers"`
+	SQLInjectionPatterns  []string        `json:"sql_injection_patterns"`
+	XSSPatterns           []string        `json:"xss_patterns"`
+	FileUploadRules       FileUploadRules `json:"file_upload_rules"`
+	EncryptionKey         string          `json:"encryption_key"`
+	JWTSecret             string          `json:"jwt_secret"`
+	TwoFactorEnabled      bool            `json:"two_factor_enabled"`
+	AuditLogEnabled       bool            `json:"audit_log_enabled"`
 }
 
 // RateLimitRule defines rate limiting rules
 type RateLimitRule struct {
-	Path         string        `json:"path"`
-	Method       string        `json:"method"`
-	RequestsPerMinute int      `json:"requests_per_minute"`
-	RequestsPerHour   int      `json:"requests_per_hour"`
-	RequestsPerDay    int      `json:"requests_per_day"`
-	BurstSize    int           `json:"burst_size"`
-	WindowSize   time.Duration `json:"window_size"`
-	Enabled      bool          `json:"enabled"`
+	Path              string        `json:"path"`
+	Method            string        `json:"method"`
+	RequestsPerMinute int           `json:"requests_per_minute"`
+	RequestsPerHour   int           `json:"requests_per_hour"`
+	RequestsPerDay    int           `json:"requests_per_day"`
+	BurstSize         int           `json:"burst_size"`
+	WindowSize        time.Duration `json:"window_size"`
+	Enabled           bool          `json:"enabled"`
 }
 
 // SecurityHeaders defines security headers configuration
 type SecurityHeaders struct {
 	ContentSecurityPolicy   string `json:"content_security_policy"`
 	StrictTransportSecurity string `json:"strict_transport_security"`
-	XFrameOptions          string `json:"x_frame_options"`
-	XContentTypeOptions    string `json:"x_content_type_options"`
-	XSSProtection          string `json:"x_xss_protection"`
-	ReferrerPolicy         string `json:"referrer_policy"`
-	PermissionsPolicy      string `json:"permissions_policy"`
-	CrossOriginEmbedder    string `json:"cross_origin_embedder_policy"`
-	CrossOriginOpener      string `json:"cross_origin_opener_policy"`
-	CrossOriginResource    string `json:"cross_origin_resource_policy"`
+	XFrameOptions           string `json:"x_frame_options"`
+	XContentTypeOptions     string `json:"x_content_type_options"`
+	XSSProtection           string `json:"x_xss_protection"`
+	ReferrerPolicy          string `json:"referrer_policy"`
+	PermissionsPolicy       string `json:"permissions_policy"`
+	CrossOriginEmbedder     string `json:"cross_origin_embedder_policy"`
+	CrossOriginOpener       string `json:"cross_origin_opener_policy"`
+	CrossOriginResource     string `json:"cross_origin_resource_policy"`
 }
 
 // FileUploadRules defines file upload security rules
 type FileUploadRules struct {
-	MaxFileSize      int64    `json:"max_file_size"`
-	AllowedMimeTypes []string `json:"allowed_mime_types"`
+	MaxFileSize       int64    `json:"max_file_size"`
+	AllowedMimeTypes  []string `json:"allowed_mime_types"`
 	AllowedExtensions []string `json:"allowed_extensions"`
 	BlockedExtensions []string `json:"blocked_extensions"`
-	ScanForMalware   bool     `json:"scan_for_malware"`
-	QuarantinePath   string   `json:"quarantine_path"`
+	ScanForMalware    bool     `json:"scan_for_malware"`
+	QuarantinePath    string   `json:"quarantine_path"`
 }
 
 // SecurityEvent represents a security event
 type SecurityEvent struct {
-	ID          string                 `json:"id"`
-	Type        SecurityEventType      `json:"type"`
-	Severity    SecuritySeverity       `json:"severity"`
-	Source      string                 `json:"source"`
-	Target      string                 `json:"target"`
-	UserID      string                 `json:"user_id"`
-	IPAddress   string                 `json:"ip_address"`
-	UserAgent   string                 `json:"user_agent"`
-	Method      string                 `json:"method"`
-	URL         string                 `json:"url"`
-	Payload     string                 `json:"payload"`
-	Headers     map[string]string      `json:"headers"`
-	Timestamp   time.Time              `json:"timestamp"`
-	Blocked     bool                   `json:"blocked"`
-	RiskScore   float64                `json:"risk_score"`
-	Details     map[string]interface{} `json:"details"`
-	Resolution  string                 `json:"resolution"`
-	ResolvedAt  *time.Time             `json:"resolved_at"`
-	ResolvedBy  string                 `json:"resolved_by"`
+	ID         string                 `json:"id"`
+	Type       SecurityEventType      `json:"type"`
+	Severity   SecuritySeverity       `json:"severity"`
+	Source     string                 `json:"source"`
+	Target     string                 `json:"target"`
+	UserID     string                 `json:"user_id"`
+	IPAddress  string                 `json:"ip_address"`
+	UserAgent  string                 `json:"user_agent"`
+	Method     string                 `json:"method"`
+	URL        string                 `json:"url"`
+	Payload    string                 `json:"payload"`
+	Headers    map[string]string      `json:"headers"`
+	Timestamp  time.Time              `json:"timestamp"`
+	Blocked    bool                   `json:"blocked"`
+	RiskScore  float64                `json:"risk_score"`
+	Details    map[string]interface{} `json:"details"`
+	Resolution string                 `json:"resolution"`
+	ResolvedAt *time.Time             `json:"resolved_at"`
+	ResolvedBy string                 `json:"resolved_by"`
 }
 
 // SecurityEventType represents different types of security events
 type SecurityEventType string
 
 const (
-	EventTypeLoginAttempt       SecurityEventType = "login_attempt"
-	EventTypeLoginFailure       SecurityEventType = "login_failure"
-	EventTypeLoginSuccess       SecurityEventType = "login_success"
-	EventTypeBruteForce         SecurityEventType = "brute_force"
-	EventTypeSQLInjection       SecurityEventType = "sql_injection"
-	EventTypeXSS                SecurityEventType = "xss"
-	EventTypeCSRF               SecurityEventType = "csrf"
-	EventTypeFileUpload         SecurityEventType = "file_upload"
-	EventTypeUnauthorizedAccess SecurityEventType = "unauthorized_access"
+	EventTypeLoginAttempt        SecurityEventType = "login_attempt"
+	EventTypeLoginFailure        SecurityEventType = "login_failure"
+	EventTypeLoginSuccess        SecurityEventType = "login_success"
+	EventTypeBruteForce          SecurityEventType = "brute_force"
+	EventTypeSQLInjection        SecurityEventType = "sql_injection"
+	EventTypeXSS                 SecurityEventType = "xss"
+	EventTypeCSRF                SecurityEventType = "csrf"
+	EventTypeFileUpload          SecurityEventType = "file_upload"
+	EventTypeUnauthorizedAccess  SecurityEventType = "unauthorized_access"
 	EventTypePrivilegeEscalation SecurityEventType = "privilege_escalation"
-	EventTypeDataBreach         SecurityEventType = "data_breach"
-	EventTypeSuspiciousActivity SecurityEventType = "suspicious_activity"
-	EventTypeRateLimitExceeded  SecurityEventType = "rate_limit_exceeded"
-	EventTypeIPBlocked          SecurityEventType = "ip_blocked"
-	EventTypeMalwareDetected    SecurityEventType = "malware_detected"
-	THREAT_DETECTED             SecurityEventType = "threat_detected"
+	EventTypeDataBreach          SecurityEventType = "data_breach"
+	EventTypeSuspiciousActivity  SecurityEventType = "suspicious_activity"
+	EventTypeRateLimitExceeded   SecurityEventType = "rate_limit_exceeded"
+	EventTypeIPBlocked           SecurityEventType = "ip_blocked"
+	EventTypeMalwareDetected     SecurityEventType = "malware_detected"
+	THREAT_DETECTED              SecurityEventType = "threat_detected"
 )
 
 // SecuritySeverity represents security event severity levels
@@ -182,26 +182,26 @@ type VulnerabilityScanner interface {
 type ScanType string
 
 const (
-	ScanTypeSQL      ScanType = "sql"
-	ScanTypeXSS      ScanType = "xss"
-	ScanTypeCSRF     ScanType = "csrf"
-	ScanTypeMalware  ScanType = "malware"
-	ScanTypeGeneral  ScanType = "general"
+	ScanTypeSQL     ScanType = "sql"
+	ScanTypeXSS     ScanType = "xss"
+	ScanTypeCSRF    ScanType = "csrf"
+	ScanTypeMalware ScanType = "malware"
+	ScanTypeGeneral ScanType = "general"
 )
 
 // ScanResult represents vulnerability scan result
 type ScanResult struct {
-	ScanID        string                 `json:"scan_id"`
-	Target        string                 `json:"target"`
-	ScanType      ScanType               `json:"scan_type"`
-	Status        string                 `json:"status"`
-	StartTime     time.Time              `json:"start_time"`
-	EndTime       time.Time              `json:"end_time"`
-	Duration      time.Duration          `json:"duration"`
-	Vulnerabilities []Vulnerability      `json:"vulnerabilities"`
-	RiskScore     float64                `json:"risk_score"`
-	Recommendations []string             `json:"recommendations"`
-	Metadata      map[string]interface{} `json:"metadata"`
+	ScanID          string                 `json:"scan_id"`
+	Target          string                 `json:"target"`
+	ScanType        ScanType               `json:"scan_type"`
+	Status          string                 `json:"status"`
+	StartTime       time.Time              `json:"start_time"`
+	EndTime         time.Time              `json:"end_time"`
+	Duration        time.Duration          `json:"duration"`
+	Vulnerabilities []Vulnerability        `json:"vulnerabilities"`
+	RiskScore       float64                `json:"risk_score"`
+	Recommendations []string               `json:"recommendations"`
+	Metadata        map[string]interface{} `json:"metadata"`
 }
 
 // Vulnerability represents a detected vulnerability
@@ -223,47 +223,47 @@ type Vulnerability struct {
 
 // SecurityReport represents a comprehensive security report
 type SecurityReport struct {
-	ID              string                    `json:"id"`
-	GeneratedAt     time.Time                 `json:"generated_at"`
-	Period          string                    `json:"period"`
-	TotalEvents     int                       `json:"total_events"`
-	EventsByType    map[SecurityEventType]int `json:"events_by_type"`
-	EventsBySeverity map[SecuritySeverity]int `json:"events_by_severity"`
-	TopThreats      []ThreatSummary           `json:"top_threats"`
-	VulnerabilityStats VulnerabilityStats     `json:"vulnerability_stats"`
-	ComplianceStatus ComplianceStatus         `json:"compliance_status"`
-	Recommendations []SecurityRecommendation  `json:"recommendations"`
-	TrendData       []SecurityTrendPoint      `json:"trend_data"`
+	ID                 string                    `json:"id"`
+	GeneratedAt        time.Time                 `json:"generated_at"`
+	Period             string                    `json:"period"`
+	TotalEvents        int                       `json:"total_events"`
+	EventsByType       map[SecurityEventType]int `json:"events_by_type"`
+	EventsBySeverity   map[SecuritySeverity]int  `json:"events_by_severity"`
+	TopThreats         []ThreatSummary           `json:"top_threats"`
+	VulnerabilityStats VulnerabilityStats        `json:"vulnerability_stats"`
+	ComplianceStatus   ComplianceStatus          `json:"compliance_status"`
+	Recommendations    []SecurityRecommendation  `json:"recommendations"`
+	TrendData          []SecurityTrendPoint      `json:"trend_data"`
 }
 
 // ThreatSummary represents a threat summary
 type ThreatSummary struct {
-	Type        SecurityEventType `json:"type"`
-	Count       int               `json:"count"`
-	Severity    SecuritySeverity  `json:"severity"`
-	Sources     []string          `json:"sources"`
-	Targets     []string          `json:"targets"`
-	FirstSeen   time.Time         `json:"first_seen"`
-	LastSeen    time.Time         `json:"last_seen"`
+	Type      SecurityEventType `json:"type"`
+	Count     int               `json:"count"`
+	Severity  SecuritySeverity  `json:"severity"`
+	Sources   []string          `json:"sources"`
+	Targets   []string          `json:"targets"`
+	FirstSeen time.Time         `json:"first_seen"`
+	LastSeen  time.Time         `json:"last_seen"`
 }
 
 // VulnerabilityStats represents vulnerability statistics
 type VulnerabilityStats struct {
-	Total        int                       `json:"total"`
-	BySeverity   map[SecuritySeverity]int  `json:"by_severity"`
-	ByType       map[string]int            `json:"by_type"`
-	Fixed        int                       `json:"fixed"`
-	Open         int                       `json:"open"`
-	InProgress   int                       `json:"in_progress"`
-	AverageFixTime time.Duration           `json:"average_fix_time"`
+	Total          int                      `json:"total"`
+	BySeverity     map[SecuritySeverity]int `json:"by_severity"`
+	ByType         map[string]int           `json:"by_type"`
+	Fixed          int                      `json:"fixed"`
+	Open           int                      `json:"open"`
+	InProgress     int                      `json:"in_progress"`
+	AverageFixTime time.Duration            `json:"average_fix_time"`
 }
 
 // ComplianceStatus represents compliance status
 type ComplianceStatus struct {
-	GDPR    ComplianceItem `json:"gdpr"`
-	PCI     ComplianceItem `json:"pci"`
-	SOX     ComplianceItem `json:"sox"`
-	HIPAA   ComplianceItem `json:"hipaa"`
+	GDPR     ComplianceItem `json:"gdpr"`
+	PCI      ComplianceItem `json:"pci"`
+	SOX      ComplianceItem `json:"sox"`
+	HIPAA    ComplianceItem `json:"hipaa"`
 	ISO27001 ComplianceItem `json:"iso27001"`
 }
 
@@ -277,16 +277,16 @@ type ComplianceItem struct {
 
 // SecurityRecommendation represents a security recommendation
 type SecurityRecommendation struct {
-	ID          string           `json:"id"`
-	Type        string           `json:"type"`
-	Priority    string           `json:"priority"`
-	Title       string           `json:"title"`
-	Description string           `json:"description"`
-	Impact      string           `json:"impact"`
-	Effort      string           `json:"effort"`
-	Category    string           `json:"category"`
-	Status      string           `json:"status"`
-	DueDate     *time.Time       `json:"due_date"`
+	ID          string     `json:"id"`
+	Type        string     `json:"type"`
+	Priority    string     `json:"priority"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Impact      string     `json:"impact"`
+	Effort      string     `json:"effort"`
+	Category    string     `json:"category"`
+	Status      string     `json:"status"`
+	DueDate     *time.Time `json:"due_date"`
 }
 
 // SecurityTrendPoint represents a point in security trend data
@@ -422,7 +422,7 @@ func (sm *SecurityManager) SecurityMiddleware(next http.Handler) http.Handler {
 
 		// Check IP whitelist/blacklist
 		blocked, _ := sm.CheckIPAccess(r.RemoteAddr)
-	if blocked {
+		if blocked {
 			sm.logSecurityEvent(ctx, EventTypeIPBlocked, SeverityHigh, r, "IP blocked", nil)
 			http.Error(w, "Access denied", http.StatusForbidden)
 			return
@@ -552,7 +552,7 @@ func (sm *SecurityManager) CheckRateLimit(r *http.Request) (bool, error) {
 	if !sm.config.EnableRateLimit {
 		return false, nil
 	}
-	
+
 	// Simple rate limiting implementation
 	// In a real implementation, this would use a proper rate limiter
 	return false, nil
@@ -564,7 +564,7 @@ func (sm *SecurityManager) ValidateInput(r *http.Request) error {
 	if err := r.ParseForm(); err != nil {
 		return fmt.Errorf("failed to parse form: %w", err)
 	}
-	
+
 	// Check for SQL injection patterns
 	for _, values := range r.Form {
 		for _, value := range values {
@@ -576,19 +576,19 @@ func (sm *SecurityManager) ValidateInput(r *http.Request) error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
 // ScanForThreats scans request for security threats
 func (sm *SecurityManager) ScanForThreats(r *http.Request) []string {
 	var threats []string
-	
+
 	// Check URL for threats
 	if sm.containsSQLInjection(r.URL.String()) {
 		threats = append(threats, "SQL injection in URL")
 	}
-	
+
 	// Check headers for threats
 	for name, values := range r.Header {
 		for _, value := range values {
@@ -597,7 +597,7 @@ func (sm *SecurityManager) ScanForThreats(r *http.Request) []string {
 			}
 		}
 	}
-	
+
 	return threats
 }
 
@@ -619,7 +619,7 @@ func (sm *SecurityManager) containsSQLInjection(input string) bool {
 	patterns := []string{
 		"'", "\"", ";", "--", "/*", "*/", "xp_", "sp_", "DROP", "SELECT", "INSERT", "UPDATE", "DELETE",
 	}
-	
+
 	input = strings.ToUpper(input)
 	for _, pattern := range patterns {
 		if strings.Contains(input, strings.ToUpper(pattern)) {
@@ -634,7 +634,7 @@ func (sm *SecurityManager) containsXSS(input string) bool {
 	patterns := []string{
 		"<script", "</script>", "javascript:", "onload=", "onerror=", "onclick=",
 	}
-	
+
 	input = strings.ToLower(input)
 	for _, pattern := range patterns {
 		if strings.Contains(input, pattern) {
@@ -727,7 +727,7 @@ func (sm *SecurityManager) detectSQLInjection(r *http.Request) bool {
 
 	// Check all input sources
 	inputs := sm.extractAllInputs(r)
-	
+
 	for _, input := range inputs {
 		for _, pattern := range patterns {
 			if matched, _ := regexp.MatchString(pattern, input); matched {
@@ -760,7 +760,7 @@ func (sm *SecurityManager) detectXSS(r *http.Request) bool {
 	}
 
 	inputs := sm.extractAllInputs(r)
-	
+
 	for _, input := range inputs {
 		for _, pattern := range patterns {
 			if matched, _ := regexp.MatchString(pattern, input); matched {
@@ -909,12 +909,12 @@ func (sm *SecurityManager) getRealIP(r *http.Request) string {
 		ips := strings.Split(xff, ",")
 		return strings.TrimSpace(ips[0])
 	}
-	
+
 	// Check X-Real-IP header
 	if xri := r.Header.Get("X-Real-IP"); xri != "" {
 		return xri
 	}
-	
+
 	// Fall back to RemoteAddr
 	host, _, _ := net.SplitHostPort(r.RemoteAddr)
 	return host
@@ -933,7 +933,7 @@ func (sm *SecurityManager) isIPBlacklisted(ip string) bool {
 		WHERE ip_address = ? AND enabled = TRUE 
 		AND (blocked_until IS NULL OR blocked_until > NOW())
 	`, ip).Scan(&count)
-	
+
 	return err == nil && count > 0
 }
 
@@ -949,7 +949,7 @@ func (sm *SecurityManager) isIPWhitelisted(ip string) bool {
 		SELECT COUNT(*) FROM ip_whitelist 
 		WHERE ip_address = ? AND enabled = TRUE
 	`, ip).Scan(&count)
-	
+
 	return err == nil && count > 0
 }
 
@@ -1081,7 +1081,7 @@ func (sm *SecurityManager) shouldAutoBlock(event *SecurityEvent) bool {
 			WHERE ip_address = ? AND severity = 'high' 
 			AND timestamp > DATE_SUB(NOW(), INTERVAL 1 HOUR)
 		`, event.IPAddress).Scan(&count)
-		
+
 		return count >= 3
 	}
 
@@ -1098,7 +1098,7 @@ func (sm *SecurityManager) autoBlockIP(ip, reason string) {
 	`
 
 	sm.db.Exec(query, ip, reason)
-	
+
 	// Update in-memory cache
 	sm.ipBlacklist[ip] = true
 }
@@ -1139,9 +1139,15 @@ func (sm *SecurityManager) findRateLimitRule(r *http.Request) *RateLimitRule {
 	}
 }
 func (sm *SecurityManager) createRateLimitKey(r *http.Request, rule *RateLimitRule) string { return "" }
-func (sm *SecurityManager) isValidCSRFToken(token string, r *http.Request) bool { return true }
-func (sm *SecurityManager) getTopThreats(startDate, endDate time.Time) []ThreatSummary { return []ThreatSummary{} }
+func (sm *SecurityManager) isValidCSRFToken(token string, r *http.Request) bool            { return true }
+func (sm *SecurityManager) getTopThreats(startDate, endDate time.Time) []ThreatSummary {
+	return []ThreatSummary{}
+}
 func (sm *SecurityManager) getVulnerabilityStats() VulnerabilityStats { return VulnerabilityStats{} }
-func (sm *SecurityManager) getComplianceStatus() ComplianceStatus { return ComplianceStatus{} }
-func (sm *SecurityManager) generateSecurityRecommendations() []SecurityRecommendation { return []SecurityRecommendation{} }
-func (sm *SecurityManager) getSecurityTrendData(startDate, endDate time.Time) []SecurityTrendPoint { return []SecurityTrendPoint{} }
+func (sm *SecurityManager) getComplianceStatus() ComplianceStatus     { return ComplianceStatus{} }
+func (sm *SecurityManager) generateSecurityRecommendations() []SecurityRecommendation {
+	return []SecurityRecommendation{}
+}
+func (sm *SecurityManager) getSecurityTrendData(startDate, endDate time.Time) []SecurityTrendPoint {
+	return []SecurityTrendPoint{}
+}

@@ -101,11 +101,11 @@ func (s *Seeder) seedUsers() error {
 			INSERT INTO users (name, email, password, phone, is_admin, is_active, created_at, updated_at)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
 			user.name, user.email, string(hashedPassword), user.phone, user.isAdmin, user.isActive, time.Now(), time.Now())
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to insert user %s: %w", user.email, err)
 		}
-		
+
 		log.Printf("✅ Created user: %s (%s)", user.name, user.email)
 	}
 
@@ -150,11 +150,11 @@ func (s *Seeder) seedCategories() error {
 			INSERT INTO categories (name, slug, description, image, is_active, is_visible, sort_order, created_at, updated_at)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			cat.name, cat.slug, cat.description, cat.image, true, true, cat.sortOrder, time.Now(), time.Now())
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to insert category %s: %w", cat.name, err)
 		}
-		
+
 		log.Printf("✅ Created category: %s", cat.name)
 	}
 
@@ -195,11 +195,11 @@ func (s *Seeder) seedVendors() error {
 			INSERT INTO vendors (user_id, company_name, business_id, phone, address, city, country, status, created_at, updated_at)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			vendor.userID, vendor.companyName, vendor.businessID, vendor.phone, vendor.address, vendor.city, vendor.country, "approved", time.Now(), time.Now())
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to insert vendor %s: %w", vendor.companyName, err)
 		}
-		
+
 		log.Printf("✅ Created vendor: %s", vendor.companyName)
 	}
 
@@ -256,11 +256,11 @@ func (s *Seeder) seedProducts() error {
 			INSERT INTO products (vendor_id, category_id, name, description, short_desc, sku, price, compare_price, stock, status, is_featured, rating, review_count, tags, created_at, updated_at)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			prod.vendorID, prod.categoryID, prod.name, prod.description, prod.shortDesc, prod.sku, prod.price, prod.comparePrice, prod.stock, "active", prod.isFeatured, prod.rating, prod.reviewCount, prod.tags, time.Now(), time.Now())
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to insert product %s: %w", prod.name, err)
 		}
-		
+
 		log.Printf("✅ Created product: %s", prod.name)
 	}
 
@@ -306,11 +306,11 @@ func (s *Seeder) seedAuctions() error {
 			INSERT INTO auctions (vendor_id, title, description, starting_price, current_bid, total_bids, start_time, end_time, status, created_at, updated_at)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			auction.vendorID, auction.title, auction.description, auction.startingPrice, auction.currentBid, auction.totalBids, startTime, endTime, "active", time.Now(), time.Now())
-		
+
 		if err != nil {
 			return fmt.Errorf("failed to insert auction %s: %w", auction.title, err)
 		}
-		
+
 		log.Printf("✅ Created auction: %s", auction.title)
 	}
 

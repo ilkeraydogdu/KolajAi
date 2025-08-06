@@ -13,10 +13,10 @@ import (
 
 // NotificationService handles notification operations
 type NotificationService struct {
-	repo        *repository.BaseRepository
-	db          *sql.DB
-	emailSvc    *EmailService
-	channels    map[string]NotificationChannel
+	repo     *repository.BaseRepository
+	db       *sql.DB
+	emailSvc *EmailService
+	channels map[string]NotificationChannel
 }
 
 // NotificationChannel interface for different notification channels
@@ -28,39 +28,39 @@ type NotificationChannel interface {
 
 // DeliveryStatus represents notification delivery status
 type DeliveryStatus struct {
-	Status      string    `json:"status"`
+	Status      string     `json:"status"`
 	DeliveredAt *time.Time `json:"delivered_at,omitempty"`
 	ReadAt      *time.Time `json:"read_at,omitempty"`
-	Error       string    `json:"error,omitempty"`
+	Error       string     `json:"error,omitempty"`
 }
 
 // NotificationRequest represents a notification sending request
 type NotificationRequest struct {
-	UserID      uint                   `json:"user_id"`
-	Type        models.NotificationType `json:"type"`
-	Channel     models.NotificationChannel `json:"channel"`
-	Title       string                 `json:"title"`
-	Message     string                 `json:"message"`
-	Data        map[string]interface{} `json:"data,omitempty"`
-	TemplateID  string                 `json:"template_id,omitempty"`
-	Variables   map[string]interface{} `json:"variables,omitempty"`
+	UserID      uint                        `json:"user_id"`
+	Type        models.NotificationType     `json:"type"`
+	Channel     models.NotificationChannel  `json:"channel"`
+	Title       string                      `json:"title"`
+	Message     string                      `json:"message"`
+	Data        map[string]interface{}      `json:"data,omitempty"`
+	TemplateID  string                      `json:"template_id,omitempty"`
+	Variables   map[string]interface{}      `json:"variables,omitempty"`
 	Priority    models.NotificationPriority `json:"priority"`
-	ScheduledAt *time.Time             `json:"scheduled_at,omitempty"`
-	ExpiresAt   *time.Time             `json:"expires_at,omitempty"`
+	ScheduledAt *time.Time                  `json:"scheduled_at,omitempty"`
+	ExpiresAt   *time.Time                  `json:"expires_at,omitempty"`
 }
 
 // BulkNotificationRequest represents bulk notification request
 type BulkNotificationRequest struct {
-	UserIDs     []uint                 `json:"user_ids"`
-	Type        models.NotificationType `json:"type"`
-	Channel     models.NotificationChannel `json:"channel"`
-	Title       string                 `json:"title"`
-	Message     string                 `json:"message"`
-	Data        map[string]interface{} `json:"data,omitempty"`
-	TemplateID  string                 `json:"template_id,omitempty"`
-	Variables   map[string]interface{} `json:"variables,omitempty"`
+	UserIDs     []uint                      `json:"user_ids"`
+	Type        models.NotificationType     `json:"type"`
+	Channel     models.NotificationChannel  `json:"channel"`
+	Title       string                      `json:"title"`
+	Message     string                      `json:"message"`
+	Data        map[string]interface{}      `json:"data,omitempty"`
+	TemplateID  string                      `json:"template_id,omitempty"`
+	Variables   map[string]interface{}      `json:"variables,omitempty"`
 	Priority    models.NotificationPriority `json:"priority"`
-	ScheduledAt *time.Time             `json:"scheduled_at,omitempty"`
+	ScheduledAt *time.Time                  `json:"scheduled_at,omitempty"`
 }
 
 // NotificationStats represents notification statistics
@@ -186,7 +186,7 @@ func (s *NotificationService) SendBulkNotification(req *BulkNotificationRequest)
 // SendTransactionalNotification sends predefined transactional notifications
 func (s *NotificationService) SendTransactionalNotification(notificationType string, userID uint, variables map[string]interface{}) error {
 	templates := s.getTransactionalTemplates()
-	
+
 	template, exists := templates[notificationType]
 	if !exists {
 		return fmt.Errorf("unknown notification type: %s", notificationType)
@@ -194,7 +194,7 @@ func (s *NotificationService) SendTransactionalNotification(notificationType str
 
 	// Send to all enabled channels for this notification type
 	enabledChannels := s.getEnabledChannelsForUser(userID, template.Type)
-	
+
 	for _, channel := range enabledChannels {
 		req := &NotificationRequest{
 			UserID:    userID,
@@ -208,7 +208,7 @@ func (s *NotificationService) SendTransactionalNotification(notificationType str
 
 		_, err := s.SendNotification(req)
 		if err != nil {
-			fmt.Printf("Warning: Failed to send %s notification via %s to user %d: %v\n", 
+			fmt.Printf("Warning: Failed to send %s notification via %s to user %d: %v\n",
 				notificationType, channel, userID, err)
 		}
 	}
@@ -219,8 +219,8 @@ func (s *NotificationService) SendTransactionalNotification(notificationType str
 // SendOrderStatusNotification sends order status update notification
 func (s *NotificationService) SendOrderStatusNotification(orderID uint, customerID uint, status string) error {
 	variables := map[string]interface{}{
-		"OrderID": orderID,
-		"Status":  status,
+		"OrderID":  orderID,
+		"Status":   status,
 		"OrderURL": fmt.Sprintf("https://kolaj.ai/orders/%d", orderID),
 	}
 
@@ -484,7 +484,7 @@ func (s *NotificationService) sendNotificationNow(notification *models.Notificat
 	if len(notification.Channels) == 0 {
 		return errors.New("no channels specified for notification")
 	}
-	
+
 	channelName := string(notification.Channels[0])
 	channel, exists := s.channels[channelName]
 	if !exists {
@@ -658,9 +658,9 @@ type PushChannel struct{}
 type WhatsAppChannel struct{}
 type InAppChannel struct{ db *sql.DB }
 
-func NewSMSChannel() *SMSChannel           { return &SMSChannel{} }
-func NewPushChannel() *PushChannel         { return &PushChannel{} }
-func NewWhatsAppChannel() *WhatsAppChannel { return &WhatsAppChannel{} }
+func NewSMSChannel() *SMSChannel               { return &SMSChannel{} }
+func NewPushChannel() *PushChannel             { return &PushChannel{} }
+func NewWhatsAppChannel() *WhatsAppChannel     { return &WhatsAppChannel{} }
 func NewInAppChannel(db *sql.DB) *InAppChannel { return &InAppChannel{db: db} }
 
 func (c *SMSChannel) Send(notification *models.Notification) error {

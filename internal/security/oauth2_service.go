@@ -24,13 +24,13 @@ type OAuth2Service struct {
 
 // OAuth2Provider represents an OAuth2 provider configuration
 type OAuth2Provider struct {
-	Name         string `json:"name"`
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
-	AuthURL      string `json:"auth_url"`
-	TokenURL     string `json:"token_url"`
-	UserInfoURL  string `json:"user_info_url"`
-	RedirectURL  string `json:"redirect_url"`
+	Name         string   `json:"name"`
+	ClientID     string   `json:"client_id"`
+	ClientSecret string   `json:"client_secret"`
+	AuthURL      string   `json:"auth_url"`
+	TokenURL     string   `json:"token_url"`
+	UserInfoURL  string   `json:"user_info_url"`
+	RedirectURL  string   `json:"redirect_url"`
 	Scopes       []string `json:"scopes"`
 }
 
@@ -62,18 +62,18 @@ type OAuth2TokenResponse struct {
 
 // OAuth2Account represents linked OAuth2 account
 type OAuth2Account struct {
-	ID           int       `json:"id"`
-	UserID       int64     `json:"user_id"`
-	Provider     string    `json:"provider"`
-	ProviderID   string    `json:"provider_id"`
-	Email        string    `json:"email"`
-	Name         string    `json:"name"`
-	Picture      string    `json:"picture,omitempty"`
-	AccessToken  string    `json:"-"`
-	RefreshToken string    `json:"-"`
+	ID           int        `json:"id"`
+	UserID       int64      `json:"user_id"`
+	Provider     string     `json:"provider"`
+	ProviderID   string     `json:"provider_id"`
+	Email        string     `json:"email"`
+	Name         string     `json:"name"`
+	Picture      string     `json:"picture,omitempty"`
+	AccessToken  string     `json:"-"`
+	RefreshToken string     `json:"-"`
 	ExpiresAt    *time.Time `json:"expires_at,omitempty"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
 }
 
 // NewOAuth2Service creates a new OAuth2 service

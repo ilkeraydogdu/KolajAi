@@ -35,11 +35,11 @@ type ReportConfig struct {
 
 // DataSource represents a data source for reports
 type DataSource struct {
-	Name        string            `json:"name"`
-	Type        string            `json:"type"` // "table", "query", "api"
-	Source      string            `json:"source"`
-	Joins       []JoinConfig      `json:"joins,omitempty"`
-	Conditions  []ConditionConfig `json:"conditions,omitempty"`
+	Name         string            `json:"name"`
+	Type         string            `json:"type"` // "table", "query", "api"
+	Source       string            `json:"source"`
+	Joins        []JoinConfig      `json:"joins,omitempty"`
+	Conditions   []ConditionConfig `json:"conditions,omitempty"`
 	Aggregations []AggregateConfig `json:"aggregations,omitempty"`
 }
 
@@ -67,14 +67,14 @@ type AggregateConfig struct {
 
 // FilterConfig represents dynamic filters
 type FilterConfig struct {
-	ID          string      `json:"id"`
-	Name        string      `json:"name"`
-	Type        string      `json:"type"` // "text", "number", "date", "select", "multiselect"
-	Field       string      `json:"field"`
-	Operator    string      `json:"operator"`
+	ID           string      `json:"id"`
+	Name         string      `json:"name"`
+	Type         string      `json:"type"` // "text", "number", "date", "select", "multiselect"
+	Field        string      `json:"field"`
+	Operator     string      `json:"operator"`
 	DefaultValue interface{} `json:"default_value,omitempty"`
-	Options     []Option    `json:"options,omitempty"`
-	Required    bool        `json:"required"`
+	Options      []Option    `json:"options,omitempty"`
+	Required     bool        `json:"required"`
 }
 
 // Option represents filter options
@@ -122,57 +122,57 @@ type ChartConfig struct {
 
 // ScheduleConfig represents report scheduling
 type ScheduleConfig struct {
-	Enabled   bool     `json:"enabled"`
-	Frequency string   `json:"frequency"` // "daily", "weekly", "monthly"
-	Time      string   `json:"time"`      // "HH:MM"
-	Days      []string `json:"days,omitempty"` // For weekly: ["monday", "tuesday"]
+	Enabled    bool     `json:"enabled"`
+	Frequency  string   `json:"frequency"`      // "daily", "weekly", "monthly"
+	Time       string   `json:"time"`           // "HH:MM"
+	Days       []string `json:"days,omitempty"` // For weekly: ["monday", "tuesday"]
 	Recipients []string `json:"recipients"`
-	Format    string   `json:"format"` // "pdf", "excel", "csv"
+	Format     string   `json:"format"` // "pdf", "excel", "csv"
 }
 
 // ReportResult represents report execution result
 type ReportResult struct {
-	ID          string                   `json:"id"`
-	Name        string                   `json:"name"`
-	Data        []map[string]interface{} `json:"data"`
-	Charts      []ChartData              `json:"charts"`
-	Summary     map[string]interface{}   `json:"summary"`
-	Filters     map[string]interface{}   `json:"applied_filters"`
-	TotalRows   int                      `json:"total_rows"`
-	ExecutionTime time.Duration          `json:"execution_time"`
-	GeneratedAt time.Time                `json:"generated_at"`
-	GeneratedBy int64                    `json:"generated_by"`
+	ID            string                   `json:"id"`
+	Name          string                   `json:"name"`
+	Data          []map[string]interface{} `json:"data"`
+	Charts        []ChartData              `json:"charts"`
+	Summary       map[string]interface{}   `json:"summary"`
+	Filters       map[string]interface{}   `json:"applied_filters"`
+	TotalRows     int                      `json:"total_rows"`
+	ExecutionTime time.Duration            `json:"execution_time"`
+	GeneratedAt   time.Time                `json:"generated_at"`
+	GeneratedBy   int64                    `json:"generated_by"`
 }
 
 // ChartData represents chart data
 type ChartData struct {
-	ID     string                 `json:"id"`
-	Type   string                 `json:"type"`
-	Title  string                 `json:"title"`
-	Labels []string               `json:"labels"`
-	Data   []map[string]interface{} `json:"data"`
-	Options map[string]interface{} `json:"options"`
+	ID      string                   `json:"id"`
+	Type    string                   `json:"type"`
+	Title   string                   `json:"title"`
+	Labels  []string                 `json:"labels"`
+	Data    []map[string]interface{} `json:"data"`
+	Options map[string]interface{}   `json:"options"`
 }
 
 // UserBehaviorReport represents detailed user behavior analysis
 type UserBehaviorReport struct {
-	UserID              int64                  `json:"user_id"`
-	Name                string                 `json:"name"`
-	Email               string                 `json:"email"`
-	RegistrationDate    time.Time              `json:"registration_date"`
-	LastActivity        time.Time              `json:"last_activity"`
-	TotalOrders         int                    `json:"total_orders"`
-	TotalSpent          float64                `json:"total_spent"`
-	AverageOrderValue   float64                `json:"average_order_value"`
-	PreferredCategories []CategoryPreference   `json:"preferred_categories"`
-	ShoppingPatterns    ShoppingPattern        `json:"shopping_patterns"`
-	DeviceUsage         map[string]int         `json:"device_usage"`
-	LocationData        LocationData           `json:"location_data"`
-	PaymentMethods      []PaymentMethodUsage   `json:"payment_methods"`
+	UserID              int64                   `json:"user_id"`
+	Name                string                  `json:"name"`
+	Email               string                  `json:"email"`
+	RegistrationDate    time.Time               `json:"registration_date"`
+	LastActivity        time.Time               `json:"last_activity"`
+	TotalOrders         int                     `json:"total_orders"`
+	TotalSpent          float64                 `json:"total_spent"`
+	AverageOrderValue   float64                 `json:"average_order_value"`
+	PreferredCategories []CategoryPreference    `json:"preferred_categories"`
+	ShoppingPatterns    ShoppingPattern         `json:"shopping_patterns"`
+	DeviceUsage         map[string]int          `json:"device_usage"`
+	LocationData        LocationData            `json:"location_data"`
+	PaymentMethods      []PaymentMethodUsage    `json:"payment_methods"`
 	Recommendations     []ProductRecommendation `json:"recommendations"`
-	RiskScore           float64                `json:"risk_score"`
-	LifetimeValue       float64                `json:"lifetime_value"`
-	Segmentation        UserSegment            `json:"segmentation"`
+	RiskScore           float64                 `json:"risk_score"`
+	LifetimeValue       float64                 `json:"lifetime_value"`
+	Segmentation        UserSegment             `json:"segmentation"`
 }
 
 // CategoryPreference represents user's category preferences
@@ -186,22 +186,22 @@ type CategoryPreference struct {
 
 // ShoppingPattern represents user's shopping patterns
 type ShoppingPattern struct {
-	PreferredDays    []string               `json:"preferred_days"`
-	PreferredHours   []int                  `json:"preferred_hours"`
-	AverageSessionTime time.Duration        `json:"average_session_time"`
-	PagesPerSession  float64                `json:"pages_per_session"`
-	ConversionRate   float64                `json:"conversion_rate"`
-	CartAbandonment  float64                `json:"cart_abandonment"`
-	ReturnRate       float64                `json:"return_rate"`
-	SeasonalTrends   map[string]interface{} `json:"seasonal_trends"`
+	PreferredDays      []string               `json:"preferred_days"`
+	PreferredHours     []int                  `json:"preferred_hours"`
+	AverageSessionTime time.Duration          `json:"average_session_time"`
+	PagesPerSession    float64                `json:"pages_per_session"`
+	ConversionRate     float64                `json:"conversion_rate"`
+	CartAbandonment    float64                `json:"cart_abandonment"`
+	ReturnRate         float64                `json:"return_rate"`
+	SeasonalTrends     map[string]interface{} `json:"seasonal_trends"`
 }
 
 // LocationData represents user's location information
 type LocationData struct {
-	Country     string  `json:"country"`
-	City        string  `json:"city"`
-	Region      string  `json:"region"`
-	Timezone    string  `json:"timezone"`
+	Country     string    `json:"country"`
+	City        string    `json:"city"`
+	Region      string    `json:"region"`
+	Timezone    string    `json:"timezone"`
 	Coordinates []float64 `json:"coordinates,omitempty"`
 }
 
@@ -222,9 +222,9 @@ type ProductRecommendation struct {
 
 // UserSegment represents user segmentation
 type UserSegment struct {
-	Primary   string                 `json:"primary"`
-	Secondary []string               `json:"secondary"`
-	Scores    map[string]float64     `json:"scores"`
+	Primary    string                 `json:"primary"`
+	Secondary  []string               `json:"secondary"`
+	Scores     map[string]float64     `json:"scores"`
 	Attributes map[string]interface{} `json:"attributes"`
 }
 
@@ -294,9 +294,9 @@ func (rm *ReportManager) CreateReport(config *ReportConfig) error {
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
-	_, err = rm.db.Exec(query, config.ID, config.Name, config.Description, 
+	_, err = rm.db.Exec(query, config.ID, config.Name, config.Description,
 		config.Category, string(configJSON), config.CreatedBy)
-	
+
 	return err
 }
 
@@ -312,7 +312,7 @@ func (rm *ReportManager) ExecuteReport(reportID string, filters map[string]inter
 
 	// Build and execute query
 	query, args := rm.buildQuery(config, filters)
-	
+
 	rows, err := rm.db.Query(query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
@@ -420,7 +420,7 @@ func (rm *ReportManager) buildQuery(config *ReportConfig, filters map[string]int
 
 	// Build SELECT clause
 	query.WriteString("SELECT ")
-	
+
 	// Add columns
 	columnParts := make([]string, 0)
 	for _, col := range config.Columns {
@@ -437,18 +437,18 @@ func (rm *ReportManager) buildQuery(config *ReportConfig, filters map[string]int
 
 		// Add joins
 		for _, join := range config.DataSources[0].Joins {
-			query.WriteString(fmt.Sprintf(" %s JOIN %s ON %s", 
+			query.WriteString(fmt.Sprintf(" %s JOIN %s ON %s",
 				join.Type, join.Table, join.Condition))
 		}
 	}
 
 	// Build WHERE clause
 	whereClauses := make([]string, 0)
-	
+
 	// Add data source conditions
 	for _, ds := range config.DataSources {
 		for _, condition := range ds.Conditions {
-			whereClauses = append(whereClauses, fmt.Sprintf("%s %s ?", 
+			whereClauses = append(whereClauses, fmt.Sprintf("%s %s ?",
 				condition.Field, condition.Operator))
 			args = append(args, condition.Value)
 		}
@@ -457,7 +457,7 @@ func (rm *ReportManager) buildQuery(config *ReportConfig, filters map[string]int
 	// Add filter conditions
 	for _, filter := range config.Filters {
 		if value, exists := filters[filter.ID]; exists && value != nil {
-			whereClauses = append(whereClauses, fmt.Sprintf("%s %s ?", 
+			whereClauses = append(whereClauses, fmt.Sprintf("%s %s ?",
 				filter.Field, filter.Operator))
 			args = append(args, value)
 		}
@@ -643,10 +643,10 @@ func (rm *ReportManager) generateBarChartData(data []map[string]interface{}, con
 // generateSummary generates summary statistics
 func (rm *ReportManager) generateSummary(data []map[string]interface{}, config *ReportConfig) map[string]interface{} {
 	summary := make(map[string]interface{})
-	
+
 	summary["total_rows"] = len(data)
 	summary["generated_at"] = time.Now().Format("2006-01-02 15:04:05")
-	
+
 	// Calculate numeric summaries
 	for _, col := range config.Columns {
 		if col.Type == "number" || col.Type == "currency" {
@@ -658,7 +658,7 @@ func (rm *ReportManager) generateSummary(data []map[string]interface{}, config *
 					}
 				}
 			}
-			
+
 			if len(values) > 0 {
 				summary[col.ID+"_sum"] = rm.sum(values)
 				summary[col.ID+"_avg"] = rm.average(values)
@@ -667,7 +667,7 @@ func (rm *ReportManager) generateSummary(data []map[string]interface{}, config *
 			}
 		}
 	}
-	
+
 	return summary
 }
 
@@ -716,7 +716,7 @@ func (rm *ReportManager) max(values []float64) float64 {
 // GetReportConfig retrieves report configuration
 func (rm *ReportManager) GetReportConfig(reportID string) (*ReportConfig, error) {
 	query := "SELECT config_json FROM report_configs WHERE id = ?"
-	
+
 	var configJSON string
 	err := rm.db.QueryRow(query, reportID).Scan(&configJSON)
 	if err != nil {
@@ -735,15 +735,15 @@ func (rm *ReportManager) GetReportConfig(reportID string) (*ReportConfig, error)
 // logExecution logs report execution
 func (rm *ReportManager) logExecution(reportID string, userID int64, executionTime time.Duration, rowCount int, filters map[string]interface{}) {
 	filtersJSON, _ := json.Marshal(filters)
-	
+
 	query := `
 		INSERT INTO report_executions (id, report_id, executed_by, execution_time_ms, row_count, filters_json)
 		VALUES (?, ?, ?, ?, ?, ?)
 	`
-	
+
 	executionID := fmt.Sprintf("%s_%d_%d", reportID, userID, time.Now().Unix())
-	
-	rm.db.Exec(query, executionID, reportID, userID, 
+
+	rm.db.Exec(query, executionID, reportID, userID,
 		executionTime.Milliseconds(), rowCount, string(filtersJSON))
 }
 
@@ -757,19 +757,19 @@ func (rm *ReportManager) getUserBasicInfo(userID int64, report *UserBehaviorRepo
 		       (SELECT MAX(last_activity) FROM sessions WHERE user_id = ? AND is_active = TRUE) as last_activity
 		FROM users WHERE id = ?
 	`
-	
+
 	var lastActivity sql.NullTime
 	err := rm.db.QueryRow(query, userID, userID).Scan(
 		&report.Name, &report.Email, &report.RegistrationDate, &lastActivity)
-	
+
 	if err != nil {
 		return err
 	}
-	
+
 	if lastActivity.Valid {
 		report.LastActivity = lastActivity.Time
 	}
-	
+
 	return nil
 }
 
@@ -782,7 +782,7 @@ func (rm *ReportManager) getUserOrderStats(userID int64, report *UserBehaviorRep
 		FROM orders 
 		WHERE user_id = ? AND status != 'cancelled'
 	`
-	
+
 	return rm.db.QueryRow(query, userID).Scan(
 		&report.TotalOrders, &report.TotalSpent, &report.AverageOrderValue)
 }
@@ -790,13 +790,13 @@ func (rm *ReportManager) getUserOrderStats(userID int64, report *UserBehaviorRep
 // getCachedUserBehavior retrieves cached user behavior data
 func (rm *ReportManager) getCachedUserBehavior(userID int64) (*UserBehaviorReport, error) {
 	query := "SELECT behavior_data FROM user_behavior_cache WHERE user_id = ? AND last_updated > DATE_SUB(NOW(), INTERVAL 1 HOUR)"
-	
+
 	var behaviorJSON string
 	err := rm.db.QueryRow(query, userID).Scan(&behaviorJSON)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var report UserBehaviorReport
 	err = json.Unmarshal([]byte(behaviorJSON), &report)
 	return &report, err
@@ -808,13 +808,13 @@ func (rm *ReportManager) cacheUserBehavior(userID int64, report *UserBehaviorRep
 	if err != nil {
 		return
 	}
-	
+
 	query := `
 		INSERT INTO user_behavior_cache (user_id, behavior_data) 
 		VALUES (?, ?) 
 		ON DUPLICATE KEY UPDATE behavior_data = VALUES(behavior_data)
 	`
-	
+
 	rm.db.Exec(query, userID, string(behaviorJSON))
 }
 
@@ -857,16 +857,16 @@ func (rm *ReportManager) generateUserRecommendations(userID int64, report *UserB
 
 func (rm *ReportManager) calculateUserMetrics(report *UserBehaviorReport) {
 	// Calculate risk score and lifetime value
-	report.RiskScore = 0.1 // Low risk by default
+	report.RiskScore = 0.1                         // Low risk by default
 	report.LifetimeValue = report.TotalSpent * 1.2 // Simple LTV calculation
 }
 
 func (rm *ReportManager) determineUserSegmentation(report *UserBehaviorReport) {
 	// Determine user segmentation based on behavior
 	report.Segmentation = UserSegment{
-		Primary:   "Regular Customer",
-		Secondary: []string{"Online Shopper"},
-		Scores:    make(map[string]float64),
+		Primary:    "Regular Customer",
+		Secondary:  []string{"Online Shopper"},
+		Scores:     make(map[string]float64),
 		Attributes: make(map[string]interface{}),
 	}
 }

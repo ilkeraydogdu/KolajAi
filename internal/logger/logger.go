@@ -93,7 +93,7 @@ func (l *Logger) Fatal(format string, args ...interface{}) {
 func (l *Logger) logWithLevel(level, format string, args ...interface{}) {
 	_, file, line, _ := runtime.Caller(2)
 	fileShort := file[strings.LastIndex(file, "/")+1:]
-	
+
 	message := fmt.Sprintf(format, args...)
 	l.logger.Printf("[%s] %s:%d %s", level, fileShort, line, message)
 }
@@ -124,10 +124,10 @@ func ErrorWithStack(err error, format string, args ...interface{}) {
 	if err == nil {
 		return
 	}
-	
+
 	message := fmt.Sprintf(format, args...)
 	defaultLogger.Error("%s: %v", message, err)
-	
+
 	// Add stack trace in debug mode
 	if defaultLogger.level <= DEBUG {
 		buf := make([]byte, 1024)

@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
-	"log"
-	
+
 	"kolajAi/internal/services"
 )
 
@@ -36,29 +36,29 @@ func (h *InventoryHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	// Get inventory statistics
 	stats := map[string]interface{}{
-		"total_products":    150,
-		"low_stock_items":   12,
-		"out_of_stock":      3,
-		"overstock_items":   8,
-		"reorder_alerts":    5,
-		"total_value":       125000.50,
+		"total_products":  150,
+		"low_stock_items": 12,
+		"out_of_stock":    3,
+		"overstock_items": 8,
+		"reorder_alerts":  5,
+		"total_value":     125000.50,
 	}
 
 	// Get low stock alerts
 	lowStockAlerts := []map[string]interface{}{
 		{
-			"product_id":   1,
-			"product_name": "Test Ürün 1",
+			"product_id":    1,
+			"product_name":  "Test Ürün 1",
 			"current_stock": 5,
-			"min_stock":    10,
-			"urgency":      "high",
+			"min_stock":     10,
+			"urgency":       "high",
 		},
 		{
-			"product_id":   2,
-			"product_name": "Test Ürün 2", 
+			"product_id":    2,
+			"product_name":  "Test Ürün 2",
 			"current_stock": 2,
-			"min_stock":    15,
-			"urgency":      "critical",
+			"min_stock":     15,
+			"urgency":       "critical",
 		},
 	}
 
@@ -98,24 +98,24 @@ func (h *InventoryHandler) StockLevels(w http.ResponseWriter, r *http.Request) {
 	// Get all products with stock information
 	products := []map[string]interface{}{
 		{
-			"id":           1,
-			"name":         "Test Ürün 1",
-			"sku":          "TEST001",
+			"id":            1,
+			"name":          "Test Ürün 1",
+			"sku":           "TEST001",
 			"current_stock": 45,
-			"min_stock":    10,
-			"max_stock":    100,
-			"status":       "normal",
-			"last_updated": time.Now().Add(-24 * time.Hour),
+			"min_stock":     10,
+			"max_stock":     100,
+			"status":        "normal",
+			"last_updated":  time.Now().Add(-24 * time.Hour),
 		},
 		{
-			"id":           2,
-			"name":         "Test Ürün 2",
-			"sku":          "TEST002", 
+			"id":            2,
+			"name":          "Test Ürün 2",
+			"sku":           "TEST002",
 			"current_stock": 5,
-			"min_stock":    15,
-			"max_stock":    50,
-			"status":       "low",
-			"last_updated": time.Now().Add(-12 * time.Hour),
+			"min_stock":     15,
+			"max_stock":     50,
+			"status":        "low",
+			"last_updated":  time.Now().Add(-12 * time.Hour),
 		},
 	}
 

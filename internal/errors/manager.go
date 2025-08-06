@@ -13,11 +13,11 @@ import (
 
 // ErrorManager handles comprehensive error management
 type ErrorManager struct {
-	db           *sql.DB
-	notifier     ErrorNotifier
-	config       ErrorConfig
-	handlers     map[ErrorType]ErrorHandlerInterface
-	middleware   []ErrorMiddleware
+	db         *sql.DB
+	notifier   ErrorNotifier
+	config     ErrorConfig
+	handlers   map[ErrorType]ErrorHandlerInterface
+	middleware []ErrorMiddleware
 }
 
 // ErrorType represents different types of errors
@@ -25,81 +25,81 @@ type ErrorType string
 
 const (
 	VALIDATION         ErrorType = "validation"
-	DATABASE          ErrorType = "database"
-	AUTHENTICATION    ErrorType = "authentication"
-	AUTHORIZATION     ErrorType = "authorization"
-	NETWORK           ErrorType = "network"
-	SYSTEM            ErrorType = "system"
-	APPLICATION       ErrorType = "application"
+	DATABASE           ErrorType = "database"
+	AUTHENTICATION     ErrorType = "authentication"
+	AUTHORIZATION      ErrorType = "authorization"
+	NETWORK            ErrorType = "network"
+	SYSTEM             ErrorType = "system"
+	APPLICATION        ErrorType = "application"
 	SECURITY_VIOLATION ErrorType = "security_violation"
-	PERFORMANCE       ErrorType = "performance"
-	INTEGRATION       ErrorType = "integration"
-	INTERNAL          ErrorType = "internal"
-	FORBIDDEN         ErrorType = "forbidden"
-	RATE_LIMITED      ErrorType = "rate_limited"
-	WARNING           ErrorType = "warning"
-	ERROR             ErrorType = "error"
-	
+	PERFORMANCE        ErrorType = "performance"
+	INTEGRATION        ErrorType = "integration"
+	INTERNAL           ErrorType = "internal"
+	FORBIDDEN          ErrorType = "forbidden"
+	RATE_LIMITED       ErrorType = "rate_limited"
+	WARNING            ErrorType = "warning"
+	ERROR              ErrorType = "error"
+
 	// Legacy constants for compatibility
-	ErrorTypeValidation   ErrorType = "validation"
-	ErrorTypeDatabase     ErrorType = "database"
-	ErrorTypeAuth         ErrorType = "authentication"
-	ErrorTypeAuthorization        = "authorization"
-	ErrorTypeNetwork      ErrorType = "network"
-	ErrorTypeSystem       ErrorType = "system"
-	ErrorTypeApplication  ErrorType = "application"
-	ErrorTypeSecurity     ErrorType = "security"
-	ErrorTypePerformance  ErrorType = "performance"
-	ErrorTypeIntegration  ErrorType = "integration"
+	ErrorTypeValidation    ErrorType = "validation"
+	ErrorTypeDatabase      ErrorType = "database"
+	ErrorTypeAuth          ErrorType = "authentication"
+	ErrorTypeAuthorization           = "authorization"
+	ErrorTypeNetwork       ErrorType = "network"
+	ErrorTypeSystem        ErrorType = "system"
+	ErrorTypeApplication   ErrorType = "application"
+	ErrorTypeSecurity      ErrorType = "security"
+	ErrorTypePerformance   ErrorType = "performance"
+	ErrorTypeIntegration   ErrorType = "integration"
 )
 
 // ErrorSeverity is already defined in integration_errors.go
 
 // ApplicationError represents a comprehensive application error
 type ApplicationError struct {
-	ID           string                 `json:"id"`
-	Type         ErrorType              `json:"type"`
-	Severity     ErrorSeverity          `json:"severity"`
-	Code         string                 `json:"code"`
-	Message      string                 `json:"message"`
-	UserMessage  string                 `json:"user_message"`
-	Details      map[string]interface{} `json:"details"`
-	Context      ErrorContext           `json:"context"`
-	StackTrace   []StackFrame           `json:"stack_trace"`
-	Cause        *ApplicationError      `json:"cause,omitempty"`
-	Timestamp    time.Time              `json:"timestamp"`
-	Resolved     bool                   `json:"resolved"`
-	ResolvedAt   *time.Time             `json:"resolved_at,omitempty"`
-	ResolvedBy   string                 `json:"resolved_by,omitempty"`
-	Occurrences  int                    `json:"occurrences"`
-	FirstSeen    time.Time              `json:"first_seen"`
-	LastSeen     time.Time              `json:"last_seen"`
-	AffectedUsers []string              `json:"affected_users"`
-	Tags         []string               `json:"tags"`
-	Metadata     map[string]interface{} `json:"metadata"`
+	ID            string                 `json:"id"`
+	Type          ErrorType              `json:"type"`
+	Severity      ErrorSeverity          `json:"severity"`
+	Code          string                 `json:"code"`
+	Message       string                 `json:"message"`
+	UserMessage   string                 `json:"user_message"`
+	Details       map[string]interface{} `json:"details"`
+	Context       ErrorContext           `json:"context"`
+	StackTrace    []StackFrame           `json:"stack_trace"`
+	Cause         *ApplicationError      `json:"cause,omitempty"`
+	Timestamp     time.Time              `json:"timestamp"`
+	Resolved      bool                   `json:"resolved"`
+	ResolvedAt    *time.Time             `json:"resolved_at,omitempty"`
+	ResolvedBy    string                 `json:"resolved_by,omitempty"`
+	Occurrences   int                    `json:"occurrences"`
+	FirstSeen     time.Time              `json:"first_seen"`
+	LastSeen      time.Time              `json:"last_seen"`
+	AffectedUsers []string               `json:"affected_users"`
+	Tags          []string               `json:"tags"`
+	Metadata      map[string]interface{} `json:"metadata"`
 }
 
 // ErrorContext provides context about where the error occurred
 type ErrorContext struct {
-	RequestID    string            `json:"request_id"`
-	UserID       string            `json:"user_id"`
-	SessionID    string            `json:"session_id"`
-	IPAddress    string            `json:"ip_address"`
-	UserAgent    string            `json:"user_agent"`
-	URL          string            `json:"url"`
-	Method       string            `json:"method"`
-	Headers      map[string]string `json:"headers"`
-	Parameters   map[string]string `json:"parameters"`
-	Body         string            `json:"body,omitempty"`
-	Function     string            `json:"function"`
-	File         string            `json:"file"`
-	Line         int               `json:"line"`
-	StackTrace   string            `json:"stack_trace"`
-	Version      string            `json:"version"`
-	Environment  string            `json:"environment"`
-	Server       string            `json:"server"`
-	Database     string            `json:"database,omitempty"`
-	ExternalAPI  string            `json:"external_api,omitempty"`
+	RequestID   string            `json:"request_id"`
+	UserID      string            `json:"user_id"`
+	SessionID   string            `json:"session_id"`
+	IPAddress   string            `json:"ip_address"`
+	UserAgent   string            `json:"user_agent"`
+	URL         string            `json:"url"`
+	Method      string            `json:"method"`
+	Headers     map[string]string `json:"headers"`
+	Parameters  map[string]string `json:"parameters"`
+	Body        string            `json:"body,omitempty"`
+	Function    string            `json:"function"`
+	File        string            `json:"file"`
+	Line        int               `json:"line"`
+	StackTrace  string            `json:"stack_trace"`
+	Version     string            `json:"version"`
+	Environment string            `json:"environment"`
+	Server      string            `json:"server"`
+	Database    string            `json:"database,omitempty"`
+	ExternalAPI string            `json:"external_api,omitempty"`
 }
 
 // StackFrame represents a single frame in the stack trace
@@ -112,34 +112,34 @@ type StackFrame struct {
 
 // ErrorConfig holds error management configuration
 type ErrorConfig struct {
-	Environment         string        `json:"environment"`
-	EnableStackTrace    bool          `json:"enable_stack_trace"`
-	EnableNotifications bool          `json:"enable_notifications"`
-	MaxStackDepth       int           `json:"max_stack_depth"`
-	SamplingRate        float64       `json:"sampling_rate"`
-	RetentionDays       int           `json:"retention_days"`
+	Environment         string             `json:"environment"`
+	EnableStackTrace    bool               `json:"enable_stack_trace"`
+	EnableNotifications bool               `json:"enable_notifications"`
+	MaxStackDepth       int                `json:"max_stack_depth"`
+	SamplingRate        float64            `json:"sampling_rate"`
+	RetentionDays       int                `json:"retention_days"`
 	NotificationRules   []NotificationRule `json:"notification_rules"`
-	IgnorePatterns      []string      `json:"ignore_patterns"`
-	GroupingRules       []GroupingRule `json:"grouping_rules"`
+	IgnorePatterns      []string           `json:"ignore_patterns"`
+	GroupingRules       []GroupingRule     `json:"grouping_rules"`
 }
 
 // NotificationRule defines when to send notifications
 type NotificationRule struct {
-	Severity    ErrorSeverity `json:"severity"`
-	Type        ErrorType     `json:"type"`
-	Threshold   int           `json:"threshold"`
-	TimeWindow  time.Duration `json:"time_window"`
-	Recipients  []string      `json:"recipients"`
-	Channels    []string      `json:"channels"` // email, slack, webhook
-	Template    string        `json:"template"`
-	Enabled     bool          `json:"enabled"`
+	Severity   ErrorSeverity `json:"severity"`
+	Type       ErrorType     `json:"type"`
+	Threshold  int           `json:"threshold"`
+	TimeWindow time.Duration `json:"time_window"`
+	Recipients []string      `json:"recipients"`
+	Channels   []string      `json:"channels"` // email, slack, webhook
+	Template   string        `json:"template"`
+	Enabled    bool          `json:"enabled"`
 }
 
 // GroupingRule defines how to group similar errors
 type GroupingRule struct {
-	Fields     []string `json:"fields"`
+	Fields     []string      `json:"fields"`
 	TimeWindow time.Duration `json:"time_window"`
-	MaxGroup   int      `json:"max_group"`
+	MaxGroup   int           `json:"max_group"`
 }
 
 // ErrorHandlerInterface handles specific error types
@@ -161,51 +161,51 @@ type ErrorNotifier interface {
 
 // ErrorManagerStats represents error statistics
 type ErrorManagerStats struct {
-	TotalErrors     int                        `json:"total_errors"`
-	ErrorsByType    map[ErrorType]int          `json:"errors_by_type"`
+	TotalErrors      int                       `json:"total_errors"`
+	ErrorsByType     map[ErrorType]int         `json:"errors_by_type"`
 	ErrorsBySeverity map[ErrorSeverity]int     `json:"errors_by_severity"`
-	TopErrors       []ErrorSummary             `json:"top_errors"`
-	TrendData       []ErrorTrendPoint          `json:"trend_data"`
-	ResolutionTime  map[ErrorSeverity]float64  `json:"avg_resolution_time"`
-	AffectedUsers   int                        `json:"affected_users"`
-	ErrorRate       float64                    `json:"error_rate"`
-	Uptime          float64                    `json:"uptime"`
+	TopErrors        []ErrorSummary            `json:"top_errors"`
+	TrendData        []ErrorTrendPoint         `json:"trend_data"`
+	ResolutionTime   map[ErrorSeverity]float64 `json:"avg_resolution_time"`
+	AffectedUsers    int                       `json:"affected_users"`
+	ErrorRate        float64                   `json:"error_rate"`
+	Uptime           float64                   `json:"uptime"`
 }
 
 // ErrorSummary represents a summary of similar errors
 type ErrorSummary struct {
-	ID          string        `json:"id"`
-	Message     string        `json:"message"`
-	Type        ErrorType     `json:"type"`
-	Severity    ErrorSeverity `json:"severity"`
-	Count       int           `json:"count"`
-	FirstSeen   time.Time     `json:"first_seen"`
-	LastSeen    time.Time     `json:"last_seen"`
-	Resolved    bool          `json:"resolved"`
-	AffectedUsers int         `json:"affected_users"`
+	ID            string        `json:"id"`
+	Message       string        `json:"message"`
+	Type          ErrorType     `json:"type"`
+	Severity      ErrorSeverity `json:"severity"`
+	Count         int           `json:"count"`
+	FirstSeen     time.Time     `json:"first_seen"`
+	LastSeen      time.Time     `json:"last_seen"`
+	Resolved      bool          `json:"resolved"`
+	AffectedUsers int           `json:"affected_users"`
 }
 
 // ErrorTrendPoint represents a point in error trend data
 type ErrorTrendPoint struct {
-	Timestamp time.Time `json:"timestamp"`
-	Count     int       `json:"count"`
-	Type      ErrorType `json:"type"`
+	Timestamp time.Time     `json:"timestamp"`
+	Count     int           `json:"count"`
+	Type      ErrorType     `json:"type"`
 	Severity  ErrorSeverity `json:"severity"`
 }
 
 // NewErrorManager creates a new error manager
 func NewErrorManager(db *sql.DB, notifier ErrorNotifier, config ErrorConfig) *ErrorManager {
 	em := &ErrorManager{
-		db:       db,
-		notifier: notifier,
-		config:   config,
-		handlers: make(map[ErrorType]ErrorHandlerInterface),
+		db:         db,
+		notifier:   notifier,
+		config:     config,
+		handlers:   make(map[ErrorType]ErrorHandlerInterface),
 		middleware: make([]ErrorMiddleware, 0),
 	}
 
 	em.createErrorTables()
 	em.registerDefaultHandlers()
-	
+
 	return em
 }
 
@@ -226,11 +226,11 @@ func NewApplicationError(errorType ErrorType, code, message string, cause error)
 func (em *ErrorManager) HandleHTTPError(w http.ResponseWriter, r *http.Request, err *ApplicationError) {
 	// Log the error
 	em.LogError(err)
-	
+
 	// Set appropriate HTTP status code
 	statusCode := em.getHTTPStatusCode(err.Type)
 	w.WriteHeader(statusCode)
-	
+
 	// Send JSON error response
 	w.Header().Set("Content-Type", "application/json")
 	// In real implementation, would use proper JSON encoding
@@ -329,7 +329,7 @@ func (em *ErrorManager) RegisterMiddleware(middleware ErrorMiddleware) {
 // HandleError processes and handles an error
 func (em *ErrorManager) HandleError(ctx context.Context, err error, errorType ErrorType, severity ErrorSeverity) *ApplicationError {
 	appError := em.createApplicationError(err, errorType, severity, ctx)
-	
+
 	// Process through middleware
 	for _, middleware := range em.middleware {
 		processedError, middlewareErr := middleware.Process(ctx, appError)
@@ -362,7 +362,7 @@ func (em *ErrorManager) HandleError(ctx context.Context, err error, errorType Er
 // createApplicationError creates a comprehensive application error
 func (em *ErrorManager) createApplicationError(err error, errorType ErrorType, severity ErrorSeverity, ctx context.Context) *ApplicationError {
 	now := time.Now()
-	
+
 	appError := &ApplicationError{
 		ID:          em.generateErrorID(),
 		Type:        errorType,
@@ -421,10 +421,10 @@ func (em *ErrorManager) extractContext(ctx context.Context) ErrorContext {
 			errorCtx.Method = r.Method
 			errorCtx.UserAgent = r.UserAgent()
 			errorCtx.IPAddress = em.extractIPAddress(r)
-			
+
 			// Extract headers (filtering sensitive ones)
 			errorCtx.Headers = em.extractSafeHeaders(r.Header)
-			
+
 			// Extract parameters
 			errorCtx.Parameters = em.extractParameters(r)
 		}
@@ -513,7 +513,7 @@ func (em *ErrorManager) generateUserMessage(err error, errorType ErrorType) stri
 // extractErrorDetails extracts additional details based on error type
 func (em *ErrorManager) extractErrorDetails(err error, errorType ErrorType) map[string]interface{} {
 	details := make(map[string]interface{})
-	
+
 	// Add error type specific details
 	switch errorType {
 	case ErrorTypeDatabase:
@@ -534,12 +534,12 @@ func (em *ErrorManager) extractIPAddress(r *http.Request) string {
 		ips := strings.Split(xff, ",")
 		return strings.TrimSpace(ips[0])
 	}
-	
+
 	// Check X-Real-IP header
 	if xri := r.Header.Get("X-Real-IP"); xri != "" {
 		return xri
 	}
-	
+
 	return r.RemoteAddr
 }
 
@@ -566,7 +566,7 @@ func (em *ErrorManager) extractSafeHeaders(headers http.Header) map[string]strin
 // extractParameters extracts request parameters
 func (em *ErrorManager) extractParameters(r *http.Request) map[string]string {
 	params := make(map[string]string)
-	
+
 	// Extract query parameters
 	for key, values := range r.URL.Query() {
 		if len(values) > 0 {
@@ -591,13 +591,13 @@ func (em *ErrorManager) extractParameters(r *http.Request) map[string]string {
 func (em *ErrorManager) isSensitiveParam(param string) bool {
 	sensitiveParams := []string{"password", "token", "secret", "key", "auth"}
 	lowerParam := strings.ToLower(param)
-	
+
 	for _, sensitive := range sensitiveParams {
 		if strings.Contains(lowerParam, sensitive) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -633,7 +633,7 @@ func (em *ErrorManager) findSimilarError(err *ApplicationError) *ApplicationErro
 		AND first_seen > DATE_SUB(NOW(), INTERVAL 1 HOUR)
 		LIMIT 1
 	`
-	
+
 	var existingID string
 	var occurrences int
 	dbErr := em.db.QueryRow(query, err.Type, err.Message).Scan(&existingID, &occurrences)
@@ -651,7 +651,7 @@ func (em *ErrorManager) updateExistingError(existing, new *ApplicationError) err
 		SET occurrences = occurrences + 1, last_seen = NOW()
 		WHERE id = ?
 	`
-	
+
 	_, err := em.db.Exec(query, existing.ID)
 	return err
 }
@@ -726,7 +726,7 @@ func (em *ErrorManager) getErrorCountInTimeWindow(err *ApplicationError, window 
 		WHERE type = ? AND severity = ? AND message = ?
 		AND timestamp > DATE_SUB(NOW(), INTERVAL ? SECOND)
 	`
-	
+
 	var count int
 	em.db.QueryRow(query, err.Type, err.Severity, err.Message, int(window.Seconds())).Scan(&count)
 	return count
@@ -781,7 +781,7 @@ func (em *ErrorManager) ResolveError(errorID, resolvedBy string) error {
 		SET resolved = TRUE, resolved_at = NOW(), resolved_by = ?
 		WHERE id = ?
 	`
-	
+
 	_, err := em.db.Exec(query, resolvedBy, errorID)
 	return err
 }
@@ -794,7 +794,7 @@ func (em *ErrorManager) registerDefaultHandlers() {
 // HTTPErrorHandler converts application errors to HTTP responses
 func (em *ErrorManager) HTTPErrorHandler(w http.ResponseWriter, r *http.Request, err *ApplicationError) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	// Determine HTTP status code based on error type
 	statusCode := em.getHTTPStatusCode(err.Type)
 	w.WriteHeader(statusCode)

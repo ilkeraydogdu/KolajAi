@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"os"
 	"time"
-	
-	"github.com/kolajai/internal/models"
+
+	"kolajAi/internal/models"
 )
 
 var (
@@ -20,7 +20,7 @@ func init() {
 	if env == "" {
 		env = os.Getenv("GIN_MODE")
 	}
-	
+
 	if env == "production" || env == "release" {
 		// Production'da sadece stdout'a minimal log
 		DashboardLogger = log.New(os.Stdout, "[DASHBOARD] ", log.LstdFlags)
@@ -57,36 +57,36 @@ func (h *Handler) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	// Get dashboard stats
 	stats := h.GetDashboardStats(userInfo.ID)
-	
+
 	// Get recent notifications
 	notifications := h.GetRecentNotifications(userInfo.ID, 5)
-	
+
 	// Get pending tasks
 	tasks := h.GetPendingTasks(userInfo.ID, 5)
-	
+
 	// Get quick actions based on user role
 	quickActions := h.GetQuickActions(userInfo)
-	
+
 	// Prepare chart data
 	activityChart := h.GetActivityChartData(7) // Last 7 days
-	
+
 	// Check if it's admin user
 	isAdmin := h.IsAdminUser(r)
 
 	data := map[string]interface{}{
-		"Title":          "Dashboard - KolajAI",
-		"PageTitle":      "Dashboard",
-		"UserID":         userInfo.ID,
-		"UserName":       userInfo.Name,
-		"UserEmail":      userInfo.Email,
-		"CurrentTime":    time.Now().Format("02.01.2006 15:04"),
-		"Stats":          stats,
-		"Notifications":  notifications,
-		"Tasks":          tasks,
-		"QuickActions":   quickActions,
-		"ActivityChart":  activityChart,
-		"IsAdmin":        isAdmin,
-		"ShowWelcome":    h.IsFirstLogin(userInfo.ID),
+		"Title":         "Dashboard - KolajAI",
+		"PageTitle":     "Dashboard",
+		"UserID":        userInfo.ID,
+		"UserName":      userInfo.Name,
+		"UserEmail":     userInfo.Email,
+		"CurrentTime":   time.Now().Format("02.01.2006 15:04"),
+		"Stats":         stats,
+		"Notifications": notifications,
+		"Tasks":         tasks,
+		"QuickActions":  quickActions,
+		"ActivityChart": activityChart,
+		"IsAdmin":       isAdmin,
+		"ShowWelcome":   h.IsFirstLogin(userInfo.ID),
 	}
 
 	// Şablonu render et
@@ -192,7 +192,7 @@ func (h *Handler) GetQuickActions(user *UserInfo) []models.QuickAction {
 			Color:       "secondary",
 		},
 	}
-	
+
 	// Add admin-specific actions
 	if user.IsAdmin {
 		actions = append(actions, models.QuickAction{
@@ -203,7 +203,7 @@ func (h *Handler) GetQuickActions(user *UserInfo) []models.QuickAction {
 			Color:       "danger",
 		})
 	}
-	
+
 	return actions
 }
 
@@ -211,15 +211,15 @@ func (h *Handler) GetQuickActions(user *UserInfo) []models.QuickAction {
 func (h *Handler) GetActivityChartData(days int) *models.DashboardChart {
 	labels := []string{}
 	data := []interface{}{}
-	
+
 	// Generate last N days
 	for i := days - 1; i >= 0; i-- {
 		date := time.Now().AddDate(0, 0, -i)
 		labels = append(labels, date.Format("02 Jan"))
 		// TODO: Get real data from database
-		data = append(data, 10 + i*5) // Demo data
+		data = append(data, 10+i*5) // Demo data
 	}
-	
+
 	return &models.DashboardChart{
 		Labels: labels,
 		Data:   data,
@@ -240,10 +240,10 @@ func (h *Handler) DashboardAPI(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	// Get action from query
 	action := r.URL.Query().Get("action")
-	
+
 	switch action {
 	case "refresh-stats":
 		h.RefreshDashboardStats(w, r)
@@ -263,9 +263,9 @@ func (h *Handler) RefreshDashboardStats(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	stats := h.GetDashboardStats(userInfo.ID)
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
 }
@@ -276,18 +276,18 @@ func (h *Handler) MarkNotificationRead(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	var req struct {
 		NotificationID int64 `json:"notification_id"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	
+
 	// TODO: Update notification in database
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,
@@ -301,18 +301,18 @@ func (h *Handler) CompleteTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	var req struct {
 		TaskID int64 `json:"task_id"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	
+
 	// TODO: Update task in database
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
 		"success": true,

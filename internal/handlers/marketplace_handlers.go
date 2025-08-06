@@ -3,10 +3,10 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-	"time"
 	"kolajAi/internal/models"
 	"kolajAi/internal/services"
+	"net/http"
+	"time"
 )
 
 // MarketplaceHandler handles marketplace integration requests
@@ -391,12 +391,12 @@ func (h *MarketplaceHandler) parseTimeParam(r *http.Request, param string) time.
 		// Default to 24 hours ago
 		return time.Now().Add(-24 * time.Hour)
 	}
-	
+
 	t, err := time.Parse(time.RFC3339, timeStr)
 	if err != nil {
 		// If parsing fails, default to 24 hours ago
 		return time.Now().Add(-24 * time.Hour)
 	}
-	
+
 	return t
 }

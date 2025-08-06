@@ -264,10 +264,10 @@ func (h *AIHandler) GetAIDashboard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		Logger.Printf("Error getting AI dashboard stats: %v", err)
 		aiStats = map[string]interface{}{
-			"RecommendationsCount":     int64(0),
-			"SearchQueriesCount":       int64(0),
-			"PriceOptimizationsCount":  int64(0),
-			"ModelUsageCount":          int64(0),
+			"RecommendationsCount":    int64(0),
+			"SearchQueriesCount":      int64(0),
+			"PriceOptimizationsCount": int64(0),
+			"ModelUsageCount":         int64(0),
 		}
 	}
 	data["AIStats"] = aiStats

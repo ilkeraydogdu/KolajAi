@@ -17,15 +17,15 @@ type Router struct {
 
 // RouteInfo holds information about a route
 type RouteInfo struct {
-	Pattern     string
-	Method      string
-	Handler     http.HandlerFunc
-	Middleware  []string
-	Protected   bool
+	Pattern      string
+	Method       string
+	Handler      http.HandlerFunc
+	Middleware   []string
+	Protected    bool
 	CacheEnabled bool
-	RateLimit   int
-	Description string
-	Tags        []string
+	RateLimit    int
+	Description  string
+	Tags         []string
 }
 
 // NewRouter creates a new router with middleware stack
@@ -64,20 +64,20 @@ type RouteOptions struct {
 func (r *Router) HandleFuncWithOptions(pattern string, handler http.HandlerFunc, options RouteOptions) {
 	// Store route information
 	r.routes[pattern] = RouteInfo{
-		Pattern:     pattern,
-		Method:      options.Method,
-		Handler:     handler,
-		Middleware:  options.Middleware,
-		Protected:   options.Protected,
+		Pattern:      pattern,
+		Method:       options.Method,
+		Handler:      handler,
+		Middleware:   options.Middleware,
+		Protected:    options.Protected,
 		CacheEnabled: options.CacheEnabled,
-		RateLimit:   options.RateLimit,
-		Description: options.Description,
-		Tags:        options.Tags,
+		RateLimit:    options.RateLimit,
+		Description:  options.Description,
+		Tags:         options.Tags,
 	}
 
 	// Apply route-specific middleware
 	finalHandler := r.applyRouteMiddleware(handler, options)
-	
+
 	// Register with mux
 	r.mux.HandleFunc(pattern, finalHandler)
 }
@@ -149,7 +149,7 @@ func (r *Router) authMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		// Check if session is valid and active
 		// This would use the session manager to validate
-		
+
 		next.ServeHTTP(w, req)
 	})
 }
@@ -166,7 +166,7 @@ func (r *Router) adminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		// Check admin privileges
 		// This would use the session manager to check user role
-		
+
 		next.ServeHTTP(w, req)
 	})
 }
@@ -183,7 +183,7 @@ func (r *Router) vendorMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		// Check vendor privileges
 		// This would use the session manager to check user role
-		
+
 		next.ServeHTTP(w, req)
 	})
 }
@@ -194,16 +194,16 @@ func (r *Router) apiMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Set API headers
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-API-Version", "1.0")
-		
+
 		// Check API key or JWT token
 		apiKey := req.Header.Get("X-API-Key")
 		authHeader := req.Header.Get("Authorization")
-		
+
 		if apiKey == "" && authHeader == "" {
 			http.Error(w, "API key or authorization token required", http.StatusUnauthorized)
 			return
 		}
-		
+
 		next.ServeHTTP(w, req)
 	})
 }
@@ -220,13 +220,13 @@ func (r *Router) rateLimitMiddleware(next http.HandlerFunc, limit int) http.Hand
 // redirectToLogin redirects to login page
 func (r *Router) redirectToLogin(w http.ResponseWriter, req *http.Request) {
 	// Check if it's an API request
-	if strings.HasPrefix(req.URL.Path, "/api/") || 
-	   req.Header.Get("Accept") == "application/json" ||
-	   req.Header.Get("Content-Type") == "application/json" {
+	if strings.HasPrefix(req.URL.Path, "/api/") ||
+		req.Header.Get("Accept") == "application/json" ||
+		req.Header.Get("Content-Type") == "application/json" {
 		http.Error(w, "Authentication required", http.StatusUnauthorized)
 		return
 	}
-	
+
 	// Redirect to login page
 	http.Redirect(w, req, "/login?redirect="+req.URL.Path, http.StatusSeeOther)
 }
@@ -264,15 +264,15 @@ func (rg *RouteGroup) HandleFuncWithOptions(pattern string, handler http.Handler
 	// Combine group middleware with route middleware
 	combinedMiddleware := append(rg.middleware, options.Middleware...)
 	options.Middleware = combinedMiddleware
-	
+
 	// Apply group protection if not overridden
 	if rg.protected && !options.Protected {
 		options.Protected = true
 	}
-	
+
 	// Add prefix to pattern
 	fullPattern := rg.prefix + pattern
-	
+
 	rg.router.HandleFuncWithOptions(fullPattern, handler, options)
 }
 
@@ -313,7 +313,7 @@ func (r *Router) SetupHealthCheck() {
 func (r *Router) healthCheckHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	
+
 	// This would use JSON encoder
 	w.Write([]byte(`{"status":"healthy","timestamp":"` + time.Now().Format(time.RFC3339) + `"}`))
 }
@@ -333,7 +333,7 @@ func (r *Router) SetupMetrics() {
 func (r *Router) metricsHandler(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	
+
 	// This would use JSON encoder
 	w.Write([]byte(`{"requests_total":0,"memory_usage":0}`))
 }

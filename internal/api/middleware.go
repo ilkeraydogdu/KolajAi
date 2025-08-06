@@ -27,19 +27,19 @@ type APIMiddleware struct {
 
 // APIConfig holds API configuration
 type APIConfig struct {
-	Version           string        `json:"version"`
-	RateLimitEnabled  bool          `json:"rate_limit_enabled"`
-	CacheEnabled      bool          `json:"cache_enabled"`
-	CompressionEnabled bool         `json:"compression_enabled"`
-	CORSEnabled       bool          `json:"cors_enabled"`
-	RequestTimeout    time.Duration `json:"request_timeout"`
-	MaxRequestSize    int64         `json:"max_request_size"`
-	AllowedOrigins    []string      `json:"allowed_origins"`
-	AllowedMethods    []string      `json:"allowed_methods"`
-	AllowedHeaders    []string      `json:"allowed_headers"`
-	ExposedHeaders    []string      `json:"exposed_headers"`
-	AllowCredentials  bool          `json:"allow_credentials"`
-	MaxAge            int           `json:"max_age"`
+	Version            string        `json:"version"`
+	RateLimitEnabled   bool          `json:"rate_limit_enabled"`
+	CacheEnabled       bool          `json:"cache_enabled"`
+	CompressionEnabled bool          `json:"compression_enabled"`
+	CORSEnabled        bool          `json:"cors_enabled"`
+	RequestTimeout     time.Duration `json:"request_timeout"`
+	MaxRequestSize     int64         `json:"max_request_size"`
+	AllowedOrigins     []string      `json:"allowed_origins"`
+	AllowedMethods     []string      `json:"allowed_methods"`
+	AllowedHeaders     []string      `json:"allowed_headers"`
+	ExposedHeaders     []string      `json:"exposed_headers"`
+	AllowCredentials   bool          `json:"allow_credentials"`
+	MaxAge             int           `json:"max_age"`
 }
 
 // APIResponse represents standardized API response
@@ -155,17 +155,17 @@ func (m *APIMiddleware) applyMiddlewareChain(next http.HandlerFunc) http.Handler
 func (m *APIMiddleware) loggingMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		
+
 		// Create response writer wrapper to capture status code
 		rw := &responseWriter{ResponseWriter: w, statusCode: http.StatusOK}
-		
+
 		next(rw, r)
-		
+
 		duration := time.Since(start)
 		requestID := r.Context().Value("request_id").(string)
-		
+
 		log.Printf("API Request: %s %s | Status: %d | Duration: %v | RequestID: %s | IP: %s | UserAgent: %s",
-			r.Method, r.URL.Path, rw.statusCode, duration, requestID, 
+			r.Method, r.URL.Path, rw.statusCode, duration, requestID,
 			getClientIP(r), r.UserAgent())
 	}
 }
@@ -174,27 +174,27 @@ func (m *APIMiddleware) loggingMiddleware(next http.HandlerFunc) http.HandlerFun
 func (m *APIMiddleware) corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		
+
 		// Check if origin is allowed
 		if m.isOriginAllowed(origin) {
 			w.Header().Set("Access-Control-Allow-Origin", origin)
 		}
-		
+
 		w.Header().Set("Access-Control-Allow-Methods", strings.Join(m.Config.AllowedMethods, ", "))
 		w.Header().Set("Access-Control-Allow-Headers", strings.Join(m.Config.AllowedHeaders, ", "))
 		w.Header().Set("Access-Control-Expose-Headers", strings.Join(m.Config.ExposedHeaders, ", "))
 		w.Header().Set("Access-Control-Max-Age", fmt.Sprintf("%d", m.Config.MaxAge))
-		
+
 		if m.Config.AllowCredentials {
 			w.Header().Set("Access-Control-Allow-Credentials", "true")
 		}
-		
+
 		// Handle preflight requests
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
-		
+
 		next(w, r)
 	}
 }
@@ -204,30 +204,30 @@ func (m *APIMiddleware) securityMiddleware(next http.HandlerFunc) http.HandlerFu
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Apply security headers
 		m.SecurityManager.SetSecurityHeaders(w)
-		
+
 		// Check IP access
 		if blocked, reason := m.SecurityManager.CheckIPAccess(getClientIP(r)); blocked {
-			m.sendErrorResponse(w, r, http.StatusForbidden, "IP_BLOCKED", 
+			m.sendErrorResponse(w, r, http.StatusForbidden, "IP_BLOCKED",
 				fmt.Sprintf("Access denied: %s", reason))
 			return
 		}
-		
+
 		// Input validation for POST/PUT/PATCH requests
 		if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" {
 			if err := m.SecurityManager.ValidateInput(r); err != nil {
-				m.sendErrorResponse(w, r, http.StatusBadRequest, "INVALID_INPUT", 
+				m.sendErrorResponse(w, r, http.StatusBadRequest, "INVALID_INPUT",
 					"Request validation failed")
 				return
 			}
 		}
-		
+
 		// Vulnerability scanning
 		if threats := m.SecurityManager.ScanForThreats(r); len(threats) > 0 {
-			m.sendErrorResponse(w, r, http.StatusBadRequest, "SECURITY_THREAT", 
+			m.sendErrorResponse(w, r, http.StatusBadRequest, "SECURITY_THREAT",
 				"Security threat detected")
 			return
 		}
-		
+
 		next(w, r)
 	}
 }
@@ -236,11 +236,11 @@ func (m *APIMiddleware) securityMiddleware(next http.HandlerFunc) http.HandlerFu
 func (m *APIMiddleware) rateLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if limited, _ := m.SecurityManager.CheckRateLimit(r); limited {
-			m.sendErrorResponse(w, r, http.StatusTooManyRequests, "RATE_LIMIT_EXCEEDED", 
+			m.sendErrorResponse(w, r, http.StatusTooManyRequests, "RATE_LIMIT_EXCEEDED",
 				"Rate limit exceeded")
 			return
 		}
-		
+
 		next(w, r)
 	}
 }
@@ -253,27 +253,27 @@ func (m *APIMiddleware) cacheMiddleware(next http.HandlerFunc) http.HandlerFunc 
 			next(w, r)
 			return
 		}
-		
+
 		cacheKey := fmt.Sprintf("api_cache:%s:%s", r.Method, r.URL.String())
-		
+
 		// Try to get from cache
 		if cached, err := m.CacheManager.Get(r.Context(), "api", cacheKey); err == nil {
 			w.Header().Set("X-Cache", "HIT")
 			w.Write(cached)
 			return
 		}
-		
+
 		// Create response recorder
 		recorder := &responseRecorder{ResponseWriter: w, body: make([]byte, 0)}
-		
+
 		next(recorder, r)
-		
+
 		// Cache successful responses
 		if recorder.statusCode >= 200 && recorder.statusCode < 300 {
 			m.CacheManager.Set(r.Context(), "api", cacheKey, recorder.body, 5*time.Minute)
 			w.Header().Set("X-Cache", "MISS")
 		}
-		
+
 		w.Write(recorder.body)
 	}
 }
@@ -285,7 +285,7 @@ func (m *APIMiddleware) compressionMiddleware(next http.HandlerFunc) http.Handle
 			next(w, r)
 			return
 		}
-		
+
 		// Implementation would go here - using gzip compression
 		next(w, r)
 	}
@@ -295,11 +295,11 @@ func (m *APIMiddleware) compressionMiddleware(next http.HandlerFunc) http.Handle
 func (m *APIMiddleware) requestSizeLimitMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.ContentLength > m.Config.MaxRequestSize {
-			m.sendErrorResponse(w, r, http.StatusRequestEntityTooLarge, "REQUEST_TOO_LARGE", 
+			m.sendErrorResponse(w, r, http.StatusRequestEntityTooLarge, "REQUEST_TOO_LARGE",
 				"Request entity too large")
 			return
 		}
-		
+
 		r.Body = http.MaxBytesReader(w, r.Body, m.Config.MaxRequestSize)
 		next(w, r)
 	}
@@ -310,7 +310,7 @@ func (m *APIMiddleware) timeoutMiddleware(next http.HandlerFunc) http.HandlerFun
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx, cancel := context.WithTimeout(r.Context(), m.Config.RequestTimeout)
 		defer cancel()
-		
+
 		r = r.WithContext(ctx)
 		next(w, r)
 	}
@@ -321,11 +321,11 @@ func (m *APIMiddleware) errorHandlingMiddleware(next http.HandlerFunc) http.Hand
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				m.sendErrorResponse(w, r, http.StatusInternalServerError, "INTERNAL_ERROR", 
+				m.sendErrorResponse(w, r, http.StatusInternalServerError, "INTERNAL_ERROR",
 					"Internal server error")
 			}
 		}()
-		
+
 		next(w, r)
 	}
 }
@@ -336,11 +336,11 @@ func (m *APIMiddleware) recoveryMiddleware(next http.HandlerFunc) http.HandlerFu
 		defer func() {
 			if err := recover(); err != nil {
 				log.Printf("API Panic: %v\n%s", err, debug.Stack())
-				m.sendErrorResponse(w, r, http.StatusInternalServerError, "PANIC_RECOVERED", 
+				m.sendErrorResponse(w, r, http.StatusInternalServerError, "PANIC_RECOVERED",
 					"Server error recovered")
 			}
 		}()
-		
+
 		next(w, r)
 	}
 }
@@ -348,11 +348,11 @@ func (m *APIMiddleware) recoveryMiddleware(next http.HandlerFunc) http.HandlerFu
 // Helper methods
 
 // sendErrorResponse sends standardized error response
-func (m *APIMiddleware) sendErrorResponse(w http.ResponseWriter, r *http.Request, 
+func (m *APIMiddleware) sendErrorResponse(w http.ResponseWriter, r *http.Request,
 	statusCode int, code string, message string) {
-	
+
 	requestID := r.Context().Value("request_id").(string)
-	
+
 	response := APIResponse{
 		Success: false,
 		Error: &APIError{
@@ -363,17 +363,17 @@ func (m *APIMiddleware) sendErrorResponse(w http.ResponseWriter, r *http.Request
 		RequestID: requestID,
 		Version:   m.Config.Version,
 	}
-	
+
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(response)
 }
 
 // SendSuccessResponse sends standardized success response
-func (m *APIMiddleware) SendSuccessResponse(w http.ResponseWriter, r *http.Request, 
+func (m *APIMiddleware) SendSuccessResponse(w http.ResponseWriter, r *http.Request,
 	data interface{}, meta *APIMeta) {
-	
+
 	requestID := r.Context().Value("request_id").(string)
-	
+
 	response := APIResponse{
 		Success:   true,
 		Data:      data,
@@ -382,7 +382,7 @@ func (m *APIMiddleware) SendSuccessResponse(w http.ResponseWriter, r *http.Reque
 		RequestID: requestID,
 		Version:   m.Config.Version,
 	}
-	
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response)
 }

@@ -2,33 +2,33 @@ package payment
 
 import (
 	"context"
-	"time"
 	"kolajAi/internal/integrations"
+	"time"
 )
 
 // PaymentProvider interface for all payment gateways
 type PaymentProvider interface {
 	integrations.IntegrationProvider
-	
+
 	// Payment operations
 	CreatePayment(ctx context.Context, payment *PaymentRequest) (*PaymentResponse, error)
 	CapturePayment(ctx context.Context, paymentID string, amount float64) (*PaymentResponse, error)
 	RefundPayment(ctx context.Context, paymentID string, amount float64) (*RefundResponse, error)
 	GetPaymentStatus(ctx context.Context, paymentID string) (*PaymentStatus, error)
-	
+
 	// 3D Secure operations
 	Initialize3DSecure(ctx context.Context, payment *PaymentRequest) (*ThreeDSecureResponse, error)
 	Verify3DSecure(ctx context.Context, paymentID string, verificationData map[string]string) (*PaymentResponse, error)
-	
+
 	// Tokenization
 	TokenizeCard(ctx context.Context, card *CardDetails) (*CardToken, error)
 	DeleteToken(ctx context.Context, tokenID string) error
-	
+
 	// Subscription operations
 	CreateSubscription(ctx context.Context, subscription *SubscriptionRequest) (*SubscriptionResponse, error)
 	CancelSubscription(ctx context.Context, subscriptionID string) error
 	UpdateSubscription(ctx context.Context, subscriptionID string, updates map[string]interface{}) (*SubscriptionResponse, error)
-	
+
 	// Reporting
 	GetTransaction(ctx context.Context, transactionID string) (*Transaction, error)
 	ListTransactions(ctx context.Context, filters TransactionFilters) ([]*Transaction, error)
@@ -71,32 +71,32 @@ type PaymentResponse struct {
 
 // PaymentMethod represents payment method details
 type PaymentMethod struct {
-	Type        PaymentMethodType      `json:"type"`
-	Card        *CardDetails           `json:"card,omitempty"`
-	BankAccount *BankAccountDetails    `json:"bank_account,omitempty"`
-	Wallet      *WalletDetails         `json:"wallet,omitempty"`
-	Token       string                 `json:"token,omitempty"`
+	Type        PaymentMethodType   `json:"type"`
+	Card        *CardDetails        `json:"card,omitempty"`
+	BankAccount *BankAccountDetails `json:"bank_account,omitempty"`
+	Wallet      *WalletDetails      `json:"wallet,omitempty"`
+	Token       string              `json:"token,omitempty"`
 }
 
 // PaymentMethodType represents the type of payment method
 type PaymentMethodType string
 
 const (
-	PaymentMethodTypeCard        PaymentMethodType = "card"
+	PaymentMethodTypeCard         PaymentMethodType = "card"
 	PaymentMethodTypeBankTransfer PaymentMethodType = "bank_transfer"
-	PaymentMethodTypeWallet      PaymentMethodType = "wallet"
-	PaymentMethodTypeCrypto      PaymentMethodType = "crypto"
+	PaymentMethodTypeWallet       PaymentMethodType = "wallet"
+	PaymentMethodTypeCrypto       PaymentMethodType = "crypto"
 )
 
 // CardDetails represents credit/debit card details
 type CardDetails struct {
-	Number      string `json:"number"`
-	ExpMonth    string `json:"exp_month"`
-	ExpYear     string `json:"exp_year"`
-	CVV         string `json:"cvv"`
-	HolderName  string `json:"holder_name"`
-	Brand       string `json:"brand,omitempty"`
-	Last4       string `json:"last4,omitempty"`
+	Number     string `json:"number"`
+	ExpMonth   string `json:"exp_month"`
+	ExpYear    string `json:"exp_year"`
+	CVV        string `json:"cvv"`
+	HolderName string `json:"holder_name"`
+	Brand      string `json:"brand,omitempty"`
+	Last4      string `json:"last4,omitempty"`
 }
 
 // BankAccountDetails represents bank account details
@@ -141,45 +141,45 @@ type PaymentItem struct {
 
 // PaymentStatus represents the status of a payment
 type PaymentStatus struct {
-	ID            string            `json:"id"`
-	Status        PaymentStatusType `json:"status"`
-	Amount        float64           `json:"amount"`
-	RefundedAmount float64          `json:"refunded_amount,omitempty"`
-	UpdatedAt     time.Time         `json:"updated_at"`
-	Events        []PaymentEvent    `json:"events,omitempty"`
+	ID             string            `json:"id"`
+	Status         PaymentStatusType `json:"status"`
+	Amount         float64           `json:"amount"`
+	RefundedAmount float64           `json:"refunded_amount,omitempty"`
+	UpdatedAt      time.Time         `json:"updated_at"`
+	Events         []PaymentEvent    `json:"events,omitempty"`
 }
 
 // PaymentStatusType represents the type of payment status
 type PaymentStatusType string
 
 const (
-	PaymentStatusPending    PaymentStatusType = "pending"
-	PaymentStatusProcessing PaymentStatusType = "processing"
-	PaymentStatusSucceeded  PaymentStatusType = "succeeded"
-	PaymentStatusFailed     PaymentStatusType = "failed"
-	PaymentStatusCanceled   PaymentStatusType = "canceled"
-	PaymentStatusRefunded   PaymentStatusType = "refunded"
+	PaymentStatusPending           PaymentStatusType = "pending"
+	PaymentStatusProcessing        PaymentStatusType = "processing"
+	PaymentStatusSucceeded         PaymentStatusType = "succeeded"
+	PaymentStatusFailed            PaymentStatusType = "failed"
+	PaymentStatusCanceled          PaymentStatusType = "canceled"
+	PaymentStatusRefunded          PaymentStatusType = "refunded"
 	PaymentStatusPartiallyRefunded PaymentStatusType = "partially_refunded"
 )
 
 // PaymentEvent represents an event in the payment lifecycle
 type PaymentEvent struct {
-	Type      string    `json:"type"`
-	Timestamp time.Time `json:"timestamp"`
-	Message   string    `json:"message"`
+	Type      string                 `json:"type"`
+	Timestamp time.Time              `json:"timestamp"`
+	Message   string                 `json:"message"`
 	Data      map[string]interface{} `json:"data,omitempty"`
 }
 
 // RefundResponse represents a refund response
 type RefundResponse struct {
-	ID            string    `json:"id"`
-	PaymentID     string    `json:"payment_id"`
-	Amount        float64   `json:"amount"`
-	Currency      string    `json:"currency"`
-	Status        string    `json:"status"`
-	Reason        string    `json:"reason,omitempty"`
-	CreatedAt     time.Time `json:"created_at"`
-	ProcessedAt   time.Time `json:"processed_at,omitempty"`
+	ID          string    `json:"id"`
+	PaymentID   string    `json:"payment_id"`
+	Amount      float64   `json:"amount"`
+	Currency    string    `json:"currency"`
+	Status      string    `json:"status"`
+	Reason      string    `json:"reason,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
+	ProcessedAt time.Time `json:"processed_at,omitempty"`
 }
 
 // ThreeDSecureResponse represents 3D Secure initialization response
@@ -214,34 +214,34 @@ type SubscriptionRequest struct {
 
 // SubscriptionResponse represents a subscription response
 type SubscriptionResponse struct {
-	ID                string                 `json:"id"`
-	PlanID            string                 `json:"plan_id"`
-	CustomerID        string                 `json:"customer_id"`
-	Status            string                 `json:"status"`
-	CurrentPeriodStart time.Time             `json:"current_period_start"`
-	CurrentPeriodEnd   time.Time             `json:"current_period_end"`
-	NextBillingDate    time.Time             `json:"next_billing_date"`
-	Amount             float64               `json:"amount"`
-	Currency           string                `json:"currency"`
-	CreatedAt          time.Time             `json:"created_at"`
+	ID                 string                 `json:"id"`
+	PlanID             string                 `json:"plan_id"`
+	CustomerID         string                 `json:"customer_id"`
+	Status             string                 `json:"status"`
+	CurrentPeriodStart time.Time              `json:"current_period_start"`
+	CurrentPeriodEnd   time.Time              `json:"current_period_end"`
+	NextBillingDate    time.Time              `json:"next_billing_date"`
+	Amount             float64                `json:"amount"`
+	Currency           string                 `json:"currency"`
+	CreatedAt          time.Time              `json:"created_at"`
 	Metadata           map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // Transaction represents a payment transaction
 type Transaction struct {
-	ID              string            `json:"id"`
-	Type            string            `json:"type"` // payment, refund, chargeback
-	Status          PaymentStatusType `json:"status"`
-	Amount          float64           `json:"amount"`
-	Currency        string            `json:"currency"`
-	PaymentMethodType string          `json:"payment_method_type"`
-	CustomerID      string            `json:"customer_id"`
-	OrderID         string            `json:"order_id"`
-	Description     string            `json:"description"`
-	CreatedAt       time.Time         `json:"created_at"`
-	ProcessedAt     time.Time         `json:"processed_at,omitempty"`
-	Fees            float64           `json:"fees,omitempty"`
-	NetAmount       float64           `json:"net_amount,omitempty"`
+	ID                string            `json:"id"`
+	Type              string            `json:"type"` // payment, refund, chargeback
+	Status            PaymentStatusType `json:"status"`
+	Amount            float64           `json:"amount"`
+	Currency          string            `json:"currency"`
+	PaymentMethodType string            `json:"payment_method_type"`
+	CustomerID        string            `json:"customer_id"`
+	OrderID           string            `json:"order_id"`
+	Description       string            `json:"description"`
+	CreatedAt         time.Time         `json:"created_at"`
+	ProcessedAt       time.Time         `json:"processed_at,omitempty"`
+	Fees              float64           `json:"fees,omitempty"`
+	NetAmount         float64           `json:"net_amount,omitempty"`
 }
 
 // TransactionFilters represents filters for listing transactions
@@ -274,9 +274,9 @@ type BalanceAmount struct {
 
 // PaymentError represents a payment error
 type PaymentError struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Type    string `json:"type"`
+	Code    string                 `json:"code"`
+	Message string                 `json:"message"`
+	Type    string                 `json:"type"`
 	Details map[string]interface{} `json:"details,omitempty"`
 }
 

@@ -51,14 +51,14 @@ type SessionData struct {
 
 // SessionConfig holds session configuration
 type SessionConfig struct {
-	CookieName     string
-	Secure         bool
-	HTTPOnly       bool
-	SameSite       http.SameSite
-	MaxAge         int
-	Domain         string
-	Path           string
-	EncryptionKey  string
+	CookieName      string
+	Secure          bool
+	HTTPOnly        bool
+	SameSite        http.SameSite
+	MaxAge          int
+	Domain          string
+	Path            string
+	EncryptionKey   string
 	CleanupInterval time.Duration
 }
 
@@ -107,7 +107,7 @@ func (sm *SessionManager) createSessionsTable() error {
 	if err != nil {
 		return err
 	}
-	
+
 	// If table exists, don't recreate it
 	if count > 0 {
 		return nil
@@ -158,11 +158,11 @@ func (sm *SessionManager) GenerateSessionID() (string, error) {
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
-	
+
 	// Add timestamp for uniqueness
 	timestamp := time.Now().UnixNano()
 	sessionData := fmt.Sprintf("%s:%d", base64.URLEncoding.EncodeToString(bytes), timestamp)
-	
+
 	// Hash the session data
 	hash := sha256.Sum256([]byte(sessionData))
 	return base64.URLEncoding.EncodeToString(hash[:]), nil
@@ -359,7 +359,7 @@ func (sm *SessionManager) getSessionFromDB(sessionID string) (*SessionData, erro
 	`
 
 	row := sm.db.QueryRow(query, sessionID)
-	
+
 	session := &SessionData{}
 	var deviceInfoJSON, permissionsJSON, preferencesJSON, dataJSON string
 
@@ -417,7 +417,7 @@ func (sm *SessionManager) clearCookie(w http.ResponseWriter) {
 // extractDeviceInfo extracts device information from request
 func (sm *SessionManager) extractDeviceInfo(r *http.Request) map[string]interface{} {
 	userAgent := r.UserAgent()
-	
+
 	deviceInfo := map[string]interface{}{
 		"user_agent": userAgent,
 		"platform":   sm.detectPlatform(userAgent),
@@ -433,7 +433,7 @@ func (sm *SessionManager) extractDeviceInfo(r *http.Request) map[string]interfac
 // detectPlatform detects platform from user agent
 func (sm *SessionManager) detectPlatform(userAgent string) string {
 	ua := strings.ToLower(userAgent)
-	
+
 	if strings.Contains(ua, "windows") {
 		return "Windows"
 	} else if strings.Contains(ua, "mac") {
@@ -445,14 +445,14 @@ func (sm *SessionManager) detectPlatform(userAgent string) string {
 	} else if strings.Contains(ua, "iphone") || strings.Contains(ua, "ipad") {
 		return "iOS"
 	}
-	
+
 	return "Unknown"
 }
 
 // detectBrowser detects browser from user agent
 func (sm *SessionManager) detectBrowser(userAgent string) string {
 	ua := strings.ToLower(userAgent)
-	
+
 	if strings.Contains(ua, "chrome") && !strings.Contains(ua, "edge") {
 		return "Chrome"
 	} else if strings.Contains(ua, "firefox") {
@@ -464,20 +464,20 @@ func (sm *SessionManager) detectBrowser(userAgent string) string {
 	} else if strings.Contains(ua, "opera") {
 		return "Opera"
 	}
-	
+
 	return "Unknown"
 }
 
 // detectDevice detects device type from user agent
 func (sm *SessionManager) detectDevice(userAgent string) string {
 	ua := strings.ToLower(userAgent)
-	
+
 	if strings.Contains(ua, "mobile") {
 		return "Mobile"
 	} else if strings.Contains(ua, "tablet") || strings.Contains(ua, "ipad") {
 		return "Tablet"
 	}
-	
+
 	return "Desktop"
 }
 
@@ -488,12 +488,12 @@ func (sm *SessionManager) getRealIP(r *http.Request) string {
 		ips := strings.Split(xff, ",")
 		return strings.TrimSpace(ips[0])
 	}
-	
+
 	// Check X-Real-IP header
 	if xri := r.Header.Get("X-Real-IP"); xri != "" {
 		return xri
 	}
-	
+
 	// Fall back to RemoteAddr
 	return r.RemoteAddr
 }

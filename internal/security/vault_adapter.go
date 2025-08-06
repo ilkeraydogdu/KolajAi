@@ -89,7 +89,7 @@ func (hv *HashiCorpVaultAdapter) Rotate(key string) error {
 	// 1. Creating a new version of the secret
 	// 2. Updating the metadata
 	// This is a simplified implementation
-	
+
 	// Read current value
 	currentValue, err := hv.Retrieve(key)
 	if err != nil {

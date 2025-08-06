@@ -7,11 +7,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"kolajAi/internal/integrations"
 	"log"
 	"net/http"
 	"strings"
 	"time"
-	"kolajAi/internal/integrations"
 )
 
 // IyzicoProvider implements PaymentProvider for Iyzico
@@ -40,7 +40,7 @@ func NewIyzicoProvider() *IyzicoProvider {
 // Initialize sets up the Iyzico provider
 func (p *IyzicoProvider) Initialize(ctx context.Context, credentials integrations.Credentials, config map[string]interface{}) error {
 	p.credentials = credentials
-	
+
 	// Set base URL based on environment
 	environment, _ := config["environment"].(string)
 	if environment == "production" {
@@ -48,7 +48,7 @@ func (p *IyzicoProvider) Initialize(ctx context.Context, credentials integration
 	} else {
 		p.baseURL = "https://sandbox-api.iyzipay.com"
 	}
-	
+
 	// Initialize configuration
 	p.config = &PaymentProviderConfig{
 		APIKey:              credentials.APIKey,
@@ -61,12 +61,12 @@ func (p *IyzicoProvider) Initialize(ctx context.Context, credentials integration
 		SupportedCountries:  []string{"TR"},
 		Timeout:             30 * time.Second,
 	}
-	
+
 	// Additional config from map
 	if enable3D, ok := config["enable_3d_secure"].(bool); ok {
 		p.config.Enable3DSecure = enable3D
 	}
-	
+
 	return nil
 }
 
@@ -77,7 +77,7 @@ func (p *IyzicoProvider) HealthCheck(ctx context.Context) error {
 		"locale":         "tr",
 		"conversationId": fmt.Sprintf("health-check-%d", time.Now().Unix()),
 	}
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "GET", "/payment/test", request, &response)
 	if err != nil {
@@ -89,7 +89,7 @@ func (p *IyzicoProvider) HealthCheck(ctx context.Context) error {
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	if status, ok := response["status"].(string); !ok || status != "success" {
 		return &integrations.IntegrationError{
 			Code:      "HEALTH_CHECK_FAILED",
@@ -99,7 +99,7 @@ func (p *IyzicoProvider) HealthCheck(ctx context.Context) error {
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	return nil
 }
 
@@ -134,19 +134,19 @@ func (p *IyzicoProvider) Close() error {
 func (p *IyzicoProvider) CreatePayment(ctx context.Context, payment *PaymentRequest) (*PaymentResponse, error) {
 	// Build Iyzico payment request
 	iyzicoRequest := p.buildPaymentRequest(payment)
-	
+
 	// Determine endpoint based on 3D Secure requirement
 	endpoint := "/payment/auth"
 	if payment.Enable3DSecure {
 		endpoint = "/payment/3dsecure/initialize"
 	}
-	
+
 	var iyzicoResponse map[string]interface{}
 	err := p.makeRequest(ctx, "POST", endpoint, iyzicoRequest, &iyzicoResponse)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Parse response
 	return p.parsePaymentResponse(iyzicoResponse, payment)
 }
@@ -172,13 +172,13 @@ func (p *IyzicoProvider) RefundPayment(ctx context.Context, paymentID string, am
 		"price":                fmt.Sprintf("%.2f", amount),
 		"currency":             "TRY",
 	}
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "POST", "/payment/refund", request, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	status, _ := response["status"].(string)
 	if status != "success" {
 		errorMessage, _ := response["errorMessage"].(string)
@@ -190,7 +190,7 @@ func (p *IyzicoProvider) RefundPayment(ctx context.Context, paymentID string, am
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	return &RefundResponse{
 		ID:          response["paymentId"].(string),
 		PaymentID:   paymentID,
@@ -209,13 +209,13 @@ func (p *IyzicoProvider) GetPaymentStatus(ctx context.Context, paymentID string)
 		"conversationId": fmt.Sprintf("status-%s-%d", paymentID, time.Now().Unix()),
 		"paymentId":      paymentID,
 	}
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "POST", "/payment/detail", request, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	status, _ := response["status"].(string)
 	if status != "success" {
 		errorMessage, _ := response["errorMessage"].(string)
@@ -227,7 +227,7 @@ func (p *IyzicoProvider) GetPaymentStatus(ctx context.Context, paymentID string)
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	paymentStatus := "unknown"
 	if phase, ok := response["phase"].(string); ok {
 		switch phase {
@@ -239,7 +239,7 @@ func (p *IyzicoProvider) GetPaymentStatus(ctx context.Context, paymentID string)
 			paymentStatus = string(PaymentStatusFailed)
 		}
 	}
-	
+
 	return &PaymentStatus{
 		ID:        paymentID,
 		Status:    PaymentStatusType(paymentStatus),
@@ -252,13 +252,13 @@ func (p *IyzicoProvider) GetPaymentStatus(ctx context.Context, paymentID string)
 func (p *IyzicoProvider) Initialize3DSecure(ctx context.Context, payment *PaymentRequest) (*ThreeDSecureResponse, error) {
 	iyzicoRequest := p.buildPaymentRequest(payment)
 	iyzicoRequest["callbackUrl"] = payment.CallbackURL
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "POST", "/payment/3dsecure/initialize", iyzicoRequest, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	status, _ := response["status"].(string)
 	if status != "success" {
 		errorMessage, _ := response["errorMessage"].(string)
@@ -270,7 +270,7 @@ func (p *IyzicoProvider) Initialize3DSecure(ctx context.Context, payment *Paymen
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	return &ThreeDSecureResponse{
 		ID:          response["conversationId"].(string),
 		Status:      "pending",
@@ -286,13 +286,13 @@ func (p *IyzicoProvider) Verify3DSecure(ctx context.Context, paymentID string, v
 		"conversationId": paymentID,
 		"paymentId":      verificationData["paymentId"],
 	}
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "POST", "/payment/3dsecure/auth", request, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return p.parsePaymentResponse(response, nil)
 }
 
@@ -308,13 +308,13 @@ func (p *IyzicoProvider) TokenizeCard(ctx context.Context, card *CardDetails) (*
 			"expireYear":     card.ExpYear,
 		},
 	}
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "POST", "/cardstorage/card", request, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	status, _ := response["status"].(string)
 	if status != "success" {
 		errorMessage, _ := response["errorMessage"].(string)
@@ -326,7 +326,7 @@ func (p *IyzicoProvider) TokenizeCard(ctx context.Context, card *CardDetails) (*
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	return &CardToken{
 		ID:         response["cardToken"].(string),
 		Last4:      response["lastFourDigits"].(string),
@@ -345,13 +345,13 @@ func (p *IyzicoProvider) DeleteToken(ctx context.Context, tokenID string) error 
 		"conversationId": fmt.Sprintf("delete-token-%d", time.Now().Unix()),
 		"cardToken":      tokenID,
 	}
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "DELETE", "/cardstorage/card", request, &response)
 	if err != nil {
 		return err
 	}
-	
+
 	status, _ := response["status"].(string)
 	if status != "success" {
 		errorMessage, _ := response["errorMessage"].(string)
@@ -363,7 +363,7 @@ func (p *IyzicoProvider) DeleteToken(ctx context.Context, tokenID string) error 
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	return nil
 }
 
@@ -372,18 +372,18 @@ func (p *IyzicoProvider) CreateSubscription(ctx context.Context, subscription *S
 	// Basic subscription implementation
 	// In production, this would integrate with Iyzico's actual subscription API
 	subscriptionID := fmt.Sprintf("sub_%d", time.Now().Unix())
-	
+
 	return &SubscriptionResponse{
-		ID:              subscriptionID,
-		PlanID:          subscription.PlanID,
-		CustomerID:      subscription.CustomerID,
-		Status:          "active",
+		ID:                 subscriptionID,
+		PlanID:             subscription.PlanID,
+		CustomerID:         subscription.CustomerID,
+		Status:             "active",
 		CurrentPeriodStart: time.Now(),
 		CurrentPeriodEnd:   time.Now().AddDate(0, 1, 0),
 		NextBillingDate:    time.Now().AddDate(0, 1, 0),
-		Amount:          0, // Would be set from plan
-		Currency:        "TRY",
-		CreatedAt:       time.Now(),
+		Amount:             0, // Would be set from plan
+		Currency:           "TRY",
+		CreatedAt:          time.Now(),
 	}, nil
 }
 
@@ -400,14 +400,14 @@ func (p *IyzicoProvider) UpdateSubscription(ctx context.Context, subscriptionID 
 	// Basic subscription update implementation
 	// In production, this would integrate with Iyzico's actual subscription API
 	return &SubscriptionResponse{
-		ID:              subscriptionID,
-		Status:          "active",
+		ID:                 subscriptionID,
+		Status:             "active",
 		CurrentPeriodStart: time.Now().AddDate(0, -1, 0),
 		CurrentPeriodEnd:   time.Now().AddDate(0, 1, 0),
 		NextBillingDate:    time.Now().AddDate(0, 1, 0),
-		Amount:          0, // Would be updated from request
-		Currency:        "TRY",
-		CreatedAt:       time.Now().AddDate(0, -1, 0),
+		Amount:             0, // Would be updated from request
+		Currency:           "TRY",
+		CreatedAt:          time.Now().AddDate(0, -1, 0),
 	}, nil
 }
 
@@ -418,7 +418,7 @@ func (p *IyzicoProvider) GetTransaction(ctx context.Context, transactionID strin
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &Transaction{
 		ID:        transactionID,
 		Type:      "payment",
@@ -433,13 +433,13 @@ func (p *IyzicoProvider) GetTransaction(ctx context.Context, transactionID strin
 func (p *IyzicoProvider) ListTransactions(ctx context.Context, filters TransactionFilters) ([]*Transaction, error) {
 	// Basic implementation - in production this would use Iyzico's reporting API
 	log.Printf("ListTransactions called with filters: %+v", filters)
-	
+
 	// For now, return empty list as Iyzico requires specific reporting API access
 	// In a real implementation, this would:
 	// 1. Build query parameters from filters
 	// 2. Make API call to Iyzico reporting endpoint
 	// 3. Parse response and convert to Transaction structs
-	
+
 	return []*Transaction{}, nil
 }
 
@@ -456,8 +456,6 @@ func (p *IyzicoProvider) GetBalance(ctx context.Context) (*Balance, error) {
 	}
 }
 
-
-
 // Helper methods
 
 // makeRequest makes an HTTP request to Iyzico API
@@ -467,22 +465,22 @@ func (p *IyzicoProvider) makeRequest(ctx context.Context, method, endpoint strin
 	if err != nil {
 		return err
 	}
-	
+
 	// Create HTTP request
 	url := p.baseURL + endpoint
 	req, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(string(requestBody)))
 	if err != nil {
 		return err
 	}
-	
+
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	
+
 	// Generate authorization header
 	auth := p.generateAuthHeader(endpoint, string(requestBody))
 	req.Header.Set("Authorization", auth)
-	
+
 	// Execute request
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
@@ -495,10 +493,10 @@ func (p *IyzicoProvider) makeRequest(ctx context.Context, method, endpoint strin
 		}
 	}
 	defer resp.Body.Close()
-	
+
 	// Update rate limit info
 	p.updateRateLimit(resp.Header)
-	
+
 	// Parse response
 	if err := json.NewDecoder(resp.Body).Decode(response); err != nil {
 		return &integrations.IntegrationError{
@@ -510,7 +508,7 @@ func (p *IyzicoProvider) makeRequest(ctx context.Context, method, endpoint strin
 			StatusCode: resp.StatusCode,
 		}
 	}
-	
+
 	return nil
 }
 
@@ -518,14 +516,14 @@ func (p *IyzicoProvider) makeRequest(ctx context.Context, method, endpoint strin
 func (p *IyzicoProvider) generateAuthHeader(uri string, body string) string {
 	randomKey := fmt.Sprintf("%d", time.Now().UnixNano())
 	message := p.credentials.APIKey + randomKey + p.credentials.APISecret + body
-	
+
 	h := hmac.New(sha256.New, []byte(p.credentials.APISecret))
 	h.Write([]byte(message))
 	signature := base64.StdEncoding.EncodeToString(h.Sum(nil))
-	
+
 	authString := fmt.Sprintf("apiKey:%s&randomKey:%s&signature:%s",
 		p.credentials.APIKey, randomKey, signature)
-	
+
 	return "IYZWS " + base64.StdEncoding.EncodeToString([]byte(authString))
 }
 
@@ -551,7 +549,7 @@ func (p *IyzicoProvider) buildPaymentRequest(payment *PaymentRequest) map[string
 		"paymentChannel": "WEB",
 		"paymentGroup":   "PRODUCT",
 	}
-	
+
 	// Add payment card
 	if payment.PaymentMethod.Type == PaymentMethodTypeCard && payment.PaymentMethod.Card != nil {
 		request["paymentCard"] = map[string]string{
@@ -566,7 +564,7 @@ func (p *IyzicoProvider) buildPaymentRequest(payment *PaymentRequest) map[string
 			"cardToken": payment.PaymentMethod.Token,
 		}
 	}
-	
+
 	// Add buyer information
 	request["buyer"] = map[string]string{
 		"id":                  payment.CustomerID,
@@ -580,11 +578,11 @@ func (p *IyzicoProvider) buildPaymentRequest(payment *PaymentRequest) map[string
 		"city":                payment.BillingAddress.City,
 		"country":             payment.BillingAddress.Country,
 	}
-	
+
 	// Add addresses
 	request["shippingAddress"] = p.formatAddress(payment.ShippingAddress)
 	request["billingAddress"] = p.formatAddress(payment.BillingAddress)
-	
+
 	// Add basket items
 	var basketItems []map[string]string
 	for _, item := range payment.Items {
@@ -597,7 +595,7 @@ func (p *IyzicoProvider) buildPaymentRequest(payment *PaymentRequest) map[string
 		})
 	}
 	request["basketItems"] = basketItems
-	
+
 	return request
 }
 
@@ -618,7 +616,7 @@ func (p *IyzicoProvider) parsePaymentResponse(iyzicoResp map[string]interface{},
 	if status != "success" {
 		errorMessage, _ := iyzicoResp["errorMessage"].(string)
 		errorCode, _ := iyzicoResp["errorCode"].(string)
-		
+
 		return nil, &integrations.IntegrationError{
 			Code:      errorCode,
 			Message:   errorMessage,
@@ -627,16 +625,16 @@ func (p *IyzicoProvider) parsePaymentResponse(iyzicoResp map[string]interface{},
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	paymentStatus := PaymentStatusPending
 	if phase, ok := iyzicoResp["phase"].(string); ok && phase == "AUTH" {
 		paymentStatus = PaymentStatusSucceeded
 	}
-	
+
 	// Safely extract values with type assertions
 	var paymentID, currency, authCode string
 	var amount float64
-	
+
 	if id, ok := iyzicoResp["paymentId"].(string); ok {
 		paymentID = id
 	}
@@ -649,21 +647,21 @@ func (p *IyzicoProvider) parsePaymentResponse(iyzicoResp map[string]interface{},
 	if price, ok := iyzicoResp["price"].(float64); ok {
 		amount = price
 	}
-	
+
 	response := &PaymentResponse{
-		ID:              paymentID,
-		Status:          paymentStatus,
-		Amount:          amount,
-		Currency:        currency,
-		TransactionID:   paymentID,
-		AuthCode:        authCode,
-		CreatedAt:       time.Now(),
+		ID:            paymentID,
+		Status:        paymentStatus,
+		Amount:        amount,
+		Currency:      currency,
+		TransactionID: paymentID,
+		AuthCode:      authCode,
+		CreatedAt:     time.Now(),
 	}
-	
+
 	if paymentStatus == PaymentStatusSucceeded {
 		response.ProcessedAt = time.Now()
 	}
-	
+
 	// Handle 3D Secure response
 	if htmlContent, ok := iyzicoResp["threeDSHtmlContent"].(string); ok && htmlContent != "" {
 		response.Status = PaymentStatusPending
@@ -672,6 +670,6 @@ func (p *IyzicoProvider) parsePaymentResponse(iyzicoResp map[string]interface{},
 			"3d_secure_html":     htmlContent,
 		}
 	}
-	
+
 	return response, nil
 }

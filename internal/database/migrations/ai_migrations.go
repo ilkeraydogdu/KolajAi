@@ -1,6 +1,6 @@
 package migrations
 
-// CreateAIAdvancedTables creates AI-related tables  
+// CreateAIAdvancedTables creates AI-related tables
 var CreateAIAdvancedTables = `
 		-- AI Credits table
 		CREATE TABLE IF NOT EXISTS ai_credits (

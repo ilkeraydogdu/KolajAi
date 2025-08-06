@@ -16,10 +16,10 @@ type PaginationParams struct {
 
 // PaginationResult holds pagination result metadata
 type PaginationResult struct {
-	Page         int `json:"page"`
-	PageSize     int `json:"page_size"`
-	TotalPages   int `json:"total_pages"`
-	TotalRecords int `json:"total_records"`
+	Page         int  `json:"page"`
+	PageSize     int  `json:"page_size"`
+	TotalPages   int  `json:"total_pages"`
+	TotalRecords int  `json:"total_records"`
 	HasNext      bool `json:"has_next"`
 	HasPrev      bool `json:"has_prev"`
 }
@@ -66,7 +66,7 @@ func (p *PaginationParams) GetLimit() int {
 // BuildPaginationQuery builds a paginated SQL query
 func BuildPaginationQuery(baseQuery string, params PaginationParams, allowedOrderFields []string) string {
 	params.Validate()
-	
+
 	// Validate order by field to prevent SQL injection
 	orderByValid := false
 	for _, field := range allowedOrderFields {
@@ -78,7 +78,7 @@ func BuildPaginationQuery(baseQuery string, params PaginationParams, allowedOrde
 	if !orderByValid && len(allowedOrderFields) > 0 {
 		params.OrderBy = allowedOrderFields[0]
 	}
-	
+
 	return fmt.Sprintf("%s ORDER BY %s %s LIMIT %d OFFSET %d",
 		baseQuery,
 		params.OrderBy,
@@ -101,9 +101,9 @@ func CountTotal(db *sql.DB, countQuery string, args ...interface{}) (int, error)
 // CalculatePaginationResult calculates pagination metadata
 func CalculatePaginationResult(params PaginationParams, totalRecords int) PaginationResult {
 	params.Validate()
-	
+
 	totalPages := int(math.Ceil(float64(totalRecords) / float64(params.PageSize)))
-	
+
 	return PaginationResult{
 		Page:         params.Page,
 		PageSize:     params.PageSize,
@@ -116,11 +116,11 @@ func CalculatePaginationResult(params PaginationParams, totalRecords int) Pagina
 
 // PaginatedQuery executes a paginated query
 type PaginatedQuery struct {
-	DB               *sql.DB
-	BaseQuery        string
-	CountQuery       string
-	Args             []interface{}
-	AllowedOrderBy   []string
+	DB             *sql.DB
+	BaseQuery      string
+	CountQuery     string
+	Args           []interface{}
+	AllowedOrderBy []string
 }
 
 // Execute executes the paginated query
@@ -130,17 +130,17 @@ func (pq *PaginatedQuery) Execute(params PaginationParams, scanFunc func(*sql.Ro
 	if err != nil {
 		return nil, fmt.Errorf("failed to count records: %w", err)
 	}
-	
+
 	// Build paginated query
 	query := BuildPaginationQuery(pq.BaseQuery, params, pq.AllowedOrderBy)
-	
+
 	// Execute query
 	rows, err := pq.DB.Query(query, pq.Args...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
 	defer rows.Close()
-	
+
 	// Scan results
 	var results []interface{}
 	for rows.Next() {
@@ -150,14 +150,14 @@ func (pq *PaginatedQuery) Execute(params PaginationParams, scanFunc func(*sql.Ro
 		}
 		results = append(results, item)
 	}
-	
+
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating rows: %w", err)
 	}
-	
+
 	// Calculate pagination result
 	paginationResult := CalculatePaginationResult(params, total)
-	
+
 	return &PaginatedResponse{
 		Data:       results,
 		Pagination: paginationResult,
@@ -172,10 +172,10 @@ type PaginatedResponse struct {
 
 // CursorPaginationParams holds cursor-based pagination parameters
 type CursorPaginationParams struct {
-	Cursor   string `json:"cursor"`
-	Limit    int    `json:"limit"`
-	OrderBy  string `json:"order_by"`
-	Order    string `json:"order"`
+	Cursor  string `json:"cursor"`
+	Limit   int    `json:"limit"`
+	OrderBy string `json:"order_by"`
+	Order   string `json:"order"`
 }
 
 // CursorPaginationResult holds cursor pagination metadata
@@ -194,7 +194,7 @@ func BuildCursorQuery(baseQuery string, params CursorPaginationParams, cursorFie
 	if params.Limit > 100 {
 		params.Limit = 100
 	}
-	
+
 	query := baseQuery
 	if params.Cursor != "" {
 		operator := ">"
@@ -203,7 +203,7 @@ func BuildCursorQuery(baseQuery string, params CursorPaginationParams, cursorFie
 		}
 		query = fmt.Sprintf("%s WHERE %s %s '%s'", baseQuery, cursorField, operator, params.Cursor)
 	}
-	
+
 	return fmt.Sprintf("%s ORDER BY %s %s LIMIT %d",
 		query,
 		params.OrderBy,

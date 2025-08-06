@@ -3,9 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"kolajAi/internal/models"
 	"kolajAi/internal/services"
+	"net/http"
 )
 
 // AIAdvancedHandler handles advanced AI-related requests

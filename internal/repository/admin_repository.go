@@ -3,9 +3,9 @@ package repository
 import (
 	"database/sql"
 	"fmt"
-	"time"
-	"kolajAi/internal/models"
 	"kolajAi/internal/database"
+	"kolajAi/internal/models"
+	"time"
 )
 
 // AdminRepository handles admin-specific database operations
@@ -146,7 +146,7 @@ func (r *AdminRepository) GetRecentOrders(limit int) ([]map[string]interface{}, 
 			CustomerEmail string    `db:"customer_email"`
 		}
 
-		err := rows.Scan(&order.ID, &order.OrderNumber, &order.TotalAmount, 
+		err := rows.Scan(&order.ID, &order.OrderNumber, &order.TotalAmount,
 			&order.Status, &order.CreatedAt, &order.CustomerName, &order.CustomerEmail)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan order: %w", err)
@@ -211,16 +211,16 @@ func (r *AdminRepository) GetRecentUsers(limit int) ([]map[string]interface{}, e
 // GetUsers returns paginated users with filters
 func (r *AdminRepository) GetUsers(page, limit int, filters map[string]interface{}) ([]models.User, int64, error) {
 	offset := (page - 1) * limit
-	
+
 	// Build where clause
 	whereClause := "WHERE 1=1"
 	args := []interface{}{}
-	
+
 	if status, ok := filters["status"]; ok && status != "" {
 		whereClause += " AND is_active = ?"
 		args = append(args, status == "active")
 	}
-	
+
 	if role, ok := filters["role"]; ok && role != "" {
 		switch role {
 		case "admin":
@@ -231,7 +231,7 @@ func (r *AdminRepository) GetUsers(page, limit int, filters map[string]interface
 			whereClause += " AND is_admin = 0 AND is_seller = 0"
 		}
 	}
-	
+
 	if search, ok := filters["search"]; ok && search != "" {
 		whereClause += " AND (name LIKE ? OR email LIKE ?)"
 		searchTerm := "%" + search.(string) + "%"
@@ -253,7 +253,7 @@ func (r *AdminRepository) GetUsers(page, limit int, filters map[string]interface
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
 	`, whereClause)
-	
+
 	args = append(args, limit, offset)
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
@@ -264,7 +264,7 @@ func (r *AdminRepository) GetUsers(page, limit int, filters map[string]interface
 	var users []models.User
 	for rows.Next() {
 		var user models.User
-		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Phone, 
+		err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Phone,
 			&user.Role, &user.IsActive, &user.IsAdmin, &user.IsSeller,
 			&user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
@@ -302,16 +302,16 @@ func (r *AdminRepository) DeleteUser(userID int64) error {
 // GetOrders returns paginated orders with filters
 func (r *AdminRepository) GetOrders(page, limit int, filters map[string]interface{}) ([]map[string]interface{}, int64, error) {
 	offset := (page - 1) * limit
-	
+
 	// Build where clause
 	whereClause := "WHERE 1=1"
 	args := []interface{}{}
-	
+
 	if status, ok := filters["status"]; ok && status != "" {
 		whereClause += " AND o.status = ?"
 		args = append(args, status)
 	}
-	
+
 	if paymentStatus, ok := filters["payment_status"]; ok && paymentStatus != "" {
 		whereClause += " AND o.payment_status = ?"
 		args = append(args, paymentStatus)
@@ -335,7 +335,7 @@ func (r *AdminRepository) GetOrders(page, limit int, filters map[string]interfac
 		ORDER BY o.created_at DESC
 		LIMIT ? OFFSET ?
 	`, whereClause)
-	
+
 	args = append(args, limit, offset)
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
@@ -394,16 +394,16 @@ func (r *AdminRepository) UpdateOrderStatus(orderID int64, status string) error 
 // GetProducts returns paginated products with filters
 func (r *AdminRepository) GetProducts(page, limit int, filters map[string]interface{}) ([]map[string]interface{}, int64, error) {
 	offset := (page - 1) * limit
-	
+
 	// Build where clause
 	whereClause := "WHERE 1=1"
 	args := []interface{}{}
-	
+
 	if status, ok := filters["status"]; ok && status != "" {
 		whereClause += " AND p.status = ?"
 		args = append(args, status)
 	}
-	
+
 	if categoryID, ok := filters["category_id"]; ok && categoryID != "" {
 		whereClause += " AND p.category_id = ?"
 		args = append(args, categoryID)
@@ -428,7 +428,7 @@ func (r *AdminRepository) GetProducts(page, limit int, filters map[string]interf
 		ORDER BY p.created_at DESC
 		LIMIT ? OFFSET ?
 	`, whereClause)
-	
+
 	args = append(args, limit, offset)
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
@@ -439,13 +439,13 @@ func (r *AdminRepository) GetProducts(page, limit int, filters map[string]interf
 	var products []map[string]interface{}
 	for rows.Next() {
 		var product struct {
-			ID           int       `db:"id"`
-			Name         string    `db:"name"`
-			SKU          string    `db:"sku"`
-			Price        float64   `db:"price"`
-			Stock        int       `db:"stock"`
-			Status       string    `db:"status"`
-			CreatedAt    time.Time `db:"created_at"`
+			ID           int            `db:"id"`
+			Name         string         `db:"name"`
+			SKU          string         `db:"sku"`
+			Price        float64        `db:"price"`
+			Stock        int            `db:"stock"`
+			Status       string         `db:"status"`
+			CreatedAt    time.Time      `db:"created_at"`
 			VendorName   sql.NullString `db:"vendor_name"`
 			CategoryName sql.NullString `db:"category_name"`
 		}
@@ -468,15 +468,15 @@ func (r *AdminRepository) GetProducts(page, limit int, filters map[string]interf
 		}
 
 		products = append(products, map[string]interface{}{
-			"ID":          product.ID,
-			"Name":        product.Name,
-			"SKU":         product.SKU,
-			"Price":       fmt.Sprintf("₺%.2f", product.Price),
-			"Stock":       product.Stock,
-			"Status":      product.Status,
-			"Category":    categoryName,
-			"VendorName":  vendorName,
-			"CreatedAt":   product.CreatedAt.Format("2006-01-02"),
+			"ID":         product.ID,
+			"Name":       product.Name,
+			"SKU":        product.SKU,
+			"Price":      fmt.Sprintf("₺%.2f", product.Price),
+			"Stock":      product.Stock,
+			"Status":     product.Status,
+			"Category":   categoryName,
+			"VendorName": vendorName,
+			"CreatedAt":  product.CreatedAt.Format("2006-01-02"),
 		})
 	}
 
@@ -509,7 +509,7 @@ func (r *AdminRepository) GetSystemHealth() (map[string]interface{}, error) {
 	if err != nil {
 		dbSize = 0
 	}
-	
+
 	health["DatabaseSize"] = fmt.Sprintf("%.1f MB", dbSize)
 
 	// Get table count
@@ -521,7 +521,7 @@ func (r *AdminRepository) GetSystemHealth() (map[string]interface{}, error) {
 	if err != nil {
 		tableCount = 0
 	}
-	
+
 	health["TableCount"] = tableCount
 
 	return health, nil

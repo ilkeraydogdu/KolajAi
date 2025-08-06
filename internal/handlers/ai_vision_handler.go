@@ -601,11 +601,11 @@ func (h *AIVisionHandler) getUserIDFromSession(r *http.Request) (int, error) {
 	if err != nil || session.Values["user_id"] == nil {
 		return 0, fmt.Errorf("no valid session")
 	}
-	
+
 	userID, ok := session.Values["user_id"].(int)
 	if !ok || userID == 0 {
 		return 0, fmt.Errorf("invalid user ID")
 	}
-	
+
 	return userID, nil
 }

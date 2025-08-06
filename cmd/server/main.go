@@ -13,22 +13,21 @@ import (
 	"time"
 
 	"kolajAi/internal/database"
+	"kolajAi/internal/email"
 	"kolajAi/internal/handlers"
 	"kolajAi/internal/models"
 	"kolajAi/internal/repository"
-	"kolajAi/internal/email"
 
-	"kolajAi/internal/services"
-	"kolajAi/internal/session"
-	"kolajAi/internal/errors"
-	"kolajAi/internal/utils"
-	"kolajAi/internal/seo"
-	"kolajAi/internal/security"
 	"kolajAi/internal/cache"
+	"kolajAi/internal/config"
+	"kolajAi/internal/errors"
 	"kolajAi/internal/middleware"
 	"kolajAi/internal/router"
-	"kolajAi/internal/config"
-
+	"kolajAi/internal/security"
+	"kolajAi/internal/seo"
+	"kolajAi/internal/services"
+	"kolajAi/internal/session"
+	"kolajAi/internal/utils"
 )
 
 // Build-time variables (set by ldflags)
@@ -48,7 +47,7 @@ func init() {
 	if env == "" {
 		env = os.Getenv("GIN_MODE")
 	}
-	
+
 	if env == "production" || env == "release" {
 		// Production'da sadece stdout'a minimal log
 		MainLogger = log.New(os.Stdout, "[MAIN] ", log.LstdFlags)
@@ -63,8 +62,6 @@ func init() {
 		}
 	}
 }
-
-
 
 func main() {
 	// Handle health check flag
@@ -110,7 +107,7 @@ func main() {
 
 	// Seed database with initial data
 	MainLogger.Println("Database seeding başlatılıyor...")
-	
+
 	// Panic recovery for seeding
 	func() {
 		defer func() {
@@ -118,7 +115,7 @@ func main() {
 				MainLogger.Printf("Database seeding PANIC: %v", r)
 			}
 		}()
-		
+
 		if err := database.SeedGlobalDatabase(); err != nil {
 			MainLogger.Printf("Database seeding failed (continuing anyway): %v", err)
 		} else {
@@ -126,12 +123,12 @@ func main() {
 		}
 	}()
 	MainLogger.Println("✅ Database seeding completed successfully - ANA SERVER")
-	
+
 	// TEMPORARY: Start simple HTTP server for testing
 	MainLogger.Println("🚀 Starting simple test server on :8081")
-	
+
 	// Database connection already available from above
-	
+
 	// Basic routes for testing
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -153,13 +150,13 @@ func main() {
 </body>
 </html>`))
 	})
-	
+
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(`{"status":"healthy","database":"connected","timestamp":"` + time.Now().Format(time.RFC3339) + `"}`))
 	})
-	
+
 	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		db := database.GetGlobalDB()
 		rows, err := db.Query("SELECT id, name, email FROM users LIMIT 10")
@@ -168,7 +165,7 @@ func main() {
 			return
 		}
 		defer rows.Close()
-		
+
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte("<h1>Users</h1><ul>"))
 		for rows.Next() {
@@ -179,7 +176,7 @@ func main() {
 		}
 		w.Write([]byte("</ul><a href='/'>Back</a>"))
 	})
-	
+
 	http.HandleFunc("/products", func(w http.ResponseWriter, r *http.Request) {
 		db := database.GetGlobalDB()
 		rows, err := db.Query("SELECT id, name, price FROM products LIMIT 10")
@@ -188,7 +185,7 @@ func main() {
 			return
 		}
 		defer rows.Close()
-		
+
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte("<h1>Products</h1><ul>"))
 		for rows.Next() {
@@ -200,20 +197,20 @@ func main() {
 		}
 		w.Write([]byte("</ul><a href='/'>Back</a>"))
 	})
-	
+
 	MainLogger.Println("🌐 Server is ready at http://localhost:8081")
 	if err := http.ListenAndServe(":8081", nil); err != nil {
 		MainLogger.Fatalf("Server failed: %v", err)
 	}
-	
+
 	return // TEMPORARY: Exit here for testing
-	
+
 	// Get database connection for services
 	MainLogger.Println("Database connection alınıyor...")
-	
+
 	// Get database connection for basic operations
 	db := database.GetGlobalDB()
-	
+
 	MainLogger.Println("✅ Database connection alındı")
 
 	// Advanced systems initialization
@@ -222,9 +219,9 @@ func main() {
 	// Cache Manager
 	MainLogger.Println("Cache sistemi başlatılıyor...")
 	cacheManager := cache.NewCacheManager(db, cache.CacheConfig{
-		DefaultTTL:         30 * time.Minute,
-		MaxMemoryUsage:     1024 * 1024 * 1024, // 1GB
-		Stores:             make(map[string]cache.StoreConfig),
+		DefaultTTL:     30 * time.Minute,
+		MaxMemoryUsage: 1024 * 1024 * 1024, // 1GB
+		Stores:         make(map[string]cache.StoreConfig),
 	})
 	defer cacheManager.Close()
 	MainLogger.Println("✅ Cache Manager başlatıldı")
@@ -233,9 +230,9 @@ func main() {
 	MainLogger.Println("Güvenlik sistemi başlatılıyor...")
 	MainLogger.Printf("EncryptionKey: %s", cfg.Security.EncryptionKey)
 	MainLogger.Printf("JWTSecret: %s", cfg.Security.JWTSecret)
-	
+
 	var securityManager *security.SecurityManager
-	
+
 	// Panic recovery for security manager
 	func() {
 		defer func() {
@@ -244,26 +241,26 @@ func main() {
 				os.Exit(1)
 			}
 		}()
-		
+
 		MainLogger.Println("🔒 Creating SecurityManager...")
 		securityManager = security.NewSecurityManager(db, security.SecurityConfig{
-		MaxLoginAttempts:     5,
-		LoginLockoutDuration: 30 * time.Minute,
-		PasswordMinLength:    8,
-		PasswordRequireUpper: true,
-		PasswordRequireLower: true,
-		PasswordRequireDigit: true,
-		PasswordRequireSymbol: true,
-		SessionTimeout:       24 * time.Hour,
-		CSRFTokenLength:      32,
-		EnableIPWhitelist:    false,
-		EnableIPBlacklist:    true,
-		EnableRateLimit:      true,
-		EncryptionKey:        cfg.Security.EncryptionKey,
-		JWTSecret:           cfg.Security.JWTSecret,
-		TwoFactorEnabled:    true,
-		AuditLogEnabled:     true,
-	})
+			MaxLoginAttempts:      5,
+			LoginLockoutDuration:  30 * time.Minute,
+			PasswordMinLength:     8,
+			PasswordRequireUpper:  true,
+			PasswordRequireLower:  true,
+			PasswordRequireDigit:  true,
+			PasswordRequireSymbol: true,
+			SessionTimeout:        24 * time.Hour,
+			CSRFTokenLength:       32,
+			EnableIPWhitelist:     false,
+			EnableIPBlacklist:     true,
+			EnableRateLimit:       true,
+			EncryptionKey:         cfg.Security.EncryptionKey,
+			JWTSecret:             cfg.Security.JWTSecret,
+			TwoFactorEnabled:      true,
+			AuditLogEnabled:       true,
+		})
 		MainLogger.Println("🔒 SecurityManager created successfully")
 	}()
 
@@ -343,20 +340,20 @@ func main() {
 	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
 	aiVisionService := services.NewAIVisionService(repo, productService)
 	_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
-	
+
 	// Yeni gelişmiş AI ve marketplace servisleri
 	aiAdvancedService := services.NewAIAdvancedService(repo, productService, orderService)
 	marketplaceService := services.NewMarketplaceIntegrationsService()
 	paymentService := services.NewPaymentService(repo)
-	
+
 	// AI Integration Manager
 	MainLogger.Println("AI Integration Manager başlatılıyor...")
 	aiIntegrationManager := services.NewAIIntegrationManager(marketplaceService, aiService)
-	
+
 	// Integration Webhook Service
 	MainLogger.Println("Integration Webhook Service başlatılıyor...")
 	webhookService := services.NewIntegrationWebhookService(marketplaceService, aiIntegrationManager)
-	
+
 	// Integration Analytics Service
 	MainLogger.Println("Integration Analytics Service başlatılıyor...")
 	analyticsService := services.NewIntegrationAnalyticsService(db, marketplaceService, aiIntegrationManager)
@@ -425,7 +422,7 @@ func main() {
 		},
 		"lt": func(a, b interface{}) bool {
 			var aVal, bVal float64
-			
+
 			switch v := a.(type) {
 			case int:
 				aVal = float64(v)
@@ -438,7 +435,7 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			switch v := b.(type) {
 			case int:
 				bVal = float64(v)
@@ -451,7 +448,7 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			return aVal < bVal
 		},
 		"mul": func(a, b interface{}) float64 {
@@ -553,7 +550,7 @@ func main() {
 		},
 		"gt": func(a, b interface{}) bool {
 			var aVal, bVal float64
-			
+
 			switch v := a.(type) {
 			case int:
 				aVal = float64(v)
@@ -566,7 +563,7 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			switch v := b.(type) {
 			case int:
 				bVal = float64(v)
@@ -579,12 +576,12 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			return aVal > bVal
 		},
 		"ge": func(a, b interface{}) bool {
 			var aVal, bVal float64
-			
+
 			switch v := a.(type) {
 			case int:
 				aVal = float64(v)
@@ -597,7 +594,7 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			switch v := b.(type) {
 			case int:
 				bVal = float64(v)
@@ -610,12 +607,12 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			return aVal >= bVal
 		},
 		"le": func(a, b interface{}) bool {
 			var aVal, bVal float64
-			
+
 			switch v := a.(type) {
 			case int:
 				aVal = float64(v)
@@ -628,7 +625,7 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			switch v := b.(type) {
 			case int:
 				bVal = float64(v)
@@ -641,7 +638,7 @@ func main() {
 			default:
 				return false
 			}
-			
+
 			return aVal <= bVal
 		},
 		"and": func(a, b bool) bool {
@@ -711,7 +708,7 @@ func main() {
 	}
 
 	MainLogger.Println("Template parsing başlatılıyor...")
-	
+
 	// Template dosyalarını manuel olarak bulalım
 	templateFiles := []string{}
 	walkErr := filepath.Walk("web/templates", func(path string, info os.FileInfo, err error) error {
@@ -723,23 +720,23 @@ func main() {
 		}
 		return nil
 	})
-	
+
 	if walkErr != nil {
 		MainLogger.Fatalf("Template dosyaları bulunamadı: %v", walkErr)
 	}
-	
+
 	MainLogger.Printf("Bulunan template dosyaları: %d", len(templateFiles))
-	
+
 	// Debug: Template dosyalarını listele
 	for i, file := range templateFiles {
 		MainLogger.Printf("Template %d: %s", i+1, file)
 	}
-	
+
 	tmpl, err := template.New("").Funcs(funcMap).ParseFiles(templateFiles...)
 	if err != nil {
 		MainLogger.Printf("Template parsing hatası: %v", err)
 		MainLogger.Printf("Problematik template'leri tek tek test ediyorum...")
-		
+
 		// Template'leri tek tek test et
 		for _, file := range templateFiles {
 			_, testErr := template.New("").Funcs(funcMap).ParseFiles(file)
@@ -749,7 +746,7 @@ func main() {
 				MainLogger.Printf("✅ Başarılı template: %s", file)
 			}
 		}
-		
+
 		MainLogger.Fatalf("Şablonlar yüklenemedi: %v", err)
 	}
 	MainLogger.Printf("Şablonlar başarıyla yüklendi!")
@@ -759,7 +756,7 @@ func main() {
 
 	// Create legacy session manager for handlers
 	legacySessionManager := handlers.NewSessionManager("supersecretkey123")
-	
+
 	h := &handlers.Handler{
 		Templates:      tmpl,
 		SessionManager: legacySessionManager,
@@ -808,7 +805,7 @@ func main() {
 
 	// AI Vision handler'ı oluştur
 	aiVisionHandler := handlers.NewAIVisionHandler(h, aiVisionService)
-	
+
 	// Yeni gelişmiş handler'lar
 	aiAdvancedHandler := handlers.NewAIAdvancedHandler(h, aiAdvancedService)
 	marketplaceHandler := handlers.NewMarketplaceHandler(h, marketplaceService)
@@ -827,7 +824,7 @@ func main() {
 
 	// Statik dosyalar - Sadece /web/static/ altındaki dosyalar serve edilecek
 	appRouter.Handle("/web/static/", http.StripPrefix("/web/static/", http.FileServer(http.Dir("web/static"))))
-	
+
 	// Webpack build dosyaları için
 	appRouter.Handle("/dist/", http.StripPrefix("/dist/", http.FileServer(http.Dir("dist"))))
 
@@ -903,7 +900,7 @@ func main() {
 		}
 		h.RenderTemplate(w, r, "user/profile.gohtml", data)
 	})
-	
+
 	appRouter.HandleFunc("/user/orders", func(w http.ResponseWriter, r *http.Request) {
 		if !h.IsAuthenticated(r) {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
@@ -922,7 +919,7 @@ func main() {
 		}
 		h.RenderTemplate(w, r, "user/orders.gohtml", data)
 	})
-	
+
 	appRouter.HandleFunc("/user/addresses", func(w http.ResponseWriter, r *http.Request) {
 		if !h.IsAuthenticated(r) {
 			h.RedirectWithFlash(w, r, "/login", "Lütfen önce giriş yapın")
@@ -932,10 +929,10 @@ func main() {
 			"Title": "Adreslerim",
 			"Addresses": []map[string]interface{}{
 				{
-					"id":    1,
-					"title": "Ev",
+					"id":      1,
+					"title":   "Ev",
 					"address": "Test Mahallesi, Test Sokak No:1",
-					"city":  "İstanbul",
+					"city":    "İstanbul",
 				},
 			},
 		}
@@ -944,15 +941,15 @@ func main() {
 
 	// Auth API rotaları
 	appRouter.HandleFunc("/api/verify-temp-password", h.VerifyTempPassword)
-	
+
 	// API rotaları
 	appRouter.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
-			"status": "ok",
+			"status":    "ok",
 			"timestamp": time.Now().Format(time.RFC3339),
-			"service": "KolajAI Enterprise",
-			"version": "2.0.0",
+			"service":   "KolajAI Enterprise",
+			"version":   "2.0.0",
 		})
 	})
 	// Legacy API endpoints (deprecated - use /api/v1/ instead) - simplified
@@ -987,7 +984,7 @@ func main() {
 
 	// AI Vision API rotaları
 	appRouter.HandleFunc("/api/ai/vision/upload", aiVisionHandler.UploadImage)
-	
+
 	// Gelişmiş AI rotaları
 	appRouter.HandleFunc("/api/ai/generate-image", aiAdvancedHandler.GenerateProductImage)
 	appRouter.HandleFunc("/api/ai/generate-content", aiAdvancedHandler.GenerateContent)
@@ -996,7 +993,7 @@ func main() {
 	appRouter.HandleFunc("/api/ai/chat/message", aiAdvancedHandler.SendAIChatMessage)
 	appRouter.HandleFunc("/api/ai/analyze-image", aiAdvancedHandler.AnalyzeProductImage)
 	appRouter.HandleFunc("/api/ai/credits", aiAdvancedHandler.GetAICredits)
-	
+
 	// Marketplace entegrasyon rotaları
 	appRouter.HandleFunc("/api/marketplace/integrations", marketplaceHandler.GetAllIntegrations)
 	appRouter.HandleFunc("/api/marketplace/integration", marketplaceHandler.GetIntegration)
@@ -1006,15 +1003,15 @@ func main() {
 	appRouter.HandleFunc("/api/marketplace/create-shipment", marketplaceHandler.CreateShipment)
 	appRouter.HandleFunc("/api/marketplace/generate-invoice", marketplaceHandler.GenerateInvoice)
 	appRouter.HandleFunc("/api/marketplace/update-inventory", marketplaceHandler.UpdateInventory)
-	
+
 	// Integration webhook endpoints
 	appRouter.HandleFunc("/webhooks/integration", webhookService.HandleWebhook)
-	
+
 	// Payment endpoints
 	appRouter.HandleFunc("/payment/checkout", paymentHandler.PaymentPage)
 	appRouter.HandleFunc("/payment/success", paymentHandler.PaymentSuccess)
 	appRouter.HandleFunc("/payment/failure", paymentHandler.PaymentFailure)
-	
+
 	// Payment API endpoints
 	appRouter.HandleFunc("/api/payment/intent", paymentHandler.CreatePaymentIntent)
 	appRouter.HandleFunc("/api/payment/process", paymentHandler.ProcessPayment)
@@ -1022,7 +1019,7 @@ func main() {
 	appRouter.HandleFunc("/api/payment/refund", paymentHandler.RefundPayment)
 	appRouter.HandleFunc("/api/payment/methods", paymentHandler.GetPaymentMethods)
 	appRouter.HandleFunc("/api/payment/calculate-fee", paymentHandler.CalculatePaymentFee)
-	
+
 	// Integration analytics endpoints
 	appRouter.HandleFunc("/api/integration/metrics", func(w http.ResponseWriter, r *http.Request) {
 		metrics := analyticsService.GetMetrics()
@@ -1032,14 +1029,14 @@ func main() {
 			"metrics": metrics,
 		})
 	})
-	
+
 	appRouter.HandleFunc("/api/integration/health", func(w http.ResponseWriter, r *http.Request) {
 		integrationID := r.URL.Query().Get("integration_id")
 		if integrationID == "" {
 			http.Error(w, "Integration ID required", http.StatusBadRequest)
 			return
 		}
-		
+
 		health := analyticsService.GetIntegrationHealth(integrationID)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
@@ -1047,55 +1044,55 @@ func main() {
 			"health":  health,
 		})
 	})
-	
+
 	appRouter.HandleFunc("/api/integration/report", func(w http.ResponseWriter, r *http.Request) {
 		reportType := r.URL.Query().Get("type")
 		if reportType == "" {
 			reportType = "daily"
 		}
-		
+
 		// Parse time parameters
 		startTime := time.Now().AddDate(0, 0, -7) // Default to 7 days ago
 		endTime := time.Now()
-		
+
 		report, err := analyticsService.GenerateReport(reportType, startTime, endTime)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success": true,
 			"report":  report,
 		})
 	})
-	
+
 	// AI Integration insights endpoints
 	appRouter.HandleFunc("/api/ai/integration/insights", func(w http.ResponseWriter, r *http.Request) {
 		integrationID := r.URL.Query().Get("integration_id")
-		
+
 		var insights map[string]interface{}
 		var err error
-		
+
 		if integrationID != "" {
 			insights, err = aiIntegrationManager.GetAIInsights(integrationID)
 		} else {
 			insights, err = aiIntegrationManager.GetAllAIInsights()
 		}
-		
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		
+
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"success":  true,
 			"insights": insights,
 		})
 	})
-	
+
 	// AI Editor ve Marketplace sayfaları
 	appRouter.HandleFunc("/ai/editor", func(w http.ResponseWriter, r *http.Request) {
 		h.RenderTemplate(w, r, "ai/ai_editor.html", nil)
@@ -1132,21 +1129,21 @@ func main() {
 		}
 		h.RenderTemplate(w, r, "marketplace/index.gohtml", data)
 	})
-	
+
 	appRouter.HandleFunc("/marketplace/products", func(w http.ResponseWriter, r *http.Request) {
 		// Parse query parameters
 		category := r.URL.Query().Get("category")
 		search := r.URL.Query().Get("search")
 		page := 1
 		limit := 20
-		
+
 		// Get products from database
 		products, err := productService.GetProducts(category, search, page, limit)
 		if err != nil {
 			log.Printf("Error loading products: %v", err)
 			products = []models.Product{} // Empty slice on error
 		}
-		
+
 		// Get categories for filter
 		categories, err := productService.GetAllCategories()
 		if err != nil {
@@ -1162,7 +1159,7 @@ func main() {
 		}
 		h.RenderTemplate(w, r, "marketplace/products.gohtml", data)
 	})
-	
+
 	appRouter.HandleFunc("/marketplace/categories", func(w http.ResponseWriter, r *http.Request) {
 		// Get categories
 		categories, err := productService.GetAllCategories()
@@ -1178,7 +1175,7 @@ func main() {
 		}
 		h.RenderTemplate(w, r, "marketplace/categories.gohtml", data)
 	})
-	
+
 	appRouter.HandleFunc("/marketplace/cart", func(w http.ResponseWriter, r *http.Request) {
 		data := map[string]interface{}{
 			"Title": "Sepetim",
@@ -1193,7 +1190,7 @@ func main() {
 		}
 		h.RenderTemplate(w, r, "marketplace/cart.gohtml", data)
 	})
-	
+
 	appRouter.HandleFunc("/marketplace/integrations", func(w http.ResponseWriter, r *http.Request) {
 		data := map[string]interface{}{
 			"Title": "Entegrasyonlar",
@@ -1372,12 +1369,12 @@ func main() {
 	MainLogger.Printf("Web tarayıcınızda http://localhost%s adresini ziyaret edin", addr)
 	MainLogger.Printf("Static dosyalar /static/ altında serve ediliyor")
 	MainLogger.Printf("Templates web/templates/ klasöründen yüklendi")
-	
+
 	// Server'ı başlat
 	// Check for TLS certificates
 	certFile := os.Getenv("TLS_CERT_FILE")
 	keyFile := os.Getenv("TLS_KEY_FILE")
-	
+
 	if certFile != "" && keyFile != "" {
 		MainLogger.Printf("HTTPS sunucu başlatılıyor (TLS): %s", addr)
 		if err := server.ListenAndServeTLS(certFile, keyFile); err != nil {

@@ -12,12 +12,12 @@ import (
 
 // AIEnterpriseService provides enterprise-level AI capabilities
 type AIEnterpriseService struct {
-	repo             database.SimpleRepository
-	aiService        *AIService
-	aiVisionService  *AIVisionService
-	productService   *ProductService
-	orderService     *OrderService
-	userService      *AuthService
+	repo            database.SimpleRepository
+	aiService       *AIService
+	aiVisionService *AIVisionService
+	productService  *ProductService
+	orderService    *OrderService
+	userService     *AuthService
 }
 
 // NewAIEnterpriseService creates a new enterprise AI service
@@ -30,41 +30,41 @@ func NewAIEnterpriseService(
 	userService *AuthService,
 ) *AIEnterpriseService {
 	return &AIEnterpriseService{
-		repo:             repo,
-		aiService:        aiService,
-		aiVisionService:  aiVisionService,
-		productService:   productService,
-		orderService:     orderService,
-		userService:      userService,
+		repo:            repo,
+		aiService:       aiService,
+		aiVisionService: aiVisionService,
+		productService:  productService,
+		orderService:    orderService,
+		userService:     userService,
 	}
 }
 
 // CustomerServiceRequest represents a customer service request
 type CustomerServiceRequest struct {
-	ID            int                    `json:"id"`
-	UserID        int                    `json:"user_id"`
-	Type          string                 `json:"type"` // 'complaint', 'question', 'suggestion', 'technical'
-	Subject       string                 `json:"subject"`
-	Description   string                 `json:"description"`
-	Priority      string                 `json:"priority"` // 'low', 'medium', 'high', 'urgent'
-	Status        string                 `json:"status"`   // 'open', 'in_progress', 'resolved', 'closed'
-	Category      string                 `json:"category"`
-	Tags          []string               `json:"tags"`
-	Attachments   []string               `json:"attachments"` // Image IDs
-	AIAnalysis    CustomerServiceAnalysis `json:"ai_analysis"`
-	AssignedTo    int                    `json:"assigned_to"`
-	Resolution    string                 `json:"resolution"`
-	SatisfactionScore float64            `json:"satisfaction_score"`
-	CreatedAt     time.Time              `json:"created_at"`
-	UpdatedAt     time.Time              `json:"updated_at"`
-	ResolvedAt    *time.Time             `json:"resolved_at"`
+	ID                int                     `json:"id"`
+	UserID            int                     `json:"user_id"`
+	Type              string                  `json:"type"` // 'complaint', 'question', 'suggestion', 'technical'
+	Subject           string                  `json:"subject"`
+	Description       string                  `json:"description"`
+	Priority          string                  `json:"priority"` // 'low', 'medium', 'high', 'urgent'
+	Status            string                  `json:"status"`   // 'open', 'in_progress', 'resolved', 'closed'
+	Category          string                  `json:"category"`
+	Tags              []string                `json:"tags"`
+	Attachments       []string                `json:"attachments"` // Image IDs
+	AIAnalysis        CustomerServiceAnalysis `json:"ai_analysis"`
+	AssignedTo        int                     `json:"assigned_to"`
+	Resolution        string                  `json:"resolution"`
+	SatisfactionScore float64                 `json:"satisfaction_score"`
+	CreatedAt         time.Time               `json:"created_at"`
+	UpdatedAt         time.Time               `json:"updated_at"`
+	ResolvedAt        *time.Time              `json:"resolved_at"`
 }
 
 // CustomerServiceAnalysis represents AI analysis of customer service request
 type CustomerServiceAnalysis struct {
-	SentimentScore    float64  `json:"sentiment_score"`    // -1 to 1
-	UrgencyScore      float64  `json:"urgency_score"`      // 0 to 1
-	ComplexityScore   float64  `json:"complexity_score"`   // 0 to 1
+	SentimentScore    float64  `json:"sentiment_score"`  // -1 to 1
+	UrgencyScore      float64  `json:"urgency_score"`    // 0 to 1
+	ComplexityScore   float64  `json:"complexity_score"` // 0 to 1
 	SuggestedCategory string   `json:"suggested_category"`
 	SuggestedPriority string   `json:"suggested_priority"`
 	KeyTopics         []string `json:"key_topics"`
@@ -76,20 +76,20 @@ type CustomerServiceAnalysis struct {
 
 // ContentModerationResult represents content moderation analysis
 type ContentModerationResult struct {
-	ContentID     string                 `json:"content_id"`
-	ContentType   string                 `json:"content_type"` // 'text', 'image', 'video'
-	IsAppropriate bool                   `json:"is_appropriate"`
-	ConfidenceScore float64              `json:"confidence_score"`
-	Violations    []ContentViolation     `json:"violations"`
-	Recommendations []string             `json:"recommendations"`
-	ActionRequired string                `json:"action_required"` // 'none', 'review', 'block', 'remove'
-	ProcessedAt   time.Time              `json:"processed_at"`
+	ContentID       string             `json:"content_id"`
+	ContentType     string             `json:"content_type"` // 'text', 'image', 'video'
+	IsAppropriate   bool               `json:"is_appropriate"`
+	ConfidenceScore float64            `json:"confidence_score"`
+	Violations      []ContentViolation `json:"violations"`
+	Recommendations []string           `json:"recommendations"`
+	ActionRequired  string             `json:"action_required"` // 'none', 'review', 'block', 'remove'
+	ProcessedAt     time.Time          `json:"processed_at"`
 }
 
 // ContentViolation represents a content policy violation
 type ContentViolation struct {
-	Type        string  `json:"type"`        // 'spam', 'inappropriate', 'offensive', 'copyright'
-	Severity    string  `json:"severity"`    // 'low', 'medium', 'high'
+	Type        string  `json:"type"`     // 'spam', 'inappropriate', 'offensive', 'copyright'
+	Severity    string  `json:"severity"` // 'low', 'medium', 'high'
 	Confidence  float64 `json:"confidence"`
 	Description string  `json:"description"`
 }
@@ -111,15 +111,15 @@ type BusinessInsight struct {
 
 // AutomatedTask represents an automated task performed by AI
 type AutomatedTask struct {
-	ID          int                    `json:"id"`
-	Type        string                 `json:"type"` // 'content_optimization', 'inventory_management', 'customer_segmentation'
-	Status      string                 `json:"status"` // 'pending', 'running', 'completed', 'failed'
-	Progress    float64                `json:"progress"` // 0 to 1
-	Results     map[string]interface{} `json:"results"`
-	ErrorMessage string                `json:"error_message"`
-	ScheduledAt time.Time              `json:"scheduled_at"`
-	StartedAt   *time.Time             `json:"started_at"`
-	CompletedAt *time.Time             `json:"completed_at"`
+	ID           int                    `json:"id"`
+	Type         string                 `json:"type"`     // 'content_optimization', 'inventory_management', 'customer_segmentation'
+	Status       string                 `json:"status"`   // 'pending', 'running', 'completed', 'failed'
+	Progress     float64                `json:"progress"` // 0 to 1
+	Results      map[string]interface{} `json:"results"`
+	ErrorMessage string                 `json:"error_message"`
+	ScheduledAt  time.Time              `json:"scheduled_at"`
+	StartedAt    *time.Time             `json:"started_at"`
+	CompletedAt  *time.Time             `json:"completed_at"`
 }
 
 // ProcessCustomerServiceRequest analyzes and processes a customer service request
@@ -186,7 +186,7 @@ func (s *AIEnterpriseService) analyzeCustomerServiceRequest(request *CustomerSer
 // analyzeSentiment analyzes sentiment of text (-1 to 1)
 func (s *AIEnterpriseService) analyzeSentiment(text string) float64 {
 	text = strings.ToLower(text)
-	
+
 	// Positive words
 	positiveWords := []string{
 		"good", "great", "excellent", "amazing", "wonderful", "fantastic", "love", "like",
@@ -236,7 +236,7 @@ func (s *AIEnterpriseService) analyzeSentiment(text string) float64 {
 // analyzeUrgency analyzes urgency of request (0 to 1)
 func (s *AIEnterpriseService) analyzeUrgency(subject, description string) float64 {
 	text := strings.ToLower(subject + " " + description)
-	
+
 	urgentWords := []string{
 		"urgent", "emergency", "asap", "immediately", "critical", "broken", "not working",
 		"can't", "unable", "error", "problem", "issue", "bug", "crash", "down",

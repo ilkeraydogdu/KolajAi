@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
-	"log"
-	
+
 	"kolajAi/internal/services"
 )
 
@@ -33,38 +33,38 @@ func (h *NotificationHandler) Dashboard(w http.ResponseWriter, r *http.Request) 
 
 	// Get notification statistics
 	stats := map[string]interface{}{
-		"total_sent":       1250,
-		"delivered":        1180,
-		"opened":          890,
-		"clicked":         245,
-		"failed":          35,
-		"pending":         15,
-		"delivery_rate":   94.4,
-		"open_rate":       75.4,
-		"click_rate":      19.6,
+		"total_sent":    1250,
+		"delivered":     1180,
+		"opened":        890,
+		"clicked":       245,
+		"failed":        35,
+		"pending":       15,
+		"delivery_rate": 94.4,
+		"open_rate":     75.4,
+		"click_rate":    19.6,
 	}
 
 	// Get recent notifications
 	recentNotifications := []map[string]interface{}{
 		{
-			"id":          1,
-			"title":       "Yeni Sipariş Bildirimi",
-			"type":        "order",
-			"channel":     "email",
-			"recipients":  150,
-			"sent_at":     time.Now().Add(-2 * time.Hour),
-			"status":      "delivered",
-			"open_rate":   78.5,
+			"id":         1,
+			"title":      "Yeni Sipariş Bildirimi",
+			"type":       "order",
+			"channel":    "email",
+			"recipients": 150,
+			"sent_at":    time.Now().Add(-2 * time.Hour),
+			"status":     "delivered",
+			"open_rate":  78.5,
 		},
 		{
-			"id":          2,
-			"title":       "Stok Uyarısı",
-			"type":        "inventory",
-			"channel":     "push",
-			"recipients":  25,
-			"sent_at":     time.Now().Add(-4 * time.Hour),
-			"status":      "delivered",
-			"open_rate":   85.2,
+			"id":         2,
+			"title":      "Stok Uyarısı",
+			"type":       "inventory",
+			"channel":    "push",
+			"recipients": 25,
+			"sent_at":    time.Now().Add(-4 * time.Hour),
+			"status":     "delivered",
+			"open_rate":  85.2,
 		},
 	}
 
@@ -246,16 +246,16 @@ func (h *NotificationHandler) APIGetNotificationStats(w http.ResponseWriter, r *
 	}
 
 	stats := map[string]interface{}{
-		"total_sent":     1250,
-		"delivered":      1180,
-		"opened":         890,
-		"clicked":        245,
-		"failed":         35,
-		"pending":        15,
-		"delivery_rate":  94.4,
-		"open_rate":      75.4,
-		"click_rate":     19.6,
-		"bounce_rate":    2.8,
+		"total_sent":       1250,
+		"delivered":        1180,
+		"opened":           890,
+		"clicked":          245,
+		"failed":           35,
+		"pending":          15,
+		"delivery_rate":    94.4,
+		"open_rate":        75.4,
+		"click_rate":       19.6,
+		"bounce_rate":      2.8,
 		"unsubscribe_rate": 0.5,
 	}
 
@@ -279,11 +279,11 @@ func (h *NotificationHandler) APICreateTemplate(w http.ResponseWriter, r *http.R
 	}
 
 	var template struct {
-		Name     string `json:"name"`
-		Subject  string `json:"subject"`
-		Content  string `json:"content"`
-		Type     string `json:"type"`
-		Channel  string `json:"channel"`
+		Name    string `json:"name"`
+		Subject string `json:"subject"`
+		Content string `json:"content"`
+		Type    string `json:"type"`
+		Channel string `json:"channel"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&template); err != nil {
@@ -323,10 +323,10 @@ func (h *NotificationHandler) APIUpdateTemplate(w http.ResponseWriter, r *http.R
 	}
 
 	var template struct {
-		Name     string `json:"name"`
-		Subject  string `json:"subject"`
-		Content  string `json:"content"`
-		Status   string `json:"status"`
+		Name    string `json:"name"`
+		Subject string `json:"subject"`
+		Content string `json:"content"`
+		Status  string `json:"status"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&template); err != nil {
