@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -94,21 +95,29 @@ func main() {
 	}
 
 	// Veritabanı bağlantısı (MySQL)
-	MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
-	dbConfig := database.DefaultConfig()
-	db, err := database.InitDB(dbConfig)
-	if err != nil {
-		MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
-	}
-	defer db.Close()
+	var db *sql.DB
+	if cfg.Database.MockMode {
+		MainLogger.Println("Mock mode aktif, veritabanı bağlantısı atlanıyor...")
+		// Mock mode'da nil db kullanacağız
+		db = nil
+	} else {
+		MainLogger.Println("Veritabanı bağlantısı kuruluyor...")
+		dbConfig := database.DefaultConfig()
+		var err error
+		db, err = database.InitDB(dbConfig)
+		if err != nil {
+			MainLogger.Fatalf("Veritabanı bağlantısı kurulamadı: %v", err)
+		}
+		defer db.Close()
 
-	// Migration'ları çalıştır
-	MainLogger.Println("Veritabanı migration'ları çalıştırılıyor...")
-	migrationService := migrations.NewMigrationService(db, "kolajAi")
-	if err := migrationService.RunMigrations(); err != nil {
-		MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
+		// Migration'ları çalıştır
+		MainLogger.Println("Veritabanı migration'ları çalıştırılıyor...")
+		migrationService := migrations.NewMigrationService(db, "kolajAi")
+		if err := migrationService.RunMigrations(); err != nil {
+			MainLogger.Fatalf("Migration'lar çalıştırılamadı: %v", err)
+		}
+		MainLogger.Println("Migration'lar başarıyla tamamlandı!")
 	}
-	MainLogger.Println("Migration'lar başarıyla tamamlandı!")
 
 	// Advanced systems initialization
 	MainLogger.Println("Gelişmiş sistemler başlatılıyor...")
@@ -199,27 +208,51 @@ func main() {
 	// MainLogger.Println("Test sistemi başlatılıyor...")
 
 	// Repository oluştur
-	mysqlRepo := database.NewMySQLRepository(db)
-	repo := database.NewRepositoryWrapper(mysqlRepo)
+	var mysqlRepo *database.MySQLRepository
+	var repo *database.RepositoryWrapper
+	
+	if !cfg.Database.MockMode {
+		mysqlRepo = database.NewMySQLRepository(db)
+		repo = database.NewRepositoryWrapper(mysqlRepo)
+	}
 
 	// Servisleri oluştur
 	MainLogger.Println("Servisler oluşturuluyor...")
-	// UserRepository için MySQLRepository kullanıyoruz
-	userRepo := repository.NewUserRepository(mysqlRepo)
+	
+	var userRepo *repository.UserRepository
+	var authService *services.AuthService
+	var vendorService *services.VendorService
+	var productService *services.ProductService
+	var orderService *services.OrderService
+	var auctionService *services.AuctionService
+	var aiService *services.AIService
+	var aiAnalyticsService *services.AIAnalyticsService
+	var aiVisionService *services.AIVisionService
+	
 	emailService := email.NewService() // Email service'i initialize et
-	authService := services.NewAuthService(userRepo, emailService)
-	vendorService := services.NewVendorService(repo)
-	productService := services.NewProductService(repo)
-	orderService := services.NewOrderService(repo)
-	auctionService := services.NewAuctionService(repo)
-	aiService := services.NewAIService(repo, productService, orderService)
-	aiAnalyticsService := services.NewAIAnalyticsService(repo, productService, orderService)
-	aiVisionService := services.NewAIVisionService(repo, productService)
-	_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
+	
+	if !cfg.Database.MockMode {
+		// UserRepository için MySQLRepository kullanıyoruz
+		userRepo = repository.NewUserRepository(mysqlRepo)
+		authService = services.NewAuthService(userRepo, emailService)
+		vendorService = services.NewVendorService(repo)
+		productService = services.NewProductService(repo)
+		orderService = services.NewOrderService(repo)
+		auctionService = services.NewAuctionService(repo)
+		aiService = services.NewAIService(repo, productService, orderService)
+		aiAnalyticsService = services.NewAIAnalyticsService(repo, productService, orderService)
+		aiVisionService = services.NewAIVisionService(repo, productService)
+		_ = services.NewAIEnterpriseService(repo, aiService, aiVisionService, productService, orderService, authService)
+	}
 	
 	// Yeni gelişmiş AI ve marketplace servisleri
-	aiAdvancedService := services.NewAIAdvancedService(repo, productService, orderService)
-	marketplaceService := services.NewMarketplaceIntegrationsService()
+	var aiAdvancedService *services.AIAdvancedService
+	var marketplaceService *services.MarketplaceIntegrationsService
+	
+	if !cfg.Database.MockMode {
+		aiAdvancedService = services.NewAIAdvancedService(repo, productService, orderService)
+		marketplaceService = services.NewMarketplaceIntegrationsService()
+	}
 	paymentService := services.NewPaymentService(repo)
 	
 	// AI Integration Manager
@@ -491,7 +524,86 @@ func main() {
 			http.NotFound(w, r)
 			return
 		}
-		w.Write([]byte("Welcome to KolajAI Marketplace"))
+		
+		// Mock data for testing
+		data := map[string]interface{}{
+			"Title": "KolajAI Marketplace - Ana Sayfa",
+			"Description": "Çoklu satıcı, açık artırma ve toptan satış platformu",
+			"Categories": []map[string]interface{}{
+				{"ID": 1, "Name": "Elektronik", "Image": "/web/static/assets/images/categories/electronics.jpg"},
+				{"ID": 2, "Name": "Giyim", "Image": "/web/static/assets/images/categories/clothing.jpg"},
+				{"ID": 3, "Name": "Ev & Yaşam", "Image": "/web/static/assets/images/categories/home.jpg"},
+				{"ID": 4, "Name": "Spor", "Image": "/web/static/assets/images/categories/sports.jpg"},
+				{"ID": 5, "Name": "Kitap", "Image": "/web/static/assets/images/categories/books.jpg"},
+				{"ID": 6, "Name": "Oyuncak", "Image": "/web/static/assets/images/categories/toys.jpg"},
+			},
+			"FeaturedProducts": []map[string]interface{}{
+				{
+					"ID": 1,
+					"Name": "iPhone 15 Pro Max",
+					"Price": 49999.99,
+					"ShortDesc": "En yeni iPhone modeli",
+					"Images": []string{"/web/static/assets/images/products/iphone.jpg"},
+					"IsFeatured": true,
+					"Rating": 4.8,
+				},
+				{
+					"ID": 2,
+					"Name": "Samsung Galaxy S24 Ultra",
+					"Price": 45999.99,
+					"ShortDesc": "Güçlü Android telefon",
+					"Images": []string{"/web/static/assets/images/products/samsung.jpg"},
+					"IsFeatured": true,
+					"Rating": 4.7,
+				},
+				{
+					"ID": 3,
+					"Name": "MacBook Pro M3",
+					"Price": 89999.99,
+					"ShortDesc": "Profesyonel laptop",
+					"Images": []string{"/web/static/assets/images/products/macbook.jpg"},
+					"IsFeatured": true,
+					"Rating": 4.9,
+				},
+				{
+					"ID": 4,
+					"Name": "Sony PlayStation 5",
+					"Price": 19999.99,
+					"ShortDesc": "Yeni nesil oyun konsolu",
+					"Images": []string{"/web/static/assets/images/products/ps5.jpg"},
+					"IsFeatured": true,
+					"Rating": 4.8,
+				},
+			},
+			"ActiveAuctions": []map[string]interface{}{
+				{
+					"ID": 1,
+					"Title": "Antika Saat Koleksiyonu",
+					"CurrentBid": 5000.00,
+					"TotalBids": 15,
+					"EndTime": time.Now().Add(24 * time.Hour),
+					"Images": []string{"/web/static/assets/images/auctions/watch.jpg"},
+				},
+				{
+					"ID": 2,
+					"Title": "Nadir Pul Koleksiyonu",
+					"CurrentBid": 3500.00,
+					"TotalBids": 8,
+					"EndTime": time.Now().Add(48 * time.Hour),
+					"Images": []string{"/web/static/assets/images/auctions/stamps.jpg"},
+				},
+				{
+					"ID": 3,
+					"Title": "Vintage Kamera Seti",
+					"CurrentBid": 7500.00,
+					"TotalBids": 22,
+					"EndTime": time.Now().Add(12 * time.Hour),
+					"Images": []string{"/web/static/assets/images/auctions/camera.jpg"},
+				},
+			},
+		}
+		
+		h.RenderTemplate(w, r, "marketplace/index.gohtml", data)
 	})
 
 	// Auth işlemleri

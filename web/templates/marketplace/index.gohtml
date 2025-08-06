@@ -1,6 +1,8 @@
 {{define "marketplace/index"}}
-{{template "layout/header" .}}
+{{template "layout/base" .}}
+{{end}}
 
+{{define "content"}}
 <div class="hero-section bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
     <div class="container mx-auto px-4 text-center">
         <h1 class="text-5xl font-bold mb-6">KolajAI Marketplace</h1>
@@ -167,6 +169,4 @@
         </div>
     </div>
 </section>
-
-{{template "layout/footer" .}}
 {{end}}

@@ -148,10 +148,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		"Title":          "Giriş - KolajAI",
 		"PageHeading":    "Giriş Yap",
 		"PageSubHeading": "Hesabınıza giriş yapın ve işlemlerinize devam edin!",
+		"SidebarClass":   "bg-gradient-grd",
+		"SidebarImage":   "/web/static/assets/images/auth/login.png",
 	}
 
 	// Şablonu render et
-	h.RenderTemplate(w, r, "auth/login", data)
+	h.RenderTemplate(w, r, "auth/login.gohtml", data)
 }
 
 // Logout logs out the user
@@ -206,7 +208,7 @@ func (h *Handler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 		"PageSubHeading": "Şifrenizi sıfırlamak için e-posta adresinizi girin!",
 	}
 
-	h.RenderTemplate(w, r, "auth/forgot-password", data)
+	h.RenderTemplate(w, r, "auth/forgot-password.gohtml", data)
 }
 
 // ResetPassword handles the password reset process
@@ -260,7 +262,7 @@ func (h *Handler) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	}
 
 	AuthLogger.Printf("ResetPassword - Şifre sıfırlama sayfası gösteriliyor: %s", email)
-	h.RenderTemplate(w, r, "auth/reset-password", data)
+	h.RenderTemplate(w, r, "auth/reset-password.gohtml", data)
 }
 
 // Register handles the user registration process
@@ -300,7 +302,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		"PageSubHeading": "Yeni bir hesap oluşturmak için lütfen bilgilerinizi girin!",
 	}
 
-	h.RenderTemplate(w, r, "auth/register", data)
+	h.RenderTemplate(w, r, "auth/register.gohtml", data)
 }
 
 // VerifyTempPassword handles temporary password verification

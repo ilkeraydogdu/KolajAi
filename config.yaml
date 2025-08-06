@@ -1,7 +1,7 @@
-environment: production
+environment: development
 
 server:
-  port: 8081
+  port: 8080
   host: "0.0.0.0"
   domain: "localhost"
   read_timeout: 10
@@ -19,6 +19,8 @@ database:
   max_open_conns: 25
   max_idle_conns: 25
   conn_max_lifetime: 5
+  # Mock mode for development without database
+  mock_mode: true
 
 security:
   # CRITICAL: All secrets MUST be loaded from environment variables in production

@@ -1,6 +1,8 @@
 {{define "marketplace/auctions"}}
-{{template "layout/header" .}}
+{{template "layout/base" .}}
+{{end}}
 
+{{define "content"}}
 <div class="auctions-page">
     <!-- Hero Section -->
     <div class="bg-gradient-to-r from-green-600 to-blue-600 text-white py-12">
@@ -231,5 +233,4 @@
 
 <script src="/static/js/auction.js"></script>
 
-{{template "layout/footer" .}}
 {{end}}
