@@ -1,6 +1,8 @@
 {{define "marketplace/products"}}
-{{template "layout/header" .}}
+{{template "layout/base" .}}
+{{end}}
 
+{{define "content"}}
 <div class="products-page">
     <!-- Hero Section -->
     <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-12">
@@ -325,7 +327,7 @@
     </div>
 </div>
 
-{{template "layout/footer" .}}
+
 {{end}}
 
 {{define "page_css"}}

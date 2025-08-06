@@ -60,7 +60,7 @@ func (h *AdminHandler) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 		"RecentUsers":  recentUsers,
 	}
 	
-	h.RenderTemplate(w, r, "admin/dashboard", data)
+	h.RenderTemplate(w, r, "admin/dashboard.gohtml", data)
 }
 
 // AdminUsers handles admin users page
