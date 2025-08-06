@@ -2,23 +2,23 @@ package integrations
 
 import (
 	"context"
-	"time"
 	"kolajAi/internal/security"
+	"time"
 )
 
 // IntegrationType represents the type of integration
 type IntegrationType string
 
 const (
-	IntegrationTypePayment      IntegrationType = "payment"
-	IntegrationTypeMarketplace  IntegrationType = "marketplace"
-	IntegrationTypeShipping     IntegrationType = "shipping"
-	IntegrationTypeAccounting   IntegrationType = "accounting"
+	IntegrationTypePayment       IntegrationType = "payment"
+	IntegrationTypeMarketplace   IntegrationType = "marketplace"
+	IntegrationTypeShipping      IntegrationType = "shipping"
+	IntegrationTypeAccounting    IntegrationType = "accounting"
 	IntegrationTypeCommunication IntegrationType = "communication"
-	IntegrationTypeAnalytics    IntegrationType = "analytics"
-	IntegrationTypeAI           IntegrationType = "ai"
-	IntegrationTypeStorage      IntegrationType = "storage"
-	IntegrationTypeAuth         IntegrationType = "auth"
+	IntegrationTypeAnalytics     IntegrationType = "analytics"
+	IntegrationTypeAI            IntegrationType = "ai"
+	IntegrationTypeStorage       IntegrationType = "storage"
+	IntegrationTypeAuth          IntegrationType = "auth"
 )
 
 // IntegrationStatus represents the status of an integration
@@ -91,7 +91,7 @@ func (sc *SecureCredentials) ToLegacyCredentials() (*Credentials, error) {
 	creds := &Credentials{
 		Extra: make(map[string]string),
 	}
-	
+
 	// Extract string values from map
 	if apiKey, ok := data["api_key"].(string); ok {
 		creds.APIKey = apiKey
@@ -111,7 +111,7 @@ func (sc *SecureCredentials) ToLegacyCredentials() (*Credentials, error) {
 	if clientSecret, ok := data["client_secret"].(string); ok {
 		creds.ClientSecret = clientSecret
 	}
-	
+
 	// Extract additional fields
 	if additional, ok := data["additional"].(map[string]interface{}); ok {
 		for k, v := range additional {
@@ -135,13 +135,13 @@ func (sc *SecureCredentials) ToLegacyCredentials() (*Credentials, error) {
 
 // IntegrationMetadata contains metadata about the integration
 type IntegrationMetadata struct {
-	LastHealthCheck   time.Time         `json:"last_health_check"`
-	LastSync          time.Time         `json:"last_sync"`
-	ErrorCount        int               `json:"error_count"`
-	SuccessCount      int               `json:"success_count"`
-	AverageResponseTime time.Duration   `json:"average_response_time"`
-	RateLimit         RateLimitInfo     `json:"rate_limit"`
-	Capabilities      []string          `json:"capabilities"`
+	LastHealthCheck     time.Time     `json:"last_health_check"`
+	LastSync            time.Time     `json:"last_sync"`
+	ErrorCount          int           `json:"error_count"`
+	SuccessCount        int           `json:"success_count"`
+	AverageResponseTime time.Duration `json:"average_response_time"`
+	RateLimit           RateLimitInfo `json:"rate_limit"`
+	Capabilities        []string      `json:"capabilities"`
 }
 
 // RateLimitInfo contains rate limiting information
@@ -157,16 +157,16 @@ type RateLimitInfo struct {
 type IntegrationProvider interface {
 	// Initialize sets up the integration with credentials and config
 	Initialize(ctx context.Context, credentials Credentials, config map[string]interface{}) error
-	
+
 	// HealthCheck verifies the integration is working
 	HealthCheck(ctx context.Context) error
-	
+
 	// GetCapabilities returns the capabilities of this integration
 	GetCapabilities() []string
-	
+
 	// GetRateLimit returns current rate limit information
 	GetRateLimit() RateLimitInfo
-	
+
 	// Close cleans up any resources
 	Close() error
 }
@@ -175,7 +175,7 @@ type IntegrationProvider interface {
 type WebhookHandler interface {
 	// ValidateWebhook validates the webhook signature/authenticity
 	ValidateWebhook(headers map[string]string, body []byte) error
-	
+
 	// ProcessWebhook processes the webhook payload
 	ProcessWebhook(ctx context.Context, event WebhookEvent) error
 }
@@ -202,10 +202,10 @@ type RetryPolicy struct {
 
 // CircuitBreakerConfig defines circuit breaker configuration
 type CircuitBreakerConfig struct {
-	FailureThreshold   int           `json:"failure_threshold"`
-	SuccessThreshold   int           `json:"success_threshold"`
-	Timeout            time.Duration `json:"timeout"`
-	HalfOpenMaxCalls   int           `json:"half_open_max_calls"`
+	FailureThreshold int           `json:"failure_threshold"`
+	SuccessThreshold int           `json:"success_threshold"`
+	Timeout          time.Duration `json:"timeout"`
+	HalfOpenMaxCalls int           `json:"half_open_max_calls"`
 }
 
 // IntegrationError represents an error from an integration
@@ -225,23 +225,23 @@ func (e *IntegrationError) Error() string {
 
 // IntegrationRequest represents a request to an integration
 type IntegrationRequest struct {
-	ID        string                 `json:"id"`
-	Method    string                 `json:"method"`
-	Endpoint  string                 `json:"endpoint"`
-	Headers   map[string]string      `json:"headers"`
-	Body      interface{}            `json:"body"`
-	Timeout   time.Duration          `json:"timeout"`
-	Retries   int                    `json:"retries"`
+	ID       string            `json:"id"`
+	Method   string            `json:"method"`
+	Endpoint string            `json:"endpoint"`
+	Headers  map[string]string `json:"headers"`
+	Body     interface{}       `json:"body"`
+	Timeout  time.Duration     `json:"timeout"`
+	Retries  int               `json:"retries"`
 }
 
 // IntegrationResponse represents a response from an integration
 type IntegrationResponse struct {
-	ID         string                 `json:"id"`
-	StatusCode int                    `json:"status_code"`
-	Headers    map[string]string      `json:"headers"`
-	Body       interface{}            `json:"body"`
-	Duration   time.Duration          `json:"duration"`
-	Error      *IntegrationError      `json:"error,omitempty"`
+	ID         string            `json:"id"`
+	StatusCode int               `json:"status_code"`
+	Headers    map[string]string `json:"headers"`
+	Body       interface{}       `json:"body"`
+	Duration   time.Duration     `json:"duration"`
+	Error      *IntegrationError `json:"error,omitempty"`
 }
 
 // IntegrationLogger defines logging interface for integrations

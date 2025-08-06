@@ -563,23 +563,23 @@ func (s *InventoryService) GetStockLevels() ([]map[string]interface{}, error) {
 			END,
 			p.stock ASC
 	`
-	
+
 	rows, err := s.repo.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get stock levels: %w", err)
 	}
 	defer rows.Close()
-	
+
 	var stockData []map[string]interface{}
 	for rows.Next() {
 		var productID, currentStock, minStock int
 		var productName, status string
-		
+
 		err := rows.Scan(&productID, &productName, &currentStock, &minStock, &status)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan stock data: %w", err)
 		}
-		
+
 		stockData = append(stockData, map[string]interface{}{
 			"product_id":    productID,
 			"product_name":  productName,
@@ -588,6 +588,6 @@ func (s *InventoryService) GetStockLevels() ([]map[string]interface{}, error) {
 			"status":        status,
 		})
 	}
-	
+
 	return stockData, nil
 }

@@ -40,7 +40,7 @@ func (s *ProductService) GetProductByID(id int) (*models.Product, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get product: %w", err)
 	}
-	
+
 	// Load product images
 	images, err := s.GetProductImages(id)
 	if err == nil && len(images) > 0 {
@@ -56,7 +56,7 @@ func (s *ProductService) GetProductByID(id int) (*models.Product, error) {
 			product.Image = product.Images[0]
 		}
 	}
-	
+
 	return &product, nil
 }
 
@@ -130,7 +130,7 @@ func (s *ProductService) GetFeaturedProducts(limit, offset int) ([]models.Produc
 	if err != nil {
 		return nil, fmt.Errorf("failed to get featured products: %w", err)
 	}
-	
+
 	// Load images for all products
 	for i := range products {
 		images, err := s.GetProductImages(products[i].ID)
@@ -148,7 +148,7 @@ func (s *ProductService) GetFeaturedProducts(limit, offset int) ([]models.Produc
 			}
 		}
 	}
-	
+
 	return products, nil
 }
 
@@ -239,25 +239,23 @@ func (s *ProductService) GetCategoryByID(id int) (*models.Category, error) {
 	return &category, nil
 }
 
-
-
 // GetProducts retrieves products with filtering and pagination
 func (s *ProductService) GetProducts(category, search string, page, limit int) ([]models.Product, error) {
 	var products []models.Product
 	conditions := map[string]interface{}{
 		"status": "active",
 	}
-	
+
 	// Add category filter if provided
 	if category != "" {
 		if categoryID, err := strconv.Atoi(category); err == nil {
 			conditions["category_id"] = categoryID
 		}
 	}
-	
+
 	// Calculate offset for pagination
 	offset := (page - 1) * limit
-	
+
 	// For search, we'll need a more complex query, but for now use basic filtering
 	orderBy := "created_at DESC"
 	if search != "" {
@@ -265,12 +263,12 @@ func (s *ProductService) GetProducts(category, search string, page, limit int) (
 		// In a real scenario, you'd want to use full-text search or more sophisticated filtering
 		orderBy = "name ASC"
 	}
-	
+
 	err := s.repo.FindAll("products", &products, conditions, orderBy, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products: %w", err)
 	}
-	
+
 	// Load images for all products
 	for i := range products {
 		images, err := s.GetProductImages(products[i].ID)
@@ -288,7 +286,7 @@ func (s *ProductService) GetProducts(category, search string, page, limit int) (
 			}
 		}
 	}
-	
+
 	// If search term is provided, filter results (basic implementation)
 	if search != "" {
 		var filteredProducts []models.Product
@@ -301,7 +299,7 @@ func (s *ProductService) GetProducts(category, search string, page, limit int) (
 		}
 		return filteredProducts, nil
 	}
-	
+
 	return products, nil
 }
 
@@ -438,7 +436,7 @@ func min(a, b int) int {
 // GetProductCount returns the total number of products
 func (s *ProductService) GetProductCount(filters ...map[string]interface{}) (int64, error) {
 	conditions := map[string]interface{}{}
-	
+
 	// If filters are provided, use them
 	if len(filters) > 0 {
 		for key, value := range filters[0] {
@@ -455,7 +453,7 @@ func (s *ProductService) GetProductCount(filters ...map[string]interface{}) (int
 			}
 		}
 	}
-	
+
 	return s.repo.Count("products", conditions)
 }
 
@@ -484,29 +482,29 @@ func (s *ProductService) GetRecentProducts(limit int) ([]models.Product, error) 
 // GetProductsWithFilters gets products with various filters
 func (s *ProductService) GetProductsWithFilters(filters map[string]interface{}, sortBy, sortOrder string, limit, offset int) ([]models.Product, error) {
 	var products []models.Product
-	
+
 	// Build conditions from filters with proper type checking
 	conditions := make(map[string]interface{})
-	
+
 	if category, ok := filters["category"]; ok && category != "" {
 		if categoryStr, ok := category.(string); ok && categoryStr != "" {
 			conditions["category_id"] = categoryStr
 		}
 	}
-	
+
 	if minPrice, ok := filters["min_price"]; ok {
 		if price, ok := minPrice.(float64); ok && price > 0 {
 			// Use proper field name without operators to avoid SQL injection
 			conditions["price_min"] = price // Repository should handle this properly
 		}
 	}
-	
+
 	if maxPrice, ok := filters["max_price"]; ok {
 		if price, ok := maxPrice.(float64); ok && price > 0 {
 			conditions["price_max"] = price // Repository should handle this properly
 		}
 	}
-	
+
 	if status, ok := filters["status"]; ok && status != "" {
 		if statusStr, ok := status.(string); ok {
 			// Validate status to prevent injection
@@ -518,13 +516,13 @@ func (s *ProductService) GetProductsWithFilters(filters map[string]interface{}, 
 			}
 		}
 	}
-	
+
 	if vendorID, ok := filters["vendor_id"]; ok {
 		if id, ok := vendorID.(int64); ok && id > 0 {
 			conditions["vendor_id"] = id
 		}
 	}
-	
+
 	// Validate and sanitize sort parameters to prevent SQL injection
 	orderBy := "created_at DESC"
 	if sortBy != "" {
@@ -536,7 +534,7 @@ func (s *ProductService) GetProductsWithFilters(filters map[string]interface{}, 
 				break
 			}
 		}
-		
+
 		if sortByValid {
 			// Validate sort order
 			sortOrderValid := false
@@ -552,17 +550,17 @@ func (s *ProductService) GetProductsWithFilters(filters map[string]interface{}, 
 			orderBy = fmt.Sprintf("%s %s", sortBy, sortOrder)
 		}
 	}
-	
+
 	err := s.repo.FindAll("products", &products, conditions, orderBy, limit, offset)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get products with filters: %w", err)
 	}
-	
+
 	// Calculate discount prices for products
 	for i := range products {
 		products[i].CalculateDiscountPrice()
 	}
-	
+
 	return products, nil
 }
 

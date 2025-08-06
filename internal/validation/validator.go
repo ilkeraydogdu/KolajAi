@@ -33,9 +33,9 @@ type ValidationRule struct {
 
 // ValidationError represents validation errors
 type ValidationError struct {
-	Field   string `json:"field"`
-	Rule    string `json:"rule"`
-	Message string `json:"message"`
+	Field   string      `json:"field"`
+	Rule    string      `json:"rule"`
+	Message string      `json:"message"`
 	Value   interface{} `json:"value,omitempty"`
 }
 
@@ -69,14 +69,14 @@ func NewFormValidator() *FormValidator {
 // ValidateForm validates form data
 func (fv *FormValidator) ValidateForm(data map[string]string, schema string) (bool, map[string][]string) {
 	errors := make(map[string][]string)
-	
+
 	// Simple validation - can be extended
 	for field, value := range data {
 		if strings.TrimSpace(value) == "" {
 			errors[field] = append(errors[field], field+" is required")
 		}
 	}
-	
+
 	return len(errors) == 0, errors
 }
 
@@ -98,7 +98,7 @@ func (v *Validator) ValidateStruct(s interface{}) error {
 	for i := 0; i < val.NumField(); i++ {
 		field := val.Field(i)
 		fieldType := typ.Field(i)
-		
+
 		// Skip unexported fields
 		if !field.CanInterface() {
 			continue

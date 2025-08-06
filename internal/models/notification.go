@@ -1,87 +1,87 @@
 package models
 
 import (
-	"time"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"time"
 )
 
 // Notification represents a notification
 type Notification struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	
+	ID uint `json:"id" gorm:"primaryKey"`
+
 	// Recipient Information
-	RecipientID   uint      `json:"recipient_id" gorm:"index;not null"`
+	RecipientID   uint          `json:"recipient_id" gorm:"index;not null"`
 	RecipientType RecipientType `json:"recipient_type" gorm:"not null"`
-	
+
 	// Notification Content
-	Title       string    `json:"title" gorm:"size:200;not null" validate:"required,max=200"`
-	Message     string    `json:"message" gorm:"type:text;not null" validate:"required"`
-	Type        NotificationType `json:"type" gorm:"not null"`
-	Category    NotificationCategory `json:"category" gorm:"not null"`
-	Priority    NotificationPriority `json:"priority" gorm:"default:'normal'"`
-	
+	Title    string               `json:"title" gorm:"size:200;not null" validate:"required,max=200"`
+	Message  string               `json:"message" gorm:"type:text;not null" validate:"required"`
+	Type     NotificationType     `json:"type" gorm:"not null"`
+	Category NotificationCategory `json:"category" gorm:"not null"`
+	Priority NotificationPriority `json:"priority" gorm:"default:'normal'"`
+
 	// Channels
-	Channels    []NotificationChannel `json:"channels" gorm:"type:json"`
-	
+	Channels []NotificationChannel `json:"channels" gorm:"type:json"`
+
 	// Status and Tracking
 	Status      NotificationStatus `json:"status" gorm:"default:'pending'"`
-	ReadAt      *time.Time `json:"read_at"`
-	ClickedAt   *time.Time `json:"clicked_at"`
-	DismissedAt *time.Time `json:"dismissed_at"`
-	
+	ReadAt      *time.Time         `json:"read_at"`
+	ClickedAt   *time.Time         `json:"clicked_at"`
+	DismissedAt *time.Time         `json:"dismissed_at"`
+
 	// Delivery Information
 	SentAt      *time.Time `json:"sent_at"`
 	DeliveredAt *time.Time `json:"delivered_at"`
 	FailedAt    *time.Time `json:"failed_at"`
 	RetryCount  int        `json:"retry_count" gorm:"default:0"`
 	MaxRetries  int        `json:"max_retries" gorm:"default:3"`
-	
+
 	// Scheduling
 	ScheduledAt *time.Time `json:"scheduled_at"`
 	ExpiresAt   *time.Time `json:"expires_at"`
-	
+
 	// Action and Navigation
-	ActionURL   string     `json:"action_url" gorm:"size:500"`
-	ActionText  string     `json:"action_text" gorm:"size:100"`
-	DeepLink    string     `json:"deep_link" gorm:"size:500"`
-	
+	ActionURL  string `json:"action_url" gorm:"size:500"`
+	ActionText string `json:"action_text" gorm:"size:100"`
+	DeepLink   string `json:"deep_link" gorm:"size:500"`
+
 	// Rich Content
-	ImageURL    string     `json:"image_url" gorm:"size:500"`
-	IconURL     string     `json:"icon_url" gorm:"size:500"`
-	BadgeCount  *int       `json:"badge_count"`
-	
+	ImageURL   string `json:"image_url" gorm:"size:500"`
+	IconURL    string `json:"icon_url" gorm:"size:500"`
+	BadgeCount *int   `json:"badge_count"`
+
 	// Grouping and Threading
-	GroupKey    string     `json:"group_key" gorm:"size:100;index"`
-	ThreadID    string     `json:"thread_id" gorm:"size:100;index"`
-	ParentID    *uint      `json:"parent_id" gorm:"index"`
-	Parent      *Notification `json:"parent,omitempty" gorm:"foreignKey:ParentID"`
-	
+	GroupKey string        `json:"group_key" gorm:"size:100;index"`
+	ThreadID string        `json:"thread_id" gorm:"size:100;index"`
+	ParentID *uint         `json:"parent_id" gorm:"index"`
+	Parent   *Notification `json:"parent,omitempty" gorm:"foreignKey:ParentID"`
+
 	// Context and Metadata
-	EntityType  string     `json:"entity_type" gorm:"size:50"`  // order, product, user, etc.
-	EntityID    *uint      `json:"entity_id" gorm:"index"`
-	Metadata    NotificationMetadata `json:"metadata" gorm:"type:json"`
-	
+	EntityType string               `json:"entity_type" gorm:"size:50"` // order, product, user, etc.
+	EntityID   *uint                `json:"entity_id" gorm:"index"`
+	Metadata   NotificationMetadata `json:"metadata" gorm:"type:json"`
+
 	// Personalization
-	Language    string     `json:"language" gorm:"size:5;default:'tr'"`
-	Timezone    string     `json:"timezone" gorm:"size:50;default:'Europe/Istanbul'"`
-	
+	Language string `json:"language" gorm:"size:5;default:'tr'"`
+	Timezone string `json:"timezone" gorm:"size:50;default:'Europe/Istanbul'"`
+
 	// Analytics
-	ViewCount   int        `json:"view_count" gorm:"default:0"`
-	ClickCount  int        `json:"click_count" gorm:"default:0"`
-	
+	ViewCount  int `json:"view_count" gorm:"default:0"`
+	ClickCount int `json:"click_count" gorm:"default:0"`
+
 	// Error Information
-	ErrorCode   string     `json:"error_code" gorm:"size:100"`
-	ErrorMessage string    `json:"error_message" gorm:"size:500"`
-	
+	ErrorCode    string `json:"error_code" gorm:"size:100"`
+	ErrorMessage string `json:"error_message" gorm:"size:500"`
+
 	// Delivery Results per Channel
 	DeliveryResults []NotificationDeliveryResult `json:"delivery_results,omitempty" gorm:"foreignKey:NotificationID"`
-	
+
 	// Timestamps
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
-	DeletedAt   *time.Time `json:"deleted_at,omitempty" gorm:"index"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty" gorm:"index"`
 }
 
 // RecipientType represents the type of notification recipient
@@ -99,12 +99,12 @@ const (
 type NotificationType string
 
 const (
-	NotificationTypeInfo      NotificationType = "info"
-	NotificationTypeSuccess   NotificationType = "success"
-	NotificationTypeWarning   NotificationType = "warning"
-	NotificationTypeError     NotificationType = "error"
-	NotificationTypeMarketing NotificationType = "marketing"
-	NotificationTypeSystem    NotificationType = "system"
+	NotificationTypeInfo          NotificationType = "info"
+	NotificationTypeSuccess       NotificationType = "success"
+	NotificationTypeWarning       NotificationType = "warning"
+	NotificationTypeError         NotificationType = "error"
+	NotificationTypeMarketing     NotificationType = "marketing"
+	NotificationTypeSystem        NotificationType = "system"
 	NotificationTypeTransactional NotificationType = "transactional"
 )
 
@@ -182,34 +182,34 @@ type NotificationMetadata struct {
 
 // NotificationDeliveryResult represents delivery result for each channel
 type NotificationDeliveryResult struct {
-	ID             uint                `json:"id" gorm:"primaryKey"`
-	NotificationID uint                `json:"notification_id" gorm:"index;not null"`
-	Notification   Notification        `json:"notification" gorm:"foreignKey:NotificationID"`
-	
-	Channel        NotificationChannel `json:"channel" gorm:"not null"`
-	Status         DeliveryStatus      `json:"status" gorm:"default:'pending'"`
-	
+	ID             uint         `json:"id" gorm:"primaryKey"`
+	NotificationID uint         `json:"notification_id" gorm:"index;not null"`
+	Notification   Notification `json:"notification" gorm:"foreignKey:NotificationID"`
+
+	Channel NotificationChannel `json:"channel" gorm:"not null"`
+	Status  DeliveryStatus      `json:"status" gorm:"default:'pending'"`
+
 	// Provider Information
-	Provider       string              `json:"provider" gorm:"size:100"`
-	ProviderID     string              `json:"provider_id" gorm:"size:255"`
+	Provider         string                 `json:"provider" gorm:"size:100"`
+	ProviderID       string                 `json:"provider_id" gorm:"size:255"`
 	ProviderResponse map[string]interface{} `json:"provider_response" gorm:"type:json"`
-	
+
 	// Delivery Details
-	SentAt         *time.Time          `json:"sent_at"`
-	DeliveredAt    *time.Time          `json:"delivered_at"`
-	FailedAt       *time.Time          `json:"failed_at"`
-	RetryCount     int                 `json:"retry_count" gorm:"default:0"`
-	
+	SentAt      *time.Time `json:"sent_at"`
+	DeliveredAt *time.Time `json:"delivered_at"`
+	FailedAt    *time.Time `json:"failed_at"`
+	RetryCount  int        `json:"retry_count" gorm:"default:0"`
+
 	// Error Information
-	ErrorCode      string              `json:"error_code" gorm:"size:100"`
-	ErrorMessage   string              `json:"error_message" gorm:"size:500"`
-	
+	ErrorCode    string `json:"error_code" gorm:"size:100"`
+	ErrorMessage string `json:"error_message" gorm:"size:500"`
+
 	// Channel-specific data
-	ChannelData    ChannelData         `json:"channel_data" gorm:"type:json"`
-	
+	ChannelData ChannelData `json:"channel_data" gorm:"type:json"`
+
 	// Timestamps
-	CreatedAt      time.Time           `json:"created_at"`
-	UpdatedAt      time.Time           `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // DeliveryStatus represents delivery status for each channel
@@ -228,75 +228,75 @@ const (
 // ChannelData holds channel-specific delivery data
 type ChannelData struct {
 	// Email specific
-	Subject         string `json:"subject,omitempty"`
-	FromEmail       string `json:"from_email,omitempty"`
-	ToEmail         string `json:"to_email,omitempty"`
-	MessageID       string `json:"message_id,omitempty"`
-	
+	Subject   string `json:"subject,omitempty"`
+	FromEmail string `json:"from_email,omitempty"`
+	ToEmail   string `json:"to_email,omitempty"`
+	MessageID string `json:"message_id,omitempty"`
+
 	// SMS specific
-	FromPhone       string `json:"from_phone,omitempty"`
-	ToPhone         string `json:"to_phone,omitempty"`
-	SMSProvider     string `json:"sms_provider,omitempty"`
-	
+	FromPhone   string `json:"from_phone,omitempty"`
+	ToPhone     string `json:"to_phone,omitempty"`
+	SMSProvider string `json:"sms_provider,omitempty"`
+
 	// Push specific
-	DeviceToken     string `json:"device_token,omitempty"`
-	Platform        string `json:"platform,omitempty"`
-	AppID           string `json:"app_id,omitempty"`
-	
+	DeviceToken string `json:"device_token,omitempty"`
+	Platform    string `json:"platform,omitempty"`
+	AppID       string `json:"app_id,omitempty"`
+
 	// WhatsApp specific
-	WhatsAppNumber  string `json:"whatsapp_number,omitempty"`
-	TemplateID      string `json:"template_id,omitempty"`
-	
+	WhatsAppNumber string `json:"whatsapp_number,omitempty"`
+	TemplateID     string `json:"template_id,omitempty"`
+
 	// Custom fields
-	CustomData      map[string]interface{} `json:"custom_data,omitempty"`
+	CustomData map[string]interface{} `json:"custom_data,omitempty"`
 }
 
 // NotificationTemplate represents notification templates
 type NotificationTemplate struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	
+	ID uint `json:"id" gorm:"primaryKey"`
+
 	// Template Information
-	Name        string    `json:"name" gorm:"size:200;not null" validate:"required,max=200"`
-	Code        string    `json:"code" gorm:"size:100;unique;not null" validate:"required"`
-	Description string    `json:"description" gorm:"type:text"`
-	Version     string    `json:"version" gorm:"size:20;default:'1.0'"`
-	
+	Name        string `json:"name" gorm:"size:200;not null" validate:"required,max=200"`
+	Code        string `json:"code" gorm:"size:100;unique;not null" validate:"required"`
+	Description string `json:"description" gorm:"type:text"`
+	Version     string `json:"version" gorm:"size:20;default:'1.0'"`
+
 	// Template Content
-	Type        NotificationType     `json:"type" gorm:"not null"`
-	Category    NotificationCategory `json:"category" gorm:"not null"`
-	Priority    NotificationPriority `json:"priority" gorm:"default:'normal'"`
-	
+	Type     NotificationType     `json:"type" gorm:"not null"`
+	Category NotificationCategory `json:"category" gorm:"not null"`
+	Priority NotificationPriority `json:"priority" gorm:"default:'normal'"`
+
 	// Multi-channel Templates
-	Templates   ChannelTemplates     `json:"templates" gorm:"type:json"`
-	
+	Templates ChannelTemplates `json:"templates" gorm:"type:json"`
+
 	// Configuration
-	IsActive    bool                 `json:"is_active" gorm:"default:true"`
-	IsDefault   bool                 `json:"is_default" gorm:"default:false"`
-	
+	IsActive  bool `json:"is_active" gorm:"default:true"`
+	IsDefault bool `json:"is_default" gorm:"default:false"`
+
 	// Targeting
-	TargetAudience AudienceFilter    `json:"target_audience" gorm:"type:json"`
-	
+	TargetAudience AudienceFilter `json:"target_audience" gorm:"type:json"`
+
 	// Scheduling Rules
-	SchedulingRules SchedulingRules  `json:"scheduling_rules" gorm:"type:json"`
-	
+	SchedulingRules SchedulingRules `json:"scheduling_rules" gorm:"type:json"`
+
 	// A/B Testing
-	ABTestConfig ABTestConfig        `json:"ab_test_config" gorm:"type:json"`
-	
+	ABTestConfig ABTestConfig `json:"ab_test_config" gorm:"type:json"`
+
 	// Analytics
-	SentCount     int               `json:"sent_count" gorm:"default:0"`
-	DeliveredCount int              `json:"delivered_count" gorm:"default:0"`
-	OpenedCount   int               `json:"opened_count" gorm:"default:0"`
-	ClickedCount  int               `json:"clicked_count" gorm:"default:0"`
-	
+	SentCount      int `json:"sent_count" gorm:"default:0"`
+	DeliveredCount int `json:"delivered_count" gorm:"default:0"`
+	OpenedCount    int `json:"opened_count" gorm:"default:0"`
+	ClickedCount   int `json:"clicked_count" gorm:"default:0"`
+
 	// Vendor/Admin
-	VendorID    *uint               `json:"vendor_id" gorm:"index"`
-	Vendor      *Vendor             `json:"vendor,omitempty" gorm:"foreignKey:VendorID"`
-	CreatedBy   uint                `json:"created_by" gorm:"index;not null"`
-	
+	VendorID  *uint   `json:"vendor_id" gorm:"index"`
+	Vendor    *Vendor `json:"vendor,omitempty" gorm:"foreignKey:VendorID"`
+	CreatedBy uint    `json:"created_by" gorm:"index;not null"`
+
 	// Timestamps
-	CreatedAt   time.Time           `json:"created_at"`
-	UpdatedAt   time.Time           `json:"updated_at"`
-	DeletedAt   *time.Time          `json:"deleted_at,omitempty" gorm:"index"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty" gorm:"index"`
 }
 
 // ChannelTemplates holds templates for different channels
@@ -310,21 +310,21 @@ type ChannelTemplates struct {
 
 // InAppTemplate represents in-app notification template
 type InAppTemplate struct {
-	Title     string `json:"title"`
-	Message   string `json:"message"`
-	ImageURL  string `json:"image_url,omitempty"`
-	ActionURL string `json:"action_url,omitempty"`
+	Title      string `json:"title"`
+	Message    string `json:"message"`
+	ImageURL   string `json:"image_url,omitempty"`
+	ActionURL  string `json:"action_url,omitempty"`
 	ActionText string `json:"action_text,omitempty"`
 }
 
 // EmailTemplate represents email notification template
 type EmailTemplate struct {
-	Subject     string `json:"subject"`
-	HTMLBody    string `json:"html_body"`
-	TextBody    string `json:"text_body"`
-	FromName    string `json:"from_name"`
-	FromEmail   string `json:"from_email"`
-	ReplyTo     string `json:"reply_to,omitempty"`
+	Subject     string            `json:"subject"`
+	HTMLBody    string            `json:"html_body"`
+	TextBody    string            `json:"text_body"`
+	FromName    string            `json:"from_name"`
+	FromEmail   string            `json:"from_email"`
+	ReplyTo     string            `json:"reply_to,omitempty"`
 	Attachments []EmailAttachment `json:"attachments,omitempty"`
 }
 
@@ -336,12 +336,12 @@ type SMSTemplate struct {
 
 // PushTemplate represents push notification template
 type PushTemplate struct {
-	Title    string `json:"title"`
-	Message  string `json:"message"`
-	ImageURL string `json:"image_url,omitempty"`
-	IconURL  string `json:"icon_url,omitempty"`
-	Sound    string `json:"sound,omitempty"`
-	Badge    *int   `json:"badge,omitempty"`
+	Title    string                 `json:"title"`
+	Message  string                 `json:"message"`
+	ImageURL string                 `json:"image_url,omitempty"`
+	IconURL  string                 `json:"icon_url,omitempty"`
+	Sound    string                 `json:"sound,omitempty"`
+	Badge    *int                   `json:"badge,omitempty"`
 	Data     map[string]interface{} `json:"data,omitempty"`
 }
 
@@ -362,39 +362,39 @@ type EmailAttachment struct {
 
 // AudienceFilter represents audience targeting rules
 type AudienceFilter struct {
-	CustomerTiers    []CustomerTier `json:"customer_tiers,omitempty"`
-	Countries        []string       `json:"countries,omitempty"`
-	Languages        []string       `json:"languages,omitempty"`
-	MinOrderCount    *int           `json:"min_order_count,omitempty"`
-	MaxOrderCount    *int           `json:"max_order_count,omitempty"`
-	MinTotalSpent    *float64       `json:"min_total_spent,omitempty"`
-	MaxTotalSpent    *float64       `json:"max_total_spent,omitempty"`
-	RegistrationDays *int           `json:"registration_days,omitempty"`
+	CustomerTiers    []CustomerTier         `json:"customer_tiers,omitempty"`
+	Countries        []string               `json:"countries,omitempty"`
+	Languages        []string               `json:"languages,omitempty"`
+	MinOrderCount    *int                   `json:"min_order_count,omitempty"`
+	MaxOrderCount    *int                   `json:"max_order_count,omitempty"`
+	MinTotalSpent    *float64               `json:"min_total_spent,omitempty"`
+	MaxTotalSpent    *float64               `json:"max_total_spent,omitempty"`
+	RegistrationDays *int                   `json:"registration_days,omitempty"`
 	CustomFilters    map[string]interface{} `json:"custom_filters,omitempty"`
 }
 
 // SchedulingRules represents notification scheduling rules
 type SchedulingRules struct {
-	TimeZone        string    `json:"timezone,omitempty"`
-	SendHours       []int     `json:"send_hours,omitempty"`        // 0-23
-	SendDays        []int     `json:"send_days,omitempty"`         // 0-6 (Sunday-Saturday)
-	NoSendBefore    string    `json:"no_send_before,omitempty"`    // HH:MM
-	NoSendAfter     string    `json:"no_send_after,omitempty"`     // HH:MM
-	RespectDND      bool      `json:"respect_dnd"`                 // Do Not Disturb
-	MaxPerDay       *int      `json:"max_per_day,omitempty"`
-	MaxPerWeek      *int      `json:"max_per_week,omitempty"`
-	MinInterval     *int      `json:"min_interval,omitempty"`      // minutes between notifications
+	TimeZone     string `json:"timezone,omitempty"`
+	SendHours    []int  `json:"send_hours,omitempty"`     // 0-23
+	SendDays     []int  `json:"send_days,omitempty"`      // 0-6 (Sunday-Saturday)
+	NoSendBefore string `json:"no_send_before,omitempty"` // HH:MM
+	NoSendAfter  string `json:"no_send_after,omitempty"`  // HH:MM
+	RespectDND   bool   `json:"respect_dnd"`              // Do Not Disturb
+	MaxPerDay    *int   `json:"max_per_day,omitempty"`
+	MaxPerWeek   *int   `json:"max_per_week,omitempty"`
+	MinInterval  *int   `json:"min_interval,omitempty"` // minutes between notifications
 }
 
 // ABTestConfig represents A/B testing configuration
 type ABTestConfig struct {
-	IsEnabled       bool                   `json:"is_enabled"`
-	TestName        string                 `json:"test_name,omitempty"`
-	VariantA        map[string]interface{} `json:"variant_a,omitempty"`
-	VariantB        map[string]interface{} `json:"variant_b,omitempty"`
-	TrafficSplit    float64                `json:"traffic_split,omitempty"` // 0.0-1.0
-	TestDuration    *int                   `json:"test_duration,omitempty"` // days
-	WinningVariant  string                 `json:"winning_variant,omitempty"`
+	IsEnabled      bool                   `json:"is_enabled"`
+	TestName       string                 `json:"test_name,omitempty"`
+	VariantA       map[string]interface{} `json:"variant_a,omitempty"`
+	VariantB       map[string]interface{} `json:"variant_b,omitempty"`
+	TrafficSplit   float64                `json:"traffic_split,omitempty"` // 0.0-1.0
+	TestDuration   *int                   `json:"test_duration,omitempty"` // days
+	WinningVariant string                 `json:"winning_variant,omitempty"`
 }
 
 // Implement driver.Valuer interfaces
@@ -521,8 +521,8 @@ func (n *Notification) ShouldRetry() bool {
 func (n *Notification) CanBeSent() bool {
 	now := time.Now()
 	return n.Status == NotificationStatusPending &&
-		   (n.ScheduledAt == nil || n.ScheduledAt.Before(now)) &&
-		   !n.IsExpired()
+		(n.ScheduledAt == nil || n.ScheduledAt.Before(now)) &&
+		!n.IsExpired()
 }
 
 func (n *Notification) MarkAsRead() {

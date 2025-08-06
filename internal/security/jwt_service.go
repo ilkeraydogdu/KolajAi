@@ -42,10 +42,10 @@ type TokenPair struct {
 
 // TokenValidationResult represents token validation result
 type TokenValidationResult struct {
-	Valid     bool        `json:"valid"`
-	Claims    *JWTClaims  `json:"claims,omitempty"`
-	Error     string      `json:"error,omitempty"`
-	ExpiresAt time.Time   `json:"expires_at,omitempty"`
+	Valid     bool       `json:"valid"`
+	Claims    *JWTClaims `json:"claims,omitempty"`
+	Error     string     `json:"error,omitempty"`
+	ExpiresAt time.Time  `json:"expires_at,omitempty"`
 }
 
 // NewJWTService creates a new JWT service
@@ -53,7 +53,7 @@ func NewJWTService(secretKey string, issuer string) *JWTService {
 	return &JWTService{
 		secretKey:       []byte(secretKey),
 		issuer:          issuer,
-		accessTokenTTL:  15 * time.Minute,  // Short-lived access tokens
+		accessTokenTTL:  15 * time.Minute,   // Short-lived access tokens
 		refreshTokenTTL: 7 * 24 * time.Hour, // 7 days refresh tokens
 	}
 }
@@ -252,7 +252,7 @@ func (j *JWTService) RevokeToken(tokenString string) error {
 
 	// TODO: Add to token blacklist in database or cache
 	// For now, we'll just validate the token structure
-	
+
 	return nil
 }
 

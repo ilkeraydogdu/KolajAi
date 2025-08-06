@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
-	
+
 	"kolajAi/internal/integrations"
 	"kolajAi/internal/integrations/marketplace"
 )
@@ -31,7 +31,7 @@ func NewMarketplaceIntegrationsService() *MarketplaceIntegrationsService {
 	service := &MarketplaceIntegrationsService{
 		integrations: make(map[string]*MarketplaceIntegration),
 	}
-	
+
 	// Initialize all integrations
 	service.initializeTurkishMarketplaces()
 	service.initializeInternationalMarketplaces()
@@ -39,7 +39,7 @@ func NewMarketplaceIntegrationsService() *MarketplaceIntegrationsService {
 	service.initializeSocialMediaIntegrations()
 	service.initializeAccountingIntegrations()
 	service.initializeCargoIntegrations()
-	
+
 	return service
 }
 
@@ -53,12 +53,12 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 		features []string
 	}{
 		{
-			"trendyol", 
-			"Trendyol", 
+			"trendyol",
+			"Trendyol",
 			"active",
 			[]string{
 				"product_sync",
-				"order_sync", 
+				"order_sync",
 				"inventory_sync",
 				"price_sync",
 				"real_time_notifications",
@@ -66,13 +66,13 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 			},
 		},
 		{
-			"hepsiburada", 
-			"Hepsiburada", 
+			"hepsiburada",
+			"Hepsiburada",
 			"active",
 			[]string{
 				"product_sync",
 				"order_sync",
-				"inventory_sync", 
+				"inventory_sync",
 				"price_sync",
 				"variant_support",
 				"webhook_support",
@@ -80,19 +80,19 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 		},
 		// Other marketplaces will be added as they are implemented
 		{
-			"n11", 
-			"N11", 
+			"n11",
+			"N11",
 			"development",
 			[]string{"basic_sync", "inventory_management"},
 		},
 		{
-			"amazon_tr", 
-			"Amazon Türkiye", 
-			"development", 
+			"amazon_tr",
+			"Amazon Türkiye",
+			"development",
 			[]string{"basic_sync", "inventory_management"},
 		},
 	}
-	
+
 	for _, mp := range turkishMarketplaces {
 		s.integrations[mp.id] = &MarketplaceIntegration{
 			ID:       mp.id,
@@ -101,23 +101,23 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 			Region:   "TR",
 			IsActive: mp.status == "active",
 			Config: map[string]interface{}{
-				"api_version":      "v1",
-				"rate_limit":       100,
-				"sync_interval":    300,
-				"max_products":     50000,
+				"api_version":       "v1",
+				"rate_limit":        100,
+				"sync_interval":     300,
+				"max_products":      50000,
 				"supports_variants": true,
-				"status":           mp.status,
+				"status":            mp.status,
 			},
 			Credentials: map[string]string{
-				"api_key":    "",
-				"api_secret": "",
+				"api_key":     "",
+				"api_secret":  "",
 				"supplier_id": "", // For Trendyol
 				"merchant_id": "", // For Hepsiburada
 			},
 			Features: mp.features,
 		}
 	}
-	
+
 	// Add retail sales modules
 	retailModules := []struct {
 		id   string
@@ -126,7 +126,7 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 		{"kolaj_pos", "KolajAI POS Sistemi"},
 		{"kolaj_retail", "KolajAI Perakende Modülü"},
 	}
-	
+
 	for _, module := range retailModules {
 		s.integrations[module.id] = &MarketplaceIntegration{
 			ID:       module.id,
@@ -135,16 +135,16 @@ func (s *MarketplaceIntegrationsService) initializeTurkishMarketplaces() {
 			Region:   "TR",
 			IsActive: true,
 			Config: map[string]interface{}{
-				"api_version":      "v1",
-				"pos_integration":  true,
-				"inventory_sync":   true,
-				"offline_support":  true,
-				"mobile_app":       true,
+				"api_version":     "v1",
+				"pos_integration": true,
+				"inventory_sync":  true,
+				"offline_support": true,
+				"mobile_app":      true,
 			},
 			Credentials: map[string]string{
-				"store_code":   "",
-				"pos_key":      "",
-				"terminal_id":  "",
+				"store_code":  "",
+				"pos_key":     "",
+				"terminal_id": "",
 			},
 			Features: []string{
 				"pos_integration",
@@ -170,28 +170,28 @@ func (s *MarketplaceIntegrationsService) initializeInternationalMarketplaces() {
 		features []string
 	}{
 		{
-			"amazon_us", 
-			"Amazon US", 
-			"US", 
+			"amazon_us",
+			"Amazon US",
+			"US",
 			"development",
 			[]string{"coming_soon"},
 		},
 		{
-			"ebay", 
-			"eBay", 
-			"GLOBAL", 
+			"ebay",
+			"eBay",
+			"GLOBAL",
 			"development",
 			[]string{"coming_soon"},
 		},
 		{
-			"etsy", 
-			"Etsy", 
-			"GLOBAL", 
+			"etsy",
+			"Etsy",
+			"GLOBAL",
 			"development",
 			[]string{"coming_soon"},
 		},
 	}
-	
+
 	for _, mp := range internationalMarketplaces {
 		s.integrations[mp.id] = &MarketplaceIntegration{
 			ID:       mp.id,
@@ -240,7 +240,7 @@ func (s *MarketplaceIntegrationsService) initializeEcommercePlatforms() {
 		{"ethica", "Ethica"},
 		{"ikas", "İkas"},
 	}
-	
+
 	for _, platform := range platforms {
 		s.integrations[platform.id] = &MarketplaceIntegration{
 			ID:       platform.id,
@@ -285,7 +285,7 @@ func (s *MarketplaceIntegrationsService) initializeSocialMediaIntegrations() {
 		{"google_merchant", "Google Merchant Center"},
 		{"instagram_shop", "Instagram Mağaza"},
 	}
-	
+
 	for _, sm := range socialMedia {
 		s.integrations[sm.id] = &MarketplaceIntegration{
 			ID:       sm.id,
@@ -324,7 +324,7 @@ func (s *MarketplaceIntegrationsService) initializeAccountingIntegrations() {
 		"foriba", "digital_planet", "turkcell_efatura", "smart_fatura", "edm_efatura",
 		"ice_efatura", "izibiz", "mysoft", "faturamix", "nesbilgi_efatura",
 	}
-	
+
 	for _, provider := range efaturaProviders {
 		s.integrations[provider] = &MarketplaceIntegration{
 			ID:       provider,
@@ -349,13 +349,13 @@ func (s *MarketplaceIntegrationsService) initializeAccountingIntegrations() {
 			},
 		}
 	}
-	
+
 	// Accounting & ERP systems
 	accountingSystems := []string{
 		"logo", "mikro", "netsis", "netsim", "dia", "nethesap",
 		"zirve", "akinsoft", "vega", "nebim", "barsoft", "sentez",
 	}
-	
+
 	for _, system := range accountingSystems {
 		s.integrations[system] = &MarketplaceIntegration{
 			ID:       system,
@@ -381,7 +381,7 @@ func (s *MarketplaceIntegrationsService) initializeAccountingIntegrations() {
 			},
 		}
 	}
-	
+
 	// Pre-accounting systems
 	preAccountingSystems := []struct {
 		id   string
@@ -393,7 +393,7 @@ func (s *MarketplaceIntegrationsService) initializeAccountingIntegrations() {
 		{"uyumsoft_on_muhasebe", "Uyumsoft Ön Muhasebe"},
 		{"odoo_muhasebe", "Odoo Muhasebe"},
 	}
-	
+
 	for _, system := range preAccountingSystems {
 		s.integrations[system.id] = &MarketplaceIntegration{
 			ID:       system.id,
@@ -402,14 +402,14 @@ func (s *MarketplaceIntegrationsService) initializeAccountingIntegrations() {
 			Region:   "TR",
 			IsActive: true,
 			Config: map[string]interface{}{
-				"api_version":   "latest",
-				"cloud_based":   true,
-				"mobile_app":    true,
+				"api_version": "latest",
+				"cloud_based": true,
+				"mobile_app":  true,
 			},
 			Credentials: map[string]string{
-				"api_key":      "",
-				"api_secret":   "",
-				"company_id":   "",
+				"api_key":    "",
+				"api_secret": "",
+				"company_id": "",
 			},
 			Features: []string{
 				"invoice_management",
@@ -446,7 +446,7 @@ func (s *MarketplaceIntegrationsService) initializeCargoIntegrations() {
 		{"ekol", "Ekol Logistics"},
 		{"kolaygelsin", "Kolay Gelsin"},
 	}
-	
+
 	for _, cargo := range cargoCompanies {
 		s.integrations[cargo.id] = &MarketplaceIntegration{
 			ID:       cargo.id,
@@ -476,7 +476,7 @@ func (s *MarketplaceIntegrationsService) initializeCargoIntegrations() {
 			},
 		}
 	}
-	
+
 	// Fulfillment services
 	fulfillmentServices := []struct {
 		id   string
@@ -487,7 +487,7 @@ func (s *MarketplaceIntegrationsService) initializeCargoIntegrations() {
 		{"n11depom", "N11Depom"},
 		{"navlungo", "Navlungo Fulfillment"},
 	}
-	
+
 	for _, fulfillment := range fulfillmentServices {
 		s.integrations[fulfillment.id] = &MarketplaceIntegration{
 			ID:       fulfillment.id,
@@ -548,17 +548,17 @@ func (s *MarketplaceIntegrationsService) ConfigureIntegration(id string, credent
 	if err != nil {
 		return err
 	}
-	
+
 	// Update credentials
 	for key, value := range credentials {
 		integration.Credentials[key] = value
 	}
-	
+
 	// Test connection
 	if err := s.testIntegrationConnection(integration); err != nil {
 		return fmt.Errorf("connection test failed: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -587,11 +587,11 @@ func (s *MarketplaceIntegrationsService) testIntegrationConnection(integration *
 func (s *MarketplaceIntegrationsService) testTurkishMarketplaceConnection(integration *MarketplaceIntegration) error {
 	apiKey := integration.Credentials["api_key"]
 	apiSecret := integration.Credentials["api_secret"]
-	
+
 	if apiKey == "" || apiSecret == "" {
 		return fmt.Errorf("missing API credentials for %s", integration.Name)
 	}
-	
+
 	// Implement specific connection tests for each marketplace
 	switch integration.ID {
 	case "trendyol":
@@ -612,27 +612,27 @@ func (s *MarketplaceIntegrationsService) testTurkishMarketplaceConnection(integr
 func (s *MarketplaceIntegrationsService) testTrendyolConnection(apiKey, apiSecret string) error {
 	// Create temporary Trendyol provider for testing
 	provider := marketplace.NewTrendyolProvider()
-	
+
 	credentials := integrations.Credentials{
 		APIKey:    apiKey,
 		APISecret: apiSecret,
 	}
-	
+
 	config := map[string]interface{}{
 		"environment": "sandbox",
 		"supplier_id": "test",
 	}
-	
+
 	ctx := context.Background()
 	if err := provider.Initialize(ctx, credentials, config); err != nil {
 		return fmt.Errorf("failed to initialize Trendyol provider: %w", err)
 	}
-	
+
 	// Test health check
 	if err := provider.HealthCheck(ctx); err != nil {
 		return fmt.Errorf("Trendyol API health check failed: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -640,27 +640,27 @@ func (s *MarketplaceIntegrationsService) testTrendyolConnection(apiKey, apiSecre
 func (s *MarketplaceIntegrationsService) testHepsiburadaConnection(apiKey, apiSecret string) error {
 	// Create temporary Hepsiburada provider for testing
 	provider := marketplace.NewHepsiburadaProvider()
-	
+
 	credentials := integrations.Credentials{
 		APIKey:    apiKey,
 		APISecret: apiSecret,
 	}
-	
+
 	config := map[string]interface{}{
 		"environment": "sandbox",
 		"merchant_id": "test",
 	}
-	
+
 	ctx := context.Background()
 	if err := provider.Initialize(ctx, credentials, config); err != nil {
 		return fmt.Errorf("failed to initialize Hepsiburada provider: %w", err)
 	}
-	
+
 	// Test health check
 	if err := provider.HealthCheck(ctx); err != nil {
 		return fmt.Errorf("Hepsiburada API health check failed: %w", err)
 	}
-	
+
 	return nil
 }
 
@@ -694,7 +694,7 @@ func (s *MarketplaceIntegrationsService) testGenericMarketplaceConnection(integr
 // testInternationalMarketplaceConnection tests international marketplace connections
 func (s *MarketplaceIntegrationsService) testInternationalMarketplaceConnection(integration *MarketplaceIntegration) error {
 	apiKey := integration.Credentials["api_key"]
-	
+
 	switch integration.ID {
 	case "amazon_us", "amazon_uk", "amazon_de":
 		return s.testAmazonConnection(integration.ID, apiKey)
@@ -729,7 +729,7 @@ func (s *MarketplaceIntegrationsService) testEcommercePlatformConnection(integra
 // testSocialMediaConnection tests social media platform connections
 func (s *MarketplaceIntegrationsService) testSocialMediaConnection(integration *MarketplaceIntegration) error {
 	accessToken := integration.Credentials["access_token"]
-	
+
 	switch integration.ID {
 	case "facebook_shop":
 		return s.testFacebookShopConnection(accessToken)
@@ -789,7 +789,7 @@ func (s *MarketplaceIntegrationsService) testShopifyConnection(apiKey string) er
 func (s *MarketplaceIntegrationsService) testWooCommerceConnection(integration *MarketplaceIntegration) error {
 	consumerKey := integration.Credentials["consumer_key"]
 	consumerSecret := integration.Credentials["consumer_secret"]
-	
+
 	if len(consumerKey) < 10 || len(consumerSecret) < 10 {
 		return fmt.Errorf("invalid WooCommerce credentials")
 	}
@@ -798,7 +798,7 @@ func (s *MarketplaceIntegrationsService) testWooCommerceConnection(integration *
 
 func (s *MarketplaceIntegrationsService) testMagentoConnection(integration *MarketplaceIntegration) error {
 	apiToken := integration.Credentials["api_token"]
-	
+
 	if len(apiToken) < 15 {
 		return fmt.Errorf("invalid Magento API token")
 	}
@@ -807,7 +807,7 @@ func (s *MarketplaceIntegrationsService) testMagentoConnection(integration *Mark
 
 func (s *MarketplaceIntegrationsService) testOpenCartConnection(integration *MarketplaceIntegration) error {
 	apiKey := integration.Credentials["api_key"]
-	
+
 	if len(apiKey) < 10 {
 		return fmt.Errorf("invalid OpenCart API key")
 	}
@@ -841,7 +841,7 @@ func (s *MarketplaceIntegrationsService) SyncProducts(integrationID string, prod
 	if err != nil {
 		return err
 	}
-	
+
 	// Implement product sync logic based on integration type
 	switch integration.Type {
 	case "turkish":
@@ -863,13 +863,13 @@ func (s *MarketplaceIntegrationsService) syncToTurkishMarketplace(integration *M
 	if err := s.testIntegrationConnection(integration); err != nil {
 		return fmt.Errorf("connection test failed: %w", err)
 	}
-	
+
 	// Transform products for the specific marketplace
 	transformedProducts, err := s.transformProductsForTurkishMarketplace(integration, products)
 	if err != nil {
 		return fmt.Errorf("product transformation failed: %w", err)
 	}
-	
+
 	// Sync products based on specific marketplace
 	switch integration.ID {
 	case "trendyol":
@@ -895,13 +895,13 @@ func (s *MarketplaceIntegrationsService) syncToInternationalMarketplace(integrat
 	if err := s.testIntegrationConnection(integration); err != nil {
 		return fmt.Errorf("connection test failed: %w", err)
 	}
-	
+
 	// Transform products for international marketplace (currency conversion, localization, etc.)
 	transformedProducts, err := s.transformProductsForInternationalMarketplace(integration, products)
 	if err != nil {
 		return fmt.Errorf("product transformation failed: %w", err)
 	}
-	
+
 	// Sync products based on specific marketplace
 	switch integration.ID {
 	case "amazon_us", "amazon_uk", "amazon_de", "amazon_fr", "amazon_it", "amazon_es":
@@ -925,13 +925,13 @@ func (s *MarketplaceIntegrationsService) syncToEcommercePlatform(integration *Ma
 	if err := s.testIntegrationConnection(integration); err != nil {
 		return fmt.Errorf("connection test failed: %w", err)
 	}
-	
+
 	// Transform products for e-commerce platform
 	transformedProducts, err := s.transformProductsForEcommercePlatform(integration, products)
 	if err != nil {
 		return fmt.Errorf("product transformation failed: %w", err)
 	}
-	
+
 	// Sync products based on specific platform
 	switch integration.ID {
 	case "woocommerce":
@@ -955,13 +955,13 @@ func (s *MarketplaceIntegrationsService) syncToSocialMedia(integration *Marketpl
 	if err := s.testIntegrationConnection(integration); err != nil {
 		return fmt.Errorf("connection test failed: %w", err)
 	}
-	
+
 	// Transform products for social media platform
 	transformedProducts, err := s.transformProductsForSocialMedia(integration, products)
 	if err != nil {
 		return fmt.Errorf("product transformation failed: %w", err)
 	}
-	
+
 	// Sync products based on specific platform
 	switch integration.ID {
 	case "facebook_shop":
@@ -982,7 +982,7 @@ func (s *MarketplaceIntegrationsService) syncToSocialMedia(integration *Marketpl
 // Product transformation methods
 func (s *MarketplaceIntegrationsService) transformProductsForTurkishMarketplace(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
 	transformedProducts := make([]interface{}, 0, len(products))
-	
+
 	for _, product := range products {
 		// Transform each product according to Turkish marketplace requirements
 		transformed, err := s.transformSingleProductForTurkish(integration, product)
@@ -991,13 +991,13 @@ func (s *MarketplaceIntegrationsService) transformProductsForTurkishMarketplace(
 		}
 		transformedProducts = append(transformedProducts, transformed)
 	}
-	
+
 	return transformedProducts, nil
 }
 
 func (s *MarketplaceIntegrationsService) transformProductsForInternationalMarketplace(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
 	transformedProducts := make([]interface{}, 0, len(products))
-	
+
 	for _, product := range products {
 		// Transform each product for international marketplace (currency, language, regulations)
 		transformed, err := s.transformSingleProductForInternational(integration, product)
@@ -1006,13 +1006,13 @@ func (s *MarketplaceIntegrationsService) transformProductsForInternationalMarket
 		}
 		transformedProducts = append(transformedProducts, transformed)
 	}
-	
+
 	return transformedProducts, nil
 }
 
 func (s *MarketplaceIntegrationsService) transformProductsForEcommercePlatform(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
 	transformedProducts := make([]interface{}, 0, len(products))
-	
+
 	for _, product := range products {
 		// Transform each product for e-commerce platform
 		transformed, err := s.transformSingleProductForEcommerce(integration, product)
@@ -1021,13 +1021,13 @@ func (s *MarketplaceIntegrationsService) transformProductsForEcommercePlatform(i
 		}
 		transformedProducts = append(transformedProducts, transformed)
 	}
-	
+
 	return transformedProducts, nil
 }
 
 func (s *MarketplaceIntegrationsService) transformProductsForSocialMedia(integration *MarketplaceIntegration, products []interface{}) ([]interface{}, error) {
 	transformedProducts := make([]interface{}, 0, len(products))
-	
+
 	for _, product := range products {
 		// Transform each product for social media platform
 		transformed, err := s.transformSingleProductForSocial(integration, product)
@@ -1036,7 +1036,7 @@ func (s *MarketplaceIntegrationsService) transformProductsForSocialMedia(integra
 		}
 		transformedProducts = append(transformedProducts, transformed)
 	}
-	
+
 	return transformedProducts, nil
 }
 
@@ -1071,10 +1071,10 @@ func (s *MarketplaceIntegrationsService) ProcessOrder(integrationID string, orde
 	if err != nil {
 		return err
 	}
-	
+
 	// Process order based on integration type
 	// This would include order validation, inventory update, notification, etc.
-	
+
 	return nil
 }
 
@@ -1096,10 +1096,10 @@ func (s *MarketplaceIntegrationsService) GetMarketplaceOrders(integrationID stri
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Fetch orders from marketplace API
 	// This would implement actual API calls
-	
+
 	return []interface{}{}, nil
 }
 
@@ -1109,14 +1109,14 @@ func (s *MarketplaceIntegrationsService) CreateShipment(cargoID string, shipment
 	if err != nil {
 		return "", err
 	}
-	
+
 	if integration.Type != "cargo" {
 		return "", fmt.Errorf("integration %s is not a cargo service", cargoID)
 	}
-	
+
 	// Create shipment with cargo API
 	// Return tracking number
-	
+
 	return "TRACK123456", nil
 }
 
@@ -1126,14 +1126,14 @@ func (s *MarketplaceIntegrationsService) GenerateInvoice(efaturaID string, invoi
 	if err != nil {
 		return "", err
 	}
-	
+
 	if integration.Type != "efatura" {
 		return "", fmt.Errorf("integration %s is not an e-fatura service", efaturaID)
 	}
-	
+
 	// Generate invoice with e-fatura API
 	// Return invoice number
-	
+
 	return "INV2024001", nil
 }
 
@@ -1141,22 +1141,22 @@ func (s *MarketplaceIntegrationsService) GenerateInvoice(efaturaID string, invoi
 func (s *MarketplaceIntegrationsService) syncToTrendyol(integration *MarketplaceIntegration, products []interface{}) error {
 	// Create Trendyol provider
 	provider := marketplace.NewTrendyolProvider()
-	
+
 	credentials := integrations.Credentials{
 		APIKey:    integration.Credentials["api_key"],
 		APISecret: integration.Credentials["api_secret"],
 	}
-	
+
 	config := map[string]interface{}{
 		"environment": "production", // Use production for real sync
 		"supplier_id": integration.Credentials["supplier_id"],
 	}
-	
+
 	ctx := context.Background()
 	if err := provider.Initialize(ctx, credentials, config); err != nil {
 		return fmt.Errorf("failed to initialize Trendyol provider: %w", err)
 	}
-	
+
 	// Sync products to Trendyol
 	return provider.SyncProducts(ctx, products)
 }
@@ -1164,22 +1164,22 @@ func (s *MarketplaceIntegrationsService) syncToTrendyol(integration *Marketplace
 func (s *MarketplaceIntegrationsService) syncToHepsiburada(integration *MarketplaceIntegration, products []interface{}) error {
 	// Create Hepsiburada provider
 	provider := marketplace.NewHepsiburadaProvider()
-	
+
 	credentials := integrations.Credentials{
 		APIKey:    integration.Credentials["api_key"],
 		APISecret: integration.Credentials["api_secret"],
 	}
-	
+
 	config := map[string]interface{}{
 		"environment": "production", // Use production for real sync
 		"merchant_id": integration.Credentials["merchant_id"],
 	}
-	
+
 	ctx := context.Background()
 	if err := provider.Initialize(ctx, credentials, config); err != nil {
 		return fmt.Errorf("failed to initialize Hepsiburada provider: %w", err)
 	}
-	
+
 	// Sync products to Hepsiburada
 	return provider.SyncProducts(ctx, products)
 }
@@ -1187,33 +1187,33 @@ func (s *MarketplaceIntegrationsService) syncToHepsiburada(integration *Marketpl
 func (s *MarketplaceIntegrationsService) syncToN11(integration *MarketplaceIntegration, products []interface{}) error {
 	// Create N11 provider
 	provider := marketplace.NewN11Provider()
-	
+
 	credentials := integrations.Credentials{
 		APIKey:    integration.Credentials["api_key"],
 		APISecret: integration.Credentials["api_secret"],
 	}
-	
+
 	config := map[string]interface{}{
 		"environment": "production", // Use production for real sync
 	}
-	
+
 	ctx := context.Background()
 	if err := provider.Initialize(ctx, credentials, config); err != nil {
 		return fmt.Errorf("failed to initialize N11 provider: %v", err)
 	}
-	
+
 	// Sync products
 	if err := provider.SyncProducts(ctx, products); err != nil {
 		return fmt.Errorf("failed to sync products to N11: %v", err)
 	}
-	
+
 	return nil
 }
 
 func (s *MarketplaceIntegrationsService) syncToAmazonTR(integration *MarketplaceIntegration, products []interface{}) error {
 	// Create Amazon provider
 	provider := marketplace.NewAmazonProvider()
-	
+
 	credentials := integrations.Credentials{
 		ClientID:        integration.Credentials["client_id"],
 		ClientSecret:    integration.Credentials["client_secret"],
@@ -1222,22 +1222,22 @@ func (s *MarketplaceIntegrationsService) syncToAmazonTR(integration *Marketplace
 		SecretAccessKey: integration.Credentials["secret_access_key"],
 		SellerID:        integration.Credentials["seller_id"],
 	}
-	
+
 	config := map[string]interface{}{
 		"region":         "eu-west-1",
 		"marketplace_id": "A1UNQM1SR2CHM", // Turkey marketplace
 	}
-	
+
 	ctx := context.Background()
 	if err := provider.Initialize(ctx, credentials, config); err != nil {
 		return fmt.Errorf("failed to initialize Amazon Turkey provider: %v", err)
 	}
-	
+
 	// Sync products
 	if err := provider.SyncProducts(ctx, products); err != nil {
 		return fmt.Errorf("failed to sync products to Amazon Turkey: %v", err)
 	}
-	
+
 	return nil
 }
 

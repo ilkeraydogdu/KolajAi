@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"context"
-	"net/http"
 	"kolajAi/internal/errors"
+	"net/http"
 )
 
 // AdminMiddleware checks if the user is an admin

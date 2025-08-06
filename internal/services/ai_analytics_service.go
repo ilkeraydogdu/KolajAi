@@ -169,7 +169,7 @@ func (s *AIAnalyticsService) analyzeCategoryTrend(category models.Category) (*Ma
 	prediction := s.generateTrendPrediction(trendScore, totalSales, totalViews)
 
 	return &MarketTrend{
-						CategoryID: int(category.ID),
+		CategoryID:    int(category.ID),
 		CategoryName:  category.Name,
 		TrendScore:    trendScore,
 		GrowthRate:    growthRate,

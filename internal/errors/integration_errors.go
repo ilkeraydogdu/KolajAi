@@ -18,10 +18,10 @@ const (
 	ErrorCodeAccessDenied         ErrorCode = "ACCESS_DENIED"
 
 	// Network errors
-	ErrorCodeNetworkTimeout       ErrorCode = "NETWORK_TIMEOUT"
-	ErrorCodeConnectionFailed     ErrorCode = "CONNECTION_FAILED"
-	ErrorCodeServiceUnavailable   ErrorCode = "SERVICE_UNAVAILABLE"
-	ErrorCodeTooManyRequests      ErrorCode = "TOO_MANY_REQUESTS"
+	ErrorCodeNetworkTimeout     ErrorCode = "NETWORK_TIMEOUT"
+	ErrorCodeConnectionFailed   ErrorCode = "CONNECTION_FAILED"
+	ErrorCodeServiceUnavailable ErrorCode = "SERVICE_UNAVAILABLE"
+	ErrorCodeTooManyRequests    ErrorCode = "TOO_MANY_REQUESTS"
 
 	// Validation errors
 	ErrorCodeValidationFailed     ErrorCode = "VALIDATION_FAILED"
@@ -30,29 +30,29 @@ const (
 	ErrorCodeInvalidFormat        ErrorCode = "INVALID_FORMAT"
 
 	// Business logic errors
-	ErrorCodeProductNotFound      ErrorCode = "PRODUCT_NOT_FOUND"
-	ErrorCodeOrderNotFound        ErrorCode = "ORDER_NOT_FOUND"
-	ErrorCodeInsufficientStock    ErrorCode = "INSUFFICIENT_STOCK"
-	ErrorCodePriceChanged         ErrorCode = "PRICE_CHANGED"
-	ErrorCodeCategoryNotFound     ErrorCode = "CATEGORY_NOT_FOUND"
+	ErrorCodeProductNotFound   ErrorCode = "PRODUCT_NOT_FOUND"
+	ErrorCodeOrderNotFound     ErrorCode = "ORDER_NOT_FOUND"
+	ErrorCodeInsufficientStock ErrorCode = "INSUFFICIENT_STOCK"
+	ErrorCodePriceChanged      ErrorCode = "PRICE_CHANGED"
+	ErrorCodeCategoryNotFound  ErrorCode = "CATEGORY_NOT_FOUND"
 
 	// API errors
-	ErrorCodeAPIError             ErrorCode = "API_ERROR"
-	ErrorCodeInvalidAPIVersion    ErrorCode = "INVALID_API_VERSION"
-	ErrorCodeQuotaExceeded        ErrorCode = "QUOTA_EXCEEDED"
-	ErrorCodeRateLimitExceeded    ErrorCode = "RATE_LIMIT_EXCEEDED"
+	ErrorCodeAPIError          ErrorCode = "API_ERROR"
+	ErrorCodeInvalidAPIVersion ErrorCode = "INVALID_API_VERSION"
+	ErrorCodeQuotaExceeded     ErrorCode = "QUOTA_EXCEEDED"
+	ErrorCodeRateLimitExceeded ErrorCode = "RATE_LIMIT_EXCEEDED"
 
 	// Internal errors
-	ErrorCodeInternalError        ErrorCode = "INTERNAL_ERROR"
-	ErrorCodeConfigurationError   ErrorCode = "CONFIGURATION_ERROR"
-	ErrorCodeDatabaseError        ErrorCode = "DATABASE_ERROR"
-	ErrorCodeCacheError           ErrorCode = "CACHE_ERROR"
+	ErrorCodeInternalError      ErrorCode = "INTERNAL_ERROR"
+	ErrorCodeConfigurationError ErrorCode = "CONFIGURATION_ERROR"
+	ErrorCodeDatabaseError      ErrorCode = "DATABASE_ERROR"
+	ErrorCodeCacheError         ErrorCode = "CACHE_ERROR"
 
 	// Integration specific errors
-	ErrorCodeProviderError        ErrorCode = "PROVIDER_ERROR"
-	ErrorCodeMappingError         ErrorCode = "MAPPING_ERROR"
-	ErrorCodeSyncError            ErrorCode = "SYNC_ERROR"
-	ErrorCodeWebhookError         ErrorCode = "WEBHOOK_ERROR"
+	ErrorCodeProviderError ErrorCode = "PROVIDER_ERROR"
+	ErrorCodeMappingError  ErrorCode = "MAPPING_ERROR"
+	ErrorCodeSyncError     ErrorCode = "SYNC_ERROR"
+	ErrorCodeWebhookError  ErrorCode = "WEBHOOK_ERROR"
 )
 
 // ErrorSeverity represents the severity level of an error
@@ -68,21 +68,21 @@ const (
 
 // IntegrationError represents a standardized integration error
 type IntegrationError struct {
-	Code         ErrorCode              `json:"code"`
-	Message      string                 `json:"message"`
-	Provider     string                 `json:"provider"`
-	Operation    string                 `json:"operation"`
-	Severity     ErrorSeverity          `json:"severity"`
-	Retryable    bool                   `json:"retryable"`
-	RetryAfter   *time.Duration         `json:"retry_after,omitempty"`
-	StatusCode   int                    `json:"status_code,omitempty"`
-	Context      map[string]interface{} `json:"context,omitempty"`
-	Timestamp    time.Time              `json:"timestamp"`
-	TraceID      string                 `json:"trace_id,omitempty"`
-	RequestID    string                 `json:"request_id,omitempty"`
-	StackTrace   string                 `json:"stack_trace,omitempty"`
-	Cause        error                  `json:"-"` // Original error, not serialized
-	Metadata     map[string]string      `json:"metadata,omitempty"`
+	Code       ErrorCode              `json:"code"`
+	Message    string                 `json:"message"`
+	Provider   string                 `json:"provider"`
+	Operation  string                 `json:"operation"`
+	Severity   ErrorSeverity          `json:"severity"`
+	Retryable  bool                   `json:"retryable"`
+	RetryAfter *time.Duration         `json:"retry_after,omitempty"`
+	StatusCode int                    `json:"status_code,omitempty"`
+	Context    map[string]interface{} `json:"context,omitempty"`
+	Timestamp  time.Time              `json:"timestamp"`
+	TraceID    string                 `json:"trace_id,omitempty"`
+	RequestID  string                 `json:"request_id,omitempty"`
+	StackTrace string                 `json:"stack_trace,omitempty"`
+	Cause      error                  `json:"-"` // Original error, not serialized
+	Metadata   map[string]string      `json:"metadata,omitempty"`
 }
 
 // Error implements the error interface
@@ -305,28 +305,28 @@ const (
 // GetErrorCategory returns the category of an error code
 func GetErrorCategory(code ErrorCode) ErrorCategory {
 	switch code {
-	case ErrorCodeAuthenticationFailed, ErrorCodeCredentialsExpired, 
-		 ErrorCodeInvalidCredentials, ErrorCodeAccessDenied:
+	case ErrorCodeAuthenticationFailed, ErrorCodeCredentialsExpired,
+		ErrorCodeInvalidCredentials, ErrorCodeAccessDenied:
 		return CategoryAuthentication
-	case ErrorCodeNetworkTimeout, ErrorCodeConnectionFailed, 
-		 ErrorCodeServiceUnavailable:
+	case ErrorCodeNetworkTimeout, ErrorCodeConnectionFailed,
+		ErrorCodeServiceUnavailable:
 		return CategoryNetwork
-	case ErrorCodeValidationFailed, ErrorCodeInvalidInput, 
-		 ErrorCodeMissingRequiredField, ErrorCodeInvalidFormat:
+	case ErrorCodeValidationFailed, ErrorCodeInvalidInput,
+		ErrorCodeMissingRequiredField, ErrorCodeInvalidFormat:
 		return CategoryValidation
-	case ErrorCodeProductNotFound, ErrorCodeOrderNotFound, 
-		 ErrorCodeInsufficientStock, ErrorCodePriceChanged, 
-		 ErrorCodeCategoryNotFound:
+	case ErrorCodeProductNotFound, ErrorCodeOrderNotFound,
+		ErrorCodeInsufficientStock, ErrorCodePriceChanged,
+		ErrorCodeCategoryNotFound:
 		return CategoryBusiness
-	case ErrorCodeAPIError, ErrorCodeInvalidAPIVersion, 
-		 ErrorCodeQuotaExceeded, ErrorCodeRateLimitExceeded, 
-		 ErrorCodeTooManyRequests:
+	case ErrorCodeAPIError, ErrorCodeInvalidAPIVersion,
+		ErrorCodeQuotaExceeded, ErrorCodeRateLimitExceeded,
+		ErrorCodeTooManyRequests:
 		return CategoryAPI
-	case ErrorCodeInternalError, ErrorCodeConfigurationError, 
-		 ErrorCodeDatabaseError, ErrorCodeCacheError:
+	case ErrorCodeInternalError, ErrorCodeConfigurationError,
+		ErrorCodeDatabaseError, ErrorCodeCacheError:
 		return CategoryInternal
-	case ErrorCodeProviderError, ErrorCodeMappingError, 
-		 ErrorCodeSyncError, ErrorCodeWebhookError:
+	case ErrorCodeProviderError, ErrorCodeMappingError,
+		ErrorCodeSyncError, ErrorCodeWebhookError:
 		return CategoryIntegration
 	default:
 		return CategoryInternal
@@ -353,13 +353,13 @@ func GetRetryDelay(err error) time.Duration {
 
 // ErrorStats represents error statistics
 type ErrorStats struct {
-	TotalErrors    int                    `json:"total_errors"`
-	ErrorsByCode   map[ErrorCode]int      `json:"errors_by_code"`
-	ErrorsByProvider map[string]int       `json:"errors_by_provider"`
+	TotalErrors      int                   `json:"total_errors"`
+	ErrorsByCode     map[ErrorCode]int     `json:"errors_by_code"`
+	ErrorsByProvider map[string]int        `json:"errors_by_provider"`
 	ErrorsByCategory map[ErrorCategory]int `json:"errors_by_category"`
 	ErrorsBySeverity map[ErrorSeverity]int `json:"errors_by_severity"`
-	LastError      *IntegrationError      `json:"last_error"`
-	LastUpdated    time.Time              `json:"last_updated"`
+	LastError        *IntegrationError     `json:"last_error"`
+	LastUpdated      time.Time             `json:"last_updated"`
 }
 
 // NewErrorStats creates a new error statistics tracker

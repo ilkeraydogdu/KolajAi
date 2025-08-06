@@ -28,26 +28,26 @@ type HepsiburadaProvider struct {
 
 // HepsiburadaProduct represents a Hepsiburada product structure
 type HepsiburadaProduct struct {
-	MerchantSKU      string                    `json:"merchantSku"`
-	HepsiburadaSKU   string                    `json:"hepsiburadaSku"`
-	ProductName      string                    `json:"productName"`
-	ProductNameEn    string                    `json:"productNameEn,omitempty"`
-	Description      string                    `json:"description"`
-	DescriptionEn    string                    `json:"descriptionEn,omitempty"`
-	CategoryName     string                    `json:"categoryName"`
-	BrandName        string                    `json:"brandName"`
-	Barcode          string                    `json:"barcode"`
-	Price            float64                   `json:"price"`
-	ListPrice        float64                   `json:"listPrice"`
-	CurrencyType     string                    `json:"currencyType"`
-	AvailableStock   int                       `json:"availableStock"`
-	DispatchTime     int                       `json:"dispatchTime"`
-	CargoCompanyName string                    `json:"cargoCompanyName"`
-	Images           []HepsiburadaImage        `json:"images"`
-	Attributes       []HepsiburadaAttribute    `json:"attributes"`
-	Variants         []HepsiburadaVariant      `json:"variants,omitempty"`
-	Dimensions       HepsiburadaDimensions     `json:"dimensions"`
-	Status           string                    `json:"status"`
+	MerchantSKU      string                 `json:"merchantSku"`
+	HepsiburadaSKU   string                 `json:"hepsiburadaSku"`
+	ProductName      string                 `json:"productName"`
+	ProductNameEn    string                 `json:"productNameEn,omitempty"`
+	Description      string                 `json:"description"`
+	DescriptionEn    string                 `json:"descriptionEn,omitempty"`
+	CategoryName     string                 `json:"categoryName"`
+	BrandName        string                 `json:"brandName"`
+	Barcode          string                 `json:"barcode"`
+	Price            float64                `json:"price"`
+	ListPrice        float64                `json:"listPrice"`
+	CurrencyType     string                 `json:"currencyType"`
+	AvailableStock   int                    `json:"availableStock"`
+	DispatchTime     int                    `json:"dispatchTime"`
+	CargoCompanyName string                 `json:"cargoCompanyName"`
+	Images           []HepsiburadaImage     `json:"images"`
+	Attributes       []HepsiburadaAttribute `json:"attributes"`
+	Variants         []HepsiburadaVariant   `json:"variants,omitempty"`
+	Dimensions       HepsiburadaDimensions  `json:"dimensions"`
+	Status           string                 `json:"status"`
 }
 
 // HepsiburadaImage represents product image
@@ -63,11 +63,11 @@ type HepsiburadaAttribute struct {
 
 // HepsiburadaVariant represents product variant
 type HepsiburadaVariant struct {
-	MerchantSKU    string  `json:"merchantSku"`
-	HepsiburadaSKU string  `json:"hepsiburadaSku"`
-	Price          float64 `json:"price"`
-	ListPrice      float64 `json:"listPrice"`
-	AvailableStock int     `json:"availableStock"`
+	MerchantSKU    string                 `json:"merchantSku"`
+	HepsiburadaSKU string                 `json:"hepsiburadaSku"`
+	Price          float64                `json:"price"`
+	ListPrice      float64                `json:"listPrice"`
+	AvailableStock int                    `json:"availableStock"`
 	Attributes     []HepsiburadaAttribute `json:"attributes"`
 }
 
@@ -81,50 +81,50 @@ type HepsiburadaDimensions struct {
 
 // HepsiburadaOrder represents Hepsiburada order structure
 type HepsiburadaOrder struct {
-	OrderNumber      string                   `json:"orderNumber"`
-	OrderDate        time.Time                `json:"orderDate"`
-	Status           string                   `json:"status"`
-	CustomerName     string                   `json:"customerName"`
-	CustomerEmail    string                   `json:"customerEmail"`
-	CustomerPhone    string                   `json:"customerPhone"`
-	TotalAmount      float64                  `json:"totalAmount"`
-	TaxAmount        float64                  `json:"taxAmount"`
-	ShippingAmount   float64                  `json:"shippingAmount"`
-	Currency         string                   `json:"currency"`
-	PaymentType      string                   `json:"paymentType"`
-	CargoCompany     string                   `json:"cargoCompany"`
-	TrackingNumber   string                   `json:"trackingNumber"`
-	BillingAddress   HepsiburadaAddress       `json:"billingAddress"`
-	ShippingAddress  HepsiburadaAddress       `json:"shippingAddress"`
-	Items            []HepsiburadaOrderItem   `json:"items"`
+	OrderNumber     string                 `json:"orderNumber"`
+	OrderDate       time.Time              `json:"orderDate"`
+	Status          string                 `json:"status"`
+	CustomerName    string                 `json:"customerName"`
+	CustomerEmail   string                 `json:"customerEmail"`
+	CustomerPhone   string                 `json:"customerPhone"`
+	TotalAmount     float64                `json:"totalAmount"`
+	TaxAmount       float64                `json:"taxAmount"`
+	ShippingAmount  float64                `json:"shippingAmount"`
+	Currency        string                 `json:"currency"`
+	PaymentType     string                 `json:"paymentType"`
+	CargoCompany    string                 `json:"cargoCompany"`
+	TrackingNumber  string                 `json:"trackingNumber"`
+	BillingAddress  HepsiburadaAddress     `json:"billingAddress"`
+	ShippingAddress HepsiburadaAddress     `json:"shippingAddress"`
+	Items           []HepsiburadaOrderItem `json:"items"`
 }
 
 // HepsiburadaOrderItem represents order line item
 type HepsiburadaOrderItem struct {
-	LineItemId      string  `json:"lineItemId"`
-	MerchantSKU     string  `json:"merchantSku"`
-	HepsiburadaSKU  string  `json:"hepsiburadaSku"`
-	ProductName     string  `json:"productName"`
-	Quantity        int     `json:"quantity"`
-	Price           float64 `json:"price"`
-	TotalPrice      float64 `json:"totalPrice"`
-	VatRate         int     `json:"vatRate"`
-	VatAmount       float64 `json:"vatAmount"`
-	Commission      float64 `json:"commission"`
-	CommissionRate  float64 `json:"commissionRate"`
-	Status          string  `json:"status"`
+	LineItemId     string  `json:"lineItemId"`
+	MerchantSKU    string  `json:"merchantSku"`
+	HepsiburadaSKU string  `json:"hepsiburadaSku"`
+	ProductName    string  `json:"productName"`
+	Quantity       int     `json:"quantity"`
+	Price          float64 `json:"price"`
+	TotalPrice     float64 `json:"totalPrice"`
+	VatRate        int     `json:"vatRate"`
+	VatAmount      float64 `json:"vatAmount"`
+	Commission     float64 `json:"commission"`
+	CommissionRate float64 `json:"commissionRate"`
+	Status         string  `json:"status"`
 }
 
 // HepsiburadaAddress represents address structure
 type HepsiburadaAddress struct {
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	Address     string `json:"address"`
-	City        string `json:"city"`
-	District    string `json:"district"`
-	PostalCode  string `json:"postalCode"`
-	Country     string `json:"country"`
-	Phone       string `json:"phone"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	Address    string `json:"address"`
+	City       string `json:"city"`
+	District   string `json:"district"`
+	PostalCode string `json:"postalCode"`
+	Country    string `json:"country"`
+	Phone      string `json:"phone"`
 }
 
 // HepsiburadaStockUpdate represents stock update request
@@ -167,7 +167,7 @@ func NewHepsiburadaProvider() *HepsiburadaProvider {
 // Initialize sets up the Hepsiburada provider
 func (p *HepsiburadaProvider) Initialize(ctx context.Context, credentials integrations.Credentials, config map[string]interface{}) error {
 	p.credentials = credentials
-	
+
 	// Set base URL based on environment
 	environment, _ := config["environment"].(string)
 	if environment == "production" {
@@ -175,14 +175,14 @@ func (p *HepsiburadaProvider) Initialize(ctx context.Context, credentials integr
 	} else {
 		p.baseURL = "https://stageapi.hepsiburada.com"
 	}
-	
+
 	// Get merchant ID from config
 	if merchantID, ok := config["merchant_id"].(string); ok {
 		p.merchantID = merchantID
 	} else {
 		return fmt.Errorf("merchant_id is required for Hepsiburada integration")
 	}
-	
+
 	// Initialize configuration
 	p.config = &MarketplaceProviderConfig{
 		APIKey:              credentials.APIKey,
@@ -193,7 +193,7 @@ func (p *HepsiburadaProvider) Initialize(ctx context.Context, credentials integr
 		Timeout:             30 * time.Second,
 		RateLimit:           100,
 	}
-	
+
 	return nil
 }
 
@@ -201,7 +201,7 @@ func (p *HepsiburadaProvider) Initialize(ctx context.Context, credentials integr
 func (p *HepsiburadaProvider) HealthCheck(ctx context.Context) error {
 	// Test API connectivity by getting merchant info
 	endpoint := "/api/merchants/v1/merchant"
-	
+
 	var response map[string]interface{}
 	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
 	if err != nil {
@@ -213,7 +213,7 @@ func (p *HepsiburadaProvider) HealthCheck(ctx context.Context) error {
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	return nil
 }
 
@@ -245,7 +245,7 @@ func (p *HepsiburadaProvider) Close() error {
 // SyncProducts syncs products to Hepsiburada
 func (p *HepsiburadaProvider) SyncProducts(ctx context.Context, products []interface{}) error {
 	hepsiburadaProducts := make([]HepsiburadaProduct, 0, len(products))
-	
+
 	for _, product := range products {
 		hepsiburadaProduct, err := p.convertToHepsiburadaProduct(product)
 		if err != nil {
@@ -253,7 +253,7 @@ func (p *HepsiburadaProvider) SyncProducts(ctx context.Context, products []inter
 		}
 		hepsiburadaProducts = append(hepsiburadaProducts, hepsiburadaProduct)
 	}
-	
+
 	// Send products in batches of 100 (Hepsiburada limit)
 	batchSize := 100
 	for i := 0; i < len(hepsiburadaProducts); i += batchSize {
@@ -261,21 +261,21 @@ func (p *HepsiburadaProvider) SyncProducts(ctx context.Context, products []inter
 		if end > len(hepsiburadaProducts) {
 			end = len(hepsiburadaProducts)
 		}
-		
+
 		batch := hepsiburadaProducts[i:end]
 		err := p.sendProductBatch(ctx, batch)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
 // GetProducts retrieves products from Hepsiburada
 func (p *HepsiburadaProvider) GetProducts(ctx context.Context, params map[string]interface{}) ([]interface{}, error) {
 	endpoint := "/api/products/v1/products"
-	
+
 	// Add query parameters
 	queryParams := make([]string, 0)
 	if offset, ok := params["offset"].(int); ok {
@@ -284,34 +284,34 @@ func (p *HepsiburadaProvider) GetProducts(ctx context.Context, params map[string
 	if limit, ok := params["limit"].(int); ok {
 		queryParams = append(queryParams, "limit="+strconv.Itoa(limit))
 	}
-	
+
 	if len(queryParams) > 0 {
 		endpoint += "?" + strings.Join(queryParams, "&")
 	}
-	
+
 	var response struct {
-		Products []HepsiburadaProduct `json:"products"`
-		TotalCount int `json:"totalCount"`
+		Products   []HepsiburadaProduct `json:"products"`
+		TotalCount int                  `json:"totalCount"`
 	}
-	
+
 	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Convert to generic interface
 	products := make([]interface{}, len(response.Products))
 	for i, product := range response.Products {
 		products[i] = product
 	}
-	
+
 	return products, nil
 }
 
 // GetOrders retrieves orders from Hepsiburada
 func (p *HepsiburadaProvider) GetOrders(ctx context.Context, params map[string]interface{}) ([]interface{}, error) {
 	endpoint := "/api/orders/v1/orders"
-	
+
 	// Add query parameters
 	queryParams := make([]string, 0)
 	if startDate, ok := params["start_date"].(string); ok {
@@ -323,27 +323,27 @@ func (p *HepsiburadaProvider) GetOrders(ctx context.Context, params map[string]i
 	if status, ok := params["status"].(string); ok {
 		queryParams = append(queryParams, "status="+status)
 	}
-	
+
 	if len(queryParams) > 0 {
 		endpoint += "?" + strings.Join(queryParams, "&")
 	}
-	
+
 	var response struct {
-		Orders []HepsiburadaOrder `json:"orders"`
-		TotalCount int `json:"totalCount"`
+		Orders     []HepsiburadaOrder `json:"orders"`
+		TotalCount int                `json:"totalCount"`
 	}
-	
+
 	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Convert to generic interface
 	orders := make([]interface{}, len(response.Orders))
 	for i, order := range response.Orders {
 		orders[i] = order
 	}
-	
+
 	return orders, nil
 }
 
@@ -351,7 +351,7 @@ func (p *HepsiburadaProvider) GetOrders(ctx context.Context, params map[string]i
 func (p *HepsiburadaProvider) UpdateStockAndPrice(ctx context.Context, updates []interface{}) error {
 	stockItems := make([]HepsiburadaStockItem, 0)
 	priceItems := make([]HepsiburadaPriceItem, 0)
-	
+
 	for _, update := range updates {
 		stockItem, priceItem, err := p.convertToStockPriceItems(update)
 		if err != nil {
@@ -360,7 +360,7 @@ func (p *HepsiburadaProvider) UpdateStockAndPrice(ctx context.Context, updates [
 		stockItems = append(stockItems, stockItem)
 		priceItems = append(priceItems, priceItem)
 	}
-	
+
 	// Update stock
 	if len(stockItems) > 0 {
 		stockRequest := HepsiburadaStockUpdate{Items: stockItems}
@@ -370,7 +370,7 @@ func (p *HepsiburadaProvider) UpdateStockAndPrice(ctx context.Context, updates [
 			return err
 		}
 	}
-	
+
 	// Update prices
 	if len(priceItems) > 0 {
 		priceRequest := HepsiburadaPriceUpdate{Items: priceItems}
@@ -380,18 +380,18 @@ func (p *HepsiburadaProvider) UpdateStockAndPrice(ctx context.Context, updates [
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
 // UpdateOrderStatus updates order status
 func (p *HepsiburadaProvider) UpdateOrderStatus(ctx context.Context, orderID string, status string, params map[string]interface{}) error {
 	endpoint := fmt.Sprintf("/api/orders/v1/orders/%s/status", orderID)
-	
+
 	request := map[string]interface{}{
 		"status": status,
 	}
-	
+
 	// Add additional parameters
 	if trackingNumber, ok := params["tracking_number"].(string); ok {
 		request["trackingNumber"] = trackingNumber
@@ -399,7 +399,7 @@ func (p *HepsiburadaProvider) UpdateOrderStatus(ctx context.Context, orderID str
 	if cargoCompany, ok := params["cargo_company"].(string); ok {
 		request["cargoCompany"] = cargoCompany
 	}
-	
+
 	var response map[string]interface{}
 	return p.makeRequest(ctx, "PUT", endpoint, request, &response)
 }
@@ -407,44 +407,44 @@ func (p *HepsiburadaProvider) UpdateOrderStatus(ctx context.Context, orderID str
 // GetCategories retrieves categories from Hepsiburada
 func (p *HepsiburadaProvider) GetCategories(ctx context.Context) ([]interface{}, error) {
 	endpoint := "/api/categories/v1/categories"
-	
+
 	var response struct {
 		Categories []Category `json:"categories"`
 	}
-	
+
 	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Convert to generic interface
 	categories := make([]interface{}, len(response.Categories))
 	for i, category := range response.Categories {
 		categories[i] = category
 	}
-	
+
 	return categories, nil
 }
 
 // GetBrands retrieves brands from Hepsiburada
 func (p *HepsiburadaProvider) GetBrands(ctx context.Context) ([]interface{}, error) {
 	endpoint := "/api/brands/v1/brands"
-	
+
 	var response struct {
 		Brands []Brand `json:"brands"`
 	}
-	
+
 	err := p.makeRequest(ctx, "GET", endpoint, nil, &response)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Convert to generic interface
 	brands := make([]interface{}, len(response.Brands))
 	for i, brand := range response.Brands {
 		brands[i] = brand
 	}
-	
+
 	return brands, nil
 }
 
@@ -455,15 +455,15 @@ func (p *HepsiburadaProvider) ProcessWebhook(ctx context.Context, payload []byte
 	if !p.validateWebhookSignature(payload, signature) {
 		return fmt.Errorf("invalid webhook signature")
 	}
-	
+
 	var event WebhookEvent
 	if err := json.Unmarshal(payload, &event); err != nil {
 		return fmt.Errorf("failed to parse webhook payload: %w", err)
 	}
-	
+
 	event.Provider = "hepsiburada"
 	event.Timestamp = time.Now()
-	
+
 	// Process different event types
 	switch event.Type {
 	case "order.created":
@@ -485,30 +485,30 @@ func (p *HepsiburadaProvider) ProcessWebhook(ctx context.Context, payload []byte
 func (p *HepsiburadaProvider) makeRequest(ctx context.Context, method, endpoint string, request interface{}, response interface{}) error {
 	var body []byte
 	var err error
-	
+
 	if request != nil {
 		body, err = json.Marshal(request)
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	// Create HTTP request
 	url := p.baseURL + endpoint
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
 	if err != nil {
 		return err
 	}
-	
+
 	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("User-Agent", "KolajAI-Integration/1.0")
-	
+
 	// Generate authorization header
 	auth := p.generateAuthHeader()
 	req.Header.Set("Authorization", auth)
-	
+
 	// Execute request
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
@@ -521,10 +521,10 @@ func (p *HepsiburadaProvider) makeRequest(ctx context.Context, method, endpoint 
 		}
 	}
 	defer resp.Body.Close()
-	
+
 	// Update rate limit info
 	p.updateRateLimit(resp.Header)
-	
+
 	// Check for API errors
 	if resp.StatusCode >= 400 {
 		return &integrations.IntegrationError{
@@ -536,7 +536,7 @@ func (p *HepsiburadaProvider) makeRequest(ctx context.Context, method, endpoint 
 			StatusCode: resp.StatusCode,
 		}
 	}
-	
+
 	// Parse response
 	if response != nil {
 		if err := json.NewDecoder(resp.Body).Decode(response); err != nil {
@@ -550,7 +550,7 @@ func (p *HepsiburadaProvider) makeRequest(ctx context.Context, method, endpoint 
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -569,13 +569,13 @@ func (p *HepsiburadaProvider) updateRateLimit(headers http.Header) {
 			p.rateLimit.RequestsPerMinute = val
 		}
 	}
-	
+
 	if remaining := headers.Get("X-RateLimit-Remaining"); remaining != "" {
 		if val, err := strconv.Atoi(remaining); err == nil {
 			p.rateLimit.RequestsRemaining = val
 		}
 	}
-	
+
 	if reset := headers.Get("X-RateLimit-Reset"); reset != "" {
 		if val, err := strconv.ParseInt(reset, 10, 64); err == nil {
 			p.rateLimit.ResetsAt = time.Unix(val, 0)
@@ -588,11 +588,11 @@ func (p *HepsiburadaProvider) validateWebhookSignature(payload []byte, signature
 	if p.config.WebhookSecret == "" {
 		return true // Skip validation if no secret configured
 	}
-	
+
 	mac := hmac.New(sha256.New, []byte(p.config.WebhookSecret))
 	mac.Write(payload)
 	expectedSignature := base64.StdEncoding.EncodeToString(mac.Sum(nil))
-	
+
 	return signature == expectedSignature
 }
 
@@ -603,7 +603,7 @@ func (p *HepsiburadaProvider) convertToHepsiburadaProduct(product interface{}) (
 	if !ok {
 		return HepsiburadaProduct{}, fmt.Errorf("invalid product format")
 	}
-	
+
 	hepsiburadaProduct := HepsiburadaProduct{
 		MerchantSKU:      getString(productMap, "sku"),
 		HepsiburadaSKU:   getString(productMap, "hepsiburada_sku"),
@@ -622,12 +622,12 @@ func (p *HepsiburadaProvider) convertToHepsiburadaProduct(product interface{}) (
 		CargoCompanyName: getStringWithDefault(productMap, "cargo_company", "Aras Kargo"),
 		Status:           getStringWithDefault(productMap, "status", "Active"),
 	}
-	
+
 	// Set list price if not provided
 	if hepsiburadaProduct.ListPrice == 0 && hepsiburadaProduct.Price > 0 {
 		hepsiburadaProduct.ListPrice = hepsiburadaProduct.Price * 1.2 // Add 20% margin
 	}
-	
+
 	// Set images
 	if images, ok := productMap["images"].([]interface{}); ok {
 		hepsiburadaImages := make([]HepsiburadaImage, 0)
@@ -638,7 +638,7 @@ func (p *HepsiburadaProvider) convertToHepsiburadaProduct(product interface{}) (
 		}
 		hepsiburadaProduct.Images = hepsiburadaImages
 	}
-	
+
 	// Set attributes
 	if attributes, ok := productMap["attributes"].(map[string]interface{}); ok {
 		hepsiburadaAttributes := make([]HepsiburadaAttribute, 0)
@@ -652,7 +652,7 @@ func (p *HepsiburadaProvider) convertToHepsiburadaProduct(product interface{}) (
 		}
 		hepsiburadaProduct.Attributes = hepsiburadaAttributes
 	}
-	
+
 	// Set dimensions
 	if dimensions, ok := productMap["dimensions"].(map[string]interface{}); ok {
 		hepsiburadaProduct.Dimensions = HepsiburadaDimensions{
@@ -662,7 +662,7 @@ func (p *HepsiburadaProvider) convertToHepsiburadaProduct(product interface{}) (
 			Weight: getFloat64(dimensions, "weight"),
 		}
 	}
-	
+
 	return hepsiburadaProduct, nil
 }
 
@@ -673,41 +673,41 @@ func (p *HepsiburadaProvider) convertToStockPriceItems(update interface{}) (Heps
 	if !ok {
 		return HepsiburadaStockItem{}, HepsiburadaPriceItem{}, fmt.Errorf("invalid update format")
 	}
-	
+
 	merchantSKU := getString(updateMap, "sku")
 	if merchantSKU == "" {
 		return HepsiburadaStockItem{}, HepsiburadaPriceItem{}, fmt.Errorf("merchant SKU is required")
 	}
-	
+
 	stockItem := HepsiburadaStockItem{
 		MerchantSKU:    merchantSKU,
 		AvailableStock: getInt(updateMap, "quantity"),
 	}
-	
+
 	price := getFloat64(updateMap, "price")
 	listPrice := getFloat64(updateMap, "list_price")
-	
+
 	// If list price is not provided, use price + margin
 	if listPrice == 0 && price > 0 {
 		listPrice = price * 1.2 // Add 20% margin
 	}
-	
+
 	priceItem := HepsiburadaPriceItem{
 		MerchantSKU: merchantSKU,
 		Price:       price,
 		ListPrice:   listPrice,
 	}
-	
+
 	return stockItem, priceItem, nil
 }
 
 func (p *HepsiburadaProvider) sendProductBatch(ctx context.Context, products []HepsiburadaProduct) error {
 	endpoint := "/api/products/v1/products"
-	
+
 	request := map[string]interface{}{
 		"products": products,
 	}
-	
+
 	var response map[string]interface{}
 	return p.makeRequest(ctx, "POST", endpoint, request, &response)
 }

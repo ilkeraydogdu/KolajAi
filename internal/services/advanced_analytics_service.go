@@ -18,81 +18,81 @@ type AdvancedAnalyticsService struct {
 
 // BusinessMetrics represents comprehensive business metrics
 type BusinessMetrics struct {
-	Revenue          RevenueMetrics          `json:"revenue"`
-	Sales            SalesMetrics            `json:"sales"`
-	Customers        CustomerMetrics         `json:"customers"`
-	Products         ProductMetrics          `json:"products"`
-	Marketing        MarketingMetrics        `json:"marketing"`
-	Operations       OperationalMetrics      `json:"operations"`
-	Predictions      PredictionMetrics       `json:"predictions"`
-	Recommendations  []BusinessRecommendation `json:"recommendations"`
-	Period           AnalyticsPeriod         `json:"period"`
-	GeneratedAt      time.Time               `json:"generated_at"`
+	Revenue         RevenueMetrics           `json:"revenue"`
+	Sales           SalesMetrics             `json:"sales"`
+	Customers       CustomerMetrics          `json:"customers"`
+	Products        ProductMetrics           `json:"products"`
+	Marketing       MarketingMetrics         `json:"marketing"`
+	Operations      OperationalMetrics       `json:"operations"`
+	Predictions     PredictionMetrics        `json:"predictions"`
+	Recommendations []BusinessRecommendation `json:"recommendations"`
+	Period          AnalyticsPeriod          `json:"period"`
+	GeneratedAt     time.Time                `json:"generated_at"`
 }
 
 // RevenueMetrics represents revenue analytics
 type RevenueMetrics struct {
-	TotalRevenue        float64                `json:"total_revenue"`
-	RevenueGrowth       float64                `json:"revenue_growth"`
-	MonthlyRecurring    float64                `json:"monthly_recurring"`
-	AverageOrderValue   float64                `json:"average_order_value"`
-	RevenueByCategory   map[string]float64     `json:"revenue_by_category"`
-	RevenueByChannel    map[string]float64     `json:"revenue_by_channel"`
-	RevenueByRegion     map[string]float64     `json:"revenue_by_region"`
-	RevenueByMonth      []MonthlyRevenue       `json:"revenue_by_month"`
-	RevenueForecasting  RevenueForecast        `json:"revenue_forecasting"`
-	ProfitMargins       ProfitAnalysis         `json:"profit_margins"`
+	TotalRevenue       float64            `json:"total_revenue"`
+	RevenueGrowth      float64            `json:"revenue_growth"`
+	MonthlyRecurring   float64            `json:"monthly_recurring"`
+	AverageOrderValue  float64            `json:"average_order_value"`
+	RevenueByCategory  map[string]float64 `json:"revenue_by_category"`
+	RevenueByChannel   map[string]float64 `json:"revenue_by_channel"`
+	RevenueByRegion    map[string]float64 `json:"revenue_by_region"`
+	RevenueByMonth     []MonthlyRevenue   `json:"revenue_by_month"`
+	RevenueForecasting RevenueForecast    `json:"revenue_forecasting"`
+	ProfitMargins      ProfitAnalysis     `json:"profit_margins"`
 }
 
 // SalesMetrics represents sales performance analytics
 type SalesMetrics struct {
-	TotalOrders         int                    `json:"total_orders"`
-	CompletedOrders     int                    `json:"completed_orders"`
-	CancelledOrders     int                    `json:"cancelled_orders"`
-	ConversionRate      float64                `json:"conversion_rate"`
-	SalesGrowth         float64                `json:"sales_growth"`
-	TopProducts         []ProductSales         `json:"top_products"`
-	SalesByHour         map[int]int            `json:"sales_by_hour"`
-	SalesByDay          map[string]int         `json:"sales_by_day"`
-	SalesPerformance    SalesPerformance       `json:"sales_performance"`
-	SalesFunnel         SalesFunnelAnalysis    `json:"sales_funnel"`
+	TotalOrders      int                 `json:"total_orders"`
+	CompletedOrders  int                 `json:"completed_orders"`
+	CancelledOrders  int                 `json:"cancelled_orders"`
+	ConversionRate   float64             `json:"conversion_rate"`
+	SalesGrowth      float64             `json:"sales_growth"`
+	TopProducts      []ProductSales      `json:"top_products"`
+	SalesByHour      map[int]int         `json:"sales_by_hour"`
+	SalesByDay       map[string]int      `json:"sales_by_day"`
+	SalesPerformance SalesPerformance    `json:"sales_performance"`
+	SalesFunnel      SalesFunnelAnalysis `json:"sales_funnel"`
 }
 
 // CustomerMetrics represents customer analytics
 type CustomerMetrics struct {
-	TotalCustomers      int                    `json:"total_customers"`
-	NewCustomers        int                    `json:"new_customers"`
-	ActiveCustomers     int                    `json:"active_customers"`
-	CustomerRetention   float64                `json:"customer_retention"`
-	CustomerLifetime    float64                `json:"customer_lifetime_value"`
-	ChurnRate           float64                `json:"churn_rate"`
-	CustomerSegments    []AnalyticsCustomerSegment      `json:"customer_segments"`
-	CustomerBehavior    CustomerBehavior       `json:"customer_behavior"`
-	CustomerSatisfaction CustomerSatisfaction  `json:"customer_satisfaction"`
-	CustomerJourney     CustomerJourneyAnalysis `json:"customer_journey"`
+	TotalCustomers       int                        `json:"total_customers"`
+	NewCustomers         int                        `json:"new_customers"`
+	ActiveCustomers      int                        `json:"active_customers"`
+	CustomerRetention    float64                    `json:"customer_retention"`
+	CustomerLifetime     float64                    `json:"customer_lifetime_value"`
+	ChurnRate            float64                    `json:"churn_rate"`
+	CustomerSegments     []AnalyticsCustomerSegment `json:"customer_segments"`
+	CustomerBehavior     CustomerBehavior           `json:"customer_behavior"`
+	CustomerSatisfaction CustomerSatisfaction       `json:"customer_satisfaction"`
+	CustomerJourney      CustomerJourneyAnalysis    `json:"customer_journey"`
 }
 
 // ProductMetrics represents product performance analytics
 type ProductMetrics struct {
-	TotalProducts       int                    `json:"total_products"`
-	TopPerformers       []ProductPerformance   `json:"top_performers"`
-	LowPerformers       []ProductPerformance   `json:"low_performers"`
-	InventoryTurnover   float64                `json:"inventory_turnover"`
-	StockoutRate        float64                `json:"stockout_rate"`
-	ProductCategories   []CategoryAnalysis     `json:"product_categories"`
-	PriceAnalysis       PriceOptimization      `json:"price_analysis"`
+	TotalProducts          int                     `json:"total_products"`
+	TopPerformers          []ProductPerformance    `json:"top_performers"`
+	LowPerformers          []ProductPerformance    `json:"low_performers"`
+	InventoryTurnover      float64                 `json:"inventory_turnover"`
+	StockoutRate           float64                 `json:"stockout_rate"`
+	ProductCategories      []CategoryAnalysis      `json:"product_categories"`
+	PriceAnalysis          PriceOptimization       `json:"price_analysis"`
 	ProductRecommendations []ProductRecommendation `json:"product_recommendations"`
 }
 
 // MarketingMetrics represents marketing analytics
 type MarketingMetrics struct {
-	CampaignPerformance []CampaignAnalysis     `json:"campaign_performance"`
-	ChannelAttribution  map[string]float64     `json:"channel_attribution"`
-	CustomerAcquisition CustomerAcquisition    `json:"customer_acquisition"`
-	MarketingROI        float64                `json:"marketing_roi"`
-	SocialMedia         SocialMediaAnalytics   `json:"social_media"`
+	CampaignPerformance []CampaignAnalysis      `json:"campaign_performance"`
+	ChannelAttribution  map[string]float64      `json:"channel_attribution"`
+	CustomerAcquisition CustomerAcquisition     `json:"customer_acquisition"`
+	MarketingROI        float64                 `json:"marketing_roi"`
+	SocialMedia         SocialMediaAnalytics    `json:"social_media"`
 	EmailMarketing      EmailMarketingAnalytics `json:"email_marketing"`
-	SEOPerformance      SEOAnalytics           `json:"seo_performance"`
+	SEOPerformance      SEOAnalytics            `json:"seo_performance"`
 }
 
 // OperationalMetrics represents operational analytics
@@ -106,12 +106,12 @@ type OperationalMetrics struct {
 
 // PredictionMetrics represents predictive analytics
 type PredictionMetrics struct {
-	SalesForecast       []ForecastPoint        `json:"sales_forecast"`
-	DemandForecast      []DemandPrediction     `json:"demand_forecast"`
-	ChurnPrediction     []ChurnRisk            `json:"churn_prediction"`
-	InventoryPrediction []InventoryForecast    `json:"inventory_prediction"`
-	TrendAnalysis       TrendAnalysis          `json:"trend_analysis"`
-	AnomalyDetection    []AnomalyAlert         `json:"anomaly_detection"`
+	SalesForecast       []ForecastPoint     `json:"sales_forecast"`
+	DemandForecast      []DemandPrediction  `json:"demand_forecast"`
+	ChurnPrediction     []ChurnRisk         `json:"churn_prediction"`
+	InventoryPrediction []InventoryForecast `json:"inventory_prediction"`
+	TrendAnalysis       TrendAnalysis       `json:"trend_analysis"`
+	AnomalyDetection    []AnomalyAlert      `json:"anomaly_detection"`
 }
 
 // Supporting structures
@@ -123,10 +123,10 @@ type MonthlyRevenue struct {
 }
 
 type RevenueForecast struct {
-	NextMonth     float64 `json:"next_month"`
-	NextQuarter   float64 `json:"next_quarter"`
-	NextYear      float64 `json:"next_year"`
-	Confidence    float64 `json:"confidence"`
+	NextMonth   float64 `json:"next_month"`
+	NextQuarter float64 `json:"next_quarter"`
+	NextYear    float64 `json:"next_year"`
+	Confidence  float64 `json:"confidence"`
 }
 
 type ProfitAnalysis struct {
@@ -136,11 +136,11 @@ type ProfitAnalysis struct {
 }
 
 type ProductSales struct {
-	ID       uint    `json:"id"`
-	Name     string  `json:"name"`
-	Sales    int     `json:"sales"`
-	Revenue  float64 `json:"revenue"`
-	Growth   float64 `json:"growth"`
+	ID      uint    `json:"id"`
+	Name    string  `json:"name"`
+	Sales   int     `json:"sales"`
+	Revenue float64 `json:"revenue"`
+	Growth  float64 `json:"growth"`
 }
 
 type SalesPerformance struct {
@@ -150,51 +150,51 @@ type SalesPerformance struct {
 }
 
 type SalesFunnelAnalysis struct {
-	Visitors    int     `json:"visitors"`
-	Leads       int     `json:"leads"`
-	Prospects   int     `json:"prospects"`
-	Customers   int     `json:"customers"`
-	Conversion  float64 `json:"conversion_rate"`
+	Visitors   int     `json:"visitors"`
+	Leads      int     `json:"leads"`
+	Prospects  int     `json:"prospects"`
+	Customers  int     `json:"customers"`
+	Conversion float64 `json:"conversion_rate"`
 }
 
 type AnalyticsCustomerSegment struct {
-	Name        string  `json:"name"`
-	Count       int     `json:"count"`
-	Revenue     float64 `json:"revenue"`
-	Percentage  float64 `json:"percentage"`
+	Name       string  `json:"name"`
+	Count      int     `json:"count"`
+	Revenue    float64 `json:"revenue"`
+	Percentage float64 `json:"percentage"`
 }
 
 type CustomerBehavior struct {
-	AvgSessionDuration time.Duration      `json:"avg_session_duration"`
-	PagesPerSession    float64            `json:"pages_per_session"`
-	BounceRate         float64            `json:"bounce_rate"`
-	TopPages           []PageAnalytics    `json:"top_pages"`
-	DeviceUsage        map[string]int     `json:"device_usage"`
-	BrowserUsage       map[string]int     `json:"browser_usage"`
+	AvgSessionDuration time.Duration   `json:"avg_session_duration"`
+	PagesPerSession    float64         `json:"pages_per_session"`
+	BounceRate         float64         `json:"bounce_rate"`
+	TopPages           []PageAnalytics `json:"top_pages"`
+	DeviceUsage        map[string]int  `json:"device_usage"`
+	BrowserUsage       map[string]int  `json:"browser_usage"`
 }
 
 type CustomerSatisfaction struct {
-	OverallScore    float64                    `json:"overall_score"`
-	NPS             float64                    `json:"nps"`
-	ReviewAnalysis  ReviewSentimentAnalysis    `json:"review_analysis"`
-	SupportRating   float64                    `json:"support_rating"`
+	OverallScore   float64                 `json:"overall_score"`
+	NPS            float64                 `json:"nps"`
+	ReviewAnalysis ReviewSentimentAnalysis `json:"review_analysis"`
+	SupportRating  float64                 `json:"support_rating"`
 }
 
 type CustomerJourneyAnalysis struct {
-	AverageJourneyLength time.Duration          `json:"avg_journey_length"`
-	TouchPoints          []TouchPointAnalysis   `json:"touch_points"`
-	ConversionPaths      []ConversionPath       `json:"conversion_paths"`
-	DropoffPoints        []DropoffAnalysis      `json:"dropoff_points"`
+	AverageJourneyLength time.Duration        `json:"avg_journey_length"`
+	TouchPoints          []TouchPointAnalysis `json:"touch_points"`
+	ConversionPaths      []ConversionPath     `json:"conversion_paths"`
+	DropoffPoints        []DropoffAnalysis    `json:"dropoff_points"`
 }
 
 type ProductPerformance struct {
-	ID              uint    `json:"id"`
-	Name            string  `json:"name"`
-	Sales           int     `json:"sales"`
-	Revenue         float64 `json:"revenue"`
-	ProfitMargin    float64 `json:"profit_margin"`
-	InventoryTurns  float64 `json:"inventory_turns"`
-	CustomerRating  float64 `json:"customer_rating"`
+	ID                  uint    `json:"id"`
+	Name                string  `json:"name"`
+	Sales               int     `json:"sales"`
+	Revenue             float64 `json:"revenue"`
+	ProfitMargin        float64 `json:"profit_margin"`
+	InventoryTurns      float64 `json:"inventory_turns"`
+	CustomerRating      float64 `json:"customer_rating"`
 	RecommendationScore float64 `json:"recommendation_score"`
 }
 
@@ -208,11 +208,11 @@ type CategoryAnalysis struct {
 }
 
 type PriceOptimization struct {
-	CurrentPricing   map[string]float64     `json:"current_pricing"`
-	OptimalPricing   map[string]float64     `json:"optimal_pricing"`
-	PriceElasticity  map[string]float64     `json:"price_elasticity"`
-	CompetitorPricing map[string]float64    `json:"competitor_pricing"`
-	Recommendations  []PricingRecommendation `json:"recommendations"`
+	CurrentPricing    map[string]float64      `json:"current_pricing"`
+	OptimalPricing    map[string]float64      `json:"optimal_pricing"`
+	PriceElasticity   map[string]float64      `json:"price_elasticity"`
+	CompetitorPricing map[string]float64      `json:"competitor_pricing"`
+	Recommendations   []PricingRecommendation `json:"recommendations"`
 }
 
 type ProductRecommendation struct {
@@ -225,17 +225,17 @@ type ProductRecommendation struct {
 }
 
 type CampaignAnalysis struct {
-	ID           string  `json:"id"`
-	Name         string  `json:"name"`
-	Impressions  int     `json:"impressions"`
-	Clicks       int     `json:"clicks"`
-	Conversions  int     `json:"conversions"`
-	Cost         float64 `json:"cost"`
-	Revenue      float64 `json:"revenue"`
-	ROI          float64 `json:"roi"`
-	CTR          float64 `json:"ctr"`
-	CPC          float64 `json:"cpc"`
-	CPA          float64 `json:"cpa"`
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Impressions int     `json:"impressions"`
+	Clicks      int     `json:"clicks"`
+	Conversions int     `json:"conversions"`
+	Cost        float64 `json:"cost"`
+	Revenue     float64 `json:"revenue"`
+	ROI         float64 `json:"roi"`
+	CTR         float64 `json:"ctr"`
+	CPC         float64 `json:"cpc"`
+	CPA         float64 `json:"cpa"`
 }
 
 type CustomerAcquisition struct {
@@ -247,65 +247,65 @@ type CustomerAcquisition struct {
 }
 
 type SocialMediaAnalytics struct {
-	Followers    map[string]int     `json:"followers"`
-	Engagement   map[string]float64 `json:"engagement"`
-	Reach        map[string]int     `json:"reach"`
-	Mentions     int                `json:"mentions"`
-	Sentiment    float64            `json:"sentiment"`
+	Followers  map[string]int     `json:"followers"`
+	Engagement map[string]float64 `json:"engagement"`
+	Reach      map[string]int     `json:"reach"`
+	Mentions   int                `json:"mentions"`
+	Sentiment  float64            `json:"sentiment"`
 }
 
 type EmailMarketingAnalytics struct {
-	OpenRate       float64 `json:"open_rate"`
-	ClickRate      float64 `json:"click_rate"`
-	ConversionRate float64 `json:"conversion_rate"`
+	OpenRate        float64 `json:"open_rate"`
+	ClickRate       float64 `json:"click_rate"`
+	ConversionRate  float64 `json:"conversion_rate"`
 	UnsubscribeRate float64 `json:"unsubscribe_rate"`
-	BounceRate     float64 `json:"bounce_rate"`
+	BounceRate      float64 `json:"bounce_rate"`
 }
 
 type SEOAnalytics struct {
-	OrganicTraffic   int                `json:"organic_traffic"`
-	KeywordRankings  map[string]int     `json:"keyword_rankings"`
-	BacklinkCount    int                `json:"backlink_count"`
-	PageSpeed        float64            `json:"page_speed"`
-	MobileScore      float64            `json:"mobile_score"`
+	OrganicTraffic  int            `json:"organic_traffic"`
+	KeywordRankings map[string]int `json:"keyword_rankings"`
+	BacklinkCount   int            `json:"backlink_count"`
+	PageSpeed       float64        `json:"page_speed"`
+	MobileScore     float64        `json:"mobile_score"`
 }
 
 type OrderFulfillmentMetrics struct {
-	ProcessingTime   time.Duration `json:"processing_time"`
-	ShippingTime     time.Duration `json:"shipping_time"`
-	DeliveryTime     time.Duration `json:"delivery_time"`
-	FulfillmentRate  float64       `json:"fulfillment_rate"`
-	ErrorRate        float64       `json:"error_rate"`
+	ProcessingTime  time.Duration `json:"processing_time"`
+	ShippingTime    time.Duration `json:"shipping_time"`
+	DeliveryTime    time.Duration `json:"delivery_time"`
+	FulfillmentRate float64       `json:"fulfillment_rate"`
+	ErrorRate       float64       `json:"error_rate"`
 }
 
 type ShippingAnalytics struct {
-	OnTimeDelivery   float64            `json:"on_time_delivery"`
-	ShippingCost     float64            `json:"shipping_cost"`
-	DamageRate       float64            `json:"damage_rate"`
+	OnTimeDelivery     float64            `json:"on_time_delivery"`
+	ShippingCost       float64            `json:"shipping_cost"`
+	DamageRate         float64            `json:"damage_rate"`
 	CarrierPerformance map[string]float64 `json:"carrier_performance"`
 }
 
 type SupportAnalytics struct {
-	TicketVolume     int           `json:"ticket_volume"`
-	ResponseTime     time.Duration `json:"response_time"`
-	ResolutionTime   time.Duration `json:"resolution_time"`
-	SatisfactionScore float64      `json:"satisfaction_score"`
-	FirstContactResolution float64 `json:"first_contact_resolution"`
+	TicketVolume           int           `json:"ticket_volume"`
+	ResponseTime           time.Duration `json:"response_time"`
+	ResolutionTime         time.Duration `json:"resolution_time"`
+	SatisfactionScore      float64       `json:"satisfaction_score"`
+	FirstContactResolution float64       `json:"first_contact_resolution"`
 }
 
 type SystemMetrics struct {
-	Uptime          float64 `json:"uptime"`
-	ResponseTime    time.Duration `json:"response_time"`
-	ErrorRate       float64 `json:"error_rate"`
-	ThroughputRPS   float64 `json:"throughput_rps"`
-	ResourceUsage   map[string]float64 `json:"resource_usage"`
+	Uptime        float64            `json:"uptime"`
+	ResponseTime  time.Duration      `json:"response_time"`
+	ErrorRate     float64            `json:"error_rate"`
+	ThroughputRPS float64            `json:"throughput_rps"`
+	ResourceUsage map[string]float64 `json:"resource_usage"`
 }
 
 type QualityAnalysis struct {
-	DefectRate      float64 `json:"defect_rate"`
-	ReturnRate      float64 `json:"return_rate"`
-	QualityScore    float64 `json:"quality_score"`
-	CustomerComplaints int  `json:"customer_complaints"`
+	DefectRate         float64 `json:"defect_rate"`
+	ReturnRate         float64 `json:"return_rate"`
+	QualityScore       float64 `json:"quality_score"`
+	CustomerComplaints int     `json:"customer_complaints"`
 }
 
 type ForecastPoint struct {
@@ -322,24 +322,24 @@ type DemandPrediction struct {
 }
 
 type ChurnRisk struct {
-	CustomerID   int64   `json:"customer_id"`
-	ChurnRisk    float64 `json:"churn_risk"`
-	Factors      []string `json:"risk_factors"`
-	Recommended  []string `json:"recommended_actions"`
+	CustomerID  int64    `json:"customer_id"`
+	ChurnRisk   float64  `json:"churn_risk"`
+	Factors     []string `json:"risk_factors"`
+	Recommended []string `json:"recommended_actions"`
 }
 
 type InventoryForecast struct {
-	ProductID      uint    `json:"product_id"`
-	ProductName    string  `json:"product_name"`
-	CurrentStock   int     `json:"current_stock"`
-	PredictedStock int     `json:"predicted_stock"`
-	ReorderPoint   int     `json:"reorder_point"`
+	ProductID       uint   `json:"product_id"`
+	ProductName     string `json:"product_name"`
+	CurrentStock    int    `json:"current_stock"`
+	PredictedStock  int    `json:"predicted_stock"`
+	ReorderPoint    int    `json:"reorder_point"`
 	ReorderQuantity int    `json:"reorder_quantity"`
 }
 
 type TrendAnalysis struct {
-	EmergingTrends []Trend `json:"emerging_trends"`
-	DeciningTrends []Trend `json:"declining_trends"`
+	EmergingTrends []Trend         `json:"emerging_trends"`
+	DeciningTrends []Trend         `json:"declining_trends"`
 	SeasonalTrends []SeasonalTrend `json:"seasonal_trends"`
 }
 
@@ -350,10 +350,10 @@ type Trend struct {
 }
 
 type SeasonalTrend struct {
-	Name        string    `json:"name"`
-	Season      string    `json:"season"`
-	PeakPeriod  time.Time `json:"peak_period"`
-	Impact      float64   `json:"impact"`
+	Name       string    `json:"name"`
+	Season     string    `json:"season"`
+	PeakPeriod time.Time `json:"peak_period"`
+	Impact     float64   `json:"impact"`
 }
 
 type AnomalyAlert struct {
@@ -368,14 +368,14 @@ type AnomalyAlert struct {
 }
 
 type BusinessRecommendation struct {
-	Type        string  `json:"type"`
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Impact      string  `json:"impact"`
-	Priority    int     `json:"priority"`
-	Category    string  `json:"category"`
+	Type        string   `json:"type"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Impact      string   `json:"impact"`
+	Priority    int      `json:"priority"`
+	Category    string   `json:"category"`
 	Actions     []string `json:"actions"`
-	ExpectedROI float64 `json:"expected_roi"`
+	ExpectedROI float64  `json:"expected_roi"`
 }
 
 type AnalyticsPeriod struct {
@@ -393,18 +393,18 @@ type PageAnalytics struct {
 }
 
 type ReviewSentimentAnalysis struct {
-	PositiveCount int     `json:"positive_count"`
-	NegativeCount int     `json:"negative_count"`
-	NeutralCount  int     `json:"neutral_count"`
-	OverallSentiment float64 `json:"overall_sentiment"`
-	TopKeywords   []string `json:"top_keywords"`
+	PositiveCount    int      `json:"positive_count"`
+	NegativeCount    int      `json:"negative_count"`
+	NeutralCount     int      `json:"neutral_count"`
+	OverallSentiment float64  `json:"overall_sentiment"`
+	TopKeywords      []string `json:"top_keywords"`
 }
 
 type TouchPointAnalysis struct {
-	Channel     string  `json:"channel"`
-	Interactions int    `json:"interactions"`
-	Conversions int     `json:"conversions"`
-	Influence   float64 `json:"influence_score"`
+	Channel      string  `json:"channel"`
+	Interactions int     `json:"interactions"`
+	Conversions  int     `json:"conversions"`
+	Influence    float64 `json:"influence_score"`
 }
 
 type ConversionPath struct {
@@ -420,12 +420,12 @@ type DropoffAnalysis struct {
 }
 
 type PricingRecommendation struct {
-	ProductID   uint    `json:"product_id"`
-	ProductName string  `json:"product_name"`
-	CurrentPrice float64 `json:"current_price"`
+	ProductID        uint    `json:"product_id"`
+	ProductName      string  `json:"product_name"`
+	CurrentPrice     float64 `json:"current_price"`
 	RecommendedPrice float64 `json:"recommended_price"`
-	ExpectedImpact string `json:"expected_impact"`
-	Reason      string  `json:"reason"`
+	ExpectedImpact   string  `json:"expected_impact"`
+	Reason           string  `json:"reason"`
 }
 
 // NewAdvancedAnalyticsService creates a new advanced analytics service
@@ -449,7 +449,7 @@ func (s *AdvancedAnalyticsService) GenerateBusinessMetrics(ctx context.Context, 
 
 	// Generate all metric categories in parallel
 	errChan := make(chan error, 7)
-	
+
 	go func() {
 		revenue, err := s.generateRevenueMetrics(ctx, startDate, endDate)
 		if err != nil {
@@ -582,7 +582,7 @@ func (s *AdvancedAnalyticsService) GetRealTimeMetrics(ctx context.Context) (map[
 		FROM page_views 
 		WHERE created_at >= ?
 	`, lastHour).Scan(&visitors)
-	
+
 	s.db.QueryRowContext(ctx, `
 		SELECT COUNT(*) 
 		FROM orders 
@@ -691,7 +691,7 @@ func (s *AdvancedAnalyticsService) GetCustomerSegmentAnalysis(ctx context.Contex
 	for rows.Next() {
 		var segment AnalyticsCustomerSegment
 		var avgScore float64
-		
+
 		err := rows.Scan(&segment.Name, &segment.Count, &avgScore)
 		if err != nil {
 			continue
@@ -700,7 +700,7 @@ func (s *AdvancedAnalyticsService) GetCustomerSegmentAnalysis(ctx context.Contex
 		// Calculate revenue for this segment (simplified)
 		segment.Revenue = float64(segment.Count) * avgScore * 10 // Approximation
 		totalCustomers += segment.Count
-		
+
 		segments = append(segments, segment)
 	}
 
@@ -923,7 +923,7 @@ func (s *AdvancedAnalyticsService) generateProductMetrics(ctx context.Context, s
 
 func (s *AdvancedAnalyticsService) generateMarketingMetrics(_ context.Context, _, _ time.Time) (*MarketingMetrics, error) {
 	return &MarketingMetrics{
-		ChannelAttribution: make(map[string]float64),
+		ChannelAttribution:  make(map[string]float64),
 		CampaignPerformance: []CampaignAnalysis{},
 	}, nil
 }
@@ -934,9 +934,9 @@ func (s *AdvancedAnalyticsService) generateOperationalMetrics(_ context.Context,
 
 func (s *AdvancedAnalyticsService) generatePredictionMetrics(_ context.Context, _, _ time.Time) (*PredictionMetrics, error) {
 	return &PredictionMetrics{
-		SalesForecast:    []ForecastPoint{},
-		DemandForecast:   []DemandPrediction{},
-		ChurnPrediction:  []ChurnRisk{},
+		SalesForecast:   []ForecastPoint{},
+		DemandForecast:  []DemandPrediction{},
+		ChurnPrediction: []ChurnRisk{},
 	}, nil
 }
 
@@ -995,7 +995,7 @@ func (s *AdvancedAnalyticsService) generateBusinessRecommendations(metrics *Busi
 
 func (s *AdvancedAnalyticsService) calculatePeriodType(startDate, endDate time.Time) string {
 	duration := endDate.Sub(startDate)
-	
+
 	if duration <= 24*time.Hour {
 		return "daily"
 	} else if duration <= 7*24*time.Hour {

@@ -60,49 +60,49 @@ type ChatRequest struct {
 
 // ChatResponse represents a chat response
 type ChatResponse struct {
-	SessionID     string                 `json:"session_id"`
-	MessageID     string                 `json:"message_id"`
-	Content       string                 `json:"content"`
-	MessageType   string                 `json:"message_type"`
-	Suggestions   []string               `json:"suggestions,omitempty"`
-	Products      []ProductSuggestion    `json:"products,omitempty"`
-	Actions       []ChatAction           `json:"actions,omitempty"`
-	Metadata      map[string]interface{} `json:"metadata,omitempty"`
-	TokensUsed    int                    `json:"tokens_used"`
-	ResponseTime  time.Duration          `json:"response_time"`
+	SessionID    string                 `json:"session_id"`
+	MessageID    string                 `json:"message_id"`
+	Content      string                 `json:"content"`
+	MessageType  string                 `json:"message_type"`
+	Suggestions  []string               `json:"suggestions,omitempty"`
+	Products     []ProductSuggestion    `json:"products,omitempty"`
+	Actions      []ChatAction           `json:"actions,omitempty"`
+	Metadata     map[string]interface{} `json:"metadata,omitempty"`
+	TokensUsed   int                    `json:"tokens_used"`
+	ResponseTime time.Duration          `json:"response_time"`
 }
 
 // ProductSuggestion represents a product recommendation
 type ProductSuggestion struct {
-	ID          uint    `json:"id"`
-	Name        string  `json:"name"`
-	Price       float64 `json:"price"`
-	Image       string  `json:"image"`
-	Rating      float64 `json:"rating"`
-	Reason      string  `json:"reason"`
-	Confidence  float64 `json:"confidence"`
+	ID         uint    `json:"id"`
+	Name       string  `json:"name"`
+	Price      float64 `json:"price"`
+	Image      string  `json:"image"`
+	Rating     float64 `json:"rating"`
+	Reason     string  `json:"reason"`
+	Confidence float64 `json:"confidence"`
 }
 
 // ChatAction represents an actionable item from chat
 type ChatAction struct {
-	Type        string                 `json:"type"` // add_to_cart, view_product, search, contact_support
-	Label       string                 `json:"label"`
-	URL         string                 `json:"url,omitempty"`
-	Data        map[string]interface{} `json:"data,omitempty"`
-	Priority    int                    `json:"priority"`
+	Type     string                 `json:"type"` // add_to_cart, view_product, search, contact_support
+	Label    string                 `json:"label"`
+	URL      string                 `json:"url,omitempty"`
+	Data     map[string]interface{} `json:"data,omitempty"`
+	Priority int                    `json:"priority"`
 }
 
 // ChatAnalytics represents chat analytics data
 type ChatAnalytics struct {
-	TotalSessions      int                    `json:"total_sessions"`
-	ActiveSessions     int                    `json:"active_sessions"`
-	AvgResponseTime    time.Duration          `json:"avg_response_time"`
-	AvgSessionLength   time.Duration          `json:"avg_session_length"`
-	TopIntents         []IntentAnalytics      `json:"top_intents"`
-	SatisfactionScore  float64                `json:"satisfaction_score"`
-	ConversionRate     float64                `json:"conversion_rate"`
-	TokensUsed         int                    `json:"tokens_used"`
-	CostAnalysis       map[string]interface{} `json:"cost_analysis"`
+	TotalSessions     int                    `json:"total_sessions"`
+	ActiveSessions    int                    `json:"active_sessions"`
+	AvgResponseTime   time.Duration          `json:"avg_response_time"`
+	AvgSessionLength  time.Duration          `json:"avg_session_length"`
+	TopIntents        []IntentAnalytics      `json:"top_intents"`
+	SatisfactionScore float64                `json:"satisfaction_score"`
+	ConversionRate    float64                `json:"conversion_rate"`
+	TokensUsed        int                    `json:"tokens_used"`
+	CostAnalysis      map[string]interface{} `json:"cost_analysis"`
 }
 
 // IntentAnalytics represents intent analysis data
@@ -602,7 +602,7 @@ func (s *AIChatService) callOpenAI(ctx context.Context, prompt, model string, ma
 		// Fallback response when API key is not configured
 		return "I'm KolajAI, your intelligent shopping assistant. I'm currently in demo mode. Please configure OpenAI API key for full functionality.", nil
 	}
-	
+
 	// Here you would implement actual OpenAI API call
 	// For now, return a contextual response based on the prompt
 	if strings.Contains(strings.ToLower(prompt), "product") {
@@ -610,13 +610,13 @@ func (s *AIChatService) callOpenAI(ctx context.Context, prompt, model string, ma
 	} else if strings.Contains(strings.ToLower(prompt), "order") {
 		return "I can help you track orders, process returns, and answer questions about your purchases. What would you like to know?", nil
 	}
-	
+
 	return "I'm KolajAI, your intelligent shopping assistant. How can I help you today?", nil
 }
 
 func (s *AIChatService) generateChatActions(message, context string) []ChatAction {
 	actions := []ChatAction{}
-	
+
 	if strings.Contains(strings.ToLower(message), "product") || context == "shopping" {
 		actions = append(actions, ChatAction{
 			Type:     "search",
@@ -644,12 +644,28 @@ func (s *AIChatService) generateSuggestions(_, _ string) []string {
 
 // Additional helper methods would be implemented here...
 func (s *AIChatService) buildIntentAnalysisPrompt(_, _ string) string { return "" }
-func (s *AIChatService) parseIntentResponse(response string) (*IntentAnalytics, error) { return nil, nil }
-func (s *AIChatService) getUserProfile(ctx context.Context, userID int64) (map[string]interface{}, error) { return nil, nil }
-func (s *AIChatService) buildRecommendationPrompt(message string, profile map[string]interface{}) string { return "" }
-func (s *AIChatService) parseRecommendations(ctx context.Context, response string, limit int) ([]ProductSuggestion, error) { return nil, nil }
-func (s *AIChatService) calculateAverages(ctx context.Context, start, end time.Time) (time.Duration, time.Duration) { return 0, 0 }
-func (s *AIChatService) getTopIntents(ctx context.Context, start, end time.Time) ([]IntentAnalytics, error) { return nil, nil }
-func (s *AIChatService) calculateSatisfactionScore(ctx context.Context, start, end time.Time) float64 { return 0.0 }
-func (s *AIChatService) calculateConversionRate(ctx context.Context, start, end time.Time) float64 { return 0.0 }
+func (s *AIChatService) parseIntentResponse(response string) (*IntentAnalytics, error) {
+	return nil, nil
+}
+func (s *AIChatService) getUserProfile(ctx context.Context, userID int64) (map[string]interface{}, error) {
+	return nil, nil
+}
+func (s *AIChatService) buildRecommendationPrompt(message string, profile map[string]interface{}) string {
+	return ""
+}
+func (s *AIChatService) parseRecommendations(ctx context.Context, response string, limit int) ([]ProductSuggestion, error) {
+	return nil, nil
+}
+func (s *AIChatService) calculateAverages(ctx context.Context, start, end time.Time) (time.Duration, time.Duration) {
+	return 0, 0
+}
+func (s *AIChatService) getTopIntents(ctx context.Context, start, end time.Time) ([]IntentAnalytics, error) {
+	return nil, nil
+}
+func (s *AIChatService) calculateSatisfactionScore(ctx context.Context, start, end time.Time) float64 {
+	return 0.0
+}
+func (s *AIChatService) calculateConversionRate(ctx context.Context, start, end time.Time) float64 {
+	return 0.0
+}
 func (s *AIChatService) calculateCostAnalysis(tokens int) map[string]interface{} { return nil }

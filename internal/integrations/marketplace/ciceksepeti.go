@@ -38,31 +38,31 @@ type CicekSepetiProduct struct {
 
 // CicekSepetiOrder represents ÇiçekSepeti order structure
 type CicekSepetiOrder struct {
-	OrderID        string                   `json:"orderId"`
-	OrderNumber    string                   `json:"orderNumber"`
-	OrderDate      time.Time                `json:"orderDate"`
-	Status         string                   `json:"status"`
-	CustomerInfo   CicekSepetiCustomer      `json:"customerInfo"`
-	ShippingInfo   CicekSepetiShipping      `json:"shippingInfo"`
-	OrderItems     []CicekSepetiOrderItem   `json:"orderItems"`
-	TotalAmount    float64                  `json:"totalAmount"`
-	PaymentMethod  string                   `json:"paymentMethod"`
+	OrderID       string                 `json:"orderId"`
+	OrderNumber   string                 `json:"orderNumber"`
+	OrderDate     time.Time              `json:"orderDate"`
+	Status        string                 `json:"status"`
+	CustomerInfo  CicekSepetiCustomer    `json:"customerInfo"`
+	ShippingInfo  CicekSepetiShipping    `json:"shippingInfo"`
+	OrderItems    []CicekSepetiOrderItem `json:"orderItems"`
+	TotalAmount   float64                `json:"totalAmount"`
+	PaymentMethod string                 `json:"paymentMethod"`
 }
 
 // CicekSepetiCustomer represents customer information
 type CicekSepetiCustomer struct {
-	CustomerID   string `json:"customerId"`
-	FirstName    string `json:"firstName"`
-	LastName     string `json:"lastName"`
-	Email        string `json:"email"`
-	Phone        string `json:"phone"`
+	CustomerID string `json:"customerId"`
+	FirstName  string `json:"firstName"`
+	LastName   string `json:"lastName"`
+	Email      string `json:"email"`
+	Phone      string `json:"phone"`
 }
 
 // CicekSepetiShipping represents shipping information
 type CicekSepetiShipping struct {
 	Address     CicekSepetiAddress `json:"address"`
-	CarrierCode string            `json:"carrierCode"`
-	TrackingNo  string            `json:"trackingNo"`
+	CarrierCode string             `json:"carrierCode"`
+	TrackingNo  string             `json:"trackingNo"`
 }
 
 // CicekSepetiAddress represents address information
@@ -105,7 +105,7 @@ func NewCicekSepetiProvider() *CicekSepetiProvider {
 		baseURL: "https://api.ciceksepeti.com/v1", // Hypothetical API endpoint
 		rateLimit: integrations.RateLimitInfo{
 			RequestsPerSecond: 10,
-			BurstSize:        20,
+			BurstSize:         20,
 		},
 	}
 }
@@ -114,12 +114,12 @@ func NewCicekSepetiProvider() *CicekSepetiProvider {
 func (p *CicekSepetiProvider) Initialize(ctx context.Context, credentials integrations.Credentials, config map[string]interface{}) error {
 	p.credentials = credentials
 	p.apiKey = credentials.APIKey
-	
+
 	// Set base URL based on environment
 	if env, ok := config["environment"].(string); ok && env == "sandbox" {
 		p.baseURL = "https://api-test.ciceksepeti.com/v1"
 	}
-	
+
 	// Test connection
 	return p.testConnection(ctx)
 }
@@ -143,7 +143,7 @@ func (p *CicekSepetiProvider) IsHealthy(ctx context.Context) (bool, error) {
 func (p *CicekSepetiProvider) GetMetrics() map[string]interface{} {
 	return map[string]interface{}{
 		"rate_limit_remaining": p.rateLimit.RequestsPerSecond,
-		"last_request_time":   time.Now().Unix(),
+		"last_request_time":    time.Now().Unix(),
 	}
 }
 
@@ -159,13 +159,13 @@ func (p *CicekSepetiProvider) SyncProducts(ctx context.Context, products []inter
 		if !ok {
 			continue
 		}
-		
+
 		cicekSepetiProduct := p.convertToCicekSepetiProduct(productMap)
 		if err := p.createOrUpdateProduct(ctx, cicekSepetiProduct); err != nil {
 			return fmt.Errorf("failed to sync product %s: %v", cicekSepetiProduct.SKU, err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -176,27 +176,27 @@ func (p *CicekSepetiProvider) UpdateStockAndPrice(ctx context.Context, updates [
 		if !ok {
 			continue
 		}
-		
+
 		sku, _ := updateMap["sku"].(string)
 		quantity, _ := updateMap["quantity"].(int)
 		price, _ := updateMap["price"].(float64)
-		
+
 		if err := p.updateProductStock(ctx, sku, quantity); err != nil {
 			return fmt.Errorf("failed to update stock for %s: %v", sku, err)
 		}
-		
+
 		if err := p.updateProductPrice(ctx, sku, price); err != nil {
 			return fmt.Errorf("failed to update price for %s: %v", sku, err)
 		}
 	}
-	
+
 	return nil
 }
 
 // GetProducts retrieves products from ÇiçekSepeti
 func (p *CicekSepetiProvider) GetProducts(ctx context.Context, params map[string]interface{}) ([]interface{}, error) {
 	endpoint := "/products"
-	
+
 	queryParams := url.Values{}
 	if page, ok := params["page"].(int); ok {
 		queryParams.Set("page", fmt.Sprintf("%d", page))
@@ -204,34 +204,34 @@ func (p *CicekSepetiProvider) GetProducts(ctx context.Context, params map[string
 	if limit, ok := params["limit"].(int); ok {
 		queryParams.Set("limit", fmt.Sprintf("%d", limit))
 	}
-	
+
 	response, err := p.makeRequest(ctx, "GET", endpoint+"?"+queryParams.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var apiResponse CicekSepetiAPIResponse
 	if err := json.Unmarshal(response, &apiResponse); err != nil {
 		return nil, err
 	}
-	
+
 	if !apiResponse.Success {
 		return nil, fmt.Errorf("ÇiçekSepeti API error: %s", apiResponse.Error.Message)
 	}
-	
+
 	// Convert response to standard format
 	products := make([]interface{}, 0)
 	if data, ok := apiResponse.Data.([]interface{}); ok {
 		products = data
 	}
-	
+
 	return products, nil
 }
 
 // GetOrders retrieves orders from ÇiçekSepeti
 func (p *CicekSepetiProvider) GetOrders(ctx context.Context, params map[string]interface{}) ([]interface{}, error) {
 	endpoint := "/orders"
-	
+
 	queryParams := url.Values{}
 	if page, ok := params["page"].(int); ok {
 		queryParams.Set("page", fmt.Sprintf("%d", page))
@@ -242,38 +242,38 @@ func (p *CicekSepetiProvider) GetOrders(ctx context.Context, params map[string]i
 	if status, ok := params["status"].(string); ok {
 		queryParams.Set("status", status)
 	}
-	
+
 	response, err := p.makeRequest(ctx, "GET", endpoint+"?"+queryParams.Encode(), nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var apiResponse CicekSepetiAPIResponse
 	if err := json.Unmarshal(response, &apiResponse); err != nil {
 		return nil, err
 	}
-	
+
 	if !apiResponse.Success {
 		return nil, fmt.Errorf("ÇiçekSepeti API error: %s", apiResponse.Error.Message)
 	}
-	
+
 	// Convert response to standard format
 	orders := make([]interface{}, 0)
 	if data, ok := apiResponse.Data.([]interface{}); ok {
 		orders = data
 	}
-	
+
 	return orders, nil
 }
 
 // UpdateOrderStatus updates order status
 func (p *CicekSepetiProvider) UpdateOrderStatus(ctx context.Context, orderID string, status string, params map[string]interface{}) error {
 	endpoint := fmt.Sprintf("/orders/%s/status", orderID)
-	
+
 	requestData := map[string]interface{}{
 		"status": status,
 	}
-	
+
 	// Add tracking info if provided
 	if trackingNo, ok := params["tracking_no"].(string); ok {
 		requestData["trackingNo"] = trackingNo
@@ -281,75 +281,75 @@ func (p *CicekSepetiProvider) UpdateOrderStatus(ctx context.Context, orderID str
 	if carrierCode, ok := params["carrier_code"].(string); ok {
 		requestData["carrierCode"] = carrierCode
 	}
-	
+
 	response, err := p.makeRequest(ctx, "PUT", endpoint, requestData)
 	if err != nil {
 		return err
 	}
-	
+
 	var apiResponse CicekSepetiAPIResponse
 	if err := json.Unmarshal(response, &apiResponse); err != nil {
 		return err
 	}
-	
+
 	if !apiResponse.Success {
 		return fmt.Errorf("ÇiçekSepeti API error: %s", apiResponse.Error.Message)
 	}
-	
+
 	return nil
 }
 
 // GetCategories retrieves categories from ÇiçekSepeti
 func (p *CicekSepetiProvider) GetCategories(ctx context.Context) ([]interface{}, error) {
 	endpoint := "/categories"
-	
+
 	response, err := p.makeRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var apiResponse CicekSepetiAPIResponse
 	if err := json.Unmarshal(response, &apiResponse); err != nil {
 		return nil, err
 	}
-	
+
 	if !apiResponse.Success {
 		return nil, fmt.Errorf("ÇiçekSepeti API error: %s", apiResponse.Error.Message)
 	}
-	
+
 	// Convert response to standard format
 	categories := make([]interface{}, 0)
 	if data, ok := apiResponse.Data.([]interface{}); ok {
 		categories = data
 	}
-	
+
 	return categories, nil
 }
 
 // GetBrands retrieves brands from ÇiçekSepeti
 func (p *CicekSepetiProvider) GetBrands(ctx context.Context) ([]interface{}, error) {
 	endpoint := "/brands"
-	
+
 	response, err := p.makeRequest(ctx, "GET", endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var apiResponse CicekSepetiAPIResponse
 	if err := json.Unmarshal(response, &apiResponse); err != nil {
 		return nil, err
 	}
-	
+
 	if !apiResponse.Success {
 		return nil, fmt.Errorf("ÇiçekSepeti API error: %s", apiResponse.Error.Message)
 	}
-	
+
 	// Convert response to standard format
 	brands := make([]interface{}, 0)
 	if data, ok := apiResponse.Data.([]interface{}); ok {
 		brands = data
 	}
-	
+
 	return brands, nil
 }
 
@@ -360,7 +360,7 @@ func (p *CicekSepetiProvider) testConnection(ctx context.Context) error {
 	if p.apiKey == "" {
 		return fmt.Errorf("API key is required")
 	}
-	
+
 	return nil
 }
 
@@ -374,23 +374,23 @@ func (p *CicekSepetiProvider) makeRequest(ctx context.Context, method, endpoint 
 			return nil, err
 		}
 	}
-	
+
 	url := p.baseURL + endpoint
 	req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		return nil, err
 	}
-	
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+p.apiKey)
 	req.Header.Set("User-Agent", "KolajAI-CicekSepeti-Integration/1.0")
-	
+
 	resp, err := p.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	responseBody := make([]byte, 0)
 	buf := make([]byte, 1024)
 	for {
@@ -402,34 +402,34 @@ func (p *CicekSepetiProvider) makeRequest(ctx context.Context, method, endpoint 
 			break
 		}
 	}
-	
+
 	if resp.StatusCode >= 400 {
 		return nil, fmt.Errorf("ÇiçekSepeti API error: %d - %s", resp.StatusCode, string(responseBody))
 	}
-	
+
 	return responseBody, nil
 }
 
 // createOrUpdateProduct creates or updates a product
 func (p *CicekSepetiProvider) createOrUpdateProduct(ctx context.Context, product CicekSepetiProduct) error {
 	endpoint := "/products"
-	
+
 	_, err := p.makeRequest(ctx, "POST", endpoint, product)
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
 // updateProductStock updates product stock
 func (p *CicekSepetiProvider) updateProductStock(ctx context.Context, sku string, stock int) error {
 	endpoint := fmt.Sprintf("/products/%s/stock", sku)
-	
+
 	requestData := map[string]interface{}{
 		"stock": stock,
 	}
-	
+
 	_, err := p.makeRequest(ctx, "PUT", endpoint, requestData)
 	return err
 }
@@ -437,11 +437,11 @@ func (p *CicekSepetiProvider) updateProductStock(ctx context.Context, sku string
 // updateProductPrice updates product price
 func (p *CicekSepetiProvider) updateProductPrice(ctx context.Context, sku string, price float64) error {
 	endpoint := fmt.Sprintf("/products/%s/price", sku)
-	
+
 	requestData := map[string]interface{}{
 		"price": price,
 	}
-	
+
 	_, err := p.makeRequest(ctx, "PUT", endpoint, requestData)
 	return err
 }
@@ -459,7 +459,7 @@ func (p *CicekSepetiProvider) convertToCicekSepetiProduct(product map[string]int
 		Barcode:     getString(product, "barcode"),
 		Attributes:  make(map[string]interface{}),
 	}
-	
+
 	// Set images
 	if images, ok := product["images"].([]interface{}); ok {
 		imageList := make([]string, 0)
@@ -470,11 +470,11 @@ func (p *CicekSepetiProvider) convertToCicekSepetiProduct(product map[string]int
 		}
 		cicekSepetiProduct.Images = imageList
 	}
-	
+
 	// Set attributes
 	if attributes, ok := product["attributes"].(map[string]interface{}); ok {
 		cicekSepetiProduct.Attributes = attributes
 	}
-	
+
 	return cicekSepetiProduct
 }

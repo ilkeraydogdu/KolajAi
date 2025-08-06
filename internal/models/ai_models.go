@@ -29,29 +29,29 @@ type AICreditTransaction struct {
 
 // AIGeneratedContent represents AI-generated content
 type AIGeneratedContent struct {
-	ID          int64     `json:"id" db:"id"`
-	UserID      int64     `json:"user_id" db:"user_id"`
-	Type        string    `json:"type" db:"type"` // image, text, template
-	Model       string    `json:"model" db:"model"`
-	Prompt      string    `json:"prompt" db:"prompt"`
-	Content     string    `json:"content" db:"content"`
-	Metadata    JSONB     `json:"metadata" db:"metadata"`
-	Credits     int       `json:"credits" db:"credits"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	ID        int64     `json:"id" db:"id"`
+	UserID    int64     `json:"user_id" db:"user_id"`
+	Type      string    `json:"type" db:"type"` // image, text, template
+	Model     string    `json:"model" db:"model"`
+	Prompt    string    `json:"prompt" db:"prompt"`
+	Content   string    `json:"content" db:"content"`
+	Metadata  JSONB     `json:"metadata" db:"metadata"`
+	Credits   int       `json:"credits" db:"credits"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
 // AITemplate represents AI-generated templates
 type AITemplate struct {
-	ID          int64     `json:"id" db:"id"`
-	UserID      int64     `json:"user_id" db:"user_id"`
-	Name        string    `json:"name" db:"name"`
-	Type        string    `json:"type" db:"type"` // instagram_post, telegram_ad, etc.
-	Design      JSONB     `json:"design" db:"design"`
-	Thumbnail   string    `json:"thumbnail" db:"thumbnail"`
-	IsPublic    bool      `json:"is_public" db:"is_public"`
-	UsageCount  int       `json:"usage_count" db:"usage_count"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+	ID         int64     `json:"id" db:"id"`
+	UserID     int64     `json:"user_id" db:"user_id"`
+	Name       string    `json:"name" db:"name"`
+	Type       string    `json:"type" db:"type"` // instagram_post, telegram_ad, etc.
+	Design     JSONB     `json:"design" db:"design"`
+	Thumbnail  string    `json:"thumbnail" db:"thumbnail"`
+	IsPublic   bool      `json:"is_public" db:"is_public"`
+	UsageCount int       `json:"usage_count" db:"usage_count"`
+	CreatedAt  time.Time `json:"created_at" db:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at" db:"updated_at"`
 }
 
 // AIChatSession represents AI chat sessions

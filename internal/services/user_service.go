@@ -17,9 +17,9 @@ import (
 
 // UserService handles user-related operations
 type UserService struct {
-	repo     *repository.BaseRepository
-	db       *sql.DB
-	authSvc  *AuthService
+	repo    *repository.BaseRepository
+	db      *sql.DB
+	authSvc *AuthService
 }
 
 // NewUserService creates a new user service
@@ -64,13 +64,13 @@ type UserProfile struct {
 
 // UserStats represents user statistics
 type UserStats struct {
-	TotalOrders    int     `json:"total_orders"`
-	TotalSpent     float64 `json:"total_spent"`
-	ReviewsCount   int     `json:"reviews_count"`
-	WishlistCount  int     `json:"wishlist_count"`
-	LoyaltyPoints  int     `json:"loyalty_points"`
-	MemberSince    time.Time `json:"member_since"`
-	LastActivity   time.Time `json:"last_activity"`
+	TotalOrders   int       `json:"total_orders"`
+	TotalSpent    float64   `json:"total_spent"`
+	ReviewsCount  int       `json:"reviews_count"`
+	WishlistCount int       `json:"wishlist_count"`
+	LoyaltyPoints int       `json:"loyalty_points"`
+	MemberSince   time.Time `json:"member_since"`
+	LastActivity  time.Time `json:"last_activity"`
 }
 
 // RegisterUser creates a new user account
@@ -215,15 +215,15 @@ func (s *UserService) GetUserByEmail(email string) (*models.User, error) {
 	}
 
 	email = strings.ToLower(strings.TrimSpace(email))
-	
+
 	query := "SELECT id, name, email, password, phone, is_active, is_admin, created_at, updated_at FROM users WHERE email = ?"
-	
+
 	var user models.User
 	err := s.db.QueryRow(query, email).Scan(
 		&user.ID, &user.Name, &user.Email, &user.Password, &user.Phone,
 		&user.IsActive, &user.IsAdmin, &user.CreatedAt, &user.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("user not found")
@@ -336,7 +336,7 @@ func (s *UserService) RequestPasswordReset(email string) error {
 	// Send password reset email (basic implementation)
 	// Production'da gerçek email service kullanılmalı
 	fmt.Printf("Password reset email sent to %s with token: %s\n", email, resetToken)
-	
+
 	// Burada gerçek email gönderme servisi entegrasyonu olacak
 	// Örneğin: s.emailService.SendPasswordResetEmail(email, resetToken)
 
@@ -574,7 +574,7 @@ func (s *UserService) createCustomerProfile(user *models.User, newsletterOptIn b
 
 func (s *UserService) getCustomerByUserID(userID int) (*models.Customer, error) {
 	query := "SELECT id, user_id, first_name, last_name, phone, language, currency, newsletter, sms_notifications, status, tier, total_orders, total_spent, created_at, updated_at FROM customers WHERE user_id = ?"
-	
+
 	var customer models.Customer
 	err := s.db.QueryRow(query, userID).Scan(
 		&customer.ID, &customer.UserID, &customer.FirstName, &customer.LastName,
@@ -582,7 +582,7 @@ func (s *UserService) getCustomerByUserID(userID int) (*models.Customer, error) 
 		&customer.SMSNotifications, &customer.Status, &customer.Tier,
 		&customer.TotalOrders, &customer.TotalSpent, &customer.CreatedAt, &customer.UpdatedAt,
 	)
-	
+
 	if err != nil {
 		return nil, err
 	}

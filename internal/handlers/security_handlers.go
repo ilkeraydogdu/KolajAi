@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
-	"log"
 )
 
 // SecurityHandler handles security management requests
@@ -76,24 +76,24 @@ func (h *SecurityHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	// Get active threats
 	activeThreats := []map[string]interface{}{
 		{
-			"id":          1,
-			"type":        "brute_force",
-			"source_ip":   "192.168.1.100",
-			"target":      "login endpoint",
-			"attempts":    25,
-			"blocked":     true,
-			"first_seen":  time.Now().Add(-6 * time.Hour),
-			"last_seen":   time.Now().Add(-10 * time.Minute),
+			"id":         1,
+			"type":       "brute_force",
+			"source_ip":  "192.168.1.100",
+			"target":     "login endpoint",
+			"attempts":   25,
+			"blocked":    true,
+			"first_seen": time.Now().Add(-6 * time.Hour),
+			"last_seen":  time.Now().Add(-10 * time.Minute),
 		},
 		{
-			"id":          2,
-			"type":        "sql_injection",
-			"source_ip":   "10.0.0.75",
-			"target":      "/api/products",
-			"attempts":    8,
-			"blocked":     true,
-			"first_seen":  time.Now().Add(-2 * time.Hour),
-			"last_seen":   time.Now().Add(-30 * time.Minute),
+			"id":         2,
+			"type":       "sql_injection",
+			"source_ip":  "10.0.0.75",
+			"target":     "/api/products",
+			"attempts":   8,
+			"blocked":    true,
+			"first_seen": time.Now().Add(-2 * time.Hour),
+			"last_seen":  time.Now().Add(-30 * time.Minute),
 		},
 	}
 
@@ -169,40 +169,40 @@ func (h *SecurityHandler) Threats(w http.ResponseWriter, r *http.Request) {
 	// Get threat data
 	threats := []map[string]interface{}{
 		{
-			"id":          1,
-			"type":        "brute_force",
-			"severity":    "high",
-			"source_ip":   "192.168.1.100",
-			"target":      "login endpoint",
-			"attempts":    25,
-			"blocked":     true,
-			"first_seen":  time.Now().Add(-6 * time.Hour),
-			"last_seen":   time.Now().Add(-10 * time.Minute),
-			"status":      "active",
+			"id":         1,
+			"type":       "brute_force",
+			"severity":   "high",
+			"source_ip":  "192.168.1.100",
+			"target":     "login endpoint",
+			"attempts":   25,
+			"blocked":    true,
+			"first_seen": time.Now().Add(-6 * time.Hour),
+			"last_seen":  time.Now().Add(-10 * time.Minute),
+			"status":     "active",
 		},
 		{
-			"id":          2,
-			"type":        "sql_injection",
-			"severity":    "critical",
-			"source_ip":   "10.0.0.75",
-			"target":      "/api/products",
-			"attempts":    8,
-			"blocked":     true,
-			"first_seen":  time.Now().Add(-2 * time.Hour),
-			"last_seen":   time.Now().Add(-30 * time.Minute),
-			"status":      "blocked",
+			"id":         2,
+			"type":       "sql_injection",
+			"severity":   "critical",
+			"source_ip":  "10.0.0.75",
+			"target":     "/api/products",
+			"attempts":   8,
+			"blocked":    true,
+			"first_seen": time.Now().Add(-2 * time.Hour),
+			"last_seen":  time.Now().Add(-30 * time.Minute),
+			"status":     "blocked",
 		},
 		{
-			"id":          3,
-			"type":        "xss_attempt",
-			"severity":    "medium",
-			"source_ip":   "203.0.113.50",
-			"target":      "/admin/products",
-			"attempts":    3,
-			"blocked":     true,
-			"first_seen":  time.Now().Add(-1 * time.Hour),
-			"last_seen":   time.Now().Add(-45 * time.Minute),
-			"status":      "monitored",
+			"id":         3,
+			"type":       "xss_attempt",
+			"severity":   "medium",
+			"source_ip":  "203.0.113.50",
+			"target":     "/admin/products",
+			"attempts":   3,
+			"blocked":    true,
+			"first_seen": time.Now().Add(-1 * time.Hour),
+			"last_seen":  time.Now().Add(-45 * time.Minute),
+			"status":     "monitored",
 		},
 	}
 
@@ -224,33 +224,33 @@ func (h *SecurityHandler) Settings(w http.ResponseWriter, r *http.Request) {
 	// Get security settings
 	settings := map[string]interface{}{
 		"password_policy": map[string]interface{}{
-			"min_length":       8,
+			"min_length":        8,
 			"require_uppercase": true,
 			"require_lowercase": true,
 			"require_numbers":   true,
 			"require_symbols":   true,
-			"max_age_days":     90,
+			"max_age_days":      90,
 		},
 		"session_settings": map[string]interface{}{
-			"timeout_minutes":    30,
-			"remember_me_days":   7,
+			"timeout_minutes":     30,
+			"remember_me_days":    7,
 			"concurrent_sessions": 3,
 		},
 		"2fa_settings": map[string]interface{}{
-			"enabled":         true,
-			"required_roles":  []string{"admin", "moderator"},
-			"backup_codes":    true,
+			"enabled":        true,
+			"required_roles": []string{"admin", "moderator"},
+			"backup_codes":   true,
 		},
 		"oauth_settings": map[string]interface{}{
-			"google_enabled":    true,
-			"github_enabled":    true,
-			"facebook_enabled":  false,
+			"google_enabled":   true,
+			"github_enabled":   true,
+			"facebook_enabled": false,
 		},
 		"security_headers": map[string]interface{}{
-			"csp_enabled":       true,
-			"hsts_enabled":      true,
-			"xframe_options":    "DENY",
-			"xss_protection":    true,
+			"csp_enabled":    true,
+			"hsts_enabled":   true,
+			"xframe_options": "DENY",
+			"xss_protection": true,
 		},
 	}
 
@@ -272,14 +272,14 @@ func (h *SecurityHandler) APIGetSecurityStats(w http.ResponseWriter, r *http.Req
 	}
 
 	stats := map[string]interface{}{
-		"active_sessions":     245,
-		"failed_logins":       18,
-		"blocked_ips":         5,
-		"2fa_enabled_users":   180,
-		"oauth_connections":   95,
-		"security_alerts":     3,
-		"jwt_tokens_active":   320,
-		"threat_level":        "medium",
+		"active_sessions":   245,
+		"failed_logins":     18,
+		"blocked_ips":       5,
+		"2fa_enabled_users": 180,
+		"oauth_connections": 95,
+		"security_alerts":   3,
+		"jwt_tokens_active": 320,
+		"threat_level":      "medium",
 	}
 
 	w.Header().Set("Content-Type", "application/json")

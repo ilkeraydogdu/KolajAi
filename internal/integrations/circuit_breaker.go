@@ -33,12 +33,12 @@ func (s CircuitBreakerState) String() string {
 
 // CircuitBreaker implements the circuit breaker pattern
 type CircuitBreaker struct {
-	name            string
-	maxFailures     int
-	resetTimeout    time.Duration
-	halfOpenCalls   int
-	onStateChange   func(name string, from, to CircuitBreakerState)
-	
+	name          string
+	maxFailures   int
+	resetTimeout  time.Duration
+	halfOpenCalls int
+	onStateChange func(name string, from, to CircuitBreakerState)
+
 	mu              sync.Mutex
 	state           CircuitBreakerState
 	failures        int
@@ -49,18 +49,18 @@ type CircuitBreaker struct {
 
 // CircuitBreakerConfigNew holds configuration for circuit breaker
 type CircuitBreakerConfigNew struct {
-	Name            string
-	MaxFailures     int
-	ResetTimeout    time.Duration
-	HalfOpenCalls   int
-	OnStateChange   func(name string, from, to CircuitBreakerState)
+	Name          string
+	MaxFailures   int
+	ResetTimeout  time.Duration
+	HalfOpenCalls int
+	OnStateChange func(name string, from, to CircuitBreakerState)
 }
 
 // DefaultCircuitBreakerConfigNew returns default circuit breaker configuration
 var DefaultCircuitBreakerConfigNew = CircuitBreakerConfigNew{
-	MaxFailures:     5,
-	ResetTimeout:    60 * time.Second,
-	HalfOpenCalls:   3,
+	MaxFailures:   5,
+	ResetTimeout:  60 * time.Second,
+	HalfOpenCalls: 3,
 }
 
 // NewCircuitBreaker creates a new circuit breaker
@@ -74,7 +74,7 @@ func NewCircuitBreaker(config CircuitBreakerConfigNew) *CircuitBreaker {
 	if config.HalfOpenCalls <= 0 {
 		config.HalfOpenCalls = DefaultCircuitBreakerConfigNew.HalfOpenCalls
 	}
-	
+
 	return &CircuitBreaker{
 		name:          config.Name,
 		maxFailures:   config.MaxFailures,
@@ -96,10 +96,10 @@ func (cb *CircuitBreaker) Execute(fn func() (interface{}, error)) (interface{}, 
 			Timestamp: time.Now(),
 		}
 	}
-	
+
 	result, err := fn()
 	cb.recordResult(err)
-	
+
 	return result, err
 }
 
@@ -107,13 +107,13 @@ func (cb *CircuitBreaker) Execute(fn func() (interface{}, error)) (interface{}, 
 func (cb *CircuitBreaker) canExecute() bool {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
-	
+
 	now := time.Now()
-	
+
 	switch cb.state {
 	case StateClosed:
 		return true
-		
+
 	case StateOpen:
 		// Check if we should transition to half-open
 		if now.Sub(cb.lastFailureTime) > cb.resetTimeout {
@@ -122,7 +122,7 @@ func (cb *CircuitBreaker) canExecute() bool {
 			return true
 		}
 		return false
-		
+
 	case StateHalfOpen:
 		// Allow limited requests in half-open state
 		if cb.halfOpenAllowed > 0 {
@@ -130,7 +130,7 @@ func (cb *CircuitBreaker) canExecute() bool {
 			return true
 		}
 		return false
-		
+
 	default:
 		return false
 	}
@@ -140,7 +140,7 @@ func (cb *CircuitBreaker) canExecute() bool {
 func (cb *CircuitBreaker) recordResult(err error) {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
-	
+
 	if err != nil {
 		cb.onFailure()
 	} else {
@@ -154,7 +154,7 @@ func (cb *CircuitBreaker) onSuccess() {
 	case StateClosed:
 		// Reset failure count on success
 		cb.failures = 0
-		
+
 	case StateHalfOpen:
 		cb.successCount++
 		// If we've had enough successes in half-open state, close the circuit
@@ -163,7 +163,7 @@ func (cb *CircuitBreaker) onSuccess() {
 			cb.failures = 0
 			cb.successCount = 0
 		}
-		
+
 	case StateOpen:
 		// This shouldn't happen, but handle it anyway
 		cb.failures = 0
@@ -173,19 +173,19 @@ func (cb *CircuitBreaker) onSuccess() {
 // onFailure handles failed execution
 func (cb *CircuitBreaker) onFailure() {
 	cb.lastFailureTime = time.Now()
-	
+
 	switch cb.state {
 	case StateClosed:
 		cb.failures++
 		if cb.failures >= cb.maxFailures {
 			cb.changeState(StateOpen)
 		}
-		
+
 	case StateHalfOpen:
 		// Any failure in half-open state opens the circuit again
 		cb.changeState(StateOpen)
 		cb.successCount = 0
-		
+
 	case StateOpen:
 		// Already open, just update the failure time
 	}
@@ -196,10 +196,10 @@ func (cb *CircuitBreaker) changeState(newState CircuitBreakerState) {
 	if cb.state == newState {
 		return
 	}
-	
+
 	oldState := cb.state
 	cb.state = newState
-	
+
 	if cb.onStateChange != nil {
 		// Call the callback in a goroutine to avoid blocking
 		go cb.onStateChange(cb.name, oldState, newState)
@@ -217,7 +217,7 @@ func (cb *CircuitBreaker) GetState() CircuitBreakerState {
 func (cb *CircuitBreaker) GetStats() CircuitBreakerStats {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
-	
+
 	return CircuitBreakerStats{
 		Name:            cb.name,
 		State:           cb.state.String(),
@@ -242,7 +242,7 @@ type CircuitBreakerStats struct {
 func (cb *CircuitBreaker) Reset() {
 	cb.mu.Lock()
 	defer cb.mu.Unlock()
-	
+
 	cb.changeState(StateClosed)
 	cb.failures = 0
 	cb.successCount = 0
@@ -269,26 +269,26 @@ func (cbm *CircuitBreakerManager) GetBreaker(name string) *CircuitBreaker {
 	cbm.mu.RLock()
 	breaker, exists := cbm.breakers[name]
 	cbm.mu.RUnlock()
-	
+
 	if exists {
 		return breaker
 	}
-	
+
 	cbm.mu.Lock()
 	defer cbm.mu.Unlock()
-	
+
 	// Double-check after acquiring write lock
 	breaker, exists = cbm.breakers[name]
 	if exists {
 		return breaker
 	}
-	
+
 	// Create new breaker with default config
 	config := cbm.config
 	config.Name = name
 	breaker = NewCircuitBreaker(config)
 	cbm.breakers[name] = breaker
-	
+
 	return breaker
 }
 
@@ -296,12 +296,12 @@ func (cbm *CircuitBreakerManager) GetBreaker(name string) *CircuitBreaker {
 func (cbm *CircuitBreakerManager) GetAllStats() map[string]CircuitBreakerStats {
 	cbm.mu.RLock()
 	defer cbm.mu.RUnlock()
-	
+
 	stats := make(map[string]CircuitBreakerStats)
 	for name, breaker := range cbm.breakers {
 		stats[name] = breaker.GetStats()
 	}
-	
+
 	return stats
 }
 
@@ -309,7 +309,7 @@ func (cbm *CircuitBreakerManager) GetAllStats() map[string]CircuitBreakerStats {
 func (cbm *CircuitBreakerManager) ResetAll() {
 	cbm.mu.RLock()
 	defer cbm.mu.RUnlock()
-	
+
 	for _, breaker := range cbm.breakers {
 		breaker.Reset()
 	}

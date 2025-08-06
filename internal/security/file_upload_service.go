@@ -27,19 +27,19 @@ type FileUploadService struct {
 
 // FileUploadConfig holds file upload security configuration
 type FileUploadConfig struct {
-	MaxFileSize       int64             `json:"max_file_size"`       // bytes
-	AllowedTypes      []string          `json:"allowed_types"`       // MIME types
-	AllowedExtensions []string          `json:"allowed_extensions"`  // file extensions
-	BlockedTypes      []string          `json:"blocked_types"`       // blocked MIME types
-	BlockedExtensions []string          `json:"blocked_extensions"`  // blocked extensions
-	ScanForViruses    bool              `json:"scan_for_viruses"`
-	ScanForMalware    bool              `json:"scan_for_malware"`
-	CheckMagicBytes   bool              `json:"check_magic_bytes"`
-	RenameFiles       bool              `json:"rename_files"`
-	CreateThumbnails  bool              `json:"create_thumbnails"`
-	MaxDimensions     ImageDimensions   `json:"max_dimensions"`
-	CompressionRules  CompressionRules  `json:"compression_rules"`
-	StorageRules      StorageRules      `json:"storage_rules"`
+	MaxFileSize       int64            `json:"max_file_size"`      // bytes
+	AllowedTypes      []string         `json:"allowed_types"`      // MIME types
+	AllowedExtensions []string         `json:"allowed_extensions"` // file extensions
+	BlockedTypes      []string         `json:"blocked_types"`      // blocked MIME types
+	BlockedExtensions []string         `json:"blocked_extensions"` // blocked extensions
+	ScanForViruses    bool             `json:"scan_for_viruses"`
+	ScanForMalware    bool             `json:"scan_for_malware"`
+	CheckMagicBytes   bool             `json:"check_magic_bytes"`
+	RenameFiles       bool             `json:"rename_files"`
+	CreateThumbnails  bool             `json:"create_thumbnails"`
+	MaxDimensions     ImageDimensions  `json:"max_dimensions"`
+	CompressionRules  CompressionRules `json:"compression_rules"`
+	StorageRules      StorageRules     `json:"storage_rules"`
 }
 
 // ImageDimensions represents maximum image dimensions
@@ -51,16 +51,16 @@ type ImageDimensions struct {
 // CompressionRules represents file compression rules
 type CompressionRules struct {
 	CompressImages bool    `json:"compress_images"`
-	ImageQuality   int     `json:"image_quality"`   // 1-100
-	CompressRatio  float64 `json:"compress_ratio"`  // 0.1-1.0
+	ImageQuality   int     `json:"image_quality"`  // 1-100
+	CompressRatio  float64 `json:"compress_ratio"` // 0.1-1.0
 }
 
 // StorageRules represents file storage rules
 type StorageRules struct {
-	UseSecureNaming   bool   `json:"use_secure_naming"`
+	UseSecureNaming    bool   `json:"use_secure_naming"`
 	DirectoryStructure string `json:"directory_structure"` // "date", "user", "type"
-	EncryptFiles      bool   `json:"encrypt_files"`
-	BackupFiles       bool   `json:"backup_files"`
+	EncryptFiles       bool   `json:"encrypt_files"`
+	BackupFiles        bool   `json:"backup_files"`
 }
 
 // UploadResult represents file upload result
@@ -89,11 +89,11 @@ type ScanResults struct {
 
 // FileScanResult represents individual scan result
 type FileScanResult struct {
-	Clean       bool      `json:"clean"`
-	Threats     []string  `json:"threats,omitempty"`
-	Scanner     string    `json:"scanner"`
-	ScannedAt   time.Time `json:"scanned_at"`
-	ScanTime    int64     `json:"scan_time_ms"`
+	Clean     bool      `json:"clean"`
+	Threats   []string  `json:"threats,omitempty"`
+	Scanner   string    `json:"scanner"`
+	ScannedAt time.Time `json:"scanned_at"`
+	ScanTime  int64     `json:"scan_time_ms"`
 }
 
 // FileRecord represents uploaded file record
@@ -231,7 +231,7 @@ func (f *FileUploadService) UploadFile(userID int64, filename string, content io
 			result.Warnings = append(result.Warnings, fmt.Sprintf("Security scan failed: %v", err))
 		} else {
 			result.ScanResults = scanResults
-			
+
 			// Check if file is safe
 			if !scanResults.VirusScan.Clean || !scanResults.MalwareScan.Clean {
 				// Move to quarantine
@@ -380,11 +380,11 @@ func (f *FileUploadService) generateSecureFilename(originalName string) string {
 	// Generate UUID-like name
 	timestamp := time.Now().UnixNano()
 	ext := filepath.Ext(originalName)
-	
+
 	// Create hash of original name + timestamp
 	hash := sha256.Sum256([]byte(fmt.Sprintf("%s_%d", originalName, timestamp)))
 	name := hex.EncodeToString(hash[:8]) // Use first 8 bytes
-	
+
 	return name + ext
 }
 
@@ -392,14 +392,14 @@ func (f *FileUploadService) sanitizeFilename(filename string) string {
 	// Remove dangerous characters
 	reg := regexp.MustCompile(`[^a-zA-Z0-9._-]`)
 	sanitized := reg.ReplaceAllString(filename, "_")
-	
+
 	// Limit length
 	if len(sanitized) > 255 {
 		ext := filepath.Ext(sanitized)
 		name := sanitized[:255-len(ext)]
 		sanitized = name + ext
 	}
-	
+
 	return sanitized
 }
 
@@ -407,18 +407,18 @@ func (f *FileUploadService) generateStoragePath(userID int64, filename string) s
 	switch f.config.StorageRules.DirectoryStructure {
 	case "date":
 		now := time.Now()
-		return filepath.Join(f.storageDir, 
+		return filepath.Join(f.storageDir,
 			fmt.Sprintf("%d", now.Year()),
 			fmt.Sprintf("%02d", now.Month()),
 			fmt.Sprintf("%02d", now.Day()),
 			filename)
 	case "user":
-		return filepath.Join(f.storageDir, 
+		return filepath.Join(f.storageDir,
 			fmt.Sprintf("user_%d", userID),
 			filename)
 	case "type":
 		ext := strings.ToLower(filepath.Ext(filename))
-		return filepath.Join(f.storageDir, 
+		return filepath.Join(f.storageDir,
 			strings.TrimPrefix(ext, "."),
 			filename)
 	default:
@@ -434,31 +434,31 @@ func (f *FileUploadService) generateFileID() string {
 
 func (f *FileUploadService) extractMetadata(data []byte, mimeType string) map[string]interface{} {
 	metadata := make(map[string]interface{})
-	
+
 	metadata["size"] = len(data)
 	metadata["mime_type"] = mimeType
 	metadata["uploaded_at"] = time.Now()
-	
+
 	// Extract image metadata if it's an image
 	if strings.HasPrefix(mimeType, "image/") {
 		metadata["type"] = "image"
-		
+
 		// Basic image metadata extraction
 		// Production'da image/jpeg ve image/png için daha detaylı EXIF extraction yapılabilir
 		metadata["file_size"] = len(data)
 		metadata["processed_at"] = time.Now()
-		
+
 		// EXIF data extraction burada implement edilebilir
 		// Örneğin: github.com/rwcarlsen/goexif/exif paketi kullanılabilir
 		metadata["exif_extracted"] = false // Placeholder
 	}
-	
+
 	// Extract document metadata if it's a document
 	if strings.HasPrefix(mimeType, "application/pdf") {
 		metadata["type"] = "document"
 		metadata["format"] = "pdf"
 	}
-	
+
 	return metadata
 }
 
@@ -474,7 +474,7 @@ func (f *FileUploadService) performSecurityScan(filePath string) (*ScanResults, 
 			Scanner:   "built-in",
 			ScannedAt: time.Now(),
 		}
-		
+
 		// TODO: Integrate with actual antivirus engine (ClamAV, etc.)
 		// For now, just check for suspicious patterns
 		if f.containsSuspiciousPatterns(filePath) {
@@ -482,7 +482,7 @@ func (f *FileUploadService) performSecurityScan(filePath string) (*ScanResults, 
 			virusScan.Threats = []string{"suspicious_pattern_detected"}
 			results.SafetyScore -= 50
 		}
-		
+
 		results.VirusScan = virusScan
 	}
 
@@ -493,7 +493,7 @@ func (f *FileUploadService) performSecurityScan(filePath string) (*ScanResults, 
 			Scanner:   "built-in",
 			ScannedAt: time.Now(),
 		}
-		
+
 		// TODO: Integrate with malware detection engine
 		// For now, just check file signatures
 		if f.containsMalwareSignatures(filePath) {
@@ -501,7 +501,7 @@ func (f *FileUploadService) performSecurityScan(filePath string) (*ScanResults, 
 			malwareScan.Threats = []string{"malware_signature_detected"}
 			results.SafetyScore -= 30
 		}
-		
+
 		results.MalwareScan = malwareScan
 	}
 
@@ -516,7 +516,7 @@ func (f *FileUploadService) containsSuspiciousPatterns(filePath string) bool {
 	}
 
 	content := string(data)
-	
+
 	// Check for suspicious patterns
 	suspiciousPatterns := []string{
 		"<script",
@@ -553,10 +553,10 @@ func (f *FileUploadService) containsMalwareSignatures(filePath string) bool {
 	}
 
 	content := buffer[:n]
-	
+
 	// Check for known malware signatures (simplified)
 	malwareSignatures := [][]byte{
-		[]byte("MZ"), // PE executable header
+		[]byte("MZ"),      // PE executable header
 		[]byte("\x7fELF"), // ELF executable header
 	}
 

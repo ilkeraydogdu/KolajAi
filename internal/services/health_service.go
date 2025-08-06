@@ -47,13 +47,13 @@ type HealthCheck struct {
 
 // HealthReport represents the complete health report
 type HealthReport struct {
-	Status      HealthStatus           `json:"status"`
-	Version     string                 `json:"version"`
-	Timestamp   time.Time              `json:"timestamp"`
-	Duration    time.Duration          `json:"duration"`
-	Checks      map[string]HealthCheck `json:"checks"`
-	System      SystemInfo             `json:"system"`
-	Summary     HealthSummary          `json:"summary"`
+	Status    HealthStatus           `json:"status"`
+	Version   string                 `json:"version"`
+	Timestamp time.Time              `json:"timestamp"`
+	Duration  time.Duration          `json:"duration"`
+	Checks    map[string]HealthCheck `json:"checks"`
+	System    SystemInfo             `json:"system"`
+	Summary   HealthSummary          `json:"summary"`
 }
 
 // SystemInfo represents system information
@@ -70,42 +70,42 @@ type SystemInfo struct {
 
 // MemoryInfo represents memory usage information
 type MemoryInfo struct {
-	Alloc        uint64 `json:"alloc"`         // bytes allocated and not yet freed
-	TotalAlloc   uint64 `json:"total_alloc"`   // bytes allocated (even if freed)
-	Sys          uint64 `json:"sys"`           // bytes obtained from system
-	Lookups      uint64 `json:"lookups"`       // number of pointer lookups
-	Mallocs      uint64 `json:"mallocs"`       // number of mallocs
-	Frees        uint64 `json:"frees"`         // number of frees
-	HeapAlloc    uint64 `json:"heap_alloc"`    // bytes allocated and not yet freed (same as Alloc above)
-	HeapSys      uint64 `json:"heap_sys"`      // bytes obtained from system
-	HeapIdle     uint64 `json:"heap_idle"`     // bytes in idle spans
-	HeapInuse    uint64 `json:"heap_inuse"`    // bytes in non-idle span
-	HeapReleased uint64 `json:"heap_released"` // bytes released to the OS
-	HeapObjects  uint64 `json:"heap_objects"`  // total number of allocated objects
-	StackInuse   uint64 `json:"stack_inuse"`   // bytes used by stack allocator
-	StackSys     uint64 `json:"stack_sys"`     // bytes obtained from system for stack allocator
-	MSpanInuse   uint64 `json:"mspan_inuse"`   // bytes used by mspan structures
-	MSpanSys     uint64 `json:"mspan_sys"`     // bytes obtained from system for mspan structures
-	MCacheInuse  uint64 `json:"mcache_inuse"`  // bytes used by mcache structures
-	MCacheSys    uint64 `json:"mcache_sys"`    // bytes obtained from system for mcache structures
-	GCSys        uint64 `json:"gc_sys"`        // bytes used for garbage collection system metadata
-	OtherSys     uint64 `json:"other_sys"`     // bytes used for other system allocations
-	NextGC       uint64 `json:"next_gc"`       // next collection will happen when HeapAlloc ≥ this amount
-	LastGC       uint64 `json:"last_gc"`       // end time of last collection (nanoseconds since 1970)
-	PauseTotalNs uint64 `json:"pause_total_ns"` // cumulative nanoseconds in GC stop-the-world pauses
-	PauseNs      uint64 `json:"pause_ns"`      // circular buffer of recent GC stop-the-world pause times
-	NumGC        uint32 `json:"num_gc"`        // number of completed GC cycles
-	NumForcedGC  uint32 `json:"num_forced_gc"` // number of GC cycles that were forced by the application
+	Alloc         uint64  `json:"alloc"`           // bytes allocated and not yet freed
+	TotalAlloc    uint64  `json:"total_alloc"`     // bytes allocated (even if freed)
+	Sys           uint64  `json:"sys"`             // bytes obtained from system
+	Lookups       uint64  `json:"lookups"`         // number of pointer lookups
+	Mallocs       uint64  `json:"mallocs"`         // number of mallocs
+	Frees         uint64  `json:"frees"`           // number of frees
+	HeapAlloc     uint64  `json:"heap_alloc"`      // bytes allocated and not yet freed (same as Alloc above)
+	HeapSys       uint64  `json:"heap_sys"`        // bytes obtained from system
+	HeapIdle      uint64  `json:"heap_idle"`       // bytes in idle spans
+	HeapInuse     uint64  `json:"heap_inuse"`      // bytes in non-idle span
+	HeapReleased  uint64  `json:"heap_released"`   // bytes released to the OS
+	HeapObjects   uint64  `json:"heap_objects"`    // total number of allocated objects
+	StackInuse    uint64  `json:"stack_inuse"`     // bytes used by stack allocator
+	StackSys      uint64  `json:"stack_sys"`       // bytes obtained from system for stack allocator
+	MSpanInuse    uint64  `json:"mspan_inuse"`     // bytes used by mspan structures
+	MSpanSys      uint64  `json:"mspan_sys"`       // bytes obtained from system for mspan structures
+	MCacheInuse   uint64  `json:"mcache_inuse"`    // bytes used by mcache structures
+	MCacheSys     uint64  `json:"mcache_sys"`      // bytes obtained from system for mcache structures
+	GCSys         uint64  `json:"gc_sys"`          // bytes used for garbage collection system metadata
+	OtherSys      uint64  `json:"other_sys"`       // bytes used for other system allocations
+	NextGC        uint64  `json:"next_gc"`         // next collection will happen when HeapAlloc ≥ this amount
+	LastGC        uint64  `json:"last_gc"`         // end time of last collection (nanoseconds since 1970)
+	PauseTotalNs  uint64  `json:"pause_total_ns"`  // cumulative nanoseconds in GC stop-the-world pauses
+	PauseNs       uint64  `json:"pause_ns"`        // circular buffer of recent GC stop-the-world pause times
+	NumGC         uint32  `json:"num_gc"`          // number of completed GC cycles
+	NumForcedGC   uint32  `json:"num_forced_gc"`   // number of GC cycles that were forced by the application
 	GCCPUFraction float64 `json:"gc_cpu_fraction"` // fraction of CPU time used by GC
 }
 
 // HealthSummary represents a summary of health checks
 type HealthSummary struct {
-	Total      int `json:"total"`
-	Healthy    int `json:"healthy"`
-	Degraded   int `json:"degraded"`
-	Unhealthy  int `json:"unhealthy"`
-	Critical   int `json:"critical"`
+	Total     int `json:"total"`
+	Healthy   int `json:"healthy"`
+	Degraded  int `json:"degraded"`
+	Unhealthy int `json:"unhealthy"`
+	Critical  int `json:"critical"`
 }
 
 // HealthChecker interface for health check implementations
@@ -171,10 +171,10 @@ func (h *HealthService) Check(ctx context.Context) *HealthReport {
 		wg.Add(1)
 		go func(checker HealthChecker) {
 			defer wg.Done()
-			
+
 			checkCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
-			
+
 			result := checker.Check(checkCtx)
 			results <- result
 		}(checker)
@@ -233,10 +233,10 @@ func (h *HealthService) QuickCheck(ctx context.Context) *HealthReport {
 		wg.Add(1)
 		go func(checker HealthChecker) {
 			defer wg.Done()
-			
+
 			checkCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
-			
+
 			result := checker.Check(checkCtx)
 			results <- result
 		}(checker)
@@ -363,9 +363,9 @@ func (h *HealthService) generateSummary(checks map[string]HealthCheck) HealthSum
 // ServeHTTP implements http.Handler for health check endpoint
 func (h *HealthService) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	
+
 	var report *HealthReport
-	
+
 	// Check if quick check is requested
 	if r.URL.Query().Get("quick") == "true" {
 		report = h.QuickCheck(ctx)
@@ -436,13 +436,13 @@ func (d *DatabaseHealthCheck) Check(ctx context.Context) HealthCheck {
 	check.Duration = time.Since(start)
 	check.Metadata = map[string]interface{}{
 		"open_connections":     stats.OpenConnections,
-		"in_use":              stats.InUse,
-		"idle":                stats.Idle,
-		"wait_count":          stats.WaitCount,
-		"wait_duration":       stats.WaitDuration,
-		"max_idle_closed":     stats.MaxIdleClosed,
+		"in_use":               stats.InUse,
+		"idle":                 stats.Idle,
+		"wait_count":           stats.WaitCount,
+		"wait_duration":        stats.WaitDuration,
+		"max_idle_closed":      stats.MaxIdleClosed,
 		"max_idle_time_closed": stats.MaxIdleTimeClosed,
-		"max_lifetime_closed": stats.MaxLifetimeClosed,
+		"max_lifetime_closed":  stats.MaxLifetimeClosed,
 	}
 
 	return check

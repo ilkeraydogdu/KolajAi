@@ -9,11 +9,11 @@ import (
 	"strings"
 	"time"
 
-	"kolajAi/internal/session"
+	"compress/gzip"
+	"kolajAi/internal/cache"
 	"kolajAi/internal/errors"
 	"kolajAi/internal/security"
-	"kolajAi/internal/cache"
-	"compress/gzip"
+	"kolajAi/internal/session"
 )
 
 // MiddlewareStack holds all middleware components
@@ -44,7 +44,7 @@ func (ms *MiddlewareStack) SecurityMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Set security headers
 		ms.SecurityManager.SetSecurityHeaders(w)
-		
+
 		// Check IP whitelist/blacklist
 		if blocked, reason := ms.SecurityManager.CheckIPAccess(r.RemoteAddr); blocked {
 			ms.ErrorManager.HandleHTTPError(w, r, errors.NewApplicationError(
@@ -55,7 +55,7 @@ func (ms *MiddlewareStack) SecurityMiddleware(next http.Handler) http.Handler {
 			))
 			return
 		}
-		
+
 		// Rate limiting
 		if limited, err := ms.SecurityManager.CheckRateLimit(r); limited {
 			ms.ErrorManager.HandleHTTPError(w, r, errors.NewApplicationError(
@@ -66,7 +66,7 @@ func (ms *MiddlewareStack) SecurityMiddleware(next http.Handler) http.Handler {
 			))
 			return
 		}
-		
+
 		// Input validation for POST/PUT requests
 		if r.Method == "POST" || r.Method == "PUT" {
 			if err := ms.SecurityManager.ValidateInput(r); err != nil {
@@ -79,7 +79,7 @@ func (ms *MiddlewareStack) SecurityMiddleware(next http.Handler) http.Handler {
 				return
 			}
 		}
-		
+
 		// Vulnerability scanning
 		if threats := ms.SecurityManager.ScanForThreats(r); len(threats) > 0 {
 			// Log security event
@@ -96,7 +96,7 @@ func (ms *MiddlewareStack) SecurityMiddleware(next http.Handler) http.Handler {
 					Blocked:   true,
 				})
 			}
-			
+
 			ms.ErrorManager.HandleHTTPError(w, r, errors.NewApplicationError(
 				errors.SECURITY_VIOLATION,
 				"SECURITY_THREAT_DETECTED",
@@ -105,7 +105,7 @@ func (ms *MiddlewareStack) SecurityMiddleware(next http.Handler) http.Handler {
 			))
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -118,11 +118,11 @@ func (ms *MiddlewareStack) SessionMiddleware(next http.Handler) http.Handler {
 		if err != nil && err != session.ErrSessionNotFound {
 			log.Printf("Session error: %v", err)
 		}
-		
+
 		// Add session to request context
 		ctx := context.WithValue(r.Context(), "session", sessionData)
 		r = r.WithContext(ctx)
-		
+
 		// Update session activity
 		if sessionData != nil {
 			sessionData.LastActivity = time.Now()
@@ -130,7 +130,7 @@ func (ms *MiddlewareStack) SessionMiddleware(next http.Handler) http.Handler {
 				log.Printf("Failed to update session activity: %v", err)
 			}
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -149,12 +149,12 @@ func (ms *MiddlewareStack) ErrorHandlingMiddleware(next http.Handler) http.Handl
 					fmt.Errorf("panic: %v", err),
 				)
 				appError.Context.StackTrace = string(stack)
-				
+
 				ms.ErrorManager.LogError(appError)
 				ms.ErrorManager.HandleHTTPError(w, r, appError)
 			}
 		}()
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -167,16 +167,16 @@ func (ms *MiddlewareStack) CacheMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Skip caching for admin and API endpoints
-		if strings.HasPrefix(r.URL.Path, "/admin") || 
-		   strings.HasPrefix(r.URL.Path, "/api") ||
-		   strings.Contains(r.URL.Path, "login") ||
-		   strings.Contains(r.URL.Path, "logout") {
+		if strings.HasPrefix(r.URL.Path, "/admin") ||
+			strings.HasPrefix(r.URL.Path, "/api") ||
+			strings.Contains(r.URL.Path, "login") ||
+			strings.Contains(r.URL.Path, "logout") {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Generate cache key
 		userID := getUserIDFromSession(r)
 		userIDStr := ""
@@ -184,14 +184,14 @@ func (ms *MiddlewareStack) CacheMiddleware(next http.Handler) http.Handler {
 			userIDStr = fmt.Sprintf("%v", userID)
 		}
 		cacheKey := ms.CacheManager.BuildKey(cache.CacheKey{
-			Type:   "page",
-			ID:     r.URL.Path,
+			Type: "page",
+			ID:   r.URL.Path,
 			Params: map[string]string{
 				"query":   r.URL.RawQuery,
 				"user_id": userIDStr,
 			},
 		})
-		
+
 		// Try to get from cache
 		if cached, err := ms.CacheManager.Get(r.Context(), "default", cacheKey); err == nil && cached != nil {
 			// Serve from cache
@@ -200,15 +200,15 @@ func (ms *MiddlewareStack) CacheMiddleware(next http.Handler) http.Handler {
 			w.Write(cached)
 			return
 		}
-		
+
 		// Create response writer wrapper to capture response
 		rw := &responseWriter{
 			ResponseWriter: w,
-			body:          make([]byte, 0),
+			body:           make([]byte, 0),
 		}
-		
+
 		next.ServeHTTP(rw, r)
-		
+
 		// Cache successful responses
 		if rw.statusCode == 0 || rw.statusCode == 200 {
 			// Cache for 30 minutes
@@ -222,14 +222,14 @@ func (ms *MiddlewareStack) CacheMiddleware(next http.Handler) http.Handler {
 func (ms *MiddlewareStack) LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		
+
 		// Create response writer wrapper to capture status code
 		rw := &responseWriter{ResponseWriter: w}
-		
+
 		next.ServeHTTP(rw, r)
-		
+
 		duration := time.Since(start)
-		
+
 		// Log request details
 		log.Printf(
 			"%s %s %s %d %v %s %s",
@@ -241,7 +241,7 @@ func (ms *MiddlewareStack) LoggingMiddleware(next http.Handler) http.Handler {
 			r.UserAgent(),
 			r.Referer(),
 		)
-		
+
 		// Log slow requests
 		if duration > 5*time.Second {
 			ms.ErrorManager.LogError(errors.NewApplicationError(
@@ -258,7 +258,7 @@ func (ms *MiddlewareStack) LoggingMiddleware(next http.Handler) http.Handler {
 func (ms *MiddlewareStack) CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
-		
+
 		// Set CORS headers
 		if origin != "" {
 			// Check if origin is allowed
@@ -268,29 +268,29 @@ func (ms *MiddlewareStack) CORSMiddleware(next http.Handler) http.Handler {
 				"http://localhost:8081",
 				"https://kolajAi.com",
 			}
-			
+
 			for _, allowedOrigin := range allowedOrigins {
 				if origin == allowedOrigin {
 					allowed = true
 					break
 				}
 			}
-			
+
 			if allowed {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 				w.Header().Set("Access-Control-Allow-Credentials", "true")
 			}
 		}
-		
+
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
-		
+
 		// Handle preflight requests
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -303,26 +303,26 @@ func (ms *MiddlewareStack) CompressionMiddleware(next http.Handler) http.Handler
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Skip compression for small responses and certain content types
-		if strings.HasPrefix(r.URL.Path, "/static/") && 
-		   (strings.HasSuffix(r.URL.Path, ".jpg") ||
-		    strings.HasSuffix(r.URL.Path, ".png") ||
-		    strings.HasSuffix(r.URL.Path, ".gif") ||
-		    strings.HasSuffix(r.URL.Path, ".zip")) {
+		if strings.HasPrefix(r.URL.Path, "/static/") &&
+			(strings.HasSuffix(r.URL.Path, ".jpg") ||
+				strings.HasSuffix(r.URL.Path, ".png") ||
+				strings.HasSuffix(r.URL.Path, ".gif") ||
+				strings.HasSuffix(r.URL.Path, ".zip")) {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Create gzip response writer
 		gzw := &gzipResponseWriter{
 			ResponseWriter: w,
 		}
 		defer gzw.Close()
-		
+
 		w.Header().Set("Content-Encoding", "gzip")
 		w.Header().Set("Vary", "Accept-Encoding")
-		
+
 		next.ServeHTTP(gzw, r)
 	})
 }
@@ -335,7 +335,7 @@ func (ms *MiddlewareStack) CSRFMiddleware(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		
+
 		// Skip CSRF for API endpoints with proper authentication
 		if strings.HasPrefix(r.URL.Path, "/api/") {
 			// Check for API key or JWT token
@@ -344,13 +344,13 @@ func (ms *MiddlewareStack) CSRFMiddleware(next http.Handler) http.Handler {
 				return
 			}
 		}
-		
+
 		// Validate CSRF token
 		token := r.Header.Get("X-CSRF-Token")
 		if token == "" {
 			token = r.FormValue("csrf_token")
 		}
-		
+
 		if !ms.SecurityManager.ValidateCSRFToken(token, r) {
 			ms.ErrorManager.HandleHTTPError(w, r, errors.NewApplicationError(
 				errors.FORBIDDEN,
@@ -360,7 +360,7 @@ func (ms *MiddlewareStack) CSRFMiddleware(next http.Handler) http.Handler {
 			))
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }

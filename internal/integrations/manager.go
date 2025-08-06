@@ -3,9 +3,9 @@ package integrations
 import (
 	"context"
 	"fmt"
+	"github.com/sony/gobreaker"
 	"sync"
 	"time"
-	"github.com/sony/gobreaker"
 )
 
 // Manager manages all integrations
@@ -24,11 +24,11 @@ type Manager struct {
 
 // ManagerConfig holds configuration for the integration manager
 type ManagerConfig struct {
-	EnableCircuitBreaker bool
-	EnableCaching        bool
-	EnableMetrics        bool
-	DefaultTimeout       time.Duration
-	HealthCheckInterval  time.Duration
+	EnableCircuitBreaker  bool
+	EnableCaching         bool
+	EnableMetrics         bool
+	DefaultTimeout        time.Duration
+	HealthCheckInterval   time.Duration
 	MaxConcurrentRequests int
 }
 
@@ -347,8 +347,8 @@ func (m *Manager) executeWithRetry(ctx context.Context, integration *Integration
 
 		// Execute the actual request (this would be implemented by specific providers)
 		response := &IntegrationResponse{
-			ID:        request.ID,
-			Duration:  time.Since(time.Now()),
+			ID:       request.ID,
+			Duration: time.Since(time.Now()),
 		}
 
 		// For now, just do a health check as example
@@ -400,7 +400,7 @@ func (m *Manager) performHealthCheck(integrationID string) {
 	}
 
 	err := provider.HealthCheck(ctx)
-	
+
 	m.mu.Lock()
 	integration, exists := m.integrations[integrationID]
 	if !exists {

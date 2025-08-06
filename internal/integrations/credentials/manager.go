@@ -9,9 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"kolajAi/internal/integrations"
 	"sync"
 	"time"
-	"kolajAi/internal/integrations"
 )
 
 // Manager handles secure storage and retrieval of integration credentials
@@ -42,7 +42,7 @@ func NewManager(encryptionKey []byte, store Store) (*Manager, error) {
 	if len(encryptionKey) != 32 {
 		return nil, errors.New("encryption key must be 32 bytes")
 	}
-	
+
 	return &Manager{
 		encryptionKey: encryptionKey,
 		store:         store,
@@ -60,25 +60,25 @@ func (m *Manager) GetCredentials(integrationID string) (*integrations.Credential
 		return &cached.credential, nil
 	}
 	m.cacheMutex.RUnlock()
-	
+
 	// Retrieve from store
 	encryptedData, err := m.store.Get(integrationID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve credentials: %w", err)
 	}
-	
+
 	// Decrypt
 	decryptedData, err := m.decrypt(encryptedData)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decrypt credentials: %w", err)
 	}
-	
+
 	// Unmarshal
 	var creds integrations.Credentials
 	if err := json.Unmarshal(decryptedData, &creds); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal credentials: %w", err)
 	}
-	
+
 	// Update cache
 	m.cacheMutex.Lock()
 	m.cache[integrationID] = &cachedCredential{
@@ -86,7 +86,7 @@ func (m *Manager) GetCredentials(integrationID string) (*integrations.Credential
 		expiresAt:  time.Now().Add(m.cacheTTL),
 	}
 	m.cacheMutex.Unlock()
-	
+
 	return &creds, nil
 }
 
@@ -96,24 +96,24 @@ func (m *Manager) SetCredentials(integrationID string, creds *integrations.Crede
 	if err := m.validateCredentials(creds); err != nil {
 		return fmt.Errorf("invalid credentials: %w", err)
 	}
-	
+
 	// Marshal
 	data, err := json.Marshal(creds)
 	if err != nil {
 		return fmt.Errorf("failed to marshal credentials: %w", err)
 	}
-	
+
 	// Encrypt
 	encryptedData, err := m.encrypt(data)
 	if err != nil {
 		return fmt.Errorf("failed to encrypt credentials: %w", err)
 	}
-	
+
 	// Store
 	if err := m.store.Set(integrationID, encryptedData); err != nil {
 		return fmt.Errorf("failed to store credentials: %w", err)
 	}
-	
+
 	// Update cache
 	m.cacheMutex.Lock()
 	m.cache[integrationID] = &cachedCredential{
@@ -121,7 +121,7 @@ func (m *Manager) SetCredentials(integrationID string, creds *integrations.Crede
 		expiresAt:  time.Now().Add(m.cacheTTL),
 	}
 	m.cacheMutex.Unlock()
-	
+
 	return nil
 }
 
@@ -131,12 +131,12 @@ func (m *Manager) DeleteCredentials(integrationID string) error {
 	if err := m.store.Delete(integrationID); err != nil {
 		return fmt.Errorf("failed to delete credentials: %w", err)
 	}
-	
+
 	// Remove from cache
 	m.cacheMutex.Lock()
 	delete(m.cache, integrationID)
 	m.cacheMutex.Unlock()
-	
+
 	return nil
 }
 
@@ -148,21 +148,21 @@ func (m *Manager) RotateCredentials(integrationID string, newCreds *integrations
 		// If credentials don't exist, just set new ones
 		return m.SetCredentials(integrationID, newCreds)
 	}
-	
+
 	// Log rotation (in production, this would go to audit log)
 	fmt.Printf("Rotating credentials for integration %s\n", integrationID)
-	
+
 	// Set new credentials
 	if err := m.SetCredentials(integrationID, newCreds); err != nil {
 		return fmt.Errorf("failed to rotate credentials: %w", err)
 	}
-	
+
 	// In production, you might want to:
 	// 1. Keep old credentials for a grace period
 	// 2. Send notifications about rotation
 	// 3. Update audit logs
 	_ = oldCreds // Prevent unused variable warning
-	
+
 	return nil
 }
 
@@ -184,17 +184,17 @@ func (m *Manager) encrypt(plaintext []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err := io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, err
 	}
-	
+
 	ciphertext := gcm.Seal(nonce, nonce, plaintext, nil)
 	return ciphertext, nil
 }
@@ -205,23 +205,23 @@ func (m *Manager) decrypt(ciphertext []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	nonceSize := gcm.NonceSize()
 	if len(ciphertext) < nonceSize {
 		return nil, errors.New("ciphertext too short")
 	}
-	
+
 	nonce, ciphertext := ciphertext[:nonceSize], ciphertext[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return plaintext, nil
 }
 
@@ -230,19 +230,19 @@ func (m *Manager) validateCredentials(creds *integrations.Credentials) error {
 	if creds == nil {
 		return errors.New("credentials cannot be nil")
 	}
-	
+
 	// At least one credential field should be non-empty
 	hasCredential := false
-	if creds.APIKey != "" || creds.APISecret != "" || 
-	   creds.AccessToken != "" || creds.RefreshToken != "" ||
-	   len(creds.Extra) > 0 {
+	if creds.APIKey != "" || creds.APISecret != "" ||
+		creds.AccessToken != "" || creds.RefreshToken != "" ||
+		len(creds.Extra) > 0 {
 		hasCredential = true
 	}
-	
+
 	if !hasCredential {
 		return errors.New("at least one credential field must be provided")
 	}
-	
+
 	return nil
 }
 
@@ -264,7 +264,7 @@ func (s *DatabaseStore) Get(integrationID string) ([]byte, error) {
 	// In real implementation:
 	// query := "SELECT encrypted_data FROM " + s.tableName + " WHERE integration_id = ?"
 	// return result
-	
+
 	// For now, return a placeholder
 	return nil, errors.New("not implemented")
 }
@@ -274,7 +274,7 @@ func (s *DatabaseStore) Set(integrationID string, data []byte) error {
 	// In real implementation:
 	// query := "INSERT INTO " + s.tableName + " (integration_id, encrypted_data, updated_at) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE encrypted_data = ?, updated_at = ?"
 	// execute query
-	
+
 	return errors.New("not implemented")
 }
 
@@ -283,7 +283,7 @@ func (s *DatabaseStore) Delete(integrationID string) error {
 	// In real implementation:
 	// query := "DELETE FROM " + s.tableName + " WHERE integration_id = ?"
 	// execute query
-	
+
 	return errors.New("not implemented")
 }
 
@@ -292,7 +292,7 @@ func (s *DatabaseStore) List() ([]string, error) {
 	// In real implementation:
 	// query := "SELECT integration_id FROM " + s.tableName
 	// return results
-	
+
 	return nil, errors.New("not implemented")
 }
 
@@ -313,12 +313,12 @@ func NewMemoryStore() *MemoryStore {
 func (s *MemoryStore) Get(integrationID string) ([]byte, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	data, exists := s.data[integrationID]
 	if !exists {
 		return nil, errors.New("credentials not found")
 	}
-	
+
 	return data, nil
 }
 
@@ -326,7 +326,7 @@ func (s *MemoryStore) Get(integrationID string) ([]byte, error) {
 func (s *MemoryStore) Set(integrationID string, data []byte) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	s.data[integrationID] = data
 	return nil
 }
@@ -335,7 +335,7 @@ func (s *MemoryStore) Set(integrationID string, data []byte) error {
 func (s *MemoryStore) Delete(integrationID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	delete(s.data, integrationID)
 	return nil
 }
@@ -344,12 +344,12 @@ func (s *MemoryStore) Delete(integrationID string) error {
 func (s *MemoryStore) List() ([]string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	ids := make([]string, 0, len(s.data))
 	for id := range s.data {
 		ids = append(ids, id)
 	}
-	
+
 	return ids, nil
 }
 

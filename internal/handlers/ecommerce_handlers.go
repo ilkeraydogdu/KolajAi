@@ -37,7 +37,7 @@ func (h *EcommerceHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 	search := r.URL.Query().Get("search")
 	page := 1
 	limit := 20
-	
+
 	// Parse page and limit from query params
 	if pageStr := r.URL.Query().Get("page"); pageStr != "" {
 		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
@@ -49,14 +49,14 @@ func (h *EcommerceHandler) GetProducts(w http.ResponseWriter, r *http.Request) {
 			limit = l
 		}
 	}
-	
+
 	// Get products from service
 	products, err := h.productService.GetProducts(category, search, page, limit)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get products: %v", err), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -76,14 +76,14 @@ func (h *EcommerceHandler) GetProduct(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid product ID", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Get product from service
 	product, err := h.productService.GetProductByID(id)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get product: %v", err), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -99,7 +99,7 @@ func (h *EcommerceHandler) SearchProducts(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Search query required", http.StatusBadRequest)
 		return
 	}
-	
+
 	// Parse pagination parameters
 	page := 1
 	limit := 20
@@ -113,14 +113,14 @@ func (h *EcommerceHandler) SearchProducts(w http.ResponseWriter, r *http.Request
 			limit = l
 		}
 	}
-	
+
 	// Search products using the service
 	products, err := h.productService.GetProducts("", query, page, limit)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to search products: %v", err), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
@@ -140,7 +140,7 @@ func (h *EcommerceHandler) GetCategories(w http.ResponseWriter, r *http.Request)
 		http.Error(w, fmt.Sprintf("Failed to get categories: %v", err), http.StatusInternalServerError)
 		return
 	}
-	
+
 	// Return JSON response
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{

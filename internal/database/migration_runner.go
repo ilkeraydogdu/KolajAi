@@ -186,7 +186,7 @@ func (mr *MigrationRunner) runMySQLMigrations() error {
 
 	for i, migration := range mysqlMigrations {
 		log.Printf("Running MySQL migration %d/%d", i+1, len(mysqlMigrations))
-		
+
 		if _, err := mr.db.Exec(migration); err != nil {
 			return fmt.Errorf("failed to run MySQL migration %d: %w", i+1, err)
 		}

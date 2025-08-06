@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	
+
 	"kolajAi/internal/services"
 )
 
@@ -31,41 +31,41 @@ func (h *EmailHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	// Get email statistics
 	stats := map[string]interface{}{
-		"total_sent":       5250,
-		"delivered":        4980,
-		"opened":          3150,
-		"clicked":         890,
-		"bounced":         125,
-		"unsubscribed":    45,
-		"delivery_rate":   94.9,
-		"open_rate":       63.3,
-		"click_rate":      17.9,
-		"bounce_rate":     2.4,
+		"total_sent":    5250,
+		"delivered":     4980,
+		"opened":        3150,
+		"clicked":       890,
+		"bounced":       125,
+		"unsubscribed":  45,
+		"delivery_rate": 94.9,
+		"open_rate":     63.3,
+		"click_rate":    17.9,
+		"bounce_rate":   2.4,
 	}
 
 	// Get recent campaigns
 	campaigns := []map[string]interface{}{
 		{
-			"id":           1,
-			"name":         "Yaz İndirimi 2024",
-			"subject":      "🌞 %50'ye Varan İndirimler!",
-			"sent":         2500,
-			"delivered":    2380,
-			"opened":       1654,
-			"clicked":      425,
-			"sent_at":      time.Now().Add(-24 * time.Hour),
-			"status":       "completed",
+			"id":        1,
+			"name":      "Yaz İndirimi 2024",
+			"subject":   "🌞 %50'ye Varan İndirimler!",
+			"sent":      2500,
+			"delivered": 2380,
+			"opened":    1654,
+			"clicked":   425,
+			"sent_at":   time.Now().Add(-24 * time.Hour),
+			"status":    "completed",
 		},
 		{
-			"id":           2,
-			"name":         "Yeni Ürün Duyurusu",
-			"subject":      "🎉 Yeni Koleksiyonumuz Çıktı!",
-			"sent":         1800,
-			"delivered":    1720,
-			"opened":       1032,
-			"clicked":      258,
-			"sent_at":      time.Now().Add(-48 * time.Hour),
-			"status":       "completed",
+			"id":        2,
+			"name":      "Yeni Ürün Duyurusu",
+			"subject":   "🎉 Yeni Koleksiyonumuz Çıktı!",
+			"sent":      1800,
+			"delivered": 1720,
+			"opened":    1032,
+			"clicked":   258,
+			"sent_at":   time.Now().Add(-48 * time.Hour),
+			"status":    "completed",
 		},
 	}
 
@@ -108,46 +108,46 @@ func (h *EmailHandler) Campaigns(w http.ResponseWriter, r *http.Request) {
 
 	campaigns := []map[string]interface{}{
 		{
-			"id":           1,
-			"name":         "Yaz İndirimi 2024",
-			"subject":      "🌞 %50'ye Varan İndirimler!",
-			"recipients":   2500,
-			"sent":         2500,
-			"delivered":    2380,
-			"opened":       1654,
-			"clicked":      425,
-			"bounced":      120,
-			"created_at":   time.Now().Add(-72 * time.Hour),
-			"sent_at":      time.Now().Add(-24 * time.Hour),
-			"status":       "completed",
+			"id":         1,
+			"name":       "Yaz İndirimi 2024",
+			"subject":    "🌞 %50'ye Varan İndirimler!",
+			"recipients": 2500,
+			"sent":       2500,
+			"delivered":  2380,
+			"opened":     1654,
+			"clicked":    425,
+			"bounced":    120,
+			"created_at": time.Now().Add(-72 * time.Hour),
+			"sent_at":    time.Now().Add(-24 * time.Hour),
+			"status":     "completed",
 		},
 		{
-			"id":           2,
-			"name":         "Yeni Ürün Duyurusu",
-			"subject":      "🎉 Yeni Koleksiyonumuz Çıktı!",
-			"recipients":   1800,
-			"sent":         1800,
-			"delivered":    1720,
-			"opened":       1032,
-			"clicked":      258,
-			"bounced":      80,
-			"created_at":   time.Now().Add(-96 * time.Hour),
-			"sent_at":      time.Now().Add(-48 * time.Hour),
-			"status":       "completed",
+			"id":         2,
+			"name":       "Yeni Ürün Duyurusu",
+			"subject":    "🎉 Yeni Koleksiyonumuz Çıktı!",
+			"recipients": 1800,
+			"sent":       1800,
+			"delivered":  1720,
+			"opened":     1032,
+			"clicked":    258,
+			"bounced":    80,
+			"created_at": time.Now().Add(-96 * time.Hour),
+			"sent_at":    time.Now().Add(-48 * time.Hour),
+			"status":     "completed",
 		},
 		{
-			"id":           3,
-			"name":         "Haftalık Bülten",
-			"subject":      "📰 Bu Haftanın Öne Çıkanları",
-			"recipients":   3200,
-			"sent":         0,
-			"delivered":    0,
-			"opened":       0,
-			"clicked":      0,
-			"bounced":      0,
-			"created_at":   time.Now().Add(-2 * time.Hour),
-			"sent_at":      nil,
-			"status":       "draft",
+			"id":         3,
+			"name":       "Haftalık Bülten",
+			"subject":    "📰 Bu Haftanın Öne Çıkanları",
+			"recipients": 3200,
+			"sent":       0,
+			"delivered":  0,
+			"opened":     0,
+			"clicked":    0,
+			"bounced":    0,
+			"created_at": time.Now().Add(-2 * time.Hour),
+			"sent_at":    nil,
+			"status":     "draft",
 		},
 	}
 
@@ -243,10 +243,10 @@ func (h *EmailHandler) Settings(w http.ResponseWriter, r *http.Request) {
 			"bounce_email": "bounce@kolajai.com",
 		},
 		"delivery_settings": map[string]interface{}{
-			"daily_limit":     10000,
-			"hourly_limit":    1000,
-			"retry_attempts":  3,
-			"retry_delay":     300,
+			"daily_limit":    10000,
+			"hourly_limit":   1000,
+			"retry_attempts": 3,
+			"retry_delay":    300,
 		},
 		"tracking_settings": map[string]interface{}{
 			"open_tracking":   true,
@@ -279,11 +279,11 @@ func (h *EmailHandler) APISendCampaign(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var campaign struct {
-		Name        string   `json:"name"`
-		Subject     string   `json:"subject"`
-		Content     string   `json:"content"`
-		Recipients  []string `json:"recipients"`
-		TemplateID  int      `json:"template_id,omitempty"`
+		Name        string     `json:"name"`
+		Subject     string     `json:"subject"`
+		Content     string     `json:"content"`
+		Recipients  []string   `json:"recipients"`
+		TemplateID  int        `json:"template_id,omitempty"`
 		ScheduledAt *time.Time `json:"scheduled_at,omitempty"`
 	}
 
@@ -313,14 +313,14 @@ func (h *EmailHandler) APIGetEmailStats(w http.ResponseWriter, r *http.Request) 
 	stats := map[string]interface{}{
 		"total_sent":       5250,
 		"delivered":        4980,
-		"opened":          3150,
-		"clicked":         890,
-		"bounced":         125,
-		"unsubscribed":    45,
-		"delivery_rate":   94.9,
-		"open_rate":       63.3,
-		"click_rate":      17.9,
-		"bounce_rate":     2.4,
+		"opened":           3150,
+		"clicked":          890,
+		"bounced":          125,
+		"unsubscribed":     45,
+		"delivery_rate":    94.9,
+		"open_rate":        63.3,
+		"click_rate":       17.9,
+		"bounce_rate":      2.4,
 		"unsubscribe_rate": 0.9,
 	}
 

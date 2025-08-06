@@ -1,84 +1,84 @@
 package models
 
 import (
-	"time"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"time"
 )
 
 // Review represents a product review
 type Review struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	
+	ID uint `json:"id" gorm:"primaryKey"`
+
 	// Relationships
-	ProductID   uint      `json:"product_id" gorm:"index;not null"`
-	Product     Product   `json:"product" gorm:"foreignKey:ProductID"`
-	CustomerID  uint      `json:"customer_id" gorm:"index;not null"`
-	Customer    Customer  `json:"customer" gorm:"foreignKey:CustomerID"`
-	OrderID     *uint     `json:"order_id" gorm:"index"`
-	Order       *Order    `json:"order,omitempty" gorm:"foreignKey:OrderID"`
-	VendorID    *uint     `json:"vendor_id" gorm:"index"`
-	Vendor      *Vendor   `json:"vendor,omitempty" gorm:"foreignKey:VendorID"`
-	
+	ProductID  uint     `json:"product_id" gorm:"index;not null"`
+	Product    Product  `json:"product" gorm:"foreignKey:ProductID"`
+	CustomerID uint     `json:"customer_id" gorm:"index;not null"`
+	Customer   Customer `json:"customer" gorm:"foreignKey:CustomerID"`
+	OrderID    *uint    `json:"order_id" gorm:"index"`
+	Order      *Order   `json:"order,omitempty" gorm:"foreignKey:OrderID"`
+	VendorID   *uint    `json:"vendor_id" gorm:"index"`
+	Vendor     *Vendor  `json:"vendor,omitempty" gorm:"foreignKey:VendorID"`
+
 	// Review Content
-	Title       string    `json:"title" gorm:"size:200;not null" validate:"required,min=5,max=200"`
-	Content     string    `json:"content" gorm:"type:text;not null" validate:"required,min=10,max=2000"`
-	Rating      int       `json:"rating" gorm:"not null" validate:"required,min=1,max=5"`
-	
+	Title   string `json:"title" gorm:"size:200;not null" validate:"required,min=5,max=200"`
+	Content string `json:"content" gorm:"type:text;not null" validate:"required,min=10,max=2000"`
+	Rating  int    `json:"rating" gorm:"not null" validate:"required,min=1,max=5"`
+
 	// Review Categories (specific ratings)
-	QualityRating    *int  `json:"quality_rating" validate:"omitempty,min=1,max=5"`
-	ValueRating      *int  `json:"value_rating" validate:"omitempty,min=1,max=5"`
-	ServiceRating    *int  `json:"service_rating" validate:"omitempty,min=1,max=5"`
-	DeliveryRating   *int  `json:"delivery_rating" validate:"omitempty,min=1,max=5"`
-	
+	QualityRating  *int `json:"quality_rating" validate:"omitempty,min=1,max=5"`
+	ValueRating    *int `json:"value_rating" validate:"omitempty,min=1,max=5"`
+	ServiceRating  *int `json:"service_rating" validate:"omitempty,min=1,max=5"`
+	DeliveryRating *int `json:"delivery_rating" validate:"omitempty,min=1,max=5"`
+
 	// Review Status and Moderation
-	Status      ReviewStatus `json:"status" gorm:"default:'pending'"`
-	IsVerified  bool         `json:"is_verified" gorm:"default:false"`
-	IsFeatured  bool         `json:"is_featured" gorm:"default:false"`
-	
+	Status     ReviewStatus `json:"status" gorm:"default:'pending'"`
+	IsVerified bool         `json:"is_verified" gorm:"default:false"`
+	IsFeatured bool         `json:"is_featured" gorm:"default:false"`
+
 	// Engagement
-	HelpfulCount    int    `json:"helpful_count" gorm:"default:0"`
-	NotHelpfulCount int    `json:"not_helpful_count" gorm:"default:0"`
-	ReportCount     int    `json:"report_count" gorm:"default:0"`
-	
+	HelpfulCount    int `json:"helpful_count" gorm:"default:0"`
+	NotHelpfulCount int `json:"not_helpful_count" gorm:"default:0"`
+	ReportCount     int `json:"report_count" gorm:"default:0"`
+
 	// Media Attachments
-	Images          ReviewImages `json:"images" gorm:"type:json"`
-	Videos          ReviewVideos `json:"videos" gorm:"type:json"`
-	
+	Images ReviewImages `json:"images" gorm:"type:json"`
+	Videos ReviewVideos `json:"videos" gorm:"type:json"`
+
 	// Purchase Verification
-	PurchaseVerified bool      `json:"purchase_verified" gorm:"default:false"`
+	PurchaseVerified bool       `json:"purchase_verified" gorm:"default:false"`
 	PurchaseDate     *time.Time `json:"purchase_date"`
-	
+
 	// Moderation
-	ModeratedBy     *uint     `json:"moderated_by" gorm:"index"`
+	ModeratedBy     *uint      `json:"moderated_by" gorm:"index"`
 	ModeratedAt     *time.Time `json:"moderated_at"`
-	ModerationNotes string    `json:"moderation_notes" gorm:"type:text"`
-	
+	ModerationNotes string     `json:"moderation_notes" gorm:"type:text"`
+
 	// Response from Vendor
-	VendorResponse  *ReviewResponse `json:"vendor_response,omitempty" gorm:"foreignKey:ReviewID"`
-	
+	VendorResponse *ReviewResponse `json:"vendor_response,omitempty" gorm:"foreignKey:ReviewID"`
+
 	// Metadata
-	Metadata        ReviewMetadata `json:"metadata" gorm:"type:json"`
-	IPAddress       string         `json:"ip_address" gorm:"size:45"`
-	UserAgent       string         `json:"user_agent" gorm:"size:500"`
-	
+	Metadata  ReviewMetadata `json:"metadata" gorm:"type:json"`
+	IPAddress string         `json:"ip_address" gorm:"size:45"`
+	UserAgent string         `json:"user_agent" gorm:"size:500"`
+
 	// Timestamps
-	CreatedAt       time.Time  `json:"created_at"`
-	UpdatedAt       time.Time  `json:"updated_at"`
-	DeletedAt       *time.Time `json:"deleted_at,omitempty" gorm:"index"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	DeletedAt *time.Time `json:"deleted_at,omitempty" gorm:"index"`
 }
 
 // ReviewStatus represents the status of a review
 type ReviewStatus string
 
 const (
-	ReviewStatusPending   ReviewStatus = "pending"
-	ReviewStatusApproved  ReviewStatus = "approved"
-	ReviewStatusRejected  ReviewStatus = "rejected"
-	ReviewStatusFlagged   ReviewStatus = "flagged"
-	ReviewStatusHidden    ReviewStatus = "hidden"
-	ReviewStatusSpam      ReviewStatus = "spam"
+	ReviewStatusPending  ReviewStatus = "pending"
+	ReviewStatusApproved ReviewStatus = "approved"
+	ReviewStatusRejected ReviewStatus = "rejected"
+	ReviewStatusFlagged  ReviewStatus = "flagged"
+	ReviewStatusHidden   ReviewStatus = "hidden"
+	ReviewStatusSpam     ReviewStatus = "spam"
 )
 
 // ReviewImages holds image attachments
@@ -88,12 +88,12 @@ type ReviewImages struct {
 
 // ReviewImage represents an image attachment
 type ReviewImage struct {
-	ID          string `json:"id"`
-	URL         string `json:"url"`
+	ID           string `json:"id"`
+	URL          string `json:"url"`
 	ThumbnailURL string `json:"thumbnail_url"`
-	Caption     string `json:"caption,omitempty"`
-	Size        int64  `json:"size"`
-	MimeType    string `json:"mime_type"`
+	Caption      string `json:"caption,omitempty"`
+	Size         int64  `json:"size"`
+	MimeType     string `json:"mime_type"`
 }
 
 // ReviewVideos holds video attachments
@@ -103,38 +103,38 @@ type ReviewVideos struct {
 
 // ReviewVideo represents a video attachment
 type ReviewVideo struct {
-	ID          string `json:"id"`
-	URL         string `json:"url"`
+	ID           string `json:"id"`
+	URL          string `json:"url"`
 	ThumbnailURL string `json:"thumbnail_url"`
-	Caption     string `json:"caption,omitempty"`
-	Duration    int    `json:"duration"` // seconds
-	Size        int64  `json:"size"`
-	MimeType    string `json:"mime_type"`
+	Caption      string `json:"caption,omitempty"`
+	Duration     int    `json:"duration"` // seconds
+	Size         int64  `json:"size"`
+	MimeType     string `json:"mime_type"`
 }
 
 // ReviewMetadata holds additional review data
 type ReviewMetadata struct {
-	DeviceType     string                 `json:"device_type,omitempty"`
-	Platform       string                 `json:"platform,omitempty"`
-	AppVersion     string                 `json:"app_version,omitempty"`
-	Location       string                 `json:"location,omitempty"`
-	LanguageCode   string                 `json:"language_code,omitempty"`
-	CustomFields   map[string]interface{} `json:"custom_fields,omitempty"`
+	DeviceType   string                 `json:"device_type,omitempty"`
+	Platform     string                 `json:"platform,omitempty"`
+	AppVersion   string                 `json:"app_version,omitempty"`
+	Location     string                 `json:"location,omitempty"`
+	LanguageCode string                 `json:"language_code,omitempty"`
+	CustomFields map[string]interface{} `json:"custom_fields,omitempty"`
 }
 
 // ReviewResponse represents vendor response to a review
 type ReviewResponse struct {
-	ID          uint      `json:"id" gorm:"primaryKey"`
-	ReviewID    uint      `json:"review_id" gorm:"index;not null;unique"`
-	Review      Review    `json:"review" gorm:"foreignKey:ReviewID"`
-	VendorID    uint      `json:"vendor_id" gorm:"index;not null"`
-	Vendor      Vendor    `json:"vendor" gorm:"foreignKey:VendorID"`
-	
-	Content     string    `json:"content" gorm:"type:text;not null" validate:"required,min=10,max=1000"`
-	Status      ResponseStatus `json:"status" gorm:"default:'active'"`
-	
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID       uint   `json:"id" gorm:"primaryKey"`
+	ReviewID uint   `json:"review_id" gorm:"index;not null;unique"`
+	Review   Review `json:"review" gorm:"foreignKey:ReviewID"`
+	VendorID uint   `json:"vendor_id" gorm:"index;not null"`
+	Vendor   Vendor `json:"vendor" gorm:"foreignKey:VendorID"`
+
+	Content string         `json:"content" gorm:"type:text;not null" validate:"required,min=10,max=1000"`
+	Status  ResponseStatus `json:"status" gorm:"default:'active'"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // ResponseStatus represents vendor response status
@@ -152,43 +152,43 @@ type ReviewHelpful struct {
 	Review     Review   `json:"review" gorm:"foreignKey:ReviewID"`
 	CustomerID uint     `json:"customer_id" gorm:"index;not null"`
 	Customer   Customer `json:"customer" gorm:"foreignKey:CustomerID"`
-	
-	IsHelpful  bool      `json:"is_helpful"`
-	CreatedAt  time.Time `json:"created_at"`
-	
+
+	IsHelpful bool      `json:"is_helpful"`
+	CreatedAt time.Time `json:"created_at"`
+
 	// Composite unique index
 	// gorm:"uniqueIndex:idx_review_customer"
 }
 
 // ReviewReport represents reports for inappropriate reviews
 type ReviewReport struct {
-	ID         uint       `json:"id" gorm:"primaryKey"`
-	ReviewID   uint       `json:"review_id" gorm:"index;not null"`
-	Review     Review     `json:"review" gorm:"foreignKey:ReviewID"`
-	CustomerID uint       `json:"customer_id" gorm:"index;not null"`
-	Customer   Customer   `json:"customer" gorm:"foreignKey:CustomerID"`
-	
-	Reason     ReportReason `json:"reason" gorm:"not null"`
-	Comment    string       `json:"comment" gorm:"type:text"`
-	Status     ReportStatus `json:"status" gorm:"default:'pending'"`
-	
+	ID         uint     `json:"id" gorm:"primaryKey"`
+	ReviewID   uint     `json:"review_id" gorm:"index;not null"`
+	Review     Review   `json:"review" gorm:"foreignKey:ReviewID"`
+	CustomerID uint     `json:"customer_id" gorm:"index;not null"`
+	Customer   Customer `json:"customer" gorm:"foreignKey:CustomerID"`
+
+	Reason  ReportReason `json:"reason" gorm:"not null"`
+	Comment string       `json:"comment" gorm:"type:text"`
+	Status  ReportStatus `json:"status" gorm:"default:'pending'"`
+
 	ProcessedBy *uint      `json:"processed_by" gorm:"index"`
 	ProcessedAt *time.Time `json:"processed_at"`
-	
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // ReportReason represents reason for reporting a review
 type ReportReason string
 
 const (
-	ReportReasonSpam           ReportReason = "spam"
-	ReportReasonInappropriate  ReportReason = "inappropriate"
-	ReportReasonFakeReview     ReportReason = "fake_review"
-	ReportReasonOffensive      ReportReason = "offensive"
-	ReportReasonMisleading     ReportReason = "misleading"
-	ReportReasonOther          ReportReason = "other"
+	ReportReasonSpam          ReportReason = "spam"
+	ReportReasonInappropriate ReportReason = "inappropriate"
+	ReportReasonFakeReview    ReportReason = "fake_review"
+	ReportReasonOffensive     ReportReason = "offensive"
+	ReportReasonMisleading    ReportReason = "misleading"
+	ReportReasonOther         ReportReason = "other"
 )
 
 // ReportStatus represents status of a report
@@ -202,34 +202,34 @@ const (
 
 // ProductRating represents aggregated ratings for a product
 type ProductRating struct {
-	ID              uint    `json:"id" gorm:"primaryKey"`
-	ProductID       uint    `json:"product_id" gorm:"index;not null;unique"`
-	Product         Product `json:"product" gorm:"foreignKey:ProductID"`
-	
+	ID        uint    `json:"id" gorm:"primaryKey"`
+	ProductID uint    `json:"product_id" gorm:"index;not null;unique"`
+	Product   Product `json:"product" gorm:"foreignKey:ProductID"`
+
 	// Overall Rating
-	AverageRating   float64 `json:"average_rating" gorm:"type:decimal(3,2);default:0"`
-	TotalReviews    int     `json:"total_reviews" gorm:"default:0"`
-	
+	AverageRating float64 `json:"average_rating" gorm:"type:decimal(3,2);default:0"`
+	TotalReviews  int     `json:"total_reviews" gorm:"default:0"`
+
 	// Rating Distribution
-	Rating5Count    int     `json:"rating_5_count" gorm:"default:0"`
-	Rating4Count    int     `json:"rating_4_count" gorm:"default:0"`
-	Rating3Count    int     `json:"rating_3_count" gorm:"default:0"`
-	Rating2Count    int     `json:"rating_2_count" gorm:"default:0"`
-	Rating1Count    int     `json:"rating_1_count" gorm:"default:0"`
-	
+	Rating5Count int `json:"rating_5_count" gorm:"default:0"`
+	Rating4Count int `json:"rating_4_count" gorm:"default:0"`
+	Rating3Count int `json:"rating_3_count" gorm:"default:0"`
+	Rating2Count int `json:"rating_2_count" gorm:"default:0"`
+	Rating1Count int `json:"rating_1_count" gorm:"default:0"`
+
 	// Category Ratings
 	AverageQuality  float64 `json:"average_quality" gorm:"type:decimal(3,2);default:0"`
 	AverageValue    float64 `json:"average_value" gorm:"type:decimal(3,2);default:0"`
 	AverageService  float64 `json:"average_service" gorm:"type:decimal(3,2);default:0"`
 	AverageDelivery float64 `json:"average_delivery" gorm:"type:decimal(3,2);default:0"`
-	
+
 	// Review Metrics
-	VerifiedReviews int     `json:"verified_reviews" gorm:"default:0"`
-	WithPhotos      int     `json:"with_photos" gorm:"default:0"`
-	WithVideos      int     `json:"with_videos" gorm:"default:0"`
-	
+	VerifiedReviews int `json:"verified_reviews" gorm:"default:0"`
+	WithPhotos      int `json:"with_photos" gorm:"default:0"`
+	WithVideos      int `json:"with_videos" gorm:"default:0"`
+
 	// Last Update
-	UpdatedAt       time.Time `json:"updated_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // Implement driver.Valuer interface for ReviewImages
@@ -242,12 +242,12 @@ func (ri *ReviewImages) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	
+
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
-	
+
 	return json.Unmarshal(bytes, ri)
 }
 
@@ -261,12 +261,12 @@ func (rv *ReviewVideos) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	
+
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
-	
+
 	return json.Unmarshal(bytes, rv)
 }
 
@@ -280,12 +280,12 @@ func (rm *ReviewMetadata) Scan(value interface{}) error {
 	if value == nil {
 		return nil
 	}
-	
+
 	bytes, ok := value.([]byte)
 	if !ok {
 		return errors.New("type assertion to []byte failed")
 	}
-	
+
 	return json.Unmarshal(bytes, rm)
 }
 
@@ -346,7 +346,7 @@ func (r *Review) IsHighQuality() bool {
 // GetOverallRating returns overall rating with category weights
 func (r *Review) GetOverallRating() float64 {
 	ratings := []int{r.Rating}
-	
+
 	if r.QualityRating != nil {
 		ratings = append(ratings, *r.QualityRating)
 	}
@@ -359,12 +359,12 @@ func (r *Review) GetOverallRating() float64 {
 	if r.DeliveryRating != nil {
 		ratings = append(ratings, *r.DeliveryRating)
 	}
-	
+
 	total := 0
 	for _, rating := range ratings {
 		total += rating
 	}
-	
+
 	return float64(total) / float64(len(ratings))
 }
 
@@ -373,7 +373,7 @@ func (pr *ProductRating) GetRatingPercentages() map[int]float64 {
 	if pr.TotalReviews == 0 {
 		return map[int]float64{5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
 	}
-	
+
 	return map[int]float64{
 		5: float64(pr.Rating5Count) / float64(pr.TotalReviews) * 100,
 		4: float64(pr.Rating4Count) / float64(pr.TotalReviews) * 100,

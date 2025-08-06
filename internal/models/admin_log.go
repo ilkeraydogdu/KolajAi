@@ -1,25 +1,25 @@
 package models
 
 import (
-	"time"
 	"encoding/json"
+	"time"
 )
 
 // AdminLog represents an admin action log entry
 type AdminLog struct {
-	ID          int64           `json:"id" db:"id"`
-	AdminID     int64           `json:"admin_id" db:"admin_id"`
-	AdminEmail  string          `json:"admin_email" db:"admin_email"`
-	Action      string          `json:"action" db:"action"`
-	Resource    string          `json:"resource" db:"resource"`
-	ResourceID  *int64          `json:"resource_id,omitempty" db:"resource_id"`
-	OldValue    json.RawMessage `json:"old_value,omitempty" db:"old_value"`
-	NewValue    json.RawMessage `json:"new_value,omitempty" db:"new_value"`
-	IPAddress   string          `json:"ip_address" db:"ip_address"`
-	UserAgent   string          `json:"user_agent" db:"user_agent"`
-	Status      string          `json:"status" db:"status"` // success, failed
-	ErrorMsg    *string         `json:"error_msg,omitempty" db:"error_msg"`
-	CreatedAt   time.Time       `json:"created_at" db:"created_at"`
+	ID         int64           `json:"id" db:"id"`
+	AdminID    int64           `json:"admin_id" db:"admin_id"`
+	AdminEmail string          `json:"admin_email" db:"admin_email"`
+	Action     string          `json:"action" db:"action"`
+	Resource   string          `json:"resource" db:"resource"`
+	ResourceID *int64          `json:"resource_id,omitempty" db:"resource_id"`
+	OldValue   json.RawMessage `json:"old_value,omitempty" db:"old_value"`
+	NewValue   json.RawMessage `json:"new_value,omitempty" db:"new_value"`
+	IPAddress  string          `json:"ip_address" db:"ip_address"`
+	UserAgent  string          `json:"user_agent" db:"user_agent"`
+	Status     string          `json:"status" db:"status"` // success, failed
+	ErrorMsg   *string         `json:"error_msg,omitempty" db:"error_msg"`
+	CreatedAt  time.Time       `json:"created_at" db:"created_at"`
 }
 
 // AdminAction constants
@@ -31,21 +31,21 @@ const (
 	ActionUserUnban      = "user.unban"
 	ActionUserActivate   = "user.activate"
 	ActionUserDeactivate = "user.deactivate"
-	
+
 	ActionProductCreate  = "product.create"
 	ActionProductUpdate  = "product.update"
 	ActionProductDelete  = "product.delete"
 	ActionProductApprove = "product.approve"
 	ActionProductReject  = "product.reject"
-	
-	ActionOrderUpdate    = "order.update"
-	ActionOrderCancel    = "order.cancel"
-	ActionOrderRefund    = "order.refund"
-	
-	ActionSellerApprove  = "seller.approve"
-	ActionSellerReject   = "seller.reject"
-	ActionSellerSuspend  = "seller.suspend"
-	
+
+	ActionOrderUpdate = "order.update"
+	ActionOrderCancel = "order.cancel"
+	ActionOrderRefund = "order.refund"
+
+	ActionSellerApprove = "seller.approve"
+	ActionSellerReject  = "seller.reject"
+	ActionSellerSuspend = "seller.suspend"
+
 	ActionSystemBackup   = "system.backup"
 	ActionSystemRestore  = "system.restore"
 	ActionSettingsUpdate = "settings.update"

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
-	
+
 	"kolajAi/internal/services"
 )
 
@@ -32,28 +32,28 @@ func (h *AnalyticsHandler) Dashboard(w http.ResponseWriter, r *http.Request) {
 	// Get business metrics
 	metrics := map[string]interface{}{
 		"revenue": map[string]interface{}{
-			"total_revenue":      125000.50,
-			"revenue_growth":     15.8,
-			"monthly_recurring":  45000.00,
-			"average_order":      89.50,
+			"total_revenue":     125000.50,
+			"revenue_growth":    15.8,
+			"monthly_recurring": 45000.00,
+			"average_order":     89.50,
 		},
 		"sales": map[string]interface{}{
-			"total_orders":       1450,
-			"completed_orders":   1380,
-			"conversion_rate":    3.2,
-			"sales_growth":       12.5,
+			"total_orders":     1450,
+			"completed_orders": 1380,
+			"conversion_rate":  3.2,
+			"sales_growth":     12.5,
 		},
 		"customers": map[string]interface{}{
-			"total_customers":    2850,
-			"new_customers":      185,
-			"retention_rate":     78.5,
-			"lifetime_value":     450.75,
+			"total_customers": 2850,
+			"new_customers":   185,
+			"retention_rate":  78.5,
+			"lifetime_value":  450.75,
 		},
 		"products": map[string]interface{}{
-			"total_products":     850,
-			"best_selling":       "Test Ürün 1",
-			"low_stock":          25,
-			"out_of_stock":       8,
+			"total_products": 850,
+			"best_selling":   "Test Ürün 1",
+			"low_stock":      25,
+			"out_of_stock":   8,
 		},
 	}
 
@@ -107,15 +107,15 @@ func (h *AnalyticsHandler) Revenue(w http.ResponseWriter, r *http.Request) {
 		"average_order_value": 89.50,
 		"profit_margin":       35.2,
 		"revenue_by_category": map[string]float64{
-			"Elektronik":  45000,
-			"Giyim":       35000,
-			"Kitap":       25000,
-			"Ev & Yaşam":  20000,
+			"Elektronik": 45000,
+			"Giyim":      35000,
+			"Kitap":      25000,
+			"Ev & Yaşam": 20000,
 		},
 		"revenue_by_channel": map[string]float64{
-			"Web":     75000,
-			"Mobile":  35000,
-			"API":     15000,
+			"Web":    75000,
+			"Mobile": 35000,
+			"API":    15000,
 		},
 	}
 
@@ -145,13 +145,13 @@ func (h *AnalyticsHandler) Customers(w http.ResponseWriter, r *http.Request) {
 
 	// Get customer analytics
 	customerData := map[string]interface{}{
-		"total_customers":    2850,
-		"new_customers":      185,
-		"active_customers":   2100,
-		"retention_rate":     78.5,
-		"churn_rate":         21.5,
-		"lifetime_value":     450.75,
-		"acquisition_cost":   25.50,
+		"total_customers":  2850,
+		"new_customers":    185,
+		"active_customers": 2100,
+		"retention_rate":   78.5,
+		"churn_rate":       21.5,
+		"lifetime_value":   450.75,
+		"acquisition_cost": 25.50,
 		"customer_segments": []map[string]interface{}{
 			{"name": "VIP", "count": 150, "revenue": 45000, "avg_order": 300},
 			{"name": "Premium", "count": 450, "revenue": 67500, "avg_order": 150},
@@ -186,12 +186,12 @@ func (h *AnalyticsHandler) Products(w http.ResponseWriter, r *http.Request) {
 
 	// Get product analytics
 	productData := map[string]interface{}{
-		"total_products":   850,
-		"active_products":  780,
-		"best_seller":      "Test Ürün 1",
-		"worst_performer":  "Test Ürün 50",
-		"average_rating":   4.2,
-		"return_rate":      5.8,
+		"total_products":  850,
+		"active_products": 780,
+		"best_seller":     "Test Ürün 1",
+		"worst_performer": "Test Ürün 50",
+		"average_rating":  4.2,
+		"return_rate":     5.8,
 	}
 
 	// Get product performance
@@ -237,16 +237,16 @@ func (h *AnalyticsHandler) APIGetBusinessMetrics(w http.ResponseWriter, r *http.
 
 	metrics := map[string]interface{}{
 		"revenue": map[string]interface{}{
-			"total":      125000.50,
-			"growth":     15.8,
-			"recurring":  45000.00,
-			"avg_order":  89.50,
+			"total":     125000.50,
+			"growth":    15.8,
+			"recurring": 45000.00,
+			"avg_order": 89.50,
 		},
 		"sales": map[string]interface{}{
-			"orders":         1450,
-			"completed":      1380,
-			"conversion":     3.2,
-			"growth":         12.5,
+			"orders":     1450,
+			"completed":  1380,
+			"conversion": 3.2,
+			"growth":     12.5,
 		},
 		"customers": map[string]interface{}{
 			"total":          2850,
@@ -254,7 +254,7 @@ func (h *AnalyticsHandler) APIGetBusinessMetrics(w http.ResponseWriter, r *http.
 			"retention":      78.5,
 			"lifetime_value": 450.75,
 		},
-		"period": period,
+		"period":       period,
 		"generated_at": time.Now(),
 	}
 

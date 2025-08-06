@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	
+
 	"kolajAi/internal/models"
 	"kolajAi/internal/services"
 )
@@ -25,17 +25,17 @@ func (h *SellerHandler) getUserIDFromSession(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return 0, fmt.Errorf("oturum bilgisi alınamadı: %w", err)
 	}
-	
+
 	userIDInterface, exists := session.Values[UserKey]
 	if !exists {
 		return 0, fmt.Errorf("kullanıcı bilgisi bulunamadı")
 	}
-	
+
 	userID, ok := userIDInterface.(int)
 	if !ok {
 		return 0, fmt.Errorf("geçersiz kullanıcı bilgisi")
 	}
-	
+
 	return userID, nil
 }
 
@@ -194,7 +194,7 @@ func (h *SellerHandler) APIGetProducts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	vendor, err := h.VendorService.GetVendorByUserID(userID)
 	if err != nil {
 		http.Error(w, "Vendor not found", http.StatusNotFound)
@@ -265,7 +265,7 @@ func (h *SellerHandler) APIGetOrders(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
-	
+
 	vendor, err := h.VendorService.GetVendorByUserID(userID)
 	if err != nil {
 		http.Error(w, "Vendor not found", http.StatusNotFound)

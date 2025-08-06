@@ -39,7 +39,7 @@ type Product struct {
 	ReviewCount     int       `json:"review_count" db:"review_count" validate:"min=0"`
 	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at" db:"updated_at"`
-	
+
 	// Computed fields for templates (not stored in DB)
 	Images             []string `json:"images,omitempty" db:"-"`
 	Image              string   `json:"image,omitempty" db:"-"` // Primary image

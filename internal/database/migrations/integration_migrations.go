@@ -18,7 +18,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			rotated_at TIMESTAMP,
 			INDEX idx_integration_id (integration_id)
 		)`,
-		
+
 		// Integration configurations table
 		`CREATE TABLE IF NOT EXISTS integration_configs (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +35,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			INDEX idx_provider (provider),
 			INDEX idx_status (status)
 		)`,
-		
+
 		// Integration audit log table
 		`CREATE TABLE IF NOT EXISTS integration_audit_logs (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,7 +54,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			INDEX idx_action (action),
 			INDEX idx_user_id (user_id)
 		)`,
-		
+
 		// Webhook events table
 		`CREATE TABLE IF NOT EXISTS webhook_events (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -73,7 +73,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			INDEX idx_webhook_status (status),
 			INDEX idx_webhook_created (created_at)
 		)`,
-		
+
 		// Integration metrics table
 		`CREATE TABLE IF NOT EXISTS integration_metrics (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,7 +86,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			INDEX idx_metrics_integration (integration_id, timestamp),
 			INDEX idx_metrics_type (metric_type)
 		)`,
-		
+
 		// API rate limits table
 		`CREATE TABLE IF NOT EXISTS integration_rate_limits (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,7 +98,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			UNIQUE KEY unique_integration_endpoint (integration_id, endpoint)
 		)`,
-		
+
 		// Integration health checks table
 		`CREATE TABLE IF NOT EXISTS integration_health_checks (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,7 +109,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			checked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			INDEX idx_health_integration (integration_id, checked_at)
 		)`,
-		
+
 		// Payment transactions table (for payment integrations)
 		`CREATE TABLE IF NOT EXISTS payment_transactions (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -128,7 +128,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			INDEX idx_payment_status (status),
 			INDEX idx_payment_created (created_at)
 		)`,
-		
+
 		// Integration user mappings table
 		`CREATE TABLE IF NOT EXISTS integration_user_mappings (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -144,7 +144,7 @@ func CreateIntegrationTables(db *sql.DB) error {
 			UNIQUE KEY unique_user_integration (user_id, integration_id),
 			INDEX idx_external_user (external_user_id)
 		)`,
-		
+
 		// Integration queue jobs table
 		`CREATE TABLE IF NOT EXISTS integration_queue_jobs (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -165,14 +165,14 @@ func CreateIntegrationTables(db *sql.DB) error {
 			INDEX idx_queue_integration (integration_id)
 		)`,
 	}
-	
+
 	// Execute each query
 	for _, query := range queries {
 		if _, err := db.Exec(query); err != nil {
 			return fmt.Errorf("failed to execute migration: %w", err)
 		}
 	}
-	
+
 	return nil
 }
 
@@ -190,13 +190,13 @@ func DropIntegrationTables(db *sql.DB) error {
 		"integration_configs",
 		"integration_credentials",
 	}
-	
+
 	for _, table := range tables {
 		query := fmt.Sprintf("DROP TABLE IF EXISTS %s", table)
 		if _, err := db.Exec(query); err != nil {
 			return fmt.Errorf("failed to drop table %s: %w", table, err)
 		}
 	}
-	
+
 	return nil
 }

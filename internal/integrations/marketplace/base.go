@@ -16,16 +16,16 @@ type MarketplaceProvider interface {
 	IsHealthy(ctx context.Context) (bool, error)
 	GetMetrics() map[string]interface{}
 	GetRateLimit() integrations.RateLimitInfo
-	
+
 	// Product operations
 	SyncProducts(ctx context.Context, products []interface{}) error
 	UpdateStockAndPrice(ctx context.Context, updates []interface{}) error
 	GetProducts(ctx context.Context, params map[string]interface{}) ([]interface{}, error)
-	
+
 	// Order operations
 	GetOrders(ctx context.Context, params map[string]interface{}) ([]interface{}, error)
 	UpdateOrderStatus(ctx context.Context, orderID string, status string, params map[string]interface{}) error
-	
+
 	// Category operations
 	GetCategories(ctx context.Context) ([]interface{}, error)
 	GetBrands(ctx context.Context) ([]interface{}, error)
@@ -47,12 +47,12 @@ type MarketplaceProviderConfig struct {
 
 // MarketplaceError represents marketplace-specific errors
 type MarketplaceError struct {
-	Code       string    `json:"code"`
-	Message    string    `json:"message"`
-	Provider   string    `json:"provider"`
-	Retryable  bool      `json:"retryable"`
-	Timestamp  time.Time `json:"timestamp"`
-	StatusCode int       `json:"status_code,omitempty"`
+	Code       string                 `json:"code"`
+	Message    string                 `json:"message"`
+	Provider   string                 `json:"provider"`
+	Retryable  bool                   `json:"retryable"`
+	Timestamp  time.Time              `json:"timestamp"`
+	StatusCode int                    `json:"status_code,omitempty"`
 	Details    map[string]interface{} `json:"details,omitempty"`
 }
 
@@ -62,24 +62,24 @@ func (e *MarketplaceError) Error() string {
 
 // Product represents a generic marketplace product
 type Product struct {
-	ID               string            `json:"id"`
-	SKU              string            `json:"sku"`
-	Barcode          string            `json:"barcode"`
-	Title            string            `json:"title"`
-	Description      string            `json:"description"`
-	Brand            string            `json:"brand"`
-	Category         string            `json:"category"`
-	Price            float64           `json:"price"`
-	ListPrice        float64           `json:"list_price"`
-	Currency         string            `json:"currency"`
-	Stock            int               `json:"stock"`
-	Images           []string          `json:"images"`
-	Attributes       map[string]string `json:"attributes"`
-	Weight           float64           `json:"weight"`
-	Dimensions       Dimensions        `json:"dimensions"`
-	Status           string            `json:"status"`
-	CreatedAt        time.Time         `json:"created_at"`
-	UpdatedAt        time.Time         `json:"updated_at"`
+	ID          string            `json:"id"`
+	SKU         string            `json:"sku"`
+	Barcode     string            `json:"barcode"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	Brand       string            `json:"brand"`
+	Category    string            `json:"category"`
+	Price       float64           `json:"price"`
+	ListPrice   float64           `json:"list_price"`
+	Currency    string            `json:"currency"`
+	Stock       int               `json:"stock"`
+	Images      []string          `json:"images"`
+	Attributes  map[string]string `json:"attributes"`
+	Weight      float64           `json:"weight"`
+	Dimensions  Dimensions        `json:"dimensions"`
+	Status      string            `json:"status"`
+	CreatedAt   time.Time         `json:"created_at"`
+	UpdatedAt   time.Time         `json:"updated_at"`
 }
 
 // Dimensions represents product dimensions
@@ -92,59 +92,59 @@ type Dimensions struct {
 
 // Order represents a generic marketplace order
 type Order struct {
-	ID               string        `json:"id"`
-	OrderNumber      string        `json:"order_number"`
-	Status           string        `json:"status"`
-	CustomerID       string        `json:"customer_id"`
-	CustomerName     string        `json:"customer_name"`
-	CustomerEmail    string        `json:"customer_email"`
-	CustomerPhone    string        `json:"customer_phone"`
-	BillingAddress   Address       `json:"billing_address"`
-	ShippingAddress  Address       `json:"shipping_address"`
-	Items            []OrderItem   `json:"items"`
-	Subtotal         float64       `json:"subtotal"`
-	TaxAmount        float64       `json:"tax_amount"`
-	ShippingAmount   float64       `json:"shipping_amount"`
-	DiscountAmount   float64       `json:"discount_amount"`
-	TotalAmount      float64       `json:"total_amount"`
-	Currency         string        `json:"currency"`
-	PaymentMethod    string        `json:"payment_method"`
-	PaymentStatus    string        `json:"payment_status"`
-	ShippingMethod   string        `json:"shipping_method"`
-	TrackingNumber   string        `json:"tracking_number"`
-	Notes            string        `json:"notes"`
-	OrderDate        time.Time     `json:"order_date"`
-	ShippedDate      *time.Time    `json:"shipped_date,omitempty"`
-	DeliveredDate    *time.Time    `json:"delivered_date,omitempty"`
+	ID              string      `json:"id"`
+	OrderNumber     string      `json:"order_number"`
+	Status          string      `json:"status"`
+	CustomerID      string      `json:"customer_id"`
+	CustomerName    string      `json:"customer_name"`
+	CustomerEmail   string      `json:"customer_email"`
+	CustomerPhone   string      `json:"customer_phone"`
+	BillingAddress  Address     `json:"billing_address"`
+	ShippingAddress Address     `json:"shipping_address"`
+	Items           []OrderItem `json:"items"`
+	Subtotal        float64     `json:"subtotal"`
+	TaxAmount       float64     `json:"tax_amount"`
+	ShippingAmount  float64     `json:"shipping_amount"`
+	DiscountAmount  float64     `json:"discount_amount"`
+	TotalAmount     float64     `json:"total_amount"`
+	Currency        string      `json:"currency"`
+	PaymentMethod   string      `json:"payment_method"`
+	PaymentStatus   string      `json:"payment_status"`
+	ShippingMethod  string      `json:"shipping_method"`
+	TrackingNumber  string      `json:"tracking_number"`
+	Notes           string      `json:"notes"`
+	OrderDate       time.Time   `json:"order_date"`
+	ShippedDate     *time.Time  `json:"shipped_date,omitempty"`
+	DeliveredDate   *time.Time  `json:"delivered_date,omitempty"`
 }
 
 // OrderItem represents an item in an order
 type OrderItem struct {
-	ID           string  `json:"id"`
-	ProductID    string  `json:"product_id"`
-	SKU          string  `json:"sku"`
-	Name         string  `json:"name"`
-	Quantity     int     `json:"quantity"`
-	Price        float64 `json:"price"`
-	TotalPrice   float64 `json:"total_price"`
-	TaxAmount    float64 `json:"tax_amount"`
-	DiscountAmount float64 `json:"discount_amount"`
-	Attributes   map[string]string `json:"attributes"`
+	ID             string            `json:"id"`
+	ProductID      string            `json:"product_id"`
+	SKU            string            `json:"sku"`
+	Name           string            `json:"name"`
+	Quantity       int               `json:"quantity"`
+	Price          float64           `json:"price"`
+	TotalPrice     float64           `json:"total_price"`
+	TaxAmount      float64           `json:"tax_amount"`
+	DiscountAmount float64           `json:"discount_amount"`
+	Attributes     map[string]string `json:"attributes"`
 }
 
 // Address represents a billing or shipping address
 type Address struct {
-	ID          string `json:"id"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Company     string `json:"company"`
-	Address1    string `json:"address1"`
-	Address2    string `json:"address2"`
-	City        string `json:"city"`
-	State       string `json:"state"`
-	PostalCode  string `json:"postal_code"`
-	Country     string `json:"country"`
-	Phone       string `json:"phone"`
+	ID         string `json:"id"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	Company    string `json:"company"`
+	Address1   string `json:"address1"`
+	Address2   string `json:"address2"`
+	City       string `json:"city"`
+	State      string `json:"state"`
+	PostalCode string `json:"postal_code"`
+	Country    string `json:"country"`
+	Phone      string `json:"phone"`
 }
 
 // Category represents a marketplace category

@@ -124,7 +124,7 @@ func (cm *CredentialManager) RetrieveCredential(id string) (map[string]interface
 			if err != nil {
 				return nil, fmt.Errorf("credential not found: %s", id)
 			}
-			
+
 			// Decrypt the data
 			decryptedData, err := cm.decrypt(encryptedData)
 			if err != nil {

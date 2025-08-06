@@ -303,12 +303,12 @@ func (r *MySQLRepository) FindAll(table string, result interface{}, conditions m
 	}
 
 	qb := NewQueryBuilder(table)
-	
+
 	// Add conditions
 	if conditions != nil {
 		qb.Filter(conditions)
 	}
-	
+
 	// Add ordering
 	if orderBy != "" {
 		parts := strings.Fields(orderBy)
@@ -318,7 +318,7 @@ func (r *MySQLRepository) FindAll(table string, result interface{}, conditions m
 			qb.OrderBy(parts[0], Ascending)
 		}
 	}
-	
+
 	// Add pagination
 	if limit > 0 {
 		qb.Limit(limit)
@@ -326,7 +326,7 @@ func (r *MySQLRepository) FindAll(table string, result interface{}, conditions m
 	if offset > 0 {
 		qb.Offset(offset)
 	}
-	
+
 	query, args := qb.Build()
 	stmt, err := r.db.Prepare(query)
 	if err != nil {
@@ -350,20 +350,20 @@ func (r *MySQLRepository) scanRows(rows *sql.Rows, result interface{}) error {
 	if resultValue.Kind() != reflect.Ptr {
 		return fmt.Errorf("result must be a pointer")
 	}
-	
+
 	sliceValue := resultValue.Elem()
 	if sliceValue.Kind() != reflect.Slice {
 		return fmt.Errorf("result must be a pointer to slice")
 	}
-	
+
 	elementType := sliceValue.Type().Elem()
-	
+
 	// Get columns
 	columns, err := rows.Columns()
 	if err != nil {
 		return err
 	}
-	
+
 	// Process each row
 	for rows.Next() {
 		// Create new element
@@ -373,25 +373,25 @@ func (r *MySQLRepository) scanRows(rows *sql.Rows, result interface{}) error {
 		} else {
 			elementValue = reflect.New(elementType).Elem()
 		}
-		
+
 		// Create scan destinations
 		values := make([]interface{}, len(columns))
 		valuePtrs := make([]interface{}, len(columns))
 		for i := range values {
 			valuePtrs[i] = &values[i]
 		}
-		
+
 		// Scan row
 		if err := rows.Scan(valuePtrs...); err != nil {
 			return err
 		}
-		
+
 		// Map columns to struct fields
 		elem := elementValue
 		if elementType.Kind() == reflect.Ptr {
 			elem = elementValue.Elem()
 		}
-		
+
 		for i, col := range columns {
 			field := elem.FieldByName(strings.Title(col))
 			if !field.IsValid() {
@@ -404,7 +404,7 @@ func (r *MySQLRepository) scanRows(rows *sql.Rows, result interface{}) error {
 					}
 				}
 			}
-			
+
 			if field.IsValid() && field.CanSet() {
 				val := values[i]
 				if val != nil {
@@ -418,7 +418,7 @@ func (r *MySQLRepository) scanRows(rows *sql.Rows, result interface{}) error {
 				}
 			}
 		}
-		
+
 		// Append to slice
 		if elementType.Kind() == reflect.Ptr {
 			sliceValue.Set(reflect.Append(sliceValue, elementValue))
@@ -426,7 +426,7 @@ func (r *MySQLRepository) scanRows(rows *sql.Rows, result interface{}) error {
 			sliceValue.Set(reflect.Append(sliceValue, elementValue))
 		}
 	}
-	
+
 	return rows.Err()
 }
 
@@ -899,44 +899,44 @@ func extractFieldsAndValues(data interface{}) ([]string, []interface{}) {
 	if val.Kind() == reflect.Ptr {
 		val = val.Elem()
 	}
-	
+
 	if val.Kind() != reflect.Struct {
 		return nil, nil
 	}
-	
+
 	typ := val.Type()
 	fields := make([]string, 0)
 	values := make([]interface{}, 0)
-	
+
 	for i := 0; i < val.NumField(); i++ {
 		field := typ.Field(i)
 		fieldVal := val.Field(i)
-		
+
 		// Skip unexported fields
 		if !fieldVal.CanInterface() {
 			continue
 		}
-		
+
 		// Get db tag or use field name
 		dbTag := field.Tag.Get("db")
 		if dbTag == "" {
 			dbTag = strings.ToLower(field.Name)
 		}
-		
+
 		// Skip fields with db:"-"
 		if dbTag == "-" {
 			continue
 		}
-		
+
 		// Skip empty primary key fields (usually auto-increment)
 		if (dbTag == "id" || strings.HasSuffix(dbTag, "_id")) && isZeroValue(fieldVal) {
 			continue
 		}
-		
+
 		fields = append(fields, dbTag)
 		values = append(values, fieldVal.Interface())
 	}
-	
+
 	return fields, values
 }
 
